@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -9,218 +10,555 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Montserrat:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --brand-blue:   #07B0E4;
+            --brand-blue: #07B0E4;
             --brand-orange: #E9A037;
-            --brand-pink:   #E83C8D;
-            --brand-green:  #2BA848;
+            --brand-pink: #E83C8D;
+            --brand-green: #2BA848;
             --brand-yellow: #FCC30A;
-            --brand-red:    #E52642;
-            --brand-dark:   #1A6B68;
-            --brand-light:  #EFF9FC;
+            --brand-red: #E52642;
+            --brand-dark: #1A6B68;
+            --brand-light: #EFF9FC;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Nunito', sans-serif; background: var(--brand-light); min-height: 100vh; }
-        .hidden { display: none !important; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--brand-light);
+            min-height: 100vh;
+        }
+
+        .hidden {
+            display: none !important;
+        }
 
         /* ── Animaciones ── */
-        @keyframes fadeInUp  { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes slideInUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes bounce    { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
-        @keyframes pulse     { 0%,100%{opacity:1} 50%{opacity:.6} }
-        .animate-in   { animation: slideInUp .3s ease forwards; }
-        .badge-unlock { animation: bounce .5s ease; }
-        .streak-fire  { animation: pulse 1s infinite; }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.12)
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .6
+            }
+        }
+
+        .animate-in {
+            animation: slideInUp .3s ease forwards;
+        }
+
+        .badge-unlock {
+            animation: bounce .5s ease;
+        }
+
+        .streak-fire {
+            animation: pulse 1s infinite;
+        }
 
         /* ── Toast ── */
         .toast-notification {
-            position: fixed; bottom: 76px; left: 12px; right: 12px;
-            max-width: 420px; margin: 0 auto;
+            position: fixed;
+            bottom: 76px;
+            left: 12px;
+            right: 12px;
+            max-width: 420px;
+            margin: 0 auto;
             background: linear-gradient(135deg, var(--brand-dark), var(--brand-blue));
-            color: white; padding: 12px 18px; border-radius: 16px;
-            z-index: 9999; font-size: 13px; font-weight: 700;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 16px;
+            z-index: 9999;
+            font-size: 13px;
+            font-weight: 700;
             font-family: 'Nunito', sans-serif;
             animation: fadeInUp .3s ease;
-            box-shadow: 0 8px 24px rgba(7,176,228,.35);
-            text-align: center; line-height: 1.4; word-break: break-word;
+            box-shadow: 0 8px 24px rgba(7, 176, 228, .35);
+            text-align: center;
+            line-height: 1.4;
+            word-break: break-word;
         }
 
         /* ── Quiz opciones ── */
         .quiz-option {
-            transition: all .18s ease; border: 2px solid #e5e7eb;
-            display: flex; align-items: center; gap: 12px; background: white;
+            transition: all .18s ease;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
         }
-        .quiz-option:hover:not(:disabled) { border-color:var(--brand-blue); background:#E8F8FD; transform:translateX(3px); }
-        .quiz-option.correct  { border-color:#2BA848!important; background:#E6F1E6!important; }
-        .quiz-option.incorrect{ border-color:#E52642!important; background:#FCD7DA!important; }
-        .quiz-option:disabled { cursor:default; }
+
+        .quiz-option:hover:not(:disabled) {
+            border-color: var(--brand-blue);
+            background: #E8F8FD;
+            transform: translateX(3px);
+        }
+
+        .quiz-option.correct {
+            border-color: #2BA848 !important;
+            background: #E6F1E6 !important;
+        }
+
+        .quiz-option.incorrect {
+            border-color: #E52642 !important;
+            background: #FCD7DA !important;
+        }
+
+        .quiz-option:disabled {
+            cursor: default;
+        }
+
         .option-letter {
-            width:34px; height:34px; border-radius:50%;
-            background:#E0F4FA; color:var(--brand-blue); font-weight:800;
-            display:flex; align-items:center; justify-content:center;
-            flex-shrink:0; font-size:13px; transition:all .18s;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #E0F4FA;
+            color: var(--brand-blue);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 13px;
+            transition: all .18s;
             font-family: 'Montserrat', sans-serif;
         }
-        .quiz-option.correct  .option-letter { background:#2BA848; color:white; }
-        .quiz-option.incorrect .option-letter { background:#E52642; color:white; }
+
+        .quiz-option.correct .option-letter {
+            background: #2BA848;
+            color: white;
+        }
+
+        .quiz-option.incorrect .option-letter {
+            background: #E52642;
+            color: white;
+        }
 
         /* ── Tarjetas de contenido / quiz ── */
-        .content-card, .quiz-card {
-            background:white; border-radius:24px;
-            box-shadow:0 4px 24px rgba(0,0,0,.09);
-            width:100%; overflow:hidden;
-            display:flex; flex-direction:column;
+        .content-card,
+        .quiz-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, .09);
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
             animation: slideInUp .3s ease;
         }
 
         /* ── Banner ilustrado (parte superior de la tarjeta) ── */
         .card-banner {
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
-            padding:24px 20px 18px; min-height:160px;
-            position:relative; overflow:hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 20px 18px;
+            min-height: 160px;
+            position: relative;
+            overflow: hidden;
         }
+
         .card-banner::before {
-            content:''; position:absolute; inset:0;
-            background:rgba(0,0,0,.08); border-radius:50% 50% 0 0 / 30% 30% 0 0;
-            top:60%;
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, .08);
+            border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+            top: 60%;
         }
-        .card-banner-svg { width:80px; height:80px; position:relative; z-index:1; }
-        .card-banner-svg svg { width:100%; height:100%; }
+
+        .card-banner-svg {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-banner-svg svg {
+            width: 100%;
+            height: 100%;
+        }
+
         .card-banner-sub {
-            color:rgba(255,255,255,0.88); font-size:11px; font-weight:700;
-            margin-top:10px; text-align:center; position:relative; z-index:1;
-            letter-spacing:0.06em; font-family:'Montserrat',sans-serif; text-transform:uppercase;
+            color: rgba(255, 255, 255, 0.88);
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 10px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.06em;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
         }
+
         /* ── Cuerpo de la tarjeta ── */
-        .card-body { padding:20px 24px; flex:1; }
-        .card-body h2 { font-size:1.2rem; font-weight:900; color:#1a202c; margin-bottom:12px; line-height:1.35; font-family:'Nunito',sans-serif; }
-        .card-body p  { color:#4a5568; font-size:0.95rem; line-height:1.75; font-family:'Nunito',sans-serif; }
-        .card-key-insight {
-            margin-top:14px; padding:12px 14px; border-radius:16px;
-            border-left:4px solid; font-size:0.85rem; line-height:1.5;
+        .card-body {
+            padding: 20px 24px;
+            flex: 1;
         }
-        .card-footer { padding:0 24px 16px; }
-        .card-swipe-hint { text-align:center; padding:10px 0; font-size:11px; color:#cbd5e0; }
+
+        .card-body h2 {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #1a202c;
+            margin-bottom: 12px;
+            line-height: 1.35;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .card-body p {
+            color: #4a5568;
+            font-size: 0.95rem;
+            line-height: 1.75;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .card-key-insight {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border-left: 4px solid;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            padding: 0 24px 16px;
+        }
+
+        .card-swipe-hint {
+            text-align: center;
+            padding: 10px 0;
+            font-size: 11px;
+            color: #cbd5e0;
+        }
 
         /* ── Barras de progreso ── */
-        .module-progress-bar  { height:6px; background:#C8EEF9; border-radius:9999px; overflow:hidden; }
-        .module-progress-fill { height:100%; background:linear-gradient(90deg,var(--brand-blue),var(--brand-dark)); border-radius:9999px; transition:width .5s ease; }
+        .module-progress-bar {
+            height: 6px;
+            background: #C8EEF9;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .module-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--brand-blue), var(--brand-dark));
+            border-radius: 9999px;
+            transition: width .5s ease;
+        }
 
         /* ── Botones de navegación ── */
         .nav-btn-prev {
-            background:white; border:2px solid #e5e7eb; color:#6b7280;
-            font-weight:700; font-family:'Nunito',sans-serif;
-            padding:10px 18px; border-radius:14px;
-            display:flex; align-items:center; gap:6px; transition:all .18s;
+            background: white;
+            border: 2px solid #e5e7eb;
+            color: #6b7280;
+            font-weight: 700;
+            font-family: 'Nunito', sans-serif;
+            padding: 10px 18px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all .18s;
         }
-        .nav-btn-prev:hover { border-color:var(--brand-blue); color:var(--brand-blue); }
+
+        .nav-btn-prev:hover {
+            border-color: var(--brand-blue);
+            color: var(--brand-blue);
+        }
+
         .nav-btn-next {
-            background:linear-gradient(135deg,var(--brand-blue),var(--brand-dark));
-            color:white; font-weight:800; font-family:'Nunito',sans-serif;
-            padding:10px 22px; border-radius:14px;
-            display:flex; align-items:center; gap:6px;
-            box-shadow:0 4px 14px rgba(7,176,228,.4); transition:all .18s;
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-dark));
+            color: white;
+            font-weight: 800;
+            font-family: 'Nunito', sans-serif;
+            padding: 10px 22px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 14px rgba(7, 176, 228, .4);
+            transition: all .18s;
         }
-        .nav-btn-next:hover  { box-shadow:0 6px 20px rgba(7,176,228,.5); transform:translateY(-1px); }
-        .nav-btn-next:disabled { background:#d1d5db; box-shadow:none; cursor:not-allowed; transform:none; }
+
+        .nav-btn-next:hover {
+            box-shadow: 0 6px 20px rgba(7, 176, 228, .5);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn-next:disabled {
+            background: #d1d5db;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
 
         /* ── Bottom navigation ── */
         .bottom-nav {
-            position:fixed; bottom:0; left:0; right:0; z-index:40;
-            background:white; border-top:1px solid #f1f5f9;
-            padding:6px 0 env(safe-area-inset-bottom,0);
-            max-width:448px; margin:0 auto; left:50%; transform:translateX(-50%);
-            width:100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 40;
+            background: white;
+            border-top: 1px solid #f1f5f9;
+            padding: 6px 0 env(safe-area-inset-bottom, 0);
+            max-width: 448px;
+            margin: 0 auto;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
         }
+
         .bnav-btn {
-            display:flex; flex-direction:column; align-items:center; gap:2px;
-            padding:6px 8px; border-radius:14px; border:none; background:none;
-            cursor:pointer; transition:all .18s; flex:1;
-            font-family:'Nunito',sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 6px 8px;
+            border-radius: 14px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: all .18s;
+            flex: 1;
+            font-family: 'Nunito', sans-serif;
         }
-        .bnav-btn i  { font-size:17px; color:#94a3b8; transition:color .18s; }
-        .bnav-btn span { font-size:9.5px; color:#94a3b8; font-weight:600; }
-        .bnav-btn.active i    { color:var(--brand-blue); }
-        .bnav-btn.active span { color:var(--brand-blue); font-weight:800; }
-        .bnav-btn:hover i, .bnav-btn:hover span { color:var(--brand-blue); }
+
+        .bnav-btn i {
+            font-size: 17px;
+            color: #94a3b8;
+            transition: color .18s;
+        }
+
+        .bnav-btn span {
+            font-size: 9.5px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .bnav-btn.active i {
+            color: var(--brand-blue);
+        }
+
+        .bnav-btn.active span {
+            color: var(--brand-blue);
+            font-weight: 800;
+        }
+
+        .bnav-btn:hover i,
+        .bnav-btn:hover span {
+            color: var(--brand-blue);
+        }
 
         /* ── Stat pills ── */
         .stat-pill {
-            display:flex; align-items:center; gap:5px;
-            padding:6px 11px; border-radius:12px;
-            font-size:12px; font-weight:600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 11px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         /* ── Misc ── */
-        button { cursor:pointer; transition:all .18s ease; }
-        button:active { transform:scale(.96); }
-        .rating-star,.nps-btn { cursor:pointer; transition:all .1s ease; }
-        .rating-star:hover,.nps-btn:hover { transform:scale(1.15); }
-        ::-webkit-scrollbar { width:4px; }
-        ::-webkit-scrollbar-thumb { background:#7DD7F0; border-radius:9999px; }
+        button {
+            cursor: pointer;
+            transition: all .18s ease;
+        }
+
+        button:active {
+            transform: scale(.96);
+        }
+
+        .rating-star,
+        .nps-btn {
+            cursor: pointer;
+            transition: all .1s ease;
+        }
+
+        .rating-star:hover,
+        .nps-btn:hover {
+            transform: scale(1.15);
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #7DD7F0;
+            border-radius: 9999px;
+        }
 
         /* ── Efecto de tarjetas apiladas (Google Primer style) ── */
         #cardContainer {
             position: relative;
             padding-bottom: 12px;
         }
+
         #cardContainer::before,
         #cardContainer::after {
             content: '';
             position: absolute;
-            left: 50%; transform: translateX(-50%);
+            left: 50%;
+            transform: translateX(-50%);
             background: white;
             border-radius: 24px;
             pointer-events: none;
         }
+
         #cardContainer::before {
             width: calc(100% - 20px);
             bottom: 4px;
             height: calc(100% - 12px);
-            box-shadow: 0 4px 20px rgba(0,0,0,.07);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .07);
             z-index: -1;
             opacity: 0.85;
         }
+
         #cardContainer::after {
             width: calc(100% - 36px);
             bottom: 0;
             height: calc(100% - 20px);
-            box-shadow: 0 4px 16px rgba(0,0,0,.05);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .05);
             z-index: -2;
             opacity: 0.6;
         }
 
         /* ── Animación slide entre tarjetas ── */
-        @keyframes slideInRight { from { opacity:0; transform:translateX(32px) scale(.97); } to { opacity:1; transform:translateX(0) scale(1); } }
-        @keyframes slideInLeft  { from { opacity:0; transform:translateX(-32px) scale(.97); } to { opacity:1; transform:translateX(0) scale(1); } }
-        .slide-in-right { animation: slideInRight .28s cubic-bezier(.22,.68,0,1.2) forwards; }
-        .slide-in-left  { animation: slideInLeft  .28s cubic-bezier(.22,.68,0,1.2) forwards; }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(32px) scale(.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-32px) scale(.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .slide-in-right {
+            animation: slideInRight .28s cubic-bezier(.22, .68, 0, 1.2) forwards;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft .28s cubic-bezier(.22, .68, 0, 1.2) forwards;
+        }
 
         /* ── Top bar ── */
         .top-bar {
-            position: fixed; top: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 448px; height: 56px; z-index: 30;
-            background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 448px;
+            height: 56px;
+            z-index: 30;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid #f1f5f9;
         }
 
         /* ── Tab panels ── */
-        .tab-panel { min-height: calc(100vh - 56px - 66px); }
+        .tab-panel {
+            min-height: calc(100vh - 56px - 66px);
+        }
 
         /* ── Modales bottom-sheet ── */
         .modal-sheet {
-            position:fixed; inset:0; background:rgba(0,0,0,.5);
-            z-index:50; display:flex; align-items:flex-end; justify-content:center;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .5);
+            z-index: 50;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
         }
+
         .modal-inner {
-            background:white; border-radius:28px 28px 0 0;
-            width:100%; max-width:448px; max-height:88vh; overflow-y:auto;
-            padding:0 20px 28px;
+            background: white;
+            border-radius: 28px 28px 0 0;
+            width: 100%;
+            max-width: 448px;
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 0 20px 28px;
         }
-        .modal-drag { width:40px; height:4px; background:#e2e8f0; border-radius:9999px; margin:12px auto 18px; }
+
+        .modal-drag {
+            width: 40px;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 9999px;
+            margin: 12px auto 18px;
+        }
     </style>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#07B0E4">
@@ -230,603 +568,695 @@
     <meta name="apple-mobile-web-app-title" content="STEAM 2.0">
     <link rel="apple-touch-icon" href="icon.svg">
 </head>
+
 <body>
 
-<!-- ==================== PANTALLA DE LOGIN ==================== -->
-<div id="loginScreen" class="fixed inset-0 z-50 flex flex-col overflow-y-auto">
+    <!-- ==================== PANTALLA DE LOGIN ==================== -->
+    <div id="loginScreen" class="fixed inset-0 z-50 flex flex-col overflow-y-auto">
 
-    <!-- Parte superior — gradiente con info del curso -->
-    <div class="shrink-0 flex flex-col items-center justify-center pt-14 pb-10 px-6 relative overflow-hidden" style="background:linear-gradient(135deg,#1A6B68 0%,#07B0E4 100%)">
-        <div class="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
-        <div class="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none"></div>
-        <div class="text-6xl mb-3 drop-shadow-lg">🚀</div>
-        <h1 class="text-2xl font-bold text-white">Curso STEAM</h1>
-        <p class="text-cyan-100 text-sm mt-1 text-center">Formación profesional · Profe Billy</p>
-        <div class="flex gap-6 mt-5">
-            <div class="text-center">
-                <p class="text-white font-bold text-xl">5</p>
-                <p class="text-cyan-200 text-xs">Módulos</p>
-            </div>
-            <div class="w-px bg-white/20 self-stretch"></div>
-            <div class="text-center">
-                <p class="text-white font-bold text-xl">73</p>
-                <p class="text-cyan-200 text-xs">Tarjetas</p>
-            </div>
-            <div class="w-px bg-white/20 self-stretch"></div>
-            <div class="text-center">
-                <p class="text-xl">🏆</p>
-                <p class="text-cyan-200 text-xs">Certificado</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Parte inferior — formulario -->
-    <div class="flex-1 bg-white rounded-t-[32px] -mt-5 px-6 pt-7 pb-8">
-
-        <!-- Formulario login -->
-        <div id="emailLoginForm">
-            <div class="mb-3">
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Correo electrónico</label>
-                <input type="email" id="loginEmail" placeholder="tu@correo.com"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
-            </div>
-            <div class="mb-5">
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Contraseña</label>
-                <input type="password" id="loginPassword" placeholder="••••••••"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
-            </div>
-            <button id="doEmailLogin" class="w-full text-white font-bold py-3.5 rounded-2xl transition text-sm" style="background:var(--brand-blue)">
-                Iniciar sesión
-            </button>
-            <p class="text-center text-xs text-slate-400 mt-4">
-                ¿No tienes cuenta?
-                <button id="showRegisterBtn" class="text-cyan-600 font-semibold hover:underline ml-1">Regístrate gratis</button>
-            </p>
-        </div>
-
-        <!-- Formulario registro -->
-        <div id="registerForm" class="hidden">
-            <div class="mb-3">
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Correo electrónico</label>
-                <input type="email" id="registerEmail" placeholder="tu@correo.com"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
-            </div>
-            <div class="mb-5">
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Contraseña (mín. 6 caracteres)</label>
-                <input type="password" id="registerPassword" placeholder="••••••••"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
-            </div>
-            <button id="doRegister" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl transition text-sm">
-                Crear cuenta
-            </button>
-            <p class="text-center text-xs text-slate-400 mt-4">
-                ¿Ya tienes cuenta?
-                <button id="showLoginBtn" class="text-cyan-600 font-semibold hover:underline ml-1">Iniciar sesión</button>
-            </p>
-        </div>
-
-        <div id="loginError" class="hidden mt-3 bg-red-50 text-red-600 text-sm text-center p-3 rounded-2xl border border-red-100"></div>
-
-        <div class="mt-7 flex items-center justify-center gap-2 text-xs text-slate-400">
-            <i class="fas fa-cloud-upload-alt text-cyan-400"></i>
-            Tu progreso se guarda automáticamente en la nube
-        </div>
-    </div>
-</div>
-
-<!-- ==================== APP PRINCIPAL ==================== -->
-<div id="mainApp" class="max-w-md mx-auto hidden">
-
-    <!-- ── TOP BAR MINIMAL (fijo) ── -->
-    <div class="top-bar">
-        <div class="flex items-center justify-between px-4 h-full">
-            <div>
-                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest" style="font-family:'Montserrat',sans-serif">Curso STEAM</p>
-                <span id="moduleBadge" class="text-sm font-extrabold text-slate-800" style="font-family:'Nunito',sans-serif">Módulo 1 / 5</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <div class="w-28 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div id="courseProgressBar" class="h-full rounded-full transition-all duration-500" style="width:0%;background:var(--brand-blue)"></div>
+        <!-- Parte superior — gradiente con info del curso -->
+        <div class="shrink-0 flex flex-col items-center justify-center pt-14 pb-10 px-6 relative overflow-hidden"
+            style="background:linear-gradient(135deg,#1A6B68 0%,#07B0E4 100%)">
+            <div class="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
+            <div class="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none"></div>
+            <div class="text-6xl mb-3 drop-shadow-lg">🚀</div>
+            <h1 class="text-2xl font-bold text-white">Curso STEAM</h1>
+            <p class="text-cyan-100 text-sm mt-1 text-center">Formación profesional · 1bot - edoo</p>
+            <div class="flex gap-6 mt-5">
+                <div class="text-center">
+                    <p class="text-white font-bold text-xl">5</p>
+                    <p class="text-cyan-200 text-xs">Módulos</p>
                 </div>
-                <span id="courseProgressPercent" class="text-xs font-bold min-w-[30px] text-right" style="color:var(--brand-blue);font-family:'Montserrat',sans-serif">0%</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════ -->
-    <!-- TAB: INICIO (estilo Tinder)               -->
-    <!-- ══════════════════════════════════════════ -->
-    <div id="tabHome" class="tab-panel pt-16 px-4 pb-28">
-
-        <!-- Tarjeta de contenido -->
-        <div id="cardContainer" class="mt-3 flex items-center justify-center">
-            <div class="text-center text-slate-400 py-12 w-full">
-                <i class="fas fa-spinner fa-spin text-3xl mb-3 block" style="color:var(--brand-blue)"></i>
-                <p class="text-sm font-medium">Cargando curso…</p>
+                <div class="w-px bg-white/20 self-stretch"></div>
+                <div class="text-center">
+                    <p class="text-white font-bold text-xl">73</p>
+                    <p class="text-cyan-200 text-xs">Tarjetas</p>
+                </div>
+                <div class="w-px bg-white/20 self-stretch"></div>
+                <div class="text-center">
+                    <p class="text-xl">🏆</p>
+                    <p class="text-cyan-200 text-xs">Certificado</p>
+                </div>
             </div>
         </div>
 
-        <!-- Navegación -->
-        <div id="cardNavBar" class="flex items-center justify-between mt-4">
-            <button id="prevBtn" class="nav-btn-prev">
-                <i class="fas fa-arrow-left text-xs"></i> Anterior
-            </button>
-            <div class="text-center">
-                <span id="cardCounter" class="text-sm font-bold text-slate-700">1 / 13</span>
-                <p class="text-[10px] text-slate-400 mt-0.5">tarjeta</p>
-            </div>
-            <button id="nextBtn" class="nav-btn-next">
-                Siguiente <i class="fas fa-arrow-right text-xs"></i>
-            </button>
-        </div>
-    </div>
+        <!-- Parte inferior — formulario -->
+        <div class="flex-1 bg-white rounded-t-[32px] -mt-5 px-6 pt-7 pb-8">
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- TAB: PERFIL                               -->
-    <!-- ══════════════════════════════════════════ -->
-    <div id="tabPerfil" class="tab-panel hidden pt-16 px-4 pb-28">
-
-        <!-- Tarjeta de perfil con gradiente -->
-        <div class="rounded-3xl px-5 py-6 mb-4 relative overflow-hidden mt-3" style="background:linear-gradient(135deg,#1A6B68 0%,#07B0E4 100%)">
-            <div class="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/5 pointer-events-none"></div>
-            <div class="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/5 pointer-events-none"></div>
-
-            <!-- Avatar + nombre -->
-            <div class="flex items-center gap-3 mb-5 relative">
-                <button id="avatarFloatBtn" class="w-14 h-14 rounded-2xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-3xl transition overflow-hidden relative">
-                    <img id="profilePhotoPreview" class="hidden w-full h-full object-cover absolute inset-0 rounded-2xl" src="" alt="foto">
-                    <span id="avatarPreview">👨‍🏫</span>
+            <!-- Formulario login -->
+            <div id="emailLoginForm">
+                <div class="mb-3">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Correo
+                        electrónico</label>
+                    <input type="email" id="loginEmail" placeholder="tu@correo.com"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
+                </div>
+                <div class="mb-5">
+                    <label
+                        class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
+                </div>
+                <button id="doEmailLogin" class="w-full text-white font-bold py-3.5 rounded-2xl transition text-sm"
+                    style="background:var(--brand-blue)">
+                    Iniciar sesión
                 </button>
-                <div class="flex-1 min-w-0">
-                    <p class="text-white/60 text-xs mb-0.5">Bienvenido de nuevo,</p>
-                    <p id="userEmailDisplay" class="text-white font-bold text-base leading-snug truncate">Docente</p>
+                <p class="text-center text-xs text-slate-400 mt-4">
+                    ¿No tienes cuenta?
+                    <button id="showRegisterBtn" class="text-cyan-600 font-semibold hover:underline ml-1">Regístrate
+                        gratis</button>
+                </p>
+            </div>
+
+            <!-- Formulario registro -->
+            <div id="registerForm" class="hidden">
+                <div class="mb-3">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Correo
+                        electrónico</label>
+                    <input type="email" id="registerEmail" placeholder="tu@correo.com"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
                 </div>
-                <button id="editProfileBtn" class="bg-white/20 hover:bg-white/30 text-white rounded-xl px-3 py-1.5 text-xs font-semibold transition flex items-center gap-1 shrink-0">
-                    <i class="fas fa-pen text-[10px]"></i> Editar
+                <div class="mb-5">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Contraseña
+                        (mín. 6 caracteres)</label>
+                    <input type="password" id="registerPassword" placeholder="••••••••"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
+                </div>
+                <button id="doRegister"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl transition text-sm">
+                    Crear cuenta
+                </button>
+                <p class="text-center text-xs text-slate-400 mt-4">
+                    ¿Ya tienes cuenta?
+                    <button id="showLoginBtn" class="text-cyan-600 font-semibold hover:underline ml-1">Iniciar
+                        sesión</button>
+                </p>
+            </div>
+
+            <div id="loginError"
+                class="hidden mt-3 bg-red-50 text-red-600 text-sm text-center p-3 rounded-2xl border border-red-100">
+            </div>
+
+            <div class="mt-7 flex items-center justify-center gap-2 text-xs text-slate-400">
+                <i class="fas fa-cloud-upload-alt text-cyan-400"></i>
+                Tu progreso se guarda automáticamente en la nube
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== APP PRINCIPAL ==================== -->
+    <div id="mainApp" class="max-w-md mx-auto hidden">
+
+        <!-- ── TOP BAR MINIMAL (fijo) ── -->
+        <div class="top-bar">
+            <div class="flex items-center justify-between px-4 h-full">
+                <div>
+                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest"
+                        style="font-family:'Montserrat',sans-serif">Curso STEAM</p>
+                    <span id="moduleBadge" class="text-sm font-extrabold text-slate-800"
+                        style="font-family:'Nunito',sans-serif">Módulo 1 / 5</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-28 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div id="courseProgressBar" class="h-full rounded-full transition-all duration-500"
+                            style="width:0%;background:var(--brand-blue)"></div>
+                    </div>
+                    <span id="courseProgressPercent" class="text-xs font-bold min-w-[30px] text-right"
+                        style="color:var(--brand-blue);font-family:'Montserrat',sans-serif">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: INICIO (estilo Tinder)               -->
+        <!-- ══════════════════════════════════════════ -->
+        <div id="tabHome" class="tab-panel pt-16 px-4 pb-28">
+
+            <!-- Tarjeta de contenido -->
+            <div id="cardContainer" class="mt-3 flex items-center justify-center">
+                <div class="text-center text-slate-400 py-12 w-full">
+                    <i class="fas fa-spinner fa-spin text-3xl mb-3 block" style="color:var(--brand-blue)"></i>
+                    <p class="text-sm font-medium">Cargando curso…</p>
+                </div>
+            </div>
+
+            <!-- Navegación -->
+            <div id="cardNavBar" class="flex items-center justify-between mt-4">
+                <button id="prevBtn" class="nav-btn-prev">
+                    <i class="fas fa-arrow-left text-xs"></i> Anterior
+                </button>
+                <div class="text-center">
+                    <span id="cardCounter" class="text-sm font-bold text-slate-700">1 / 13</span>
+                    <p class="text-[10px] text-slate-400 mt-0.5">tarjeta</p>
+                </div>
+                <button id="nextBtn" class="nav-btn-next">
+                    Siguiente <i class="fas fa-arrow-right text-xs"></i>
                 </button>
             </div>
-
-            <!-- Stats en grid 3 columnas -->
-            <div class="grid grid-cols-3 gap-2.5 mb-5 relative">
-                <div class="bg-white/15 rounded-2xl py-3 text-center">
-                    <span id="xpDisplay" class="text-white font-bold text-2xl block">0</span>
-                    <span class="text-white/60 text-[11px]">XP</span>
-                </div>
-                <div class="bg-white/15 rounded-2xl py-3 text-center">
-                    <span id="levelDisplay" class="text-white font-bold text-2xl block">1</span>
-                    <span class="text-white/60 text-[11px]">Nivel</span>
-                </div>
-                <div class="bg-white/15 rounded-2xl py-3 text-center">
-                    <span id="streakDisplay" class="text-white font-bold text-2xl block">0</span>
-                    <span class="text-white/60 text-[11px]">Racha</span>
-                </div>
-            </div>
-
-            <!-- Barra de progreso del módulo -->
-            <div class="bg-white/15 rounded-2xl px-4 py-3 border border-white/10 relative">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-white text-xs font-bold" id="moduleBadgePerfil">Módulo 1 / 5</span>
-                    <span class="text-white/80 text-xs font-semibold" id="courseProgressPercentPerfil">0%</span>
-                </div>
-                <div class="h-2 bg-white/20 rounded-full overflow-hidden">
-                    <div id="courseProgressBarPerfil" class="h-full bg-white rounded-full transition-all duration-500" style="width:0%"></div>
-                </div>
-            </div>
         </div>
 
-        <!-- Acciones en grid 2x2 -->
-        <div class="grid grid-cols-2 gap-3 mb-4">
-            <button id="examBtn" class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:bg-cyan-50 hover:border-cyan-300 transition shadow-sm">
-                <i class="fas fa-clipboard-list text-cyan-500"></i> Examen Final
-            </button>
-            <button id="badgesBtn" class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-purple-300 hover:bg-purple-50 transition shadow-sm">
-                <i class="fas fa-medal text-purple-500"></i> Mis Logros
-            </button>
-            <button id="statsSecretBtn" class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-emerald-300 hover:bg-emerald-50 transition shadow-sm">
-                <i class="fas fa-chart-line text-emerald-500"></i> Estadísticas
-            </button>
-            <button id="missionsToggle" class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm">
-                <i class="fas fa-tasks text-amber-500"></i> Misiones
-                <i class="fas fa-chevron-down text-[9px] ml-auto transition-transform duration-200" id="missionsChevron"></i>
-            </button>
-        </div>
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: PERFIL                               -->
+        <!-- ══════════════════════════════════════════ -->
+        <div id="tabPerfil" class="tab-panel hidden pt-16 px-4 pb-28">
 
-        <!-- Botón certificado (visible solo si aprobó el examen) -->
-        <button id="certDownloadBtn" class="hidden w-full mb-4 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-sm" style="background:linear-gradient(135deg,#5C35C5,#7C3AED)" onclick="generateCertificateFromExam(window._lastExamScore||70)">
-            <i class="fas fa-certificate"></i> Descargar mi certificado
-        </button>
+            <!-- Tarjeta de perfil con gradiente -->
+            <div class="rounded-3xl px-5 py-6 mb-4 relative overflow-hidden mt-3"
+                style="background:linear-gradient(135deg,#1A6B68 0%,#07B0E4 100%)">
+                <div class="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/5 pointer-events-none"></div>
+                <div class="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/5 pointer-events-none"></div>
 
-        <!-- Gana más XP -->
-        <div class="mb-4">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">💡 Gana más XP</p>
-
-            <!-- Compartir -->
-            <button id="shareAppBtn" class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:bg-green-50 hover:border-green-200 transition mb-2">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
-                        <i class="fas fa-share-alt text-green-500"></i>
+                <!-- Avatar + nombre -->
+                <div class="flex items-center gap-3 mb-5 relative">
+                    <button id="avatarFloatBtn"
+                        class="w-14 h-14 rounded-2xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-3xl transition overflow-hidden relative">
+                        <img id="profilePhotoPreview"
+                            class="hidden w-full h-full object-cover absolute inset-0 rounded-2xl" src="" alt="foto">
+                        <span id="avatarPreview">👨‍🏫</span>
+                    </button>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white/60 text-xs mb-0.5">Bienvenido de nuevo,</p>
+                        <p id="userEmailDisplay" class="text-white font-bold text-base leading-snug truncate">Docente
+                        </p>
                     </div>
-                    <div class="text-left">
-                        <p class="text-sm font-semibold text-slate-700">Compartir el curso</p>
-                        <p class="text-xs text-slate-400">Una vez al día · WhatsApp o redes</p>
-                    </div>
-                </div>
-                <span class="text-xs font-bold text-green-600 bg-green-50 border border-green-100 px-2 py-1 rounded-lg shrink-0">+50 XP</span>
-            </button>
-
-            <!-- Referir docentes -->
-            <div class="bg-white border border-slate-200 rounded-2xl py-3 px-4 shadow-sm mb-2">
-                <div class="flex items-center justify-between mb-2.5">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                            <i class="fas fa-user-plus text-blue-500"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-slate-700">Referir a un colega</p>
-                            <p class="text-xs text-slate-400">Por cada docente que se inscriba</p>
-                        </div>
-                    </div>
-                    <span class="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-lg shrink-0">+100 XP</span>
-                </div>
-                <div class="flex gap-2">
-                    <input id="referralLinkDisplay" readonly class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 truncate min-w-0" placeholder="Cargando tu link…">
-                    <button id="copyReferralBtn" class="bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-3 py-2 text-xs font-bold transition shrink-0">
-                        <i class="fas fa-copy mr-1"></i>Copiar
+                    <button id="editProfileBtn"
+                        class="bg-white/20 hover:bg-white/30 text-white rounded-xl px-3 py-1.5 text-xs font-semibold transition flex items-center gap-1 shrink-0">
+                        <i class="fas fa-pen text-[10px]"></i> Editar
                     </button>
                 </div>
-                <p id="referralCountDisplay" class="text-xs text-slate-400 mt-1.5 text-center"></p>
-            </div>
 
-            <!-- Evidencia de práctica -->
-            <button id="uploadEvidenceBtn" class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:bg-purple-50 hover:border-purple-200 transition">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
-                        <i class="fas fa-camera text-purple-500"></i>
+                <!-- Stats en grid 3 columnas -->
+                <div class="grid grid-cols-3 gap-2.5 mb-5 relative">
+                    <div class="bg-white/15 rounded-2xl py-3 text-center">
+                        <span id="xpDisplay" class="text-white font-bold text-2xl block">0</span>
+                        <span class="text-white/60 text-[11px]">XP</span>
                     </div>
-                    <div class="text-left">
-                        <p class="text-sm font-semibold text-slate-700">Evidencia de práctica</p>
-                        <p class="text-xs text-slate-400">Foto aplicando STEAM en tu aula</p>
+                    <div class="bg-white/15 rounded-2xl py-3 text-center">
+                        <span id="levelDisplay" class="text-white font-bold text-2xl block">1</span>
+                        <span class="text-white/60 text-[11px]">Nivel</span>
+                    </div>
+                    <div class="bg-white/15 rounded-2xl py-3 text-center">
+                        <span id="streakDisplay" class="text-white font-bold text-2xl block">0</span>
+                        <span class="text-white/60 text-[11px]">Racha</span>
                     </div>
                 </div>
-                <span class="text-xs font-bold text-purple-600 bg-purple-50 border border-purple-100 px-2 py-1 rounded-lg shrink-0">+80 XP</span>
-            </button>
-        </div>
 
-        <!-- Misiones colapsables -->
-        <div id="dailyMissions" class="hidden mb-4 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-xs font-bold text-amber-700">🎯 Misiones de hoy</span>
-                <span id="missionsReset" class="text-[10px] text-slate-400"></span>
-            </div>
-            <div id="missionsList" class="space-y-2 text-xs"></div>
-        </div>
-
-        <!-- Sync -->
-        <div class="bg-white rounded-2xl px-4 py-3 flex items-center justify-between shadow-sm border border-slate-100 mb-3">
-            <div id="syncIndicator" class="flex items-center gap-1.5 text-xs text-slate-500">
-                <i class="fas fa-cloud-upload-alt text-emerald-400 text-xs"></i>
-                <span id="syncStatus">Sincronizado</span>
-            </div>
-            <button onclick="if(typeof currentUser!=='undefined'&&currentUser)syncWithSupabase()" class="text-xs text-cyan-600 font-semibold hover:text-indigo-700 transition">
-                <i class="fas fa-sync text-xs mr-1"></i>Sincronizar
-            </button>
-        </div>
-
-        <!-- Ver tutorial -->
-        <button onclick="localStorage.removeItem('onboardingDone'); startOnboarding();" class="w-full bg-white border border-slate-200 text-slate-500 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
-            <i class="fas fa-map-signs text-cyan-400"></i> Ver tutorial de nuevo
-        </button>
-
-        <!-- Cerrar sesión -->
-        <button id="logoutBtn" class="w-full bg-white border border-red-100 text-red-500 font-semibold py-3 rounded-2xl text-sm hover:bg-red-50 transition flex items-center justify-center gap-2 shadow-sm">
-            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-        </button>
-    </div>
-
-    <!-- ══════════════════════════════════════════ -->
-    <!-- TAB: MÓDULOS (índice + bloqueo por semana)-->
-    <!-- ══════════════════════════════════════════ -->
-    <div id="tabModulos" class="tab-panel hidden pt-16 px-4 pb-28">
-        <div class="mt-4 mb-5">
-            <h2 class="text-xl font-bold text-slate-800">📚 Mis Módulos</h2>
-            <p class="text-xs text-slate-400 mt-1">Un módulo por semana · Desbloqueo anticipado con XP</p>
-        </div>
-        <div id="modulesIndexList" class="space-y-3"></div>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- MODALES                                                       -->
-    <!-- ============================================================ -->
-
-    <!-- Modal Logros -->
-    <div id="badgesModal" class="hidden modal-sheet">
-        <div class="modal-inner">
-            <div class="modal-drag"></div>
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-slate-800">🏅 Tus Logros</h2>
-                <button id="closeBadgesBtn" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
-            </div>
-            <div id="badgesList" class="grid grid-cols-2 gap-3"></div>
-            <button id="shareBadgesBtn" class="mt-5 w-full text-white py-3 rounded-2xl text-sm font-bold transition" style="background:var(--brand-blue)">
-                <i class="fas fa-share-alt mr-2"></i>Compartir mis logros
-            </button>
-        </div>
-    </div>
-
-    <!-- Modal Canje de Premios -->
-    <div id="redeemModal" class="hidden modal-sheet">
-        <div class="modal-inner">
-            <div class="modal-drag"></div>
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-slate-800">🎁 Canjear Premios</h2>
-                <button id="closeRedeemBtn" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
-            </div>
-            <div id="prizesList" class="space-y-3 mb-4"></div>
-            <div class="bg-yellow-50 rounded-2xl p-3 text-center border border-yellow-100">
-                <p class="text-sm text-slate-600">Tus puntos: <span id="xpForRedeem" class="font-bold text-yellow-600 text-base">0</span> XP</p>
-            </div>
-            <div id="raffleInfo" class="mt-2 text-center text-xs text-purple-600 bg-purple-50 p-2 rounded-2xl"></div>
-        </div>
-    </div>
-
-    <!-- Modal Ranking -->
-    <div id="rankingModal" class="hidden modal-sheet">
-        <div class="modal-inner">
-            <div class="modal-drag"></div>
-            <div class="flex justify-between items-center mb-5">
-                <h2 class="text-xl font-bold text-slate-800">🏆 Ranking Docentes</h2>
-                <button id="closeRankingBtn" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
-            </div>
-            <div id="rankingList" class="space-y-2 mb-4"></div>
-            <p class="text-center text-xs text-slate-400">Basado en XP acumulados · Actualizado en tiempo real</p>
-        </div>
-    </div>
-
-    <!-- ══ Animación completar módulo ══ -->
-    <div id="moduleCompleteOverlay" class="hidden fixed inset-0 z-[200] flex items-center justify-center overflow-hidden" onclick="closeModuleComplete()">
-        <canvas id="confettiCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
-        <div class="relative z-10 text-center px-8 select-none pointer-events-none">
-            <div class="text-7xl mb-3" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))">🎉</div>
-            <div id="mcModuleIcon" class="w-28 h-28 rounded-3xl mx-auto mb-5 flex items-center justify-center shadow-2xl p-4"></div>
-            <h2 class="text-3xl font-black text-white mb-1" style="text-shadow:0 2px 12px rgba(0,0,0,0.4)">¡Módulo completado!</h2>
-            <p id="mcModuleName" class="text-white/80 text-lg font-semibold mb-6"></p>
-            <div class="bg-white/25 backdrop-blur-sm rounded-2xl px-10 py-4 mb-6 inline-block border border-white/30">
-                <p id="mcXP" class="text-yellow-300 font-black text-3xl" style="text-shadow:0 0 20px rgba(252,195,10,0.6)">+150 XP</p>
-                <p class="text-white/70 text-xs mt-0.5">puntos ganados</p>
-            </div>
-            <p class="text-white/50 text-sm" style="animation:pulse 1.5s ease-in-out infinite">Toca para continuar</p>
-        </div>
-    </div>
-
-    <!-- ══ Onboarding ══ -->
-    <div id="onboardingOverlay" class="hidden fixed inset-0 z-[300] flex items-end justify-center" style="background:rgba(0,0,0,0.65)">
-        <div class="bg-white w-full max-w-md rounded-t-[32px] overflow-hidden flex flex-col" style="max-height:92vh">
-
-            <!-- Zona ilustración con color dinámico -->
-            <div id="onboardingSlideArea" class="relative flex flex-col items-center justify-center px-8 pt-10 pb-8 transition-all duration-500" style="min-height:240px">
-                <button id="skipOnboardingBtn" class="absolute top-4 right-5 text-white/60 text-sm font-semibold hover:text-white transition">Saltar</button>
-                <div id="onboardingEmoji" class="text-7xl mb-4" style="filter:drop-shadow(0 4px 16px rgba(0,0,0,0.25))">🚀</div>
-                <h2 id="onboardingTitle" class="text-2xl font-black text-white text-center leading-tight" style="text-shadow:0 2px 8px rgba(0,0,0,0.2)"></h2>
+                <!-- Barra de progreso del módulo -->
+                <div class="bg-white/15 rounded-2xl px-4 py-3 border border-white/10 relative">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-white text-xs font-bold" id="moduleBadgePerfil">Módulo 1 / 5</span>
+                        <span class="text-white/80 text-xs font-semibold" id="courseProgressPercentPerfil">0%</span>
+                    </div>
+                    <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+                        <div id="courseProgressBarPerfil"
+                            class="h-full bg-white rounded-full transition-all duration-500" style="width:0%"></div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Zona de texto -->
-            <div class="flex-1 overflow-y-auto px-6 pt-5 pb-2">
-                <p id="onboardingDesc" class="text-slate-600 text-sm leading-relaxed"></p>
-                <div id="onboardingExtra" class="mt-2"></div>
-            </div>
-
-            <!-- Puntos de progreso + botón -->
-            <div class="px-6 pb-8 pt-4 bg-white">
-                <div id="onboardingDots" class="flex justify-center items-center gap-2 mb-4"></div>
-                <button id="onboardingNextBtn" class="w-full py-4 rounded-2xl font-black text-white text-base transition" style="background:var(--brand-blue)">
-                    Siguiente →
+            <!-- Acciones en grid 2x2 -->
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <button id="examBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:bg-cyan-50 hover:border-cyan-300 transition shadow-sm">
+                    <i class="fas fa-clipboard-list text-cyan-500"></i> Examen Final
+                </button>
+                <button id="badgesBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-purple-300 hover:bg-purple-50 transition shadow-sm">
+                    <i class="fas fa-medal text-purple-500"></i> Mis Logros
+                </button>
+                <button id="statsSecretBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-emerald-300 hover:bg-emerald-50 transition shadow-sm">
+                    <i class="fas fa-chart-line text-emerald-500"></i> Estadísticas
+                </button>
+                <button id="missionsToggle"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm">
+                    <i class="fas fa-tasks text-amber-500"></i> Misiones
+                    <i class="fas fa-chevron-down text-[9px] ml-auto transition-transform duration-200"
+                        id="missionsChevron"></i>
                 </button>
             </div>
-        </div>
-    </div>
 
-    <!-- Modal Evidencia de Práctica -->
-    <div id="evidenceModal" class="hidden modal-sheet">
-        <div class="modal-inner">
-            <div class="modal-drag"></div>
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-slate-800">📸 Evidencia de práctica</h2>
-                <button id="closeEvidenceBtn" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
-            </div>
-            <p class="text-sm text-slate-500 mb-4">Sube una foto de cómo aplicaste STEAM en tu aula y gana <strong>80 XP</strong> por cada módulo practicado.</p>
+            <!-- Botón certificado (visible solo si aprobó el examen) -->
+            <button id="certDownloadBtn"
+                class="hidden w-full mb-4 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-sm"
+                style="background:linear-gradient(135deg,#5C35C5,#7C3AED)"
+                onclick="generateCertificateFromExam(window._lastExamScore||70)">
+                <i class="fas fa-certificate"></i> Descargar mi certificado
+            </button>
 
+            <!-- Gana más XP -->
             <div class="mb-4">
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">¿De qué módulo es?</label>
-                <select id="evidenceModuleSelect" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none">
-                    <option value="">Selecciona un módulo…</option>
-                    <option value="1">Módulo 1 · Ciencias</option>
-                    <option value="2">Módulo 2 · Ingeniería</option>
-                    <option value="3">Módulo 3 · Emprendimiento</option>
-                    <option value="4">Módulo 4 · Tecnología</option>
-                    <option value="5">Módulo 5 · Artes</option>
-                </select>
-            </div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">💡 Gana más XP</p>
 
-            <label id="evidenceDropZone" for="evidenceFileInput" class="block border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition mb-3">
-                <i class="fas fa-cloud-upload-alt text-3xl text-slate-300 mb-2 block"></i>
-                <p class="text-sm text-slate-500 font-semibold">Toca para seleccionar una foto</p>
-                <p class="text-xs text-slate-400 mt-1">JPG o PNG · máx. 5 MB</p>
-                <input type="file" id="evidenceFileInput" accept="image/*" class="hidden">
-            </label>
-            <img id="evidencePreviewImg" class="hidden w-full max-h-44 object-cover rounded-2xl mb-3">
-
-            <button id="submitEvidenceBtn" class="w-full py-3.5 rounded-2xl font-bold text-sm text-white mb-4" style="background:var(--brand-blue)">
-                Subir evidencia y ganar XP
-            </button>
-
-            <div id="previousEvidences" class="hidden">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Tus evidencias subidas</p>
-                <div id="evidencesList" class="grid grid-cols-3 gap-2"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Editar Perfil -->
-    <div id="editProfileModal" class="hidden modal-sheet">
-        <div class="modal-inner">
-            <div class="modal-drag"></div>
-            <div class="flex justify-between items-center mb-5">
-                <h2 class="text-xl font-bold text-slate-800">✏️ Editar perfil</h2>
-                <button id="closeEditProfileBtn" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
-            </div>
-
-            <!-- Foto de perfil -->
-            <div class="flex flex-col items-center mb-5">
-                <div class="relative w-24 h-24 mb-3">
-                    <div id="editPhotoCircle" class="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center text-5xl overflow-hidden border-4 border-white shadow-md">
-                        <img id="editPhotoImg" class="hidden w-full h-full object-cover" src="" alt="">
-                        <span id="editPhotoEmoji">👨‍🏫</span>
+                <!-- Compartir -->
+                <button id="shareAppBtn"
+                    class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:bg-green-50 hover:border-green-200 transition mb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+                            <i class="fas fa-share-alt text-green-500"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-semibold text-slate-700">Compartir el curso</p>
+                            <p class="text-xs text-slate-400">Una vez al día · WhatsApp o redes</p>
+                        </div>
                     </div>
-                    <label for="photoFileInput" class="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs cursor-pointer shadow" style="background:var(--brand-blue)">
-                        <i class="fas fa-camera"></i>
-                    </label>
+                    <span
+                        class="text-xs font-bold text-green-600 bg-green-50 border border-green-100 px-2 py-1 rounded-lg shrink-0">+50
+                        XP</span>
+                </button>
+
+                <!-- Referir docentes -->
+                <div class="bg-white border border-slate-200 rounded-2xl py-3 px-4 shadow-sm mb-2">
+                    <div class="flex items-center justify-between mb-2.5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                                <i class="fas fa-user-plus text-blue-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-slate-700">Referir a un colega</p>
+                                <p class="text-xs text-slate-400">Por cada docente que se inscriba</p>
+                            </div>
+                        </div>
+                        <span
+                            class="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-lg shrink-0">+100
+                            XP</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="referralLinkDisplay" readonly
+                            class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 truncate min-w-0"
+                            placeholder="Cargando tu link…">
+                        <button id="copyReferralBtn"
+                            class="bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-3 py-2 text-xs font-bold transition shrink-0">
+                            <i class="fas fa-copy mr-1"></i>Copiar
+                        </button>
+                    </div>
+                    <p id="referralCountDisplay" class="text-xs text-slate-400 mt-1.5 text-center"></p>
                 </div>
-                <input type="file" id="photoFileInput" accept="image/*" class="hidden">
-                <p class="text-xs text-slate-400">Toca el ícono de cámara para subir tu foto</p>
-            </div>
 
-            <!-- Nombre completo -->
-            <div class="mb-5">
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Nombre completo</label>
-                <input type="text" id="fullNameInput" placeholder="Ej: María García López"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:border-transparent" style="--tw-ring-color:var(--brand-blue)">
-                <p class="text-xs text-slate-400 mt-1.5">Este nombre aparecerá en tu diploma</p>
-            </div>
-
-            <button id="saveProfileBtn" class="w-full py-3.5 rounded-2xl font-bold text-sm text-white" style="background:var(--brand-blue)">
-                Guardar cambios
-            </button>
-        </div>
-    </div>
-
-    <!-- Modal Avatar -->
-    <div id="avatarModal" class="hidden modal-sheet">
-        <div class="modal-inner">
-            <div class="modal-drag"></div>
-            <div class="flex justify-between items-center mb-5">
-                <h2 class="text-xl font-bold text-slate-800">🎨 Elige tu avatar</h2>
-                <button id="closeAvatarBtn" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
-            </div>
-            <div class="grid grid-cols-5 gap-3" id="avatarGrid"></div>
-        </div>
-    </div>
-
-    <!-- Modal Estadísticas -->
-    <div id="statsPanel" class="hidden modal-sheet">
-        <div class="modal-inner">
-            <div class="modal-drag"></div>
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-slate-800">📊 Estadísticas</h2>
-                <button id="closeStatsBtn" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
-            </div>
-            <div id="statsContent"></div>
-            <div class="mt-4 flex gap-2 flex-wrap">
-                <button id="exportStatsBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-2xl flex-1 transition text-sm">
-                    <i class="fas fa-download mr-1.5"></i>CSV
-                </button>
-                <button id="clearStatsBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-4 rounded-2xl transition text-sm">
-                    <i class="fas fa-trash mr-1.5"></i>Limpiar
-                </button>
-                <button id="syncNowBtn" class="text-white font-bold py-2.5 px-4 rounded-2xl transition text-sm" style="background:var(--brand-blue)">
-                    <i class="fas fa-sync mr-1.5"></i>Sync
+                <!-- Evidencia de práctica -->
+                <button id="uploadEvidenceBtn"
+                    class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:bg-purple-50 hover:border-purple-200 transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                            <i class="fas fa-camera text-purple-500"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-semibold text-slate-700">Evidencia de práctica</p>
+                            <p class="text-xs text-slate-400">Foto aplicando STEAM en tu aula</p>
+                        </div>
+                    </div>
+                    <span
+                        class="text-xs font-bold text-purple-600 bg-purple-50 border border-purple-100 px-2 py-1 rounded-lg shrink-0">+80
+                        XP</span>
                 </button>
             </div>
-        </div>
-    </div>
 
-    <!-- Botón oculto profe video -->
-    <div id="profeVideoBtn" class="hidden fixed bottom-20 right-4 z-40">
-        <button class="w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl shadow-xl transition flex items-center justify-center">
-            <i class="fas fa-video"></i>
-        </button>
-    </div>
-
-    <!-- ── Banner de instalación PWA ── -->
-    <div id="installBanner" class="hidden fixed bottom-20 left-4 right-4 z-50 rounded-2xl shadow-2xl overflow-hidden" style="background:linear-gradient(135deg,#1A6B68,#07B0E4)">
-        <div class="flex items-center gap-3 px-4 py-3">
-            <img src="icon.svg" class="w-10 h-10 rounded-xl shrink-0">
-            <div class="flex-1 min-w-0">
-                <p class="text-white font-bold text-sm">Instalar Curso STEAM 2.0</p>
-                <p class="text-white/70 text-xs">Acceso rápido desde tu pantalla de inicio</p>
+            <!-- Misiones colapsables -->
+            <div id="dailyMissions" class="hidden mb-4 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-amber-700">🎯 Misiones de hoy</span>
+                    <span id="missionsReset" class="text-[10px] text-slate-400"></span>
+                </div>
+                <div id="missionsList" class="space-y-2 text-xs"></div>
             </div>
-            <button id="installBtn" class="bg-white text-cyan-700 font-bold text-xs px-3 py-2 rounded-xl shrink-0 hover:bg-cyan-50 transition">
-                Instalar
-            </button>
-            <button id="dismissInstallBtn" class="text-white/60 hover:text-white text-xl leading-none ml-1 shrink-0">&times;</button>
-        </div>
-    </div>
 
-    <!-- ── BOTTOM NAVIGATION BAR ── -->
-    <nav class="bottom-nav">
-        <div class="flex items-center px-3">
-            <button id="bnavHome" class="bnav-btn active" onclick="switchTab('home')">
-                <i class="fas fa-home"></i>
-                <span>Inicio</span>
-            </button>
-            <div id="rankingFloatBtn" class="flex-1 flex">
-                <button class="bnav-btn w-full" onclick="switchTab('home')">
-                    <i class="fas fa-trophy"></i>
-                    <span>Ranking</span>
+            <!-- Sync -->
+            <div
+                class="bg-white rounded-2xl px-4 py-3 flex items-center justify-between shadow-sm border border-slate-100 mb-3">
+                <div id="syncIndicator" class="flex items-center gap-1.5 text-xs text-slate-500">
+                    <i class="fas fa-cloud-upload-alt text-emerald-400 text-xs"></i>
+                    <span id="syncStatus">Sincronizado</span>
+                </div>
+                <button onclick="if(typeof currentUser!=='undefined'&&currentUser)syncWithSupabase()"
+                    class="text-xs text-cyan-600 font-semibold hover:text-indigo-700 transition">
+                    <i class="fas fa-sync text-xs mr-1"></i>Sincronizar
                 </button>
             </div>
-            <button id="bnavModulos" class="bnav-btn" onclick="switchTab('modulos')">
-                <i class="fas fa-th-large"></i>
-                <span>Módulos</span>
+
+            <!-- Ver tutorial -->
+            <button onclick="localStorage.removeItem('onboardingDone'); startOnboarding();"
+                class="w-full bg-white border border-slate-200 text-slate-500 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
+                <i class="fas fa-map-signs text-cyan-400"></i> Ver tutorial de nuevo
             </button>
-            <button id="bnavPerfil" class="bnav-btn" onclick="switchTab('perfil')">
-                <i class="fas fa-user-circle"></i>
-                <span>Perfil</span>
+
+            <!-- Cerrar sesión -->
+            <button id="logoutBtn"
+                class="w-full bg-white border border-red-100 text-red-500 font-semibold py-3 rounded-2xl text-sm hover:bg-red-50 transition flex items-center justify-center gap-2 shadow-sm">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
             </button>
         </div>
-    </nav>
 
-    <script>
-    function switchTab(tab) {
-        const tabs = ['tabHome', 'tabModulos', 'tabPerfil'];
-        const btns = ['bnavHome', 'bnavModulos', 'bnavPerfil'];
-        tabs.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('hidden');
-        });
-        btns.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.remove('active');
-        });
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: MÓDULOS (índice + bloqueo por semana)-->
+        <!-- ══════════════════════════════════════════ -->
+        <div id="tabModulos" class="tab-panel hidden pt-16 px-4 pb-28">
+            <div class="mt-4 mb-5">
+                <h2 class="text-xl font-bold text-slate-800">📚 Mis Módulos</h2>
+                <p class="text-xs text-slate-400 mt-1">Un módulo por semana · Desbloqueo anticipado con XP</p>
+            </div>
+            <div id="modulesIndexList" class="space-y-3"></div>
+        </div>
 
-        if (tab === 'home') {
-            document.getElementById('tabHome').classList.remove('hidden');
-            document.getElementById('bnavHome').classList.add('active');
-        } else if (tab === 'modulos') {
-            document.getElementById('tabModulos').classList.remove('hidden');
-            document.getElementById('bnavModulos').classList.add('active');
-            if (typeof renderModulesTab === 'function') renderModulesTab();
-        } else if (tab === 'perfil') {
-            document.getElementById('tabPerfil').classList.remove('hidden');
-            document.getElementById('bnavPerfil').classList.add('active');
-            // Sync progress values
-            const mb = document.getElementById('moduleBadge');
-            const cp = document.getElementById('courseProgressPercent');
-            const cb = document.getElementById('courseProgressBar');
-            if (mb) document.getElementById('moduleBadgePerfil').textContent = mb.textContent;
-            if (cp) document.getElementById('courseProgressPercentPerfil').textContent = cp.textContent;
-            if (cb) document.getElementById('courseProgressBarPerfil').style.width = cb.style.width;
-            if (typeof displayReferralLink === 'function') displayReferralLink();
-            if (typeof checkReferrerReward === 'function') checkReferrerReward();
-        }
-    }
-    </script>
+        <!-- ============================================================ -->
+        <!-- MODALES                                                       -->
+        <!-- ============================================================ -->
 
-</div><!-- /mainApp -->
+        <!-- Modal Logros -->
+        <div id="badgesModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800">🏅 Tus Logros</h2>
+                    <button id="closeBadgesBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <div id="badgesList" class="grid grid-cols-2 gap-3"></div>
+                <button id="shareBadgesBtn" class="mt-5 w-full text-white py-3 rounded-2xl text-sm font-bold transition"
+                    style="background:var(--brand-blue)">
+                    <i class="fas fa-share-alt mr-2"></i>Compartir mis logros
+                </button>
+            </div>
+        </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/idb@8.0.0/build/umd.js"></script>
-<script src="data.js"></script>
-<script src="ilustraciones.js"></script>
-<script src="app.js"></script>
+        <!-- Modal Canje de Premios -->
+        <div id="redeemModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800">🎁 Canjear Premios</h2>
+                    <button id="closeRedeemBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <div id="prizesList" class="space-y-3 mb-4"></div>
+                <div class="bg-yellow-50 rounded-2xl p-3 text-center border border-yellow-100">
+                    <p class="text-sm text-slate-600">Tus puntos: <span id="xpForRedeem"
+                            class="font-bold text-yellow-600 text-base">0</span> XP</p>
+                </div>
+                <div id="raffleInfo" class="mt-2 text-center text-xs text-purple-600 bg-purple-50 p-2 rounded-2xl">
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Ranking -->
+        <div id="rankingModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl font-bold text-slate-800">🏆 Ranking Docentes</h2>
+                    <button id="closeRankingBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <div id="rankingList" class="space-y-2 mb-4"></div>
+                <p class="text-center text-xs text-slate-400">Basado en XP acumulados · Actualizado en tiempo real</p>
+            </div>
+        </div>
+
+        <!-- ══ Animación completar módulo ══ -->
+        <div id="moduleCompleteOverlay"
+            class="hidden fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
+            onclick="closeModuleComplete()">
+            <canvas id="confettiCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+            <div class="relative z-10 text-center px-8 select-none pointer-events-none">
+                <div class="text-7xl mb-3" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))">🎉</div>
+                <div id="mcModuleIcon"
+                    class="w-28 h-28 rounded-3xl mx-auto mb-5 flex items-center justify-center shadow-2xl p-4"></div>
+                <h2 class="text-3xl font-black text-white mb-1" style="text-shadow:0 2px 12px rgba(0,0,0,0.4)">¡Módulo
+                    completado!</h2>
+                <p id="mcModuleName" class="text-white/80 text-lg font-semibold mb-6"></p>
+                <div
+                    class="bg-white/25 backdrop-blur-sm rounded-2xl px-10 py-4 mb-6 inline-block border border-white/30">
+                    <p id="mcXP" class="text-yellow-300 font-black text-3xl"
+                        style="text-shadow:0 0 20px rgba(252,195,10,0.6)">+150 XP</p>
+                    <p class="text-white/70 text-xs mt-0.5">puntos ganados</p>
+                </div>
+                <p class="text-white/50 text-sm" style="animation:pulse 1.5s ease-in-out infinite">Toca para continuar
+                </p>
+            </div>
+        </div>
+
+        <!-- ══ Onboarding ══ -->
+        <div id="onboardingOverlay" class="hidden fixed inset-0 z-[300] flex items-end justify-center"
+            style="background:rgba(0,0,0,0.65)">
+            <div class="bg-white w-full max-w-md rounded-t-[32px] overflow-hidden flex flex-col"
+                style="max-height:92vh">
+
+                <!-- Zona ilustración con color dinámico -->
+                <div id="onboardingSlideArea"
+                    class="relative flex flex-col items-center justify-center px-8 pt-10 pb-8 transition-all duration-500"
+                    style="min-height:240px">
+                    <button id="skipOnboardingBtn"
+                        class="absolute top-4 right-5 text-white/60 text-sm font-semibold hover:text-white transition">Saltar</button>
+                    <div id="onboardingEmoji" class="text-7xl mb-4"
+                        style="filter:drop-shadow(0 4px 16px rgba(0,0,0,0.25))">🚀</div>
+                    <h2 id="onboardingTitle" class="text-2xl font-black text-white text-center leading-tight"
+                        style="text-shadow:0 2px 8px rgba(0,0,0,0.2)"></h2>
+                </div>
+
+                <!-- Zona de texto -->
+                <div class="flex-1 overflow-y-auto px-6 pt-5 pb-2">
+                    <p id="onboardingDesc" class="text-slate-600 text-sm leading-relaxed"></p>
+                    <div id="onboardingExtra" class="mt-2"></div>
+                </div>
+
+                <!-- Puntos de progreso + botón -->
+                <div class="px-6 pb-8 pt-4 bg-white">
+                    <div id="onboardingDots" class="flex justify-center items-center gap-2 mb-4"></div>
+                    <button id="onboardingNextBtn"
+                        class="w-full py-4 rounded-2xl font-black text-white text-base transition"
+                        style="background:var(--brand-blue)">
+                        Siguiente →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Evidencia de Práctica -->
+        <div id="evidenceModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800">📸 Evidencia de práctica</h2>
+                    <button id="closeEvidenceBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <p class="text-sm text-slate-500 mb-4">Sube una foto de cómo aplicaste STEAM en tu aula y gana
+                    <strong>80 XP</strong> por cada módulo practicado.
+                </p>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">¿De qué
+                        módulo es?</label>
+                    <select id="evidenceModuleSelect"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none">
+                        <option value="">Selecciona un módulo…</option>
+                        <option value="1">Módulo 1 · ¿Qué es STEAM? Origen y evolución?</option>
+                        <option value="2">Módulo 2 · Las 6 disciplinas STEEAM </option>
+                        <option value="3">Módulo 3 · Metodologías Activas</option>
+                        <option value="4">Módulo 4 · Evaluación en STEAM</option>
+                        <option value="5">Módulo 5 · Retos en Guatemala y adaptación</option>
+                    </select>
+                </div>
+
+                <label id="evidenceDropZone" for="evidenceFileInput"
+                    class="block border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition mb-3">
+                    <i class="fas fa-cloud-upload-alt text-3xl text-slate-300 mb-2 block"></i>
+                    <p class="text-sm text-slate-500 font-semibold">Toca para seleccionar una foto</p>
+                    <p class="text-xs text-slate-400 mt-1">JPG o PNG · máx. 5 MB</p>
+                    <input type="file" id="evidenceFileInput" accept="image/*" class="hidden">
+                </label>
+                <img id="evidencePreviewImg" class="hidden w-full max-h-44 object-cover rounded-2xl mb-3">
+
+                <button id="submitEvidenceBtn" class="w-full py-3.5 rounded-2xl font-bold text-sm text-white mb-4"
+                    style="background:var(--brand-blue)">
+                    Subir evidencia y ganar XP
+                </button>
+
+                <div id="previousEvidences" class="hidden">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Tus evidencias subidas</p>
+                    <div id="evidencesList" class="grid grid-cols-3 gap-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Editar Perfil -->
+        <div id="editProfileModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl font-bold text-slate-800">✏️ Editar perfil</h2>
+                    <button id="closeEditProfileBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+
+                <!-- Foto de perfil -->
+                <div class="flex flex-col items-center mb-5">
+                    <div class="relative w-24 h-24 mb-3">
+                        <div id="editPhotoCircle"
+                            class="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center text-5xl overflow-hidden border-4 border-white shadow-md">
+                            <img id="editPhotoImg" class="hidden w-full h-full object-cover" src="" alt="">
+                            <span id="editPhotoEmoji">👨‍🏫</span>
+                        </div>
+                        <label for="photoFileInput"
+                            class="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs cursor-pointer shadow"
+                            style="background:var(--brand-blue)">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                    </div>
+                    <input type="file" id="photoFileInput" accept="image/*" class="hidden">
+                    <p class="text-xs text-slate-400">Toca el ícono de cámara para subir tu foto</p>
+                </div>
+
+                <!-- Nombre completo -->
+                <div class="mb-5">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Nombre
+                        completo</label>
+                    <input type="text" id="fullNameInput" placeholder="Ej: María García López"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:border-transparent"
+                        style="--tw-ring-color:var(--brand-blue)">
+                    <p class="text-xs text-slate-400 mt-1.5">Este nombre aparecerá en tu diploma</p>
+                </div>
+
+                <button id="saveProfileBtn" class="w-full py-3.5 rounded-2xl font-bold text-sm text-white"
+                    style="background:var(--brand-blue)">
+                    Guardar cambios
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Avatar -->
+        <div id="avatarModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl font-bold text-slate-800">🎨 Elige tu avatar</h2>
+                    <button id="closeAvatarBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <div class="grid grid-cols-5 gap-3" id="avatarGrid"></div>
+            </div>
+        </div>
+
+        <!-- Modal Estadísticas -->
+        <div id="statsPanel" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800">📊 Estadísticas</h2>
+                    <button id="closeStatsBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <div id="statsContent"></div>
+                <div class="mt-4 flex gap-2 flex-wrap">
+                    <button id="exportStatsBtn"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-2xl flex-1 transition text-sm">
+                        <i class="fas fa-download mr-1.5"></i>CSV
+                    </button>
+                    <button id="clearStatsBtn"
+                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-4 rounded-2xl transition text-sm">
+                        <i class="fas fa-trash mr-1.5"></i>Limpiar
+                    </button>
+                    <button id="syncNowBtn" class="text-white font-bold py-2.5 px-4 rounded-2xl transition text-sm"
+                        style="background:var(--brand-blue)">
+                        <i class="fas fa-sync mr-1.5"></i>Sync
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón oculto profe video -->
+        <div id="profeVideoBtn" class="hidden fixed bottom-20 right-4 z-40">
+            <button
+                class="w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl shadow-xl transition flex items-center justify-center">
+                <i class="fas fa-video"></i>
+            </button>
+        </div>
+
+        <!-- ── Banner de instalación PWA ── -->
+        <div id="installBanner"
+            class="hidden fixed bottom-20 left-4 right-4 z-50 rounded-2xl shadow-2xl overflow-hidden"
+            style="background:linear-gradient(135deg,#1A6B68,#07B0E4)">
+            <div class="flex items-center gap-3 px-4 py-3">
+                <img src="icon.svg" class="w-10 h-10 rounded-xl shrink-0">
+                <div class="flex-1 min-w-0">
+                    <p class="text-white font-bold text-sm">Instalar Curso STEAM 2.0</p>
+                    <p class="text-white/70 text-xs">Acceso rápido desde tu pantalla de inicio</p>
+                </div>
+                <button id="installBtn"
+                    class="bg-white text-cyan-700 font-bold text-xs px-3 py-2 rounded-xl shrink-0 hover:bg-cyan-50 transition">
+                    Instalar
+                </button>
+                <button id="dismissInstallBtn"
+                    class="text-white/60 hover:text-white text-xl leading-none ml-1 shrink-0">&times;</button>
+            </div>
+        </div>
+
+        <!-- ── BOTTOM NAVIGATION BAR ── -->
+        <nav class="bottom-nav">
+            <div class="flex items-center px-3">
+                <button id="bnavHome" class="bnav-btn active" onclick="switchTab('home')">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </button>
+                <div id="rankingFloatBtn" class="flex-1 flex">
+                    <button class="bnav-btn w-full" onclick="switchTab('home')">
+                        <i class="fas fa-trophy"></i>
+                        <span>Ranking</span>
+                    </button>
+                </div>
+                <button id="bnavModulos" class="bnav-btn" onclick="switchTab('modulos')">
+                    <i class="fas fa-th-large"></i>
+                    <span>Módulos</span>
+                </button>
+                <button id="bnavPerfil" class="bnav-btn" onclick="switchTab('perfil')">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Perfil</span>
+                </button>
+            </div>
+        </nav>
+
+        <script>
+            function switchTab(tab) {
+                const tabs = ['tabHome', 'tabModulos', 'tabPerfil'];
+                const btns = ['bnavHome', 'bnavModulos', 'bnavPerfil'];
+                tabs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('hidden');
+                });
+                btns.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('active');
+                });
+
+                if (tab === 'home') {
+                    document.getElementById('tabHome').classList.remove('hidden');
+                    document.getElementById('bnavHome').classList.add('active');
+                } else if (tab === 'modulos') {
+                    document.getElementById('tabModulos').classList.remove('hidden');
+                    document.getElementById('bnavModulos').classList.add('active');
+                    if (typeof renderModulesTab === 'function') renderModulesTab();
+                } else if (tab === 'perfil') {
+                    document.getElementById('tabPerfil').classList.remove('hidden');
+                    document.getElementById('bnavPerfil').classList.add('active');
+                    // Sync progress values
+                    const mb = document.getElementById('moduleBadge');
+                    const cp = document.getElementById('courseProgressPercent');
+                    const cb = document.getElementById('courseProgressBar');
+                    if (mb) document.getElementById('moduleBadgePerfil').textContent = mb.textContent;
+                    if (cp) document.getElementById('courseProgressPercentPerfil').textContent = cp.textContent;
+                    if (cb) document.getElementById('courseProgressBarPerfil').style.width = cb.style.width;
+                    if (typeof displayReferralLink === 'function') displayReferralLink();
+                    if (typeof checkReferrerReward === 'function') checkReferrerReward();
+                }
+            }
+        </script>
+
+    </div><!-- /mainApp -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/idb@8.0.0/build/umd.js"></script>
+    <script src="data.js"></script>
+    <script src="ilustraciones.js"></script>
+    <script src="app.js"></script>
 </body>
+
 </html>
