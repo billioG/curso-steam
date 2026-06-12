@@ -2111,3 +2111,56 @@ checkExistingSession();
 
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+
+// ==================== INSTALACIÓN PWA ====================
+let _deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    _deferredInstallPrompt = e;
+    // Mostrar banner solo si el usuario no lo descartó antes
+    if (!localStorage.getItem('installDismissed')) {
+        setTimeout(() => {
+            document.getElementById('installBanner')?.classList.remove('hidden');
+        }, 3000); // esperar 3s para no interrumpir la carga
+    }
+});
+
+document.getElementById('installBtn')?.addEventListener('click', async () => {
+    if (!_deferredInstallPrompt) return;
+    document.getElementById('installBanner').classList.add('hidden');
+    _deferredInstallPrompt.prompt();
+    const { outcome } = await _deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') showToast('✅ ¡App instalada! Búscala en tu pantalla de inicio', 'success');
+    _deferredInstallPrompt = null;
+});
+
+document.getElementById('dismissInstallBtn')?.addEventListener('click', () => {
+    document.getElementById('installBanner').classList.add('hidden');
+    localStorage.setItem('installDismissed', '1');
+});
+
+// Si ya está instalada como PWA, ocultar banner permanentemente
+window.addEventListener('appinstalled', () => {
+    document.getElementById('installBanner')?.classList.add('hidden');
+    _deferredInstallPrompt = null;
+    showToast('✅ ¡App instalada correctamente!', 'success');
+});
+
+// iOS: no dispara beforeinstallprompt — detectar y mostrar instrucciones manuales
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandaloneMode = window.navigator.standalone === true;
+if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
+    setTimeout(() => {
+        const banner = document.getElementById('installBanner');
+        if (banner) {
+            banner.querySelector('p.text-white\\/70').textContent =
+                'Toca Compartir → "Añadir a pantalla de inicio"';
+            banner.querySelector('#installBtn').textContent = 'Ver cómo';
+            banner.querySelector('#installBtn').onclick = () => {
+                alert('📱 Para instalar en iPhone/iPad:\n1. Toca el botón Compartir (⬆️) en Safari\n2. Desplázate y elige "Añadir a pantalla de inicio"\n3. Toca "Añadir"');
+            };
+            banner.classList.remove('hidden');
+        }
+    }, 3000);
+}
