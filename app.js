@@ -2080,7 +2080,8 @@ document.getElementById("evidenceFileInput")?.addEventListener("change", (e) => 
         const img = document.getElementById("evidencePreviewImg");
         img.src = ev.target.result;
         img.classList.remove("hidden");
-        document.getElementById("evidenceDropZone").querySelector("p").textContent = file.name;
+        const dropText = document.getElementById("evidenceDropText");
+        if (dropText) dropText.textContent = file.name;
     };
     reader.readAsDataURL(file);
 });
@@ -2247,7 +2248,7 @@ const ONBOARDING_SLIDES = [
         title: 'Los 5 módulos del curso',
         desc: 'El curso tiene <strong>5 módulos</strong> que cubren las disciplinas STEEAM. Cada módulo se desbloquea automáticamente <strong>7 días después</strong> de completar el anterior.',
         extra: '¿No puedes esperar? Desde la pestaña <strong>Módulos</strong> puedes gastar <strong>200 XP</strong> para desbloquear el siguiente de inmediato.',
-        list: ['🟡 Módulo 1: Ciencias', '🟢 Módulo 2: Ingeniería', '🔵 Módulo 3: Emprendimiento', '🟠 Módulo 4: Tecnología', '🩷 Módulo 5: Artes']
+        list: ['🟡 Módulo 1: ¿Qué es STEAM? Origen y evolución', '🟢 Módulo 2: Las 6 disciplinas STEEAM', '🔵 Módulo 3: Metodologías Activas', '🟠 Módulo 4: Evaluación en STEAM', '🩷 Módulo 5: Retos en Guatemala y adaptación']
     },
     {
         emoji: '📸',
