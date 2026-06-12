@@ -338,10 +338,12 @@ function updateUI() {
     const levelDisplay = document.getElementById("levelDisplay");
     if (levelDisplay) levelDisplay.innerText = `Nv.${progress.level || 1}`;
 
-    // Mostrar email del usuario en el header
+    // Mostrar nombre/email y foto en perfil
     if (currentUser) {
         const emailEl = document.getElementById("userEmailDisplay");
-        if (emailEl) emailEl.innerText = currentUser.email?.split('@')[0] || '';
+        if (emailEl) emailEl.textContent = getDisplayName();
+        const photo = progress?.dailyMissions?.profilePhoto;
+        if (photo) updateProfilePhotoDisplay(photo);
     }
 
     updateStreakDisplay();
@@ -755,7 +757,7 @@ function goToNextCard() {
         askModuleFeedback(currentModule);
     } else {
         stopCardTracking();
-        showToast("🎉 ¡Felicidades! Has completado todas las tarjetas. Ahora realiza el examen final.");
+        askModuleFeedback(currentModule); // NPS/CSAT del último módulo antes del examen
     }
 }
 
@@ -1145,12 +1147,12 @@ async function showRanking() {
 
     const { data, error } = await supabase
         .from('progress')
-        .select('user_id, email, xp, level')
+        .select('user_id, email, xp, level, daily_missions')
         .order('xp', { ascending: false })
         .limit(10);
 
     if (error || !data?.length) {
-        listEl.innerHTML = `<div class="text-center text-gray-400 py-6">No hay datos de ranking aún.</div>`;
+        listEl.innerHTML = `<div class="text-center text-gray-400 py-6">No hay datos de ranking aún.<br><span class="text-xs">Si eres el único que aparece, contacta al administrador para habilitar lectura pública en la tabla <em>progress</em> de Supabase.</span></div>`;
         return;
     }
 
@@ -1158,7 +1160,8 @@ async function showRanking() {
     let html = "";
     data.forEach((user, idx) => {
         const isMe = user.user_id === currentUser.id;
-        const displayName = user.email ? user.email.split('@')[0] : `Docente ${idx+1}`;
+        const fullName = user.daily_missions?.fullName;
+        const displayName = fullName || (user.email ? user.email.split('@')[0] : `Docente ${idx+1}`);
         const medal = medals[idx] || `${idx+1}.`;
         html += `
         <div class="flex items-center gap-3 p-3 rounded-2xl ${isMe ? 'bg-yellow-50 border-2 border-yellow-300' : 'bg-gray-50'} mb-2">
@@ -1175,6 +1178,81 @@ async function showRanking() {
     });
     listEl.innerHTML = html;
 }
+
+// ==================== EDICIÓN DE PERFIL ====================
+function updateProfilePhotoDisplay(src) {
+    const img = document.getElementById('profilePhotoPreview');
+    const emoji = document.getElementById('avatarPreview');
+    if (src) {
+        img.src = src;
+        img.classList.remove('hidden');
+        emoji.style.display = 'none';
+    } else {
+        img.classList.add('hidden');
+        emoji.style.display = '';
+    }
+}
+
+function showEditProfile() {
+    const modal = document.getElementById('editProfileModal');
+    const nameInput = document.getElementById('fullNameInput');
+    const editImg = document.getElementById('editPhotoImg');
+    const editEmoji = document.getElementById('editPhotoEmoji');
+
+    nameInput.value = progress?.dailyMissions?.fullName || '';
+
+    const photo = progress?.dailyMissions?.profilePhoto;
+    if (photo) {
+        editImg.src = photo;
+        editImg.classList.remove('hidden');
+        editEmoji.style.display = 'none';
+    } else {
+        editImg.classList.add('hidden');
+        editEmoji.style.display = '';
+        editEmoji.textContent = currentAvatar || '👨‍🏫';
+    }
+
+    modal.classList.remove('hidden');
+}
+
+document.getElementById('editProfileBtn')?.addEventListener('click', showEditProfile);
+document.getElementById('closeEditProfileBtn')?.addEventListener('click', () => {
+    document.getElementById('editProfileModal').classList.add('hidden');
+});
+
+document.getElementById('photoFileInput')?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const src = ev.target.result;
+        const editImg = document.getElementById('editPhotoImg');
+        const editEmoji = document.getElementById('editPhotoEmoji');
+        editImg.src = src;
+        editImg.classList.remove('hidden');
+        editEmoji.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('saveProfileBtn')?.addEventListener('click', () => {
+    const name = document.getElementById('fullNameInput').value.trim();
+    const photoSrc = document.getElementById('editPhotoImg').src;
+    const hasPhoto = !document.getElementById('editPhotoImg').classList.contains('hidden');
+
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    if (name) progress.dailyMissions.fullName = name;
+    if (hasPhoto && photoSrc) progress.dailyMissions.profilePhoto = photoSrc;
+
+    // Actualizar display en perfil
+    const nameDisplay = document.getElementById('userEmailDisplay');
+    if (nameDisplay && name) nameDisplay.textContent = name;
+    if (hasPhoto && photoSrc) updateProfilePhotoDisplay(photoSrc);
+
+    saveProgress();
+    document.getElementById('editProfileModal').classList.add('hidden');
+    showToast('✅ Perfil actualizado', 'success');
+});
 
 function showAvatarSelector() {
     let html = "";
@@ -1287,6 +1365,7 @@ async function submitEvidence(cardId, projectTitle) {
 
 // ── Helper: nombre del docente logueado ──────────────────
 function getDisplayName() {
+    if (progress?.dailyMissions?.fullName) return progress.dailyMissions.fullName;
     if (!currentUser?.email) return 'Profe';
     const raw = currentUser.email.split('@')[0].replace(/[._-]/g, ' ');
     return raw.replace(/\b\w/g, c => c.toUpperCase());

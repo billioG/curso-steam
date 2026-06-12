@@ -367,13 +367,17 @@
 
             <!-- Avatar + nombre -->
             <div class="flex items-center gap-3 mb-5 relative">
-                <button id="avatarFloatBtn" class="w-14 h-14 rounded-2xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-3xl transition">
+                <button id="avatarFloatBtn" class="w-14 h-14 rounded-2xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-3xl transition overflow-hidden relative">
+                    <img id="profilePhotoPreview" class="hidden w-full h-full object-cover absolute inset-0 rounded-2xl" src="" alt="foto">
                     <span id="avatarPreview">👨‍🏫</span>
                 </button>
-                <div>
+                <div class="flex-1 min-w-0">
                     <p class="text-white/60 text-xs mb-0.5">Bienvenido de nuevo,</p>
-                    <p id="userEmailDisplay" class="text-white font-bold text-base leading-snug">Docente</p>
+                    <p id="userEmailDisplay" class="text-white font-bold text-base leading-snug truncate">Docente</p>
                 </div>
+                <button id="editProfileBtn" class="bg-white/20 hover:bg-white/30 text-white rounded-xl px-3 py-1.5 text-xs font-semibold transition flex items-center gap-1 shrink-0">
+                    <i class="fas fa-pen text-[10px]"></i> Editar
+                </button>
             </div>
 
             <!-- Stats en grid 3 columnas -->
@@ -508,6 +512,44 @@
             </div>
             <div id="rankingList" class="space-y-2 mb-4"></div>
             <p class="text-center text-xs text-slate-400">Basado en XP acumulados · Actualizado en tiempo real</p>
+        </div>
+    </div>
+
+    <!-- Modal Editar Perfil -->
+    <div id="editProfileModal" class="hidden modal-sheet">
+        <div class="modal-inner">
+            <div class="modal-drag"></div>
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-xl font-bold text-slate-800">✏️ Editar perfil</h2>
+                <button id="closeEditProfileBtn" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+            </div>
+
+            <!-- Foto de perfil -->
+            <div class="flex flex-col items-center mb-5">
+                <div class="relative w-24 h-24 mb-3">
+                    <div id="editPhotoCircle" class="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center text-5xl overflow-hidden border-4 border-white shadow-md">
+                        <img id="editPhotoImg" class="hidden w-full h-full object-cover" src="" alt="">
+                        <span id="editPhotoEmoji">👨‍🏫</span>
+                    </div>
+                    <label for="photoFileInput" class="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs cursor-pointer shadow" style="background:var(--brand-blue)">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                </div>
+                <input type="file" id="photoFileInput" accept="image/*" class="hidden">
+                <p class="text-xs text-slate-400">Toca el ícono de cámara para subir tu foto</p>
+            </div>
+
+            <!-- Nombre completo -->
+            <div class="mb-5">
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Nombre completo</label>
+                <input type="text" id="fullNameInput" placeholder="Ej: María García López"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:border-transparent" style="--tw-ring-color:var(--brand-blue)">
+                <p class="text-xs text-slate-400 mt-1.5">Este nombre aparecerá en tu diploma</p>
+            </div>
+
+            <button id="saveProfileBtn" class="w-full py-3.5 rounded-2xl font-bold text-sm text-white" style="background:var(--brand-blue)">
+                Guardar cambios
+            </button>
         </div>
     </div>
 
