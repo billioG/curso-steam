@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin — Curso STEAM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        .view { display: none; }
+        .view.active { display: block; }
+        #sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+        @media (min-width: 768px) { #sidebar { transform: translateX(0); } }
+        #sidebar.open { transform: translateX(0); }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 14px; border-radius: 10px; font-size: 13.5px;
+            font-weight: 500; color: #64748b; cursor: pointer;
+            border: none; background: none; width: 100%; text-align: left;
+            transition: background 0.15s, color 0.15s;
+        }
+        .nav-item:hover { background: #f8fafc; color: #1e293b; }
+        .nav-item.active { background: #eef2ff; color: #4f46e5; font-weight: 600; }
+        .nav-item i { width: 16px; text-align: center; font-size: 12px; }
+        .stat-card { background: white; border-radius: 20px; padding: 20px; border: 1px solid #f1f5f9; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Overlay mobile -->
+    <div id="overlay" class="hidden fixed inset-0 bg-black/40 z-30 md:hidden" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-56 bg-white border-r border-slate-100 flex flex-col fixed top-0 left-0 h-screen z-40">
+        <!-- Brand -->
+        <div class="px-4 py-5 border-b border-slate-100 flex items-center gap-3">
+            <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                <i class="fas fa-atom text-white text-sm"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-bold text-slate-800 leading-tight">Curso STEAM</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">Panel de gestión</p>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="flex-1 p-2 space-y-0.5 overflow-y-auto">
+            <button data-view="dashboard" class="nav-btn nav-item active">
+                <i class="fas fa-chart-line"></i><span>Dashboard</span>
+            </button>
+            <button data-view="courses" class="nav-btn nav-item">
+                <i class="fas fa-book-open"></i><span>Cursos</span>
+            </button>
+            <button data-view="analytics" class="nav-btn nav-item">
+                <i class="fas fa-chart-bar"></i><span>Analytics</span>
+            </button>
+            <button data-view="users" class="nav-btn nav-item">
+                <i class="fas fa-users"></i><span>Usuarios</span>
+            </button>
+            <button data-view="feedback" class="nav-btn nav-item">
+                <i class="fas fa-comment-alt"></i><span>Feedback</span>
+            </button>
+            <div class="my-2 border-t border-slate-100"></div>
+            <button data-view="settings" class="nav-btn nav-item">
+                <i class="fas fa-cog"></i><span>Configuración</span>
+            </button>
+        </nav>
+
+        <!-- User footer -->
+        <div class="p-3 border-t border-slate-100">
+            <div class="flex items-center gap-2.5 px-2 py-1.5">
+                <div class="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-xs shrink-0">P</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold text-slate-700 truncate" id="adminEmail">—</p>
+                    <p class="text-[10px] text-slate-400">Administrador</p>
+                </div>
+                <button id="logoutAdminBtn" title="Cerrar sesión" class="text-slate-300 hover:text-red-400 transition p-1">
+                    <i class="fas fa-sign-out-alt text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="md:ml-56 flex flex-col min-h-screen">
+
+        <!-- Mobile top bar -->
+        <div class="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex items-center gap-3 sticky top-0 z-20">
+            <button id="menuBtn" class="text-slate-500 w-8 h-8 flex items-center justify-center">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="font-bold text-slate-800 text-sm">Admin STEAM</span>
+        </div>
+
+        <main class="flex-1 p-5 md:p-8">
+
+            <!-- ======= DASHBOARD ======= -->
+            <div id="dashboardView" class="view active">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-slate-800">Resumen General</h1>
+                    <p class="text-sm text-slate-400 mt-0.5">Actividad del Curso STEAM para Docentes</p>
+                </div>
+
+                <!-- Stat cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="stat-card">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wide mb-2">Usuarios</p>
+                                <p id="weeklyUsers" class="text-3xl font-bold text-slate-800">—</p>
+                                <p class="text-xs text-slate-400 mt-1">docentes registrados</p>
+                            </div>
+                            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-users text-blue-500 text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wide mb-2">Tiempo Promedio</p>
+                                <p id="avgTime" class="text-3xl font-bold text-slate-800">—</p>
+                                <p class="text-xs text-slate-400 mt-1">por tarjeta</p>
+                            </div>
+                            <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-clock text-emerald-500 text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wide mb-2">Tarjetas Completadas</p>
+                                <p id="totalCardsCompleted" class="text-3xl font-bold text-slate-800">—</p>
+                                <p class="text-xs text-slate-400 mt-1">en total</p>
+                            </div>
+                            <div class="w-10 h-10 bg-violet-50 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-check-circle text-violet-500 text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wide mb-2">NPS General</p>
+                                <p id="globalNps" class="text-3xl font-bold text-slate-800">—</p>
+                                <p class="text-xs text-slate-400 mt-1">de satisfacción</p>
+                            </div>
+                            <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-star text-amber-500 text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+                    <div class="stat-card">
+                        <p class="font-bold text-slate-800 mb-0.5">XP por Docente</p>
+                        <p class="text-xs text-slate-400 mb-4">Top 10 más activos</p>
+                        <canvas id="weeklyChart" height="200"></canvas>
+                    </div>
+                    <div class="stat-card">
+                        <p class="font-bold text-slate-800 mb-0.5">Recursos con Mayor Impacto</p>
+                        <p class="text-xs text-slate-400 mb-4">Tarjetas con más tiempo de estudio</p>
+                        <div id="topResources" class="space-y-2 mt-2"></div>
+                    </div>
+                </div>
+
+                <!-- Recent activity -->
+                <div class="stat-card">
+                    <p class="font-bold text-slate-800 mb-0.5">Actividad Reciente</p>
+                    <p class="text-xs text-slate-400 mb-4">Últimas sesiones de los docentes</p>
+                    <div id="recentActivity" class="overflow-x-auto"></div>
+                </div>
+            </div>
+
+            <!-- ======= COURSES ======= -->
+            <div id="coursesView" class="view">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-800">Gestión de Cursos</h1>
+                        <p class="text-sm text-slate-400 mt-0.5">Cursos disponibles en la plataforma</p>
+                    </div>
+                    <button id="newCourseBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Nuevo Curso
+                    </button>
+                </div>
+                <div id="coursesList" class="space-y-4"></div>
+            </div>
+
+            <!-- ======= ANALYTICS ======= -->
+            <div id="analyticsView" class="view">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-slate-800">Analytics Detallados</h1>
+                    <p class="text-sm text-slate-400 mt-0.5">Métricas de aprendizaje por módulo</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+                    <div class="stat-card">
+                        <p class="font-bold text-slate-800 mb-0.5">⏱️ Tiempo por Módulo</p>
+                        <p class="text-xs text-slate-400 mb-4">Tiempo promedio por tarjeta (seg.)</p>
+                        <div class="h-64"><canvas id="moduleTimeChart"></canvas></div>
+                    </div>
+                    <div class="stat-card">
+                        <p class="font-bold text-slate-800 mb-0.5">📊 Distribución de Progreso</p>
+                        <p class="text-xs text-slate-400 mb-4">Tarjetas, quizzes, logros y usuarios</p>
+                        <div class="h-64"><canvas id="eventsChart"></canvas></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <p class="font-bold text-slate-800 mb-0.5">📋 Sesiones Recientes</p>
+                    <p class="text-xs text-slate-400 mb-4">Actividad por tarjeta y usuario</p>
+                    <div id="sessionsTable" class="overflow-x-auto"></div>
+                </div>
+            </div>
+
+            <!-- ======= USERS ======= -->
+            <div id="usersView" class="view">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-slate-800">Gestión de Usuarios</h1>
+                    <p class="text-sm text-slate-400 mt-0.5">Docentes registrados en la plataforma</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div id="usersTable"></div>
+                </div>
+            </div>
+
+            <!-- ======= FEEDBACK ======= -->
+            <div id="feedbackView" class="view">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-slate-800">Feedback de Docentes</h1>
+                    <p class="text-sm text-slate-400 mt-0.5">Opiniones y valoraciones enviadas</p>
+                </div>
+                <div id="feedbackList" class="space-y-4"></div>
+            </div>
+
+            <!-- ======= SETTINGS ======= -->
+            <div id="settingsView" class="view">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-slate-800">Configuración</h1>
+                    <p class="text-sm text-slate-400 mt-0.5">Opciones avanzadas del sistema</p>
+                </div>
+                <div class="space-y-4 max-w-lg">
+                    <div class="stat-card">
+                        <p class="font-semibold text-slate-800 mb-1">Exportar Datos</p>
+                        <p class="text-sm text-slate-500 mb-4">Descarga todos los datos en formato JSON.</p>
+                        <button id="exportAllDataBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+                            <i class="fas fa-download mr-2"></i>Exportar JSON
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-2xl p-5 border border-red-100 shadow-sm">
+                        <p class="font-semibold text-red-600 mb-1">Zona Peligrosa</p>
+                        <p class="text-sm text-slate-500 mb-4">Elimina todos los eventos de analytics. No se puede deshacer.</p>
+                        <button id="resetAnalyticsBtn" class="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Resetear Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal Curso -->
+    <div id="courseModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-5">
+                <h2 id="modalTitle" class="text-lg font-bold text-slate-800">Nuevo Curso</h2>
+                <button id="closeModalBtn" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 text-xl transition">&times;</button>
+            </div>
+            <form id="courseForm" class="space-y-4">
+                <input type="hidden" id="courseId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Título</label>
+                    <input type="text" id="courseTitle" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent" placeholder="Nombre del curso" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Slug</label>
+                    <input type="text" id="courseSlug" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent" placeholder="url-amigable" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Descripción</label>
+                    <textarea id="courseDesc" rows="3" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent" placeholder="Descripción breve del curso..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Imagen de portada (URL)</label>
+                    <input type="text" id="courseCover" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent" placeholder="https://...">
+                </div>
+                <div id="courseFormError" class="hidden bg-red-50 text-red-600 text-sm p-3 rounded-xl border border-red-100"></div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" id="cancelModalBtn" class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">Cancelar</button>
+                    <button type="submit" id="saveCourseBtn" class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
