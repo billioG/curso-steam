@@ -294,6 +294,7 @@ async function checkExistingSession() {
         checkBadges();
         displayReferralLink();
         checkReferrerReward();
+        if (!localStorage.getItem('onboardingDone')) setTimeout(startOnboarding, 800);
         return true;
     }
     return false;
@@ -756,10 +757,10 @@ function goToNextCard() {
         updateMissionProgress("cards", 1);
     } else if (currentModule < modulesData.length) {
         stopCardTracking();
-        askModuleFeedback(currentModule);
+        showModuleComplete(currentModule, () => askModuleFeedback(currentModule));
     } else {
         stopCardTracking();
-        askModuleFeedback(currentModule); // NPS/CSAT del último módulo antes del examen
+        showModuleComplete(currentModule, () => askModuleFeedback(currentModule));
     }
 }
 
@@ -2032,6 +2033,7 @@ document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
         loadSavedProgress();
         displayReferralLink();
         checkReferrerReward();
+        if (!localStorage.getItem('onboardingDone')) setTimeout(startOnboarding, 600);
     }
 });
 document.getElementById("doRegister")?.addEventListener("click", async () => {
@@ -2044,7 +2046,9 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
         document.getElementById("mainApp").classList.remove("hidden");
         loadSavedProgress();
         displayReferralLink();
-        await checkReferralBonus(); // +50 XP si vino de un link de referido
+        await checkReferralBonus();
+        // Mostrar onboarding solo a usuarios nuevos
+        setTimeout(startOnboarding, 600);
     }
 });
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
@@ -2111,6 +2115,234 @@ checkExistingSession();
 
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+
+// ==================== ANIMACIÓN COMPLETAR MÓDULO ====================
+let _moduleCompleteCallback = null;
+let _confettiFrame = null;
+const _confettiColors = ['#FCC30A','#2BA848','#07B0E4','#E9A037','#E83C8D','#E52642','#FFFFFF','#5C35C5'];
+
+function showModuleComplete(moduleId, callback) {
+    _moduleCompleteCallback = callback;
+    const module = modulesData[moduleId - 1];
+    const theme = (typeof MODULE_THEME !== 'undefined' && MODULE_THEME[moduleId]) || { primary: '#07B0E4' };
+    const illus = (typeof MODULE_ILLUSTRATIONS !== 'undefined' && MODULE_ILLUSTRATIONS[moduleId]) || '';
+
+    const overlay = document.getElementById('moduleCompleteOverlay');
+    overlay.style.background = `radial-gradient(ellipse at 40% 20%, ${theme.primary}f0 0%, #1A2B4Bfa 100%)`;
+
+    const iconEl = document.getElementById('mcModuleIcon');
+    iconEl.style.background = theme.primary;
+    iconEl.innerHTML = illus;
+
+    document.getElementById('mcModuleName').textContent = module?.title || `Módulo ${moduleId}`;
+    // XP base por completar módulo (ya se suma en otros lugares, esto es solo display)
+    const xpDisplay = [100, 120, 130, 140, 150][moduleId - 1] || 100;
+    document.getElementById('mcXP').textContent = `+${xpDisplay} XP`;
+
+    overlay.classList.remove('hidden');
+    startConfetti();
+    // Auto-dismiss a los 4 segundos
+    setTimeout(closeModuleComplete, 4000);
+}
+
+function closeModuleComplete() {
+    const overlay = document.getElementById('moduleCompleteOverlay');
+    if (overlay.classList.contains('hidden')) return; // ya cerrado
+    overlay.classList.add('hidden');
+    stopConfetti();
+    if (_moduleCompleteCallback) {
+        const cb = _moduleCompleteCallback;
+        _moduleCompleteCallback = null;
+        setTimeout(cb, 200); // pequeña pausa antes del siguiente modal
+    }
+}
+
+function startConfetti() {
+    const canvas = document.getElementById('confettiCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = Array.from({ length: 140 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height * -1,
+        w: Math.random() * 14 + 5,
+        h: Math.random() * 7 + 3,
+        color: _confettiColors[Math.floor(Math.random() * _confettiColors.length)],
+        speed: Math.random() * 3.5 + 1.5,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.15,
+        drift: (Math.random() - 0.5) * 2,
+        opacity: Math.random() * 0.4 + 0.6
+    }));
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            ctx.save();
+            ctx.globalAlpha = p.opacity;
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle);
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.roundRect(-p.w / 2, -p.h / 2, p.w, p.h, 2);
+            ctx.fill();
+            ctx.restore();
+            p.y += p.speed;
+            p.x += p.drift;
+            p.angle += p.spin;
+            if (p.y > canvas.height + 20) {
+                p.y = -20;
+                p.x = Math.random() * canvas.width;
+            }
+        });
+        _confettiFrame = requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+function stopConfetti() {
+    if (_confettiFrame) { cancelAnimationFrame(_confettiFrame); _confettiFrame = null; }
+    const canvas = document.getElementById('confettiCanvas');
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// ==================== ONBOARDING ====================
+const ONBOARDING_SLIDES = [
+    {
+        emoji: '👋',
+        bg: 'linear-gradient(135deg,#1A6B68 0%,#07B0E4 100%)',
+        title: '¡Bienvenido al Curso STEAM 2.0!',
+        desc: 'Aprenderás metodología <strong>STEAM</strong> a tu ritmo con tarjetas interactivas, quiz, logros y un <strong>certificado oficial</strong> al finalizar.',
+        extra: 'Este tutorial rápido te explicará todo lo que necesitas saber para aprovechar el curso al máximo.'
+    },
+    {
+        emoji: '📖',
+        bg: 'linear-gradient(135deg,#FCC30A 0%,#E9A037 100%)',
+        title: 'Las tarjetas de aprendizaje',
+        desc: 'El contenido está organizado en <strong>tarjetas</strong>. Lee cada una y avanza tocando <strong>Siguiente →</strong> o deslizando la tarjeta hacia la izquierda.',
+        extra: 'Puedes volver atrás con <strong>← Anterior</strong>. Tu progreso se guarda automáticamente — puedes cerrar la app y continuar donde lo dejaste.',
+        icon: '👆 Desliza ← para avanzar'
+    },
+    {
+        emoji: '🧩',
+        bg: 'linear-gradient(135deg,#2BA848 0%,#07B0E4 100%)',
+        title: 'Quiz al finalizar cada módulo',
+        desc: 'Al terminar cada módulo habrá un <strong>quiz de práctica</strong> con preguntas de opción múltiple. Selecciona tu respuesta y toca para confirmar.',
+        extra: 'Si te equivocas, <strong>verás la respuesta correcta y una explicación</strong>. El quiz es formativo — no afecta tu calificación pero sí te da XP.',
+        list: ['✅ Respuesta correcta: +15 XP', '❌ Respuesta incorrecta: verás la explicación', '🔁 Puedes repasar el módulo antes de intentarlo']
+    },
+    {
+        emoji: '⚡',
+        bg: 'linear-gradient(135deg,#5C35C5 0%,#E83C8D 100%)',
+        title: 'XP y niveles',
+        desc: 'Ganas puntos de experiencia (<strong>XP</strong>) con cada actividad. Sube de nivel y desbloquea logros especiales.',
+        extra: null,
+        list: ['📖 Completar una tarjeta: +10 XP', '✅ Quiz correcto: +15 XP', '📝 Dar retroalimentación por módulo: +20 XP', '📤 Compartir el curso: +50 XP al día', '👥 Referir a un colega: +100 XP', '📸 Subir evidencia de práctica: +80 XP']
+    },
+    {
+        emoji: '🗓️',
+        bg: 'linear-gradient(135deg,#07B0E4 0%,#1A6B68 100%)',
+        title: 'Los 5 módulos del curso',
+        desc: 'El curso tiene <strong>5 módulos</strong> que cubren las disciplinas STEEAM. Cada módulo se desbloquea automáticamente <strong>7 días después</strong> de completar el anterior.',
+        extra: '¿No puedes esperar? Desde la pestaña <strong>Módulos</strong> puedes gastar <strong>200 XP</strong> para desbloquear el siguiente de inmediato.',
+        list: ['🟡 Módulo 1: Ciencias', '🟢 Módulo 2: Ingeniería', '🔵 Módulo 3: Emprendimiento', '🟠 Módulo 4: Tecnología', '🩷 Módulo 5: Artes']
+    },
+    {
+        emoji: '📸',
+        bg: 'linear-gradient(135deg,#E9A037 0%,#E52642 100%)',
+        title: 'Sube evidencias de tu práctica',
+        desc: 'Aplica lo aprendido en tu aula y sube una <strong>foto como evidencia</strong>. Ganarás <strong>80 XP</strong> por cada módulo que documentes.',
+        extra: 'Ve a <strong>Perfil → Gana más XP → Evidencia de práctica</strong>. Puedes subir hasta 5 fotos (una por módulo) para un total de 400 XP extra.',
+        list: ['📷 La foto puede ser de tu pizarrón, actividad con estudiantes o material creado', '✅ Se acepta JPG y PNG hasta 5 MB']
+    },
+    {
+        emoji: '👤',
+        bg: 'linear-gradient(135deg,#5C35C5 0%,#07B0E4 100%)',
+        title: 'Tu perfil — edítalo antes de terminar',
+        desc: 'En la pestaña <strong>Perfil</strong> puedes ver tu XP, nivel, logros y racha de días activos.',
+        extra: '⚠️ <strong>Importante:</strong> antes de descargar tu certificado, toca el botón <strong>✏️ Editar</strong> y escribe tu <strong>nombre completo correctamente</strong>. Ese nombre aparecerá en el diploma. También puedes subir tu foto.'
+    },
+    {
+        emoji: '🎓',
+        bg: 'linear-gradient(135deg,#1A2B4B 0%,#5C35C5 100%)',
+        title: 'El Examen Final y tu Certificado',
+        desc: 'Cuando completes los 5 módulos, el botón <strong>Examen Final</strong> se activará. Son <strong>20 preguntas</strong> aleatorias del banco del curso.',
+        extra: null,
+        list: ['📊 Puntaje mínimo para aprobar: 70%', '🔁 Si no apruebas, puedes intentarlo de nuevo', '📄 Con nota aprobatoria, descarga tu certificado en PDF desde tu Perfil', '🏅 Las preguntas son aleatorias — cambian en cada intento']
+    },
+    {
+        emoji: '🏆',
+        bg: 'linear-gradient(135deg,#FCC30A 0%,#E83C8D 100%)',
+        title: '¡Todo listo para empezar! 🚀',
+        desc: 'Recuerda que el progreso se guarda en la nube. Puedes acceder al curso desde tu celular, tablet o computadora con la misma cuenta.',
+        extra: '¿Tienes dudas durante el curso? Escríbele al administrador. ¡Mucho éxito y a aprender!',
+        list: ['💡 Tip: activa el curso como app en tu celular (busca "Instalar" en el banner)', '📶 Funciona sin conexión gracias al modo offline', '🔔 Entra todos los días para mantener tu racha de XP']
+    }
+];
+
+let _onboardingStep = 0;
+
+function startOnboarding() {
+    _onboardingStep = 0;
+    renderOnboardingSlide();
+    document.getElementById('onboardingOverlay').classList.remove('hidden');
+}
+
+function closeOnboarding() {
+    document.getElementById('onboardingOverlay').classList.add('hidden');
+    localStorage.setItem('onboardingDone', '1');
+}
+
+function renderOnboardingSlide() {
+    const slide = ONBOARDING_SLIDES[_onboardingStep];
+    const total = ONBOARDING_SLIDES.length;
+    const isLast = _onboardingStep === total - 1;
+
+    // Fondo dinámico
+    const area = document.getElementById('onboardingSlideArea');
+    area.style.background = slide.bg;
+    document.getElementById('onboardingEmoji').textContent = slide.emoji;
+    document.getElementById('onboardingTitle').textContent = slide.title;
+    document.getElementById('onboardingDesc').innerHTML = slide.desc;
+
+    // Extra o lista
+    const extraEl = document.getElementById('onboardingExtra');
+    let extraHtml = '';
+    if (slide.list) {
+        extraHtml += '<ul class="mt-3 space-y-2">' +
+            slide.list.map(item => {
+                const parts = item.split(' ');
+                const icon = parts[0];
+                const text = parts.slice(1).join(' ');
+                return `<li class="flex items-start gap-2 text-sm text-slate-600"><span class="shrink-0 text-base">${icon}</span><span>${text}</span></li>`;
+            }).join('') + '</ul>';
+    }
+    if (slide.extra) {
+        extraHtml += `<div class="mt-3 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm text-slate-500 leading-relaxed">${slide.extra}</div>`;
+    }
+    extraEl.innerHTML = extraHtml;
+
+    // Puntos de progreso
+    document.getElementById('onboardingDots').innerHTML = Array.from({ length: total }, (_, i) =>
+        `<div class="h-2 rounded-full transition-all duration-300 ${i === _onboardingStep ? 'w-6 bg-cyan-500' : 'w-2 bg-slate-200'}"></div>`
+    ).join('');
+
+    // Botón
+    const btn = document.getElementById('onboardingNextBtn');
+    btn.textContent = isLast ? '¡Comenzar el curso! 🚀' : 'Siguiente →';
+}
+
+document.getElementById('onboardingNextBtn')?.addEventListener('click', () => {
+    if (_onboardingStep < ONBOARDING_SLIDES.length - 1) {
+        _onboardingStep++;
+        renderOnboardingSlide();
+    } else {
+        closeOnboarding();
+    }
+});
+document.getElementById('skipOnboardingBtn')?.addEventListener('click', closeOnboarding);
 
 // ==================== INSTALACIÓN PWA ====================
 let _deferredInstallPrompt = null;

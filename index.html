@@ -512,6 +512,11 @@
             </button>
         </div>
 
+        <!-- Ver tutorial -->
+        <button onclick="localStorage.removeItem('onboardingDone'); startOnboarding();" class="w-full bg-white border border-slate-200 text-slate-500 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
+            <i class="fas fa-map-signs text-cyan-400"></i> Ver tutorial de nuevo
+        </button>
+
         <!-- Cerrar sesión -->
         <button id="logoutBtn" class="w-full bg-white border border-red-100 text-red-500 font-semibold py-3 rounded-2xl text-sm hover:bg-red-50 transition flex items-center justify-center gap-2 shadow-sm">
             <i class="fas fa-sign-out-alt"></i> Cerrar sesión
@@ -574,6 +579,49 @@
             </div>
             <div id="rankingList" class="space-y-2 mb-4"></div>
             <p class="text-center text-xs text-slate-400">Basado en XP acumulados · Actualizado en tiempo real</p>
+        </div>
+    </div>
+
+    <!-- ══ Animación completar módulo ══ -->
+    <div id="moduleCompleteOverlay" class="hidden fixed inset-0 z-[200] flex items-center justify-center overflow-hidden" onclick="closeModuleComplete()">
+        <canvas id="confettiCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+        <div class="relative z-10 text-center px-8 select-none pointer-events-none">
+            <div class="text-7xl mb-3" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))">🎉</div>
+            <div id="mcModuleIcon" class="w-28 h-28 rounded-3xl mx-auto mb-5 flex items-center justify-center shadow-2xl p-4"></div>
+            <h2 class="text-3xl font-black text-white mb-1" style="text-shadow:0 2px 12px rgba(0,0,0,0.4)">¡Módulo completado!</h2>
+            <p id="mcModuleName" class="text-white/80 text-lg font-semibold mb-6"></p>
+            <div class="bg-white/25 backdrop-blur-sm rounded-2xl px-10 py-4 mb-6 inline-block border border-white/30">
+                <p id="mcXP" class="text-yellow-300 font-black text-3xl" style="text-shadow:0 0 20px rgba(252,195,10,0.6)">+150 XP</p>
+                <p class="text-white/70 text-xs mt-0.5">puntos ganados</p>
+            </div>
+            <p class="text-white/50 text-sm" style="animation:pulse 1.5s ease-in-out infinite">Toca para continuar</p>
+        </div>
+    </div>
+
+    <!-- ══ Onboarding ══ -->
+    <div id="onboardingOverlay" class="hidden fixed inset-0 z-[300] flex items-end justify-center" style="background:rgba(0,0,0,0.65)">
+        <div class="bg-white w-full max-w-md rounded-t-[32px] overflow-hidden flex flex-col" style="max-height:92vh">
+
+            <!-- Zona ilustración con color dinámico -->
+            <div id="onboardingSlideArea" class="relative flex flex-col items-center justify-center px-8 pt-10 pb-8 transition-all duration-500" style="min-height:240px">
+                <button id="skipOnboardingBtn" class="absolute top-4 right-5 text-white/60 text-sm font-semibold hover:text-white transition">Saltar</button>
+                <div id="onboardingEmoji" class="text-7xl mb-4" style="filter:drop-shadow(0 4px 16px rgba(0,0,0,0.25))">🚀</div>
+                <h2 id="onboardingTitle" class="text-2xl font-black text-white text-center leading-tight" style="text-shadow:0 2px 8px rgba(0,0,0,0.2)"></h2>
+            </div>
+
+            <!-- Zona de texto -->
+            <div class="flex-1 overflow-y-auto px-6 pt-5 pb-2">
+                <p id="onboardingDesc" class="text-slate-600 text-sm leading-relaxed"></p>
+                <div id="onboardingExtra" class="mt-2"></div>
+            </div>
+
+            <!-- Puntos de progreso + botón -->
+            <div class="px-6 pb-8 pt-4 bg-white">
+                <div id="onboardingDots" class="flex justify-center items-center gap-2 mb-4"></div>
+                <button id="onboardingNextBtn" class="w-full py-4 rounded-2xl font-black text-white text-base transition" style="background:var(--brand-blue)">
+                    Siguiente →
+                </button>
+            </div>
         </div>
     </div>
 
