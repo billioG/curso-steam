@@ -1189,6 +1189,17 @@ async function shareApp() {
     const lastShare = progress?.dailyMissions?.lastShareDate;
     const alreadyToday = lastShare === today;
 
+    // Dar XP antes de abrir el share (la promesa de navigator.share no siempre resuelve)
+    if (!alreadyToday) {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        progress.dailyMissions.lastShareDate = today;
+        addXP(50, 'Compartir el curso');
+        saveProgress();
+        showToast('🎉 +50 XP por compartir el curso', 'success');
+    } else {
+        showToast('Ya compartiste hoy. Vuelve mañana por más XP 😊', 'success');
+    }
+
     const link = getReferralLink();
     const text = '🚀 Estoy aprendiendo metodología STEAM con el Curso STEAM 2.0 de 1bot · edoo. ¡Únete gratis y transforma tu aula!';
 
@@ -1198,16 +1209,7 @@ async function shareApp() {
         } else {
             window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + link)}`, '_blank');
         }
-        if (!alreadyToday) {
-            if (!progress.dailyMissions) progress.dailyMissions = {};
-            progress.dailyMissions.lastShareDate = today;
-            addXP(50, 'Compartir el curso');
-            saveProgress();
-            showToast('🎉 +50 XP por compartir el curso', 'success');
-        } else {
-            showToast('Ya compartiste hoy. Vuelve mañana por más XP 😊', 'success');
-        }
-    } catch (_) { /* usuario canceló */ }
+    } catch (_) { /* usuario canceló el share dialog */ }
 }
 
 // ── Referidos ────────────────────────────────────────────────────────────
