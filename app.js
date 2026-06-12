@@ -292,6 +292,8 @@ async function checkExistingSession() {
         renderCard();
         updateUI();
         checkBadges();
+        displayReferralLink();
+        checkReferrerReward();
         return true;
     }
     return false;
@@ -1179,6 +1181,182 @@ async function showRanking() {
     listEl.innerHTML = html;
 }
 
+// ==================== COMPARTIR · REFERIDOS · EVIDENCIA ====================
+
+// ── Compartir en redes (50 XP/día) ──────────────────────────────────────
+async function shareApp() {
+    const today = new Date().toISOString().split('T')[0];
+    const lastShare = progress?.dailyMissions?.lastShareDate;
+    const alreadyToday = lastShare === today;
+
+    const link = getReferralLink();
+    const text = '🚀 Estoy aprendiendo metodología STEAM con el Curso STEAM 2.0 de 1bot · edoo. ¡Únete gratis y transforma tu aula!';
+
+    try {
+        if (navigator.share) {
+            await navigator.share({ title: 'Curso STEAM 2.0', text, url: link });
+        } else {
+            window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + link)}`, '_blank');
+        }
+        if (!alreadyToday) {
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            progress.dailyMissions.lastShareDate = today;
+            addXP(50, 'Compartir el curso');
+            saveProgress();
+            showToast('🎉 +50 XP por compartir el curso', 'success');
+        } else {
+            showToast('Ya compartiste hoy. Vuelve mañana por más XP 😊', 'success');
+        }
+    } catch (_) { /* usuario canceló */ }
+}
+
+// ── Referidos ────────────────────────────────────────────────────────────
+function getReferralLink() {
+    const code = currentUser?.id || '';
+    return `${window.location.origin}${window.location.pathname}?ref=${code}`;
+}
+
+function displayReferralLink() {
+    const el = document.getElementById('referralLinkDisplay');
+    if (el && currentUser) el.value = getReferralLink();
+}
+
+function copyReferralLink() {
+    const link = getReferralLink();
+    navigator.clipboard.writeText(link).catch(() => {
+        const el = document.getElementById('referralLinkDisplay');
+        if (el) { el.select(); document.execCommand('copy'); }
+    });
+    showToast('🔗 ¡Link copiado! Compártelo con tus colegas', 'success');
+}
+
+// Llamar al registrarse: si la URL tiene ?ref=ID, el nuevo usuario gana 50 XP
+async function checkReferralBonus() {
+    const params = new URLSearchParams(window.location.search);
+    const referrerId = params.get('ref');
+    if (!referrerId || referrerId === currentUser?.id) return;
+    if (progress?.dailyMissions?.referralBonusClaimed) return;
+
+    const { data } = await supabase.from('progress').select('user_id').eq('user_id', referrerId).maybeSingle();
+    if (!data) return; // código inválido
+
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    progress.dailyMissions.referralBonusClaimed = true;
+    progress.dailyMissions.referredBy = referrerId;
+    addXP(50, 'Inscripción por referido');
+    saveProgress();
+    showToast('🎉 +50 XP por unirte con el enlace de un colega', 'success');
+    window.history.replaceState({}, '', window.location.pathname); // limpiar URL
+}
+
+// Llamar al iniciar sesión: cobra XP pendiente por referidos
+async function checkReferrerReward() {
+    if (!currentUser || !progress) return;
+    try {
+        const { data, error } = await supabase
+            .from('progress')
+            .select('user_id')
+            .filter('daily_missions->>referredBy', 'eq', currentUser.id);
+        if (error || !data) return;
+
+        const total = data.length;
+        const claimed = progress.dailyMissions?.claimedReferrals || 0;
+        const pending = total - claimed;
+
+        const countEl = document.getElementById('referralCountDisplay');
+        if (countEl) countEl.textContent = total > 0
+            ? `${total} docente${total !== 1 ? 's' : ''} se inscribió${total !== 1 ? 'eron' : ''} con tu enlace`
+            : 'Aún nadie ha usado tu enlace';
+
+        if (pending > 0) {
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            progress.dailyMissions.claimedReferrals = total;
+            addXP(pending * 100, `${pending} referido${pending !== 1 ? 's' : ''} nuevo${pending !== 1 ? 's' : ''}`);
+            saveProgress();
+            showToast(`🎉 +${pending * 100} XP por ${pending} docente${pending !== 1 ? 's' : ''} que se inscribió${pending !== 1 ? 'eron' : ''} con tu enlace`, 'success');
+        }
+    } catch (_) {}
+}
+
+// ── Evidencia de práctica (80 XP por módulo, máx. 1 por módulo) ─────────
+function showEvidenceModal() {
+    const evidences = progress?.dailyMissions?.evidencias || [];
+    const listEl = document.getElementById('evidencesList');
+    const prevEl = document.getElementById('previousEvidences');
+
+    // Marcar módulos ya subidos en el select
+    const select = document.getElementById('evidenceModuleSelect');
+    if (select) {
+        [...select.options].forEach(opt => {
+            if (!opt.value) return;
+            const done = evidences.find(e => String(e.moduleId) === opt.value);
+            opt.textContent = opt.textContent.replace(' ✓', '');
+            if (done) opt.textContent += ' ✓';
+        });
+    }
+
+    if (evidences.length > 0) {
+        prevEl?.classList.remove('hidden');
+        if (listEl) listEl.innerHTML = evidences.map(e => `
+            <div class="relative rounded-xl overflow-hidden aspect-square bg-slate-100">
+                <img src="${e.url}" class="w-full h-full object-cover">
+                <span class="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">M${e.moduleId}</span>
+            </div>`).join('');
+    } else {
+        prevEl?.classList.add('hidden');
+    }
+
+    // Limpiar estado del form
+    document.getElementById('evidenceFileInput').value = '';
+    document.getElementById('evidencePreviewImg').classList.add('hidden');
+    document.getElementById('evidenceModuleSelect').value = '';
+
+    document.getElementById('evidenceModal').classList.remove('hidden');
+}
+
+async function submitEvidence() {
+    const moduleId = document.getElementById('evidenceModuleSelect').value;
+    const file = document.getElementById('evidenceFileInput').files[0];
+
+    if (!moduleId) { showToast('Selecciona un módulo', 'success'); return; }
+    if (!file) { showToast('Selecciona una imagen', 'success'); return; }
+    if (file.size > 5 * 1024 * 1024) { showToast('La imagen debe ser menor a 5 MB', 'success'); return; }
+
+    const existing = (progress.dailyMissions?.evidencias || []).find(e => String(e.moduleId) === moduleId);
+    if (existing) { showToast(`Ya subiste evidencia del módulo ${moduleId}`, 'success'); return; }
+
+    const btn = document.getElementById('submitEvidenceBtn');
+    btn.textContent = 'Subiendo…';
+    btn.disabled = true;
+
+    const saveEvidence = (url) => {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        if (!progress.dailyMissions.evidencias) progress.dailyMissions.evidencias = [];
+        progress.dailyMissions.evidencias.push({ url, moduleId: parseInt(moduleId), date: new Date().toISOString() });
+        addXP(80, `Evidencia módulo ${moduleId}`);
+        saveProgress();
+        document.getElementById('evidenceModal').classList.add('hidden');
+        showToast(`🎉 +80 XP por tu evidencia del módulo ${moduleId}`, 'success');
+    };
+
+    try {
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `${currentUser.id}/mod${moduleId}_${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from('evidencias').upload(path, file);
+        if (error) throw error;
+        const { data: urlData } = supabase.storage.from('evidencias').getPublicUrl(path);
+        saveEvidence(urlData.publicUrl);
+    } catch (_) {
+        // Fallback: guardar en base64 local si Storage no está disponible
+        const reader = new FileReader();
+        reader.onload = ev => saveEvidence(ev.target.result);
+        reader.readAsDataURL(file);
+    } finally {
+        btn.textContent = 'Subir evidencia y ganar XP';
+        btn.disabled = false;
+    }
+}
+
 // ==================== EDICIÓN DE PERFIL ====================
 function updateProfilePhotoDisplay(src) {
     const img = document.getElementById('profilePhotoPreview');
@@ -1249,9 +1427,17 @@ document.getElementById('saveProfileBtn')?.addEventListener('click', () => {
     if (nameDisplay && name) nameDisplay.textContent = name;
     if (hasPhoto && photoSrc) updateProfilePhotoDisplay(photoSrc);
 
+    // Recompensar perfil completo (nombre + foto) una sola vez
+    if (name && hasPhoto && !progress.dailyMissions.profileCompleteRewarded) {
+        progress.dailyMissions.profileCompleteRewarded = true;
+        addXP(30, 'Perfil completo');
+        showToast('✅ Perfil actualizado · +30 XP por completar tu perfil 🎉', 'success');
+    } else {
+        showToast('✅ Perfil actualizado', 'success');
+    }
+
     saveProgress();
     document.getElementById('editProfileModal').classList.add('hidden');
-    showToast('✅ Perfil actualizado', 'success');
 });
 
 function showAvatarSelector() {
@@ -1842,6 +2028,8 @@ document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
         document.getElementById("loginScreen").classList.add("hidden");
         document.getElementById("mainApp").classList.remove("hidden");
         loadSavedProgress();
+        displayReferralLink();
+        checkReferrerReward();
     }
 });
 document.getElementById("doRegister")?.addEventListener("click", async () => {
@@ -1853,6 +2041,8 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
         document.getElementById("loginScreen").classList.add("hidden");
         document.getElementById("mainApp").classList.remove("hidden");
         loadSavedProgress();
+        displayReferralLink();
+        await checkReferralBonus(); // +50 XP si vino de un link de referido
     }
 });
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
@@ -1869,6 +2059,25 @@ document.getElementById("closeRankingBtn")?.addEventListener("click", () => docu
 document.getElementById("avatarFloatBtn")?.addEventListener("click", showAvatarSelector);
 document.getElementById("closeAvatarBtn")?.addEventListener("click", () => document.getElementById("avatarModal")?.classList.add("hidden"));
 document.getElementById("moduleBadge")?.addEventListener("dblclick", enableProfeMode);
+
+// ── Nuevas actividades XP ────────────────────────────────────────────────
+document.getElementById("shareAppBtn")?.addEventListener("click", shareApp);
+document.getElementById("copyReferralBtn")?.addEventListener("click", copyReferralLink);
+document.getElementById("uploadEvidenceBtn")?.addEventListener("click", showEvidenceModal);
+document.getElementById("closeEvidenceBtn")?.addEventListener("click", () => document.getElementById("evidenceModal")?.classList.add("hidden"));
+document.getElementById("submitEvidenceBtn")?.addEventListener("click", submitEvidence);
+document.getElementById("evidenceFileInput")?.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = document.getElementById("evidencePreviewImg");
+        img.src = ev.target.result;
+        img.classList.remove("hidden");
+        document.getElementById("evidenceDropZone").querySelector("p").textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+});
 
 // Toggle misiones diarias
 document.getElementById("missionsToggle")?.addEventListener("click", () => {
