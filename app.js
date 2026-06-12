@@ -8,7 +8,6 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==================== VARIABLES GLOBALES ====================
-let _sessionLoaded = false;
 let currentUser = null;
 let currentModule = 1;
 let currentCardIndex = 0;
@@ -174,10 +173,9 @@ async function loadFromSupabase() {
 
 // ==================== AUTENTICACIÓN ====================
 async function loginWithEmail(email, password) {
-    _sessionLoaded = true; // bloquea onAuthStateChange durante login con email
     try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) { _sessionLoaded = false; throw error; }
+        if (error) throw error;
         
         currentUser = data.user;
         currentAvatar = currentUser.user_metadata?.avatar || "👨‍🏫";
@@ -212,14 +210,12 @@ async function loginWithEmail(email, password) {
         await syncWithSupabase();
         return true;
     } catch (error) {
-        _sessionLoaded = false;
         showLoginError(error.message);
         return false;
     }
 }
 
 async function registerWithEmail(email, password) {
-    _sessionLoaded = true; // bloquea onAuthStateChange durante registro
     try {
         const { data, error } = await supabase.auth.signUp({
             email, password,
@@ -251,27 +247,11 @@ async function registerWithEmail(email, password) {
         showToast("¡Registro exitoso! Bienvenido al curso", "success");
         return true;
     } catch (error) {
-        _sessionLoaded = false;
         showLoginError(error.message);
         return false;
     }
 }
 
-async function loginWithGoogle() {
-    try {
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: window.location.origin + window.location.pathname
-            }
-        });
-        if (error) throw error;
-        // La página se redirige a Google y vuelve — onAuthStateChange maneja el resto
-    } catch (error) {
-        showLoginError(error.message);
-        return false;
-    }
-}
 
 async function logout() {
     await supabase.auth.signOut();
@@ -284,7 +264,6 @@ async function logout() {
 async function checkExistingSession() {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-        _sessionLoaded = true; // evita que onAuthStateChange doble-cargue en refresh
         currentUser = session.user;
         currentAvatar = currentUser.user_metadata?.avatar || "👨‍🏫";
         document.getElementById("avatarPreview").innerHTML = currentAvatar;
@@ -1768,10 +1747,6 @@ function loadSavedProgress() {
 }
 
 // ==================== EVENT LISTENERS ====================
-document.getElementById("loginEmailBtn")?.addEventListener("click", () => {
-    document.getElementById("emailLoginForm").classList.remove("hidden");
-    document.getElementById("registerForm").classList.add("hidden");
-});
 document.getElementById("showRegisterBtn")?.addEventListener("click", () => {
     document.getElementById("emailLoginForm").classList.add("hidden");
     document.getElementById("registerForm").classList.remove("hidden");
@@ -1801,7 +1776,6 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
         loadSavedProgress();
     }
 });
-document.getElementById("loginGoogleBtn")?.addEventListener("click", loginWithGoogle);
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
 document.getElementById("nextBtn")?.addEventListener("click", goToNextCard);
 document.getElementById("prevBtn")?.addEventListener("click", goToPrevCard);
@@ -1845,52 +1819,5 @@ window.addEventListener("offline", () => updateSyncStatus("offline", "Sin conexi
 initDB().then(() => console.log("Base de datos local lista"));
 checkExistingSession();
 
-// ── Captura la sesión OAuth cuando Google redirige de vuelta ──
-supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session && !_sessionLoaded) {
-        // Evitar doble carga si checkExistingSession ya lo manejó
-        if (currentUser) { _sessionLoaded = true; return; }
-        _sessionLoaded = true;
-
-        currentUser = session.user;
-        currentAvatar = currentUser.user_metadata?.avatar || '👨‍🏫';
-        const avatarEl = document.getElementById('avatarPreview');
-        if (avatarEl) avatarEl.innerHTML = currentAvatar;
-
-        const cloudProgress = await loadFromSupabase();
-        if (cloudProgress) {
-            progress = cloudProgress;
-            currentModule = cloudProgress.current_module || 1;
-            currentCardIndex = cloudProgress.current_card || 0;
-        } else {
-            progress = {
-                completedCards: [], moduleFeedback: {}, npsHistory: [], xp: 0, level: 1,
-                badges: [], redeemedPrizes: [], quizCorrectCount: 0, streak: 0,
-                lastActivityDate: new Date().toISOString().split('T')[0],
-                dailyMissions: {}, raffleTickets: 0
-            };
-        }
-
-        initExistingModuleDates();
-        checkDailyStreak();
-        loadDailyMissions();
-        await syncWithSupabase();
-        showToast('¡Bienvenido, ' + getDisplayName() + '!', 'success');
-
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('mainApp').classList.remove('hidden');
-        loadSavedProgress();
-        renderCard();
-        updateUI();
-        checkBadges();
-
-    } else if (event === 'SIGNED_OUT') {
-        _sessionLoaded = false;
-        currentUser = null;
-        progress = null;
-        document.getElementById('mainApp')?.classList.add('hidden');
-        document.getElementById('loginScreen')?.classList.remove('hidden');
-    }
-});
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
