@@ -1104,9 +1104,9 @@ function showBadgesModal() {
 function shareBadges() {
     const badgesList = progress.badges.map(b => badges[b]?.name || b).join(", ");
     const text = `🎓 He completado ${progress.badges.length} logros en el Curso STEAM de Profe Billy! Mi nivel: ${progress.level} | XP: ${progress.xp} #STEAM #ProfeBilly`;
-    if (navigator.share) {
-        navigator.share({ title: "Mis logros STEAM", text: text }).catch(() => {});
-    } else {
+    const link = getReferralLink();
+    window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + link)}`, '_blank');
+    if (false) { // mantener else por compatibilidad
         navigator.clipboard.writeText(text);
         showToast("📋 Texto copiado al portapapeles", "info");
     }
@@ -1203,14 +1203,8 @@ async function shareApp() {
 
     const link = getReferralLink();
     const text = '🚀 Estoy aprendiendo metodología STEAM con el Curso STEAM 2.0 de 1bot · edoo. ¡Únete gratis y transforma tu aula!';
-
-    try {
-        if (navigator.share) {
-            await navigator.share({ title: 'Curso STEAM 2.0', text, url: link });
-        } else {
-            window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + link)}`, '_blank');
-        }
-    } catch (_) { /* usuario canceló el share dialog */ }
+    // WhatsApp directo — más confiable en móvil que navigator.share
+    window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + link)}`, '_blank');
 }
 
 // ── Referidos ────────────────────────────────────────────────────────────
@@ -1513,7 +1507,7 @@ function showProjectModal(card) {
                     <p class="text-xs text-gray-500 mb-3">Comparte cómo lo aplicaste en tu clase. Puede ser una descripción o un enlace a fotos/video (Google Drive, YouTube, etc.).</p>
                     <textarea id="evidenceText" rows="3" placeholder="Describe cómo fue la actividad en tu clase..." class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-2"></textarea>
                     <input id="evidenceUrl" type="url" placeholder="Enlace a fotos o video (opcional)" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-3">
-                    <button onclick="submitEvidence('${cardIdKey}', '${p.title.replace(/'/g,'')}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-2xl text-sm transition">
+                    <button onclick="submitProjectEvidence('${cardIdKey}', '${p.title.replace(/'/g,'')}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-2xl text-sm transition">
                         📤 Enviar evidencia
                     </button>
                     <div id="evidenceStatus" class="mt-2 text-xs text-center text-gray-400"></div>
@@ -1524,11 +1518,11 @@ function showProjectModal(card) {
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-async function submitEvidence(cardId, projectTitle) {
-    if (!currentUser) { alert('Debes iniciar sesión'); return; }
+async function submitProjectEvidence(cardId, projectTitle) {
+    if (!currentUser) { showToast('Debes iniciar sesión', 'success'); return; }
     const text = document.getElementById('evidenceText')?.value.trim();
     const url  = document.getElementById('evidenceUrl')?.value.trim();
-    if (!text && !url) { alert('Por favor escribe una descripción o agrega un enlace'); return; }
+    if (!text && !url) { showToast('Por favor escribe una descripción o agrega un enlace', 'success'); return; }
 
     const statusEl = document.getElementById('evidenceStatus');
     if (statusEl) statusEl.textContent = 'Enviando…';
