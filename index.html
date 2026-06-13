@@ -571,6 +571,19 @@
 
 <body>
 
+    <!-- ==================== SELECTOR DE CURSOS ==================== -->
+    <div id="courseSelector" class="fixed inset-0 z-50 hidden overflow-y-auto" style="background:linear-gradient(135deg,#1A6B68 0%,#07B0E4 100%)">
+        <div class="max-w-md mx-auto px-4 py-10">
+            <div class="text-center mb-8">
+                <div class="text-5xl mb-3">📚</div>
+                <h1 class="text-2xl font-black text-white">¿Qué quieres aprender hoy?</h1>
+                <p class="text-white/75 text-sm mt-2">Selecciona un curso para continuar</p>
+            </div>
+            <div id="coursesList" class="space-y-4"></div>
+            <p class="text-center text-white/40 text-xs mt-8">Más cursos llegando pronto 🚀</p>
+        </div>
+    </div>
+
     <!-- ==================== PANTALLA DE LOGIN ==================== -->
     <div id="loginScreen" class="fixed inset-0 z-50 flex flex-col overflow-y-auto">
 
@@ -871,6 +884,18 @@
                 </button>
             </div>
 
+            <!-- Reto diario -->
+            <button onclick="showDailyChallenge()"
+                class="w-full mb-3 rounded-2xl p-4 flex items-center gap-3 text-left transition active:scale-95"
+                style="background:linear-gradient(135deg,#1A6B68,#07B0E4)">
+                <div class="text-3xl">⚡</div>
+                <div class="flex-1">
+                    <p class="font-black text-white text-sm">Reto del día</p>
+                    <p class="text-white/75 text-xs mt-0.5">¿Sabes si esto es STEAM? Gana 15 XP</p>
+                </div>
+                <span class="text-xs font-bold bg-white/20 text-white px-2 py-1 rounded-lg shrink-0">+15 XP</span>
+            </button>
+
             <!-- Misiones colapsables -->
             <div id="dailyMissions" class="hidden mb-4 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
                 <div class="flex justify-between items-center mb-2">
@@ -892,6 +917,12 @@
                     <i class="fas fa-sync text-xs mr-1"></i>Sincronizar
                 </button>
             </div>
+
+            <!-- Cambiar curso -->
+            <button onclick="showCourseSelector()"
+                class="w-full bg-white border border-slate-200 text-slate-600 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
+                <i class="fas fa-graduation-cap text-[#07B0E4]"></i> Cambiar curso
+            </button>
 
             <!-- Ver tutorial -->
             <button onclick="localStorage.removeItem('onboardingDone'); startOnboarding();"
@@ -1255,6 +1286,77 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb@8.0.0/build/umd.js"></script>
+    <!-- ==================== MODAL COMENTARIOS POR TARJETA ==================== -->
+    <div id="commentsModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-3xl flex flex-col" style="max-height:80vh">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+                <div>
+                    <h3 class="font-black text-slate-800">💬 Comentarios</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Comparte dudas o aprendizajes de esta tarjeta</p>
+                </div>
+                <button onclick="document.getElementById('commentsModal').classList.add('hidden')"
+                    class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-lg leading-none">&times;</button>
+            </div>
+            <div id="commentsList" class="flex-1 overflow-y-auto p-4 space-y-4 min-h-[120px]"></div>
+            <div class="border-t border-slate-100 p-4 shrink-0">
+                <div class="flex gap-2">
+                    <textarea id="commentInput" rows="2"
+                        placeholder="Escribe tu comentario o duda..."
+                        class="flex-1 border border-slate-200 rounded-2xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#07B0E4]"
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitComment();}"></textarea>
+                    <button onclick="submitComment()"
+                        class="w-11 h-11 rounded-2xl flex items-center justify-center text-white self-end shrink-0"
+                        style="background:#07B0E4">
+                        <i class="fas fa-paper-plane text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== GEMINI CHATBOT ==================== -->
+    <!-- Botón flotante -->
+    <button id="chatToggleBtn" onclick="toggleChat()"
+        class="fixed z-40 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 overflow-hidden bg-white border-2 border-[#07B0E4]"
+        style="bottom:5.5rem;right:1rem;">
+        <img src="robot.png" alt="Asistente STEAM" class="w-14 h-14 object-contain">
+    </button>
+
+    <!-- Drawer del chat -->
+    <div id="chatDrawer" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-3xl flex flex-col" style="height:80vh">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+                <div class="flex items-center gap-3">
+                    <img src="robot.png" alt="Asistente" class="w-10 h-10 object-contain">
+                    <div>
+                        <h3 class="font-black text-slate-800">Asistente STEAM</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Powered by Groq · Dudas sobre metodología STEAM</p>
+                    </div>
+                </div>
+                <button onclick="toggleChat()"
+                    class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-lg leading-none">&times;</button>
+            </div>
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                <div class="bg-slate-100 text-slate-700 rounded-2xl rounded-tl-sm px-3 py-2.5 text-sm max-w-[85%]">
+                    Hola 👋 Soy tu asistente STEAM. Puedo ayudarte con dudas sobre metodología STEAM, ABP, Design Thinking, evaluación y cómo aplicarlos en Guatemala. ¿Qué quieres saber?
+                </div>
+            </div>
+            <div class="border-t border-slate-100 p-4 shrink-0 flex gap-2">
+                <input id="chatInput" type="text"
+                    placeholder="Escribe tu pregunta..."
+                    class="flex-1 border border-slate-200 rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#07B0E4]"
+                    onkeydown="if(event.key==='Enter')sendChatMessage()">
+                <button onclick="sendChatMessage()"
+                    class="w-11 h-11 rounded-2xl flex items-center justify-center text-white shrink-0"
+                    style="background:#07B0E4">
+                    <i class="fas fa-paper-plane text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== RETO DIARIO (disparado desde misiones) ==================== -->
+
     <script src="data.js"></script>
     <script src="ilustraciones.js"></script>
     <script src="app.js"></script>

@@ -97,9 +97,9 @@ function loadFromLocalCache(userId) {
 // ==================== SINCRONIZACIÓN CON SUPABASE ====================
 async function syncWithSupabase() {
     if (!currentUser || !progress) return;
-    
+
     updateSyncStatus("syncing", "Sincronizando...");
-    
+
     try {
         const { error } = await supabase
             .from('progress')
@@ -122,13 +122,13 @@ async function syncWithSupabase() {
                 nps_history: progress.npsHistory || [],
                 updated_at: new Date().toISOString()
             }, { onConflict: 'user_id' });
-        
+
         if (error) throw error;
-        
+
         await saveToLocalCache(currentUser.id, progress);
         updateSyncStatus("online", "✓ Sincronizado");
         setTimeout(() => updateSyncStatus("online", "✓ Sincronizado"), 2000);
-        
+
     } catch (error) {
         console.error("Error sync:", error);
         updateSyncStatus("offline", "⚠️ Sin conexión");
@@ -138,16 +138,16 @@ async function syncWithSupabase() {
 
 async function loadFromSupabase() {
     if (!currentUser) return null;
-    
+
     try {
         const { data, error } = await supabase
             .from('progress')
             .select('*')
             .eq('user_id', currentUser.id)
             .single();
-        
+
         if (error && error.code !== 'PGRST116') throw error;
-        
+
         if (data) {
             return {
                 completedCards: data.completed_cards || [],
@@ -176,13 +176,13 @@ async function loginWithEmail(email, password) {
     try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        
+
         currentUser = data.user;
         currentAvatar = currentUser.user_metadata?.avatar || "👨‍🏫";
         document.getElementById("avatarPreview").innerHTML = currentAvatar;
-        
+
         const cloudProgress = await loadFromSupabase();
-        
+
         if (cloudProgress) {
             progress = cloudProgress;
             currentModule = cloudProgress.current_module || 1;
@@ -203,7 +203,7 @@ async function loginWithEmail(email, password) {
                 raffleTickets: 0
             };
         }
-        
+
         initExistingModuleDates();
         checkDailyStreak();
         loadDailyMissions();
@@ -222,10 +222,10 @@ async function registerWithEmail(email, password) {
             options: { data: { avatar: "👨‍🏫", created_at: new Date().toISOString() } }
         });
         if (error) throw error;
-        
+
         currentUser = data.user;
         currentAvatar = "👨‍🏫";
-        
+
         progress = {
             completedCards: [],
             moduleFeedback: {},
@@ -240,7 +240,7 @@ async function registerWithEmail(email, password) {
             dailyMissions: {},
             raffleTickets: 0
         };
-        
+
         checkDailyStreak();
         loadDailyMissions();
         await syncWithSupabase();
@@ -267,7 +267,7 @@ async function checkExistingSession() {
         currentUser = session.user;
         currentAvatar = currentUser.user_metadata?.avatar || "👨‍🏫";
         document.getElementById("avatarPreview").innerHTML = currentAvatar;
-        
+
         const cloudProgress = await loadFromSupabase();
         if (cloudProgress) {
             progress = cloudProgress;
@@ -281,20 +281,14 @@ async function checkExistingSession() {
                 dailyMissions: {}, raffleTickets: 0
             };
         }
-        
+
         initExistingModuleDates();
         checkDailyStreak();
         loadDailyMissions();
 
         document.getElementById("loginScreen").classList.add("hidden");
-        document.getElementById("mainApp").classList.remove("hidden");
-        loadSavedProgress();
-        renderCard();
-        updateUI();
-        checkBadges();
-        displayReferralLink();
-        checkReferrerReward();
-        if (!localStorage.getItem('onboardingDone')) setTimeout(startOnboarding, 800);
+        loadSavedProgress(true);
+        showCourseSelector();
         return true;
     }
     return false;
@@ -318,7 +312,7 @@ function showToast(message, type) {
 
 function updateUI() {
     if (!progress) return;
-    const module = modulesData[currentModule-1];
+    const module = modulesData[currentModule - 1];
     if (!module) return;
 
     const totalCards = module.cards.length;
@@ -391,7 +385,7 @@ function addXP(amount, reason) {
     if (!progress) return;
     progress.xp += amount;
     showToast(`+${amount} XP ✨ (${reason})`, "success");
-    
+
     const newLevel = Math.floor(progress.xp / 200) + 1;
     if (newLevel > progress.level) {
         progress.level = newLevel;
@@ -400,7 +394,7 @@ function addXP(amount, reason) {
         if (newLevel === 10) generateLevelCertificate(newLevel);
         progress.raffleTickets = (progress.raffleTickets || 0) + 1;
     }
-    
+
     updateMissionProgress("xp", amount);
     saveProgress();
     updateUI();
@@ -419,10 +413,10 @@ function unlockBadge(badgeId) {
 function checkBadges() {
     if (!progress) return;
     if (progress.completedCards.length >= 1 && !progress.badges.includes("firstCard")) unlockBadge("firstCard");
-    
+
     let modulesCompleted = 0;
     for (let i = 1; i <= modulesData.length; i++) {
-        const moduleCards = modulesData[i-1].cards.length;
+        const moduleCards = modulesData[i - 1].cards.length;
         let completedInModule = 0;
         for (let j = 0; j < moduleCards; j++) {
             if (progress.completedCards.includes(`${i}-${j}`)) completedInModule++;
@@ -445,18 +439,18 @@ function checkBadges() {
 function checkDailyStreak() {
     const today = new Date().toISOString().split("T")[0];
     const lastActivity = progress.lastActivityDate;
-    
+
     if (!lastActivity) {
         progress.streak = 1;
         progress.lastActivityDate = today;
         saveProgress();
         return;
     }
-    
+
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split("T")[0];
-    
+
     if (lastActivity === today) return;
     else if (lastActivity === yesterdayStr) {
         progress.streak = (progress.streak || 0) + 1;
@@ -483,14 +477,14 @@ function updateStreakDisplay() {
 function loadDailyMissions() {
     const today = new Date().toISOString().split("T")[0];
     const savedMissions = progress.dailyMissions || {};
-    
+
     if (savedMissions.date !== today) {
         const newMissions = dailyMissionsList.map(m => ({ ...m, current: 0, completed: false, claimed: false }));
         progress.dailyMissions = { date: today, missions: newMissions };
         saveProgress();
     }
     renderDailyMissions();
-    
+
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
@@ -573,18 +567,18 @@ function generateLevelCertificate(level) {
 
 // ==================== FUNCIONES BASE DEL CURSO ====================
 function renderCard() {
-    const module = modulesData[currentModule-1];
+    const module = modulesData[currentModule - 1];
     if (!module) return;
     const card = module.cards[currentCardIndex];
     if (!card) return;
     const container = document.getElementById("cardContainer");
     if (!container) return;
-    
+
     // Iniciar tracking de tiempo
     if (currentCardId) stopCardTracking();
     currentCardId = card.id || `${currentModule}-${currentCardIndex}`;
     startCardTracking();
-    
+
     const nextBtn = document.getElementById("nextBtn");
     const prevBtn = document.getElementById("prevBtn");
 
@@ -599,18 +593,18 @@ function renderCard() {
             saveProgress();
         }
 
-        const theme = (typeof MODULE_THEME !== 'undefined' && MODULE_THEME[currentModule]) || { primary:'#0097A7', soft:'#E0F7FA' };
+        const theme = (typeof MODULE_THEME !== 'undefined' && MODULE_THEME[currentModule]) || { primary: '#0097A7', soft: '#E0F7FA' };
         const illus = (typeof MODULE_ILLUSTRATIONS !== 'undefined' && MODULE_ILLUSTRATIONS[currentModule]) || '';
         const totalCards = module.cards.length;
         const profeName = getDisplayName();
         const cardContent = (card.content || '').replace(/Profe Billy/g, profeName);
-        const cardExtra   = (card.extra   || '').replace(/Profe Billy/g, profeName);
+        const cardExtra = (card.extra || '').replace(/Profe Billy/g, profeName);
 
         container.innerHTML = `
         <div class="content-card" id="activeCard">
             <div class="card-banner" style="background:${theme.primary}">
                 <div class="card-banner-svg">${illus}</div>
-                <p class="card-banner-sub">${module.title} &nbsp;·&nbsp; ${currentCardIndex+1} de ${totalCards}</p>
+                <p class="card-banner-sub">${module.title} &nbsp;·&nbsp; ${currentCardIndex + 1} de ${totalCards}</p>
             </div>
             <div class="card-body">
                 <h2>${card.title}</h2>
@@ -622,7 +616,7 @@ function renderCard() {
             </div>
             ${card.project ? `
             <div class="card-footer">
-                <button onclick="showProjectModal(${JSON.stringify(card).replace(/"/g,'&quot;')})"
+                <button onclick="showProjectModal(${JSON.stringify(card).replace(/"/g, '&quot;')})"
                     class="w-full text-white font-bold py-2.5 rounded-2xl text-sm transition flex items-center justify-center gap-2"
                     style="background:${theme.primary}">
                     📋 Ver instrucciones para implementar en clase
@@ -630,6 +624,12 @@ function renderCard() {
             </div>` : ''}
             <div class="card-swipe-hint">
                 <i class="fas fa-arrow-left"></i> &nbsp;desliza para navegar&nbsp; <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="px-4 pb-3">
+                <button onclick="showCardComments('${currentModule}-${currentCardIndex}')"
+                    class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-slate-200 text-slate-500 text-xs font-semibold hover:bg-slate-50 transition">
+                    <i class="fas fa-comment-dots text-slate-400"></i> Comentarios y dudas de esta tarjeta
+                </button>
             </div>
         </div>`;
 
@@ -641,7 +641,7 @@ function renderCard() {
         card.options.forEach((opt, idx) => {
             optionsHtml += `
             <button class="quiz-option w-full text-left p-3 rounded-2xl mb-2" data-opt="${idx}">
-                <span class="option-letter">${String.fromCharCode(65+idx)}</span>
+                <span class="option-letter">${String.fromCharCode(65 + idx)}</span>
                 <span class="text-gray-700 text-sm font-medium">${opt}</span>
             </button>`;
         });
@@ -737,7 +737,7 @@ function stopCardTracking() {
 function animateCard(direction) {
     const card = document.getElementById('activeCard');
     if (!card) return;
-    card.classList.remove('slide-in-left','slide-in-right');
+    card.classList.remove('slide-in-left', 'slide-in-right');
     void card.offsetWidth; // reflow
     card.classList.add(direction === 'next' ? 'slide-in-right' : 'slide-in-left');
 }
@@ -747,7 +747,7 @@ function showComingSoon() {
 }
 
 function goToNextCard() {
-    const module = modulesData[currentModule-1];
+    const module = modulesData[currentModule - 1];
     if (!module) return;
     if (currentCardIndex + 1 < module.cards.length) {
         currentCardIndex++;
@@ -772,7 +772,7 @@ function goToPrevCard() {
         animateCard('prev');
     } else if (currentModule > 1) {
         currentModule--;
-        const prevModule = modulesData[currentModule-1];
+        const prevModule = modulesData[currentModule - 1];
         currentCardIndex = prevModule.cards.length - 1;
         saveProgress();
         renderCard();
@@ -781,10 +781,10 @@ function goToPrevCard() {
 
 function askModuleFeedback(moduleId) {
     if (progress.moduleFeedback?.[moduleId]) { continueToNextModule(); return; }
-    const moduleName = modulesData[moduleId-1].title;
-    const feedbackHtml = `<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6"><h2 class="text-xl font-bold text-indigo-800 mb-2">📝 ¿Cómo te fue en ${moduleName}?</h2><div class="mb-4"><label class="block font-medium mb-2">Satisfacción (1-5)</label><div class="flex gap-2 justify-between" id="ratingStars">${[1,2,3,4,5].map(n => `<button data-rating="${n}" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>`).join('')}</div><input type="hidden" id="selectedRating" value="0"></div><div class="mb-4"><label class="block font-medium mb-2">NPS (0-10): ¿Recomendarías este curso a otro docente?</label><div class="grid grid-cols-5 gap-1">${[0,1,2,3,4,5,6,7,8,9,10].map(n => `<button data-nps="${n}" class="nps-btn w-9 h-9 rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition text-sm">${n}</button>`).join('')}</div><input type="hidden" id="selectedNPS" value="-1"></div><div class="mb-4"><textarea id="feedbackComment" rows="3" class="w-full border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Comentario o sugerencia (opcional)"></textarea></div><div class="flex gap-2"><button id="submitFeedbackBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex-1 transition">Enviar</button><button id="skipFeedbackBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition">Omitir</button></div></div></div>`;
+    const moduleName = modulesData[moduleId - 1].title;
+    const feedbackHtml = `<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6"><h2 class="text-xl font-bold text-indigo-800 mb-2">📝 ¿Cómo te fue en ${moduleName}?</h2><div class="mb-4"><label class="block font-medium mb-2">Satisfacción (1-5)</label><div class="flex gap-2 justify-between" id="ratingStars">${[1, 2, 3, 4, 5].map(n => `<button data-rating="${n}" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>`).join('')}</div><input type="hidden" id="selectedRating" value="0"></div><div class="mb-4"><label class="block font-medium mb-2">NPS (0-10): ¿Recomendarías este curso a otro docente?</label><div class="grid grid-cols-5 gap-1">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button data-nps="${n}" class="nps-btn w-9 h-9 rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition text-sm">${n}</button>`).join('')}</div><input type="hidden" id="selectedNPS" value="-1"></div><div class="mb-4"><textarea id="feedbackComment" rows="3" class="w-full border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Comentario o sugerencia (opcional)"></textarea></div><div class="flex gap-2"><button id="submitFeedbackBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex-1 transition">Enviar</button><button id="skipFeedbackBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition">Omitir</button></div></div></div>`;
     document.body.insertAdjacentHTML('beforeend', feedbackHtml);
-    
+
     document.querySelectorAll('.rating-star').forEach(star => {
         star.addEventListener('click', () => {
             const rating = parseInt(star.dataset.rating);
@@ -845,7 +845,7 @@ function initExistingModuleDates() {
 }
 
 const XP_UNLOCK_COST = 200;
-const DAYS_PER_MODULE = 7;
+const DAYS_PER_MODULE = 1;
 
 function getModuleStartDate(moduleNum) {
     if (moduleNum === 1) return null; // módulo 1 siempre disponible
@@ -1159,13 +1159,13 @@ async function showRanking() {
         return;
     }
 
-    const medals = ['🥇','🥈','🥉'];
+    const medals = ['🥇', '🥈', '🥉'];
     let html = "";
     data.forEach((user, idx) => {
         const isMe = user.user_id === currentUser.id;
         const fullName = user.daily_missions?.fullName;
-        const displayName = fullName || (user.email ? user.email.split('@')[0] : `Docente ${idx+1}`);
-        const medal = medals[idx] || `${idx+1}.`;
+        const displayName = fullName || (user.email ? user.email.split('@')[0] : `Docente ${idx + 1}`);
+        const medal = medals[idx] || `${idx + 1}.`;
         html += `
         <div class="flex items-center gap-3 p-3 rounded-2xl ${isMe ? 'bg-yellow-50 border-2 border-yellow-300' : 'bg-gray-50'} mb-2">
             <span class="text-xl w-8 text-center">${medal}</span>
@@ -1272,7 +1272,7 @@ async function checkReferrerReward() {
             saveProgress();
             showToast(`🎉 +${pending * 100} XP por ${pending} docente${pending !== 1 ? 's' : ''} que se inscribió${pending !== 1 ? 'eron' : ''} con tu enlace`, 'success');
         }
-    } catch (_) {}
+    } catch (_) { }
 }
 
 // ── Evidencia de práctica (80 XP por módulo, máx. 1 por módulo) ─────────
@@ -1458,24 +1458,53 @@ function showAvatarSelector() {
     });
 }
 
-// ==================== MODAL DE PROYECTO (Módulo 2) ====================
+// ==================== MODAL DE PROYECTO (Think·Make·Improve) ====================
 function showProjectModal(card) {
     const p = card.project;
     if (!p) return;
     const existing = document.getElementById('projectModal');
     if (existing) existing.remove();
 
-    const stepsHtml = p.steps.map((s, i) =>
-        `<div class="flex gap-3 mb-3">
-            <div class="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">${i+1}</div>
-            <p class="text-sm text-gray-700 leading-relaxed">${s}</p>
-        </div>`).join('');
-
     const materialsHtml = p.materials.map(m =>
         `<span class="inline-block bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-full mb-1 mr-1">${m}</span>`).join('');
 
     const disciplinesHtml = p.disciplines.map(d =>
         `<span class="inline-block bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full mb-1 mr-1">${d}</span>`).join('');
+
+    const tmiSection = (p.think && p.make && p.improve) ? `
+        <div class="mt-5 border-t border-gray-100 pt-4">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Ciclo Think · Make · Improve</p>
+            <div class="rounded-2xl overflow-hidden border border-slate-100 mb-1">
+                <div class="bg-blue-50 px-4 py-2 flex items-center gap-2">
+                    <span class="text-lg">🧠</span>
+                    <span class="font-bold text-blue-700 text-sm">THINK — Investiga y planifica</span>
+                </div>
+                ${p.think.map((s, i) => `<div class="flex gap-3 px-4 py-2.5 border-t border-blue-50">
+                    <div class="w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${i + 1}</div>
+                    <p class="text-sm text-slate-700 leading-relaxed">${s}</p>
+                </div>`).join('')}
+            </div>
+            <div class="rounded-2xl overflow-hidden border border-slate-100 mb-1">
+                <div class="bg-amber-50 px-4 py-2 flex items-center gap-2">
+                    <span class="text-lg">🔨</span>
+                    <span class="font-bold text-amber-700 text-sm">MAKE — Construye y experimenta</span>
+                </div>
+                ${p.make.map((s, i) => `<div class="flex gap-3 px-4 py-2.5 border-t border-amber-50">
+                    <div class="w-5 h-5 rounded-full bg-amber-100 text-amber-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${i + 1}</div>
+                    <p class="text-sm text-slate-700 leading-relaxed">${s}</p>
+                </div>`).join('')}
+            </div>
+            <div class="rounded-2xl overflow-hidden border border-slate-100">
+                <div class="bg-green-50 px-4 py-2 flex items-center gap-2">
+                    <span class="text-lg">✨</span>
+                    <span class="font-bold text-green-700 text-sm">IMPROVE — Reflexiona y mejora</span>
+                </div>
+                ${p.improve.map((s, i) => `<div class="flex gap-3 px-4 py-2.5 border-t border-green-50">
+                    <div class="w-5 h-5 rounded-full bg-green-100 text-green-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${i + 1}</div>
+                    <p class="text-sm text-slate-700 leading-relaxed">${s}</p>
+                </div>`).join('')}
+            </div>
+        </div>` : '';
 
     const cardIdKey = `${currentModule}-${currentCardIndex}`;
     const modalHtml = `
@@ -1492,22 +1521,21 @@ function showProjectModal(card) {
                 <button onclick="document.getElementById('projectModal').remove()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 transition text-lg leading-none">&times;</button>
             </div>
             <div class="p-5">
-                <h3 class="font-bold text-gray-800 mb-3">🎓 Pasos para implementar en clase</h3>
-                ${stepsHtml}
-                <div class="mt-4">
+                <div class="mb-4">
                     <h3 class="font-bold text-gray-800 mb-2">🧰 Materiales</h3>
                     <div>${materialsHtml}</div>
                 </div>
-                <div class="mt-4">
+                <div class="mb-4">
                     <h3 class="font-bold text-gray-800 mb-2">🔬 Disciplinas STEAM que integra</h3>
                     <div>${disciplinesHtml}</div>
                 </div>
+                ${tmiSection}
                 <div class="mt-5 border-t border-gray-100 pt-4">
                     <h3 class="font-bold text-gray-800 mb-1">📸 Subir evidencias <span class="text-xs text-gray-400 font-normal">(opcional)</span></h3>
-                    <p class="text-xs text-gray-500 mb-3">Comparte cómo lo aplicaste en tu clase. Puede ser una descripción o un enlace a fotos/video (Google Drive, YouTube, etc.).</p>
+                    <p class="text-xs text-gray-500 mb-3">Describe cómo lo aplicaste en tu clase o agrega un enlace a fotos/video.</p>
                     <textarea id="evidenceText" rows="3" placeholder="Describe cómo fue la actividad en tu clase..." class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-2"></textarea>
                     <input id="evidenceUrl" type="url" placeholder="Enlace a fotos o video (opcional)" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-3">
-                    <button onclick="submitProjectEvidence('${cardIdKey}', '${p.title.replace(/'/g,'')}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-2xl text-sm transition">
+                    <button onclick="submitProjectEvidence('${cardIdKey}', '${p.title.replace(/'/g, '')}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-2xl text-sm transition">
                         📤 Enviar evidencia
                     </button>
                     <div id="evidenceStatus" class="mt-2 text-xs text-center text-gray-400"></div>
@@ -1521,7 +1549,7 @@ function showProjectModal(card) {
 async function submitProjectEvidence(cardId, projectTitle) {
     if (!currentUser) { showToast('Debes iniciar sesión', 'success'); return; }
     const text = document.getElementById('evidenceText')?.value.trim();
-    const url  = document.getElementById('evidenceUrl')?.value.trim();
+    const url = document.getElementById('evidenceUrl')?.value.trim();
     if (!text && !url) { showToast('Por favor escribe una descripción o agrega un enlace', 'success'); return; }
 
     const statusEl = document.getElementById('evidenceStatus');
@@ -1540,7 +1568,7 @@ async function submitProjectEvidence(cardId, projectTitle) {
     } else {
         if (statusEl) { statusEl.textContent = '✅ ¡Evidencia enviada! Gracias por compartir.'; statusEl.className = 'mt-2 text-xs text-center text-green-600'; }
         if (document.getElementById('evidenceText')) document.getElementById('evidenceText').value = '';
-        if (document.getElementById('evidenceUrl'))  document.getElementById('evidenceUrl').value = '';
+        if (document.getElementById('evidenceUrl')) document.getElementById('evidenceUrl').value = '';
         showToast('📸 ¡Evidencia enviada correctamente!', 'success');
         addXP(15, 'Evidencia de proyecto enviada');
     }
@@ -1585,8 +1613,8 @@ function startExam() {
         modulesData.forEach((mod, modIdx) => {
             const missing = [];
             mod.cards.forEach((card, cardIdx) => {
-                if (!progress.completedCards.includes(`${modIdx+1}-${cardIdx}`)) {
-                    missing.push(`• Tarjeta ${cardIdx+1}: "${card.title}"`);
+                if (!progress.completedCards.includes(`${modIdx + 1}-${cardIdx}`)) {
+                    missing.push(`• Tarjeta ${cardIdx + 1}: "${card.title}"`);
                 }
             });
             if (missing.length) unseen.push(`\n📚 ${mod.title}:\n${missing.join('\n')}`);
@@ -1657,7 +1685,7 @@ function renderExamCard() {
         <circle cx="19" cy="57" r="3.5" fill="rgba(255,255,255,0.65)"/>
     </svg>`;
 
-    const optLetters = ['A','B','C','D'];
+    const optLetters = ['A', 'B', 'C', 'D'];
     const optsHtml = q.options.map((opt, i) => {
         const sel = saved === i;
         return `<button onclick="selectExamAnswer(${i})" data-opt="${i}"
@@ -1734,7 +1762,7 @@ function selectExamAnswer(optIdx) {
     const opts = document.getElementById('examOptions');
     if (opts) {
         const fb = document.createElement('div');
-        const optLetters = ['A','B','C','D'];
+        const optLetters = ['A', 'B', 'C', 'D'];
         fb.style.cssText = `margin-top:12px;padding:10px 14px;border-radius:14px;font-size:.82rem;line-height:1.5;
             background:${isCorrect ? '#F0FDF4' : '#FEF2F2'};
             border:1.5px solid ${isCorrect ? '#86EFAC' : '#FECACA'};
@@ -1957,20 +1985,20 @@ function showStatsPanel() {
     const detractors = npsValues.filter(n => n <= 6).length;
     const npsScore = npsValues.length ? Math.round(((promoters - detractors) / npsValues.length) * 100) : 0;
     const ratings = Object.values(progress.moduleFeedback || {}).map(f => f.rating);
-    const avgRating = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : 0;
+    const avgRating = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : 0;
     statsContent.innerHTML = `<div class="space-y-4"><div class="grid grid-cols-2 gap-3"><div class="bg-indigo-50 p-3 rounded-xl text-center"><div class="text-2xl font-bold text-indigo-700">${avgRating}</div><div class="text-xs text-gray-600">⭐ Rating promedio</div></div><div class="bg-green-50 p-3 rounded-xl text-center"><div class="text-2xl font-bold text-green-700">${npsScore}</div><div class="text-xs text-gray-600">📊 NPS Score</div></div><div class="bg-blue-50 p-3 rounded-xl text-center"><div class="text-2xl font-bold text-blue-700">${progress.completedCards?.length || 0}</div><div class="text-xs text-gray-600">✅ Tarjetas completadas</div></div><div class="bg-purple-50 p-3 rounded-xl text-center"><div class="text-2xl font-bold text-purple-700">${progress.xp || 0}</div><div class="text-xs text-gray-600">⭐ XP totales</div></div></div><div class="bg-gray-100 p-3 rounded-xl"><h3 class="font-bold mb-2">🎯 Resumen ejecutivo</h3><p class="text-sm">📌 NPS: ${npsScore} ${npsScore >= 50 ? '✅ Excelente' : (npsScore >= 30 ? '📈 Bueno' : '⚠️ Por mejorar')}<br>📌 Promotores: ${promoters} de ${npsValues.length}<br>📌 Rating promedio: ${avgRating}/5 estrellas<br>📌 Racha actual: ${progress.streak || 0} días<br>📌 Logros desbloqueados: ${progress.badges?.length || 0}/${Object.keys(badges).length}</p></div></div>`;
     document.getElementById('statsPanel').classList.remove('hidden');
 }
 
 function exportStatsToCSV() {
-    let csv = [["Modulo","Rating","NPS","Comentario","Fecha"]];
-    Object.values(progress.moduleFeedback || {}).forEach(f => csv.push([`"${f.moduleName}"`, f.rating, f.nps, `"${(f.comment||"").replace(/"/g,'""')}"`, f.timestamp]));
-    const blob = new Blob([csv.map(r=>r.join(",")).join("\n")], {type:"text/csv"});
-    const link = document.createElement("a"); link.download = `estadisticas_steam_${new Date().toISOString().slice(0,19)}.csv`; link.href = URL.createObjectURL(blob); link.click();
+    let csv = [["Modulo", "Rating", "NPS", "Comentario", "Fecha"]];
+    Object.values(progress.moduleFeedback || {}).forEach(f => csv.push([`"${f.moduleName}"`, f.rating, f.nps, `"${(f.comment || "").replace(/"/g, '""')}"`, f.timestamp]));
+    const blob = new Blob([csv.map(r => r.join(",")).join("\n")], { type: "text/csv" });
+    const link = document.createElement("a"); link.download = `estadisticas_steam_${new Date().toISOString().slice(0, 19)}.csv`; link.href = URL.createObjectURL(blob); link.click();
     alert("✅ Datos exportados a CSV");
 }
 
-function clearStats() { if(confirm("⚠️ ¿Eliminar TODOS los datos de feedback?")){ progress.moduleFeedback={}; progress.npsHistory=[]; saveProgress(); showStatsPanel(); } }
+function clearStats() { if (confirm("⚠️ ¿Eliminar TODOS los datos de feedback?")) { progress.moduleFeedback = {}; progress.npsHistory = []; saveProgress(); showStatsPanel(); } }
 
 // ==================== MODO PROFE ====================
 const ADMIN_EMAIL = "profebillio@gmail.com";
@@ -1989,20 +2017,21 @@ function enableProfeMode() {
 }
 
 function exportModuleToVideo(moduleId) {
-    const module = modulesData[moduleId-1];
+    const module = modulesData[moduleId - 1];
     if (!module) return;
     let script = `# GUION PARA VIDEO - MÓDULO ${module.id}: ${module.title}\n\n## 🎬 INTRO (30 segundos)\n"Hola, soy el Profe Billy. En este video vamos a aprender sobre ${module.title}. Al final tendrás un reto práctico."\n\n## 📚 CONTENIDO PRINCIPAL (5-7 minutos)\n`;
     const contentCards = module.cards.filter(c => c.type === "content");
-    contentCards.forEach((card, idx) => { script += `### ${idx+1}. ${card.title}\n${card.content}\n${card.extra ? `💡 Dato extra: ${card.extra}\n` : ''}\n---\n\n`; });
+    contentCards.forEach((card, idx) => { script += `### ${idx + 1}. ${card.title}\n${card.content}\n${card.extra ? `💡 Dato extra: ${card.extra}\n` : ''}\n---\n\n`; });
     script += `## 🎯 RETO PARA EL DOCENTE QUE MIRA EL VIDEO\n"Identifica un problema de tu salón y escribe cómo lo resolverías con STEAM."\n\n## 📹 RECOMENDACIONES TÉCNICAS\n- Graba en horizontal (apaisado).\n- Usa buena luz natural frente a ti.\n- Duración ideal: 5-8 minutos.`;
-    const blob = new Blob([script], {type:"text/plain"});
+    const blob = new Blob([script], { type: "text/plain" });
     const link = document.createElement("a"); link.download = `guion_video_modulo_${module.id}.txt`; link.href = URL.createObjectURL(blob); link.click();
     alert("✅ Guion descargado");
 }
 
-function loadSavedProgress() {
+function loadSavedProgress(skipRender = false) {
     if (progress?.current_module) currentModule = progress.current_module;
     if (progress?.current_card) currentCardIndex = progress.current_card;
+    if (skipRender) return;
     renderCard();
     updateUI();
     checkBadges();
@@ -2022,12 +2051,8 @@ document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
     const password = document.getElementById("loginPassword").value;
     const success = await loginWithEmail(email, password);
     if (success) {
-        document.getElementById("loginScreen").classList.add("hidden");
-        document.getElementById("mainApp").classList.remove("hidden");
-        loadSavedProgress();
-        displayReferralLink();
-        checkReferrerReward();
-        if (!localStorage.getItem('onboardingDone')) setTimeout(startOnboarding, 600);
+        loadSavedProgress(true);
+        showCourseSelector();
     }
 });
 document.getElementById("doRegister")?.addEventListener("click", async () => {
@@ -2036,13 +2061,9 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
     if (password.length < 6) { showLoginError("La contraseña debe tener al menos 6 caracteres"); return; }
     const success = await registerWithEmail(email, password);
     if (success) {
-        document.getElementById("loginScreen").classList.add("hidden");
-        document.getElementById("mainApp").classList.remove("hidden");
-        loadSavedProgress();
-        displayReferralLink();
+        loadSavedProgress(true);
         await checkReferralBonus();
-        // Mostrar onboarding solo a usuarios nuevos
-        setTimeout(startOnboarding, 600);
+        showCourseSelector();
     }
 });
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
@@ -2100,9 +2121,9 @@ document.getElementById("statsSecretBtn")?.addEventListener("click", () => {
 document.getElementById("closeStatsBtn")?.addEventListener("click", () => document.getElementById("statsPanel")?.classList.add("hidden"));
 document.getElementById("exportStatsBtn")?.addEventListener("click", exportStatsToCSV);
 document.getElementById("clearStatsBtn")?.addEventListener("click", clearStats);
-document.getElementById("syncNowBtn")?.addEventListener("click", () => { if(currentUser) syncWithSupabase(); else alert("No hay sesión activa"); });
+document.getElementById("syncNowBtn")?.addEventListener("click", () => { if (currentUser) syncWithSupabase(); else alert("No hay sesión activa"); });
 
-window.addEventListener("online", () => { updateSyncStatus("online", "Conectado"); if(currentUser) syncWithSupabase(); });
+window.addEventListener("online", () => { updateSyncStatus("online", "Conectado"); if (currentUser) syncWithSupabase(); });
 window.addEventListener("offline", () => updateSyncStatus("offline", "Sin conexión"));
 
 initDB().then(() => console.log("Base de datos local lista"));
@@ -2114,7 +2135,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
 // ==================== ANIMACIÓN COMPLETAR MÓDULO ====================
 let _moduleCompleteCallback = null;
 let _confettiFrame = null;
-const _confettiColors = ['#FCC30A','#2BA848','#07B0E4','#E9A037','#E83C8D','#E52642','#FFFFFF','#5C35C5'];
+const _confettiColors = ['#FCC30A', '#2BA848', '#07B0E4', '#E9A037', '#E83C8D', '#E52642', '#FFFFFF', '#5C35C5'];
 
 function showModuleComplete(moduleId, callback) {
     _moduleCompleteCallback = callback;
@@ -2390,4 +2411,301 @@ if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
             banner.classList.remove('hidden');
         }
     }, 3000);
+}
+
+// ==================== SELECTOR DE CURSOS (Multi-curso) ====================
+let currentCourseId = 'steam';
+
+function showCourseSelector() {
+    const el = document.getElementById('courseSelector');
+    if (!el) return;
+    const list = document.getElementById('coursesList');
+    if (!list || typeof allCourses === 'undefined') return;
+
+    list.innerHTML = allCourses.map(c => {
+        const available = c.status === 'available';
+        return `
+        <div onclick="${available ? `selectCourse('${c.id}')` : ''}"
+             class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-4 ${available ? 'cursor-pointer hover:bg-white/25 active:scale-95' : 'opacity-60'} transition-all">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">${c.icon}</div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-white text-base leading-tight">${c.title}</h3>
+                    <p class="text-white/70 text-xs mt-0.5 leading-snug">${c.subtitle}</p>
+                    <div class="flex gap-2 mt-2 flex-wrap">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${available ? 'bg-white/25 text-white' : 'bg-white/10 text-white/50'}">
+                            ${available ? '✅ Disponible' : '🔜 Próximamente'}
+                        </span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-white/70">${c.durationHours}h · ${c.totalCards} tarjetas</span>
+                    </div>
+                </div>
+                ${available ? '<i class="fas fa-chevron-right text-white/50 text-sm"></i>' : ''}
+            </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('loginScreen')?.classList.add('hidden');
+    document.getElementById('mainApp')?.classList.add('hidden');
+    el.classList.remove('hidden');
+}
+
+function selectCourse(courseId) {
+    const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === courseId) : null;
+    if (!course || course.status !== 'available') return;
+    currentCourseId = courseId;
+    modulesData = course.modules;
+    if (progress) {
+        progress.currentCourseId = courseId;
+        saveProgress();
+    }
+    document.getElementById('courseSelector')?.classList.add('hidden');
+    document.getElementById('mainApp')?.classList.remove('hidden');
+    renderCard();
+    updateUI();
+    checkBadges();
+    displayReferralLink();
+    checkReferrerReward();
+    if (!localStorage.getItem('onboardingDone')) setTimeout(startOnboarding, 600);
+}
+
+// ==================== RETO DIARIO ====================
+const DAILY_CHALLENGES = [
+    { q: "Un docente pide a sus estudiantes construir un carrito con materiales reciclados que transporte agua sin derramarla. ¿Es STEAM?", opts: ["Sí — integra Ingeniería, Arte y posiblemente Ciencia y Matemáticas", "No — solo son manualidades", "Solo si usan computadoras", "Solo si el carrito funciona perfecto la primera vez"], correct: 0, explain: "Diseñar, construir y probar (Ingeniería), usar materiales creativamente (Arte) y medir cuánta agua transporta (Matemáticas) es STEAM completo." },
+    { q: "¿Cuál de estas actividades NO es STEAM?", opts: ["Construir un puente de palitos y medir cuánto peso aguanta", "Copiar 20 veces las definiciones del libro", "Diseñar un sistema de alarma con latas y cuerdas", "Crear un mapa del barrio con datos reales"], correct: 1, explain: "Copiar definiciones desarrolla memorización, no el pensamiento crítico ni la resolución de problemas que caracterizan STEAM." },
+    { q: "Una escuela sin internet quiere hacer un proyecto STEAM sobre comunicación. ¿Cuál es la mejor opción?", opts: ["Esperar hasta tener internet", "Crear un sistema de señales con banderas o silbatos", "Solo hacer teoría en clase", "Cancelar el proyecto"], correct: 1, explain: "La tecnología no es solo digital. Un sistema de señales es tecnología análoga válida — STEAM funciona con creatividad, no con presupuesto." },
+    { q: "Después de construir su filtro de agua, el equipo nota que el agua sigue sucia. Según Think-Make-Improve, ¿qué deben hacer?", opts: ["Abandonar el proyecto", "Buscar por qué no funcionó y probar con cambios específicos", "Copiar la solución de otro equipo", "Pedirle al docente que lo arregle"], correct: 1, explain: "La fase IMPROVE es exactamente esto: usar el fracaso como información. ¿Qué capa falla? ¿Qué necesita más? Iterar ES la metodología STEAM." },
+    { q: "¿Cuál evaluación es más apropiada para un proyecto STEAM?", opts: ["Examen de opción múltiple sobre el tema", "Rúbrica que evalúa proceso, creatividad y presentación oral", "Dictado de conceptos clave", "Solo calificar si el producto final funciona"], correct: 1, explain: "En STEAM se evalúa el proceso, la creatividad, la colaboración y la comunicación. Una rúbrica integral captura todo eso." },
+    { q: "¿Qué significa que un proyecto STEAM tenga 'bajo umbral y alto techo'?", opts: ["Que es fácil para todos y no tiene retos", "Que cualquiera puede participar y los más avanzados pueden profundizar sin límite", "Que tiene pocas preguntas", "Que el presupuesto es bajo"], correct: 1, explain: "Bajo umbral: todos pueden comenzar desde donde están. Alto techo: los más capaces pueden llegar muy lejos. STEAM incluye a todos." },
+    { q: "Los estudiantes decoran su filtro de agua con pinturas y le ponen nombre. ¿Qué disciplina STEAM están aplicando?", opts: ["Solo están perdiendo el tiempo", "Artes — están agregando diseño y expresión a su solución técnica", "Emprendimiento — lo están preparando para vender", "Ingeniería — están mejorando el diseño estructural"], correct: 1, explain: "Decorar y nombrar un producto técnico es Artes en acción. Hace la solución deseable, comunicable e identitaria." },
+    { q: "¿Cuál es el rol del docente en una sesión de Tinkering?", opts: ["Dar instrucciones paso a paso para que todos hagan lo mismo", "Observar, hacer preguntas abiertas y dejar que los estudiantes descubran", "Calificar cada paso del proceso", "Mostrar el producto terminado como modelo"], correct: 1, explain: "En Tinkering el docente es guía, no instructor. '¿Qué creen que pasaría si...?' es más poderoso que instrucciones directas." },
+    { q: "Dos estudiantes discuten porque su prototipo falló. Según STEAM, ¿qué debería hacer el docente?", opts: ["Resolver la pelea y dar la respuesta correcta", "Decirles que el fracaso es información: '¿Qué aprendemos de esto?'", "Penalizar a ambos por no terminar", "Cambiarlos de equipo inmediatamente"], correct: 1, explain: "En STEAM el error es datos, no fracaso. El docente convierte la frustración en aprendizaje." },
+    { q: "Un proyecto tiene: medir pH (Ciencia), calcular volumen (Matemáticas) y diseñar una etiqueta (Arte). ¿Podría ser más STEAM?", opts: ["No, con 3 disciplinas es suficiente", "Sí — podría agregar Ingeniería (construir el sistema) y Emprendimiento (plan de impacto)", "No, STEAM no requiere las 6 disciplinas", "Sí — falta Tecnología digital obligatoriamente"], correct: 1, explain: "Con 3 disciplinas ya es STEAM, pero agregar Ingeniería y Emprendimiento lo hace más completo. Siempre hay espacio para profundizar." },
+    { q: "¿Qué hace que un proyecto sea ABP (Aprendizaje Basado en Proyectos) y no solo una actividad?", opts: ["Que dure más de 2 semanas", "Que resuelva un problema real con un producto final que tenga impacto", "Que use materiales tecnológicos", "Que el docente lo haya diseñado completamente"], correct: 1, explain: "ABP tiene un producto final con impacto real para alguien. No es un ejercicio, es un proyecto con significado para la comunidad." },
+    { q: "¿Por qué la bitácora de aprendizaje es importante en STEAM?", opts: ["Para tener algo que mostrar a los padres", "Porque permite al estudiante reflexionar sobre su proceso y errores", "Porque es requisito del currículum", "Para que el docente pueda calificar más fácil"], correct: 1, explain: "La bitácora documenta el proceso de pensamiento: qué intenté, qué falló, qué descubrí. Es metacognición en acción." }
+];
+
+function showDailyChallenge() {
+    const today = new Date().toISOString().split('T')[0];
+    const dm = progress?.dailyMissions || {};
+    const already = dm.lastChallengeDate === today && dm.lastChallengeAnswered;
+    const existing = document.getElementById('dailyChallengeModal');
+    if (existing) existing.remove();
+
+    const dayNum = Math.floor(Date.now() / 86400000);
+    const ch = DAILY_CHALLENGES[dayNum % DAILY_CHALLENGES.length];
+
+    const optsHtml = ch.opts.map((o, i) => `
+        <button ${already ? 'disabled' : ''} onclick="answerDailyChallenge(${i})"
+            data-idx="${i}"
+            class="daily-opt w-full text-left px-4 py-3 rounded-2xl border-2 border-slate-100 text-sm font-semibold text-slate-700 hover:border-[#07B0E4] hover:bg-blue-50 transition mb-2 ${already && dm.lastChallengeAnswer === i ? (i === ch.correct ? 'border-green-400 bg-green-50 text-green-700' : 'border-red-300 bg-red-50 text-red-600') : ''} ${already && i === ch.correct && dm.lastChallengeAnswer !== i ? 'border-green-200 bg-green-50/50' : ''}">
+            <span class="inline-block w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-[11px] font-bold text-center leading-6 mr-2">${String.fromCharCode(65 + i)}</span>
+            ${o}
+        </button>`).join('');
+
+    const explainHtml = already ? `<div class="mt-3 p-3 rounded-2xl text-xs font-semibold ${dm.lastChallengeAnswer === ch.correct ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">💡 ${ch.explain}</div>` : '';
+    const xpBadge = already ? (dm.lastChallengeAnswer === ch.correct ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">+15 XP ganados ✅</span>' : '<span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">Completado hoy</span>') : '<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold animate-pulse">+15 XP si aciertas</span>';
+
+    document.body.insertAdjacentHTML('beforeend', `
+    <div id="dailyChallengeModal" class="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">⚡ Reto del día</p>
+                    <h3 class="font-black text-slate-800 text-base">¿Sabes si esto es STEAM?</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${xpBadge}
+                    <button onclick="document.getElementById('dailyChallengeModal').remove()" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-lg leading-none ml-2">&times;</button>
+                </div>
+            </div>
+            <p class="text-sm font-semibold text-slate-700 mb-4 leading-relaxed bg-slate-50 rounded-2xl p-4">${ch.q}</p>
+            ${optsHtml}
+            ${explainHtml}
+        </div>
+    </div>`);
+}
+
+function answerDailyChallenge(idx) {
+    const today = new Date().toISOString().split('T')[0];
+    const dayNum = Math.floor(Date.now() / 86400000);
+    const ch = DAILY_CHALLENGES[dayNum % DAILY_CHALLENGES.length];
+    const correct = idx === ch.correct;
+
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    progress.dailyMissions.lastChallengeDate = today;
+    progress.dailyMissions.lastChallengeAnswered = true;
+    progress.dailyMissions.lastChallengeAnswer = idx;
+
+    if (correct) addXP(15, 'Reto diario');
+    saveProgress();
+
+    // Actualiza UI sin cerrar el modal
+    document.querySelectorAll('.daily-opt').forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === ch.correct) btn.className = btn.className.replace(/border-slate-100|hover:\S+/g, '') + ' border-green-400 bg-green-50 text-green-700';
+        else if (i === idx && !correct) btn.className = btn.className.replace(/border-slate-100|hover:\S+/g, '') + ' border-red-300 bg-red-50 text-red-600';
+    });
+
+    const modal = document.getElementById('dailyChallengeModal');
+    const existing = modal?.querySelector('.mt-3.p-3');
+    if (!existing && modal) {
+        const exp = document.createElement('div');
+        exp.className = `mt-3 p-3 rounded-2xl text-xs font-semibold ${correct ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`;
+        exp.textContent = '💡 ' + ch.explain;
+        modal.querySelector('.bg-white').appendChild(exp);
+    }
+    showToast(correct ? '🎉 +15 XP ¡Correcto!' : '🤔 Respuesta incorrecta. ¡Mañana hay otro reto!', correct ? 'success' : 'error');
+}
+
+// ==================== COMENTARIOS POR TARJETA ====================
+let _currentCommentCardId = null;
+
+async function showCardComments(cardId) {
+    _currentCommentCardId = cardId;
+    const modal = document.getElementById('commentsModal');
+    const list = document.getElementById('commentsList');
+    if (!modal || !list) return;
+
+    list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Cargando...</p>';
+    modal.classList.remove('hidden');
+
+    try {
+        const { data, error } = await supabase
+            .from('card_comments')
+            .select('id, user_id, comment, created_at')
+            .eq('card_id', cardId)
+            .order('created_at', { ascending: true });
+
+        if (error || !data?.length) {
+            list.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Sé el primero en comentar en esta tarjeta 💬</p>';
+            return;
+        }
+
+        const myId = currentUser?.id;
+        list.innerHTML = data.map(c => {
+            const isMe = c.user_id === myId;
+            const time = new Date(c.created_at).toLocaleDateString('es', { day: 'numeric', month: 'short' });
+            return `
+            <div class="flex gap-3 ${isMe ? 'flex-row-reverse' : ''}">
+                <div class="w-8 h-8 rounded-full ${isMe ? 'bg-[#07B0E4]' : 'bg-slate-200'} flex items-center justify-center text-xs font-bold ${isMe ? 'text-white' : 'text-slate-500'} shrink-0">
+                    ${isMe ? 'Yo' : '👨‍🏫'}
+                </div>
+                <div class="max-w-[75%]">
+                    <div class="${isMe ? 'bg-[#07B0E4] text-white' : 'bg-slate-100 text-slate-700'} rounded-2xl px-3 py-2 text-sm leading-relaxed">${c.comment}</div>
+                    <p class="text-[10px] text-slate-400 mt-1 ${isMe ? 'text-right' : ''}">${time}</p>
+                </div>
+            </div>`;
+        }).join('');
+        list.scrollTop = list.scrollHeight;
+    } catch (e) {
+        list.innerHTML = '<p class="text-xs text-red-400 text-center py-4">Error al cargar comentarios</p>';
+    }
+}
+
+async function submitComment() {
+    const input = document.getElementById('commentInput');
+    const text = input?.value.trim();
+    if (!text || !currentUser || !_currentCommentCardId) return;
+
+    const btn = document.querySelector('#commentsModal button[onclick="submitComment()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
+    const { error } = await supabase.from('card_comments').insert({
+        user_id: currentUser.id,
+        card_id: _currentCommentCardId,
+        module_id: currentModule,
+        comment: text
+    });
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Publicar'; }
+    if (!error) {
+        input.value = '';
+        showCardComments(_currentCommentCardId);
+    } else {
+        showToast('Error al enviar comentario', 'error');
+    }
+}
+
+// ==================== CHATBOT (Groq · Llama 3.3) ====================
+const GROQ_API_KEY = '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';
+const GROQ_MODEL  = 'llama-3.3-70b-versatile';
+
+const CHAT_SYSTEM = `Eres un asistente pedagógico especializado en metodología STEAM para docentes de Guatemala.
+Tu nombre es "Asistente STEAM". Respondes SIEMPRE en español, de forma clara, práctica y motivadora.
+Te especializas en: STEAM/STEM educativo, Aprendizaje Basado en Proyectos (ABP), Design Thinking, Tinkering,
+evaluación formativa, rúbricas, gamificación, y adaptación a contextos con pocos recursos.
+Siempre das ejemplos concretos aplicables a escuelas guatemaltecas con recursos limitados.
+Respuestas concisas (máx 3 párrafos) y con bullet points cuando ayude.
+Si preguntan algo fuera del tema educativo, redirige amablemente hacia cómo aplica a su práctica docente.`;
+
+let _chatHistory = [];
+
+function toggleChat() {
+    const drawer = document.getElementById('chatDrawer');
+    if (!drawer) return;
+    const isHidden = drawer.classList.contains('hidden');
+    drawer.classList.toggle('hidden', !isHidden);
+    if (isHidden) setTimeout(() => document.getElementById('chatInput')?.focus(), 300);
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const msg = input?.value.trim();
+    if (!msg) return;
+
+    input.value = '';
+    appendChatMsg('user', msg);
+    appendChatMsg('bot', '⏳ Pensando...');
+    _chatHistory.push({ role: 'user', content: msg });
+
+    try {
+        const messages = [
+            { role: 'system', content: CHAT_SYSTEM },
+            ..._chatHistory
+        ];
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${GROQ_API_KEY}`
+            },
+            body: JSON.stringify({ model: GROQ_MODEL, messages, max_tokens: 600, temperature: 0.7 })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            replaceLastBotMsg(`❌ Error: ${data?.error?.message || res.status}`);
+            return;
+        }
+
+        const reply = data?.choices?.[0]?.message?.content;
+        if (reply) {
+            _chatHistory.push({ role: 'assistant', content: reply });
+            replaceLastBotMsg(reply);
+        } else {
+            replaceLastBotMsg('🤔 No obtuve respuesta. Intenta de nuevo.');
+        }
+    } catch (e) {
+        replaceLastBotMsg('❌ Error de conexión. Verifica tu internet.');
+    }
+}
+
+function appendChatMsg(role, text) {
+    const messages = document.getElementById('chatMessages');
+    if (!messages) return;
+    const div = document.createElement('div');
+    div.className = role === 'user'
+        ? 'bg-[#07B0E4] text-white rounded-2xl rounded-tr-sm px-3 py-2.5 text-sm max-w-[85%] ml-auto'
+        : 'bg-slate-100 text-slate-700 rounded-2xl rounded-tl-sm px-3 py-2.5 text-sm max-w-[85%] whitespace-pre-wrap';
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function replaceLastBotMsg(text) {
+    const messages = document.getElementById('chatMessages');
+    if (!messages) return;
+    const bots = messages.querySelectorAll('.bg-slate-100');
+    if (bots.length) bots[bots.length - 1].textContent = text;
+    messages.scrollTop = messages.scrollHeight;
 }

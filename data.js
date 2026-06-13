@@ -1,7 +1,16 @@
-// data.js - Curso STEAM para docentes - Profe Billy
-// Total: 73 tarjetas distribuidas en 5 módulos + examen final
+// data.js - Cursos para docentes - Profe Billy
 
-const courseData = {
+const allCourses = [
+{
+    id: 'steam',
+    title: 'Metodología STEAM 2.0',
+    subtitle: 'Ciencia, Tecnología, Ingeniería, Arte y Matemáticas integrados en tu aula',
+    icon: '🔬',
+    color: '#07B0E4',
+    gradient: 'linear-gradient(135deg, #1A6B68, #07B0E4)',
+    status: 'available',
+    durationHours: 10,
+    totalCards: 73,
     modules: [
         // MÓDULO 1: ¿Qué es STEAM? (13 tarjetas)
         {
@@ -36,9 +45,57 @@ const courseData = {
                 { id: 19, type: "content", title: "🎨 Arts (Artes)", content: "Comunicar, narrar, diseñar con estética y emoción. Incluye artes visuales, música, teatro, danza y literatura.", extra: "El arte hace que una solución sea deseable, no solo funcional." },
                 { id: 20, type: "content", title: "📐 Mathematics (Matemáticas)", content: "Medir, calcular, analizar datos, reconocer patrones, usar geometría, estimar, comparar cantidades.", extra: "La matemática es el lenguaje de las otras disciplinas. Sin números, no hay ingeniería." },
                 { id: 21, type: "quiz", title: "🧮 ¿Dónde están las mates?", question: "Un niño diseña un semáforo de cartón. Para decidir el tamaño, mide el ancho del pasillo y calcula que debe medir 30 cm. ¿Qué disciplina usa?", options: ["Solo Arte", "Solo Tecnología", "Matemáticas (medición y cálculo)", "Emprendimiento"], correct: 2, explanation: "Medir y calcular dimensiones es matemática aplicada. La geometría y la medición son mates en acción." },
-                { id: 22, type: "content", title: "🔄 Ejemplo integrador: El semáforo del patio", content: "Problema: niños corren peligro en un cruce del patio. Ciencia: ¿cómo viaja la luz? Tecnología: cartulinas y linterna. Ingeniería: semáforo mecánico giratorio. Arte: señales grandes y coloridas. Matemáticas: ángulo de visión, altura ideal. Emprendimiento: manual de uso para otros grados.", extra: "Un solo proyecto toca las 6 disciplinas. Así se hace STEAM real.", project: { title: "Semáforo del patio", duration: "2 períodos (90 min)", difficulty: "Nivel medio", materials: ["Cartulinas rojo, amarillo y verde", "Tubo de cartón o palitos gruesos", "Pegamento y tijeras", "Marcadores gruesos", "Cinta adhesiva o masking tape"], steps: ["Identifica con tus estudiantes un cruce o zona de riesgo en el patio o pasillo.", "Forma equipos de 4-5 estudiantes. Cada equipo dibuja su diseño de semáforo en papel antes de construir.", "Distribuye los materiales: cartulinas de colores, tubo de cartón, pegamento y tijeras.", "Construyen el semáforo: base con tubo de cartón, círculos de colores recortados y pegados.", "Diseñan señales con instrucciones claras y letras grandes (Arte + comunicación visual).", "Prueban el semáforo en el patio real: ¿se ve bien desde lejos? ¿funciona en la zona de riesgo?", "Presentan su solución a otro grado: explican el problema detectado, el diseño y los resultados obtenidos."], disciplines: ["Ciencia (propagación de la luz)", "Ingeniería (diseño y construcción)", "Arte (señalización visual)", "Matemáticas (medidas y ángulos)", "Emprendimiento (presentación y manual de uso)"] } },
-                { id: 23, type: "content", title: "🔄 Integración real: El filtro de agua", content: "Ciencia (¿cómo filtra el carbón?), Tecnología (embudo, botella), Ingeniería (diseño estable), Arte (decoración), Mates (medir capas).", extra: "Una misma actividad puede cubrir 4 o 5 disciplinas si la planeamos bien.", project: { title: "Filtro de agua casero", duration: "2 períodos (90 min)", difficulty: "Nivel fácil", materials: ["Botellas plásticas grandes (2 por equipo)", "Algodón o tela", "Arena limpia", "Grava o piedritas pequeñas", "Carbón activado (opcional)", "Agua con colorante o tierra para simular agua sucia"], steps: ["Pregunta problematizadora: '¿Qué pasaría si no tuviéramos agua limpia?' Discute 5 minutos en grupo.", "Corta la botella por la mitad. La parte superior (boca abajo) será el filtro; la inferior, el recipiente.", "Coloca capas en orden dentro de la botella-filtro: algodón en el fondo, luego arena, luego grava, luego carbón si hay.", "Prepara agua sucia con tierra o colorante en la otra mitad de la botella.", "Vierte el agua sucia por el filtro y observa cómo cambia. Compara el color antes y después.", "Mide y registra: ¿cuántos ml entran sucios? ¿cuántos salen más limpios? Completa la tabla de datos.", "Decora el filtro y crea una etiqueta con instrucciones claras. Presenta el diseño a la clase."], disciplines: ["Ciencia (filtración y propiedades del agua)", "Ingeniería (diseño por capas)", "Matemáticas (medición en ml)", "Arte (decoración y diseño gráfico)", "Emprendimiento (instrucciones y presentación)"] } },
-                { id: 24, type: "content", title: "🏫 Proyecto integrador: La huerta escolar", content: "Ciencia (crecimiento plantas), Mates (medir área riego), Ingeniería (sistema riego), Arte (señalización), Emprendimiento (vender excedentes).", extra: "Una huerta es un laboratorio STEAM al aire libre.", project: { title: "Huerta escolar STEAM", duration: "Proyecto de 2 semanas", difficulty: "Nivel fácil", materials: ["Botellas plásticas o cajitas de cartón resistente", "Tierra preparada o sustrato", "Semillas (frijol, rábano, hierbas aromáticas)", "Palitos de madera o popotes para el sistema de riego", "Cartulina y marcadores para señalización"], steps: ["Identifica un espacio disponible en el patio, ventana o pasillo. Puede ser en cajitas recicladas.", "Diseña el plano de la huerta: ¿qué plantas? ¿dónde va cada una? Cada equipo dibuja su diseño.", "Construye el sistema de riego por goteo: perfora el fondo de una botella pequeña para que gotee lentamente.", "Planta las semillas y etiqueta cada una con su nombre científico, común y fecha de siembra.", "Lleva un registro diario de crecimiento: altura en cm, número de hojas, color. Usa tabla de datos.", "Crea señales artísticas decoradas para identificar cada planta. Pueden tener ilustraciones hechas a mano.", "Al final del proyecto: planea qué hacer con los excedentes. ¿Donarlos? ¿Venderlos? ¿Hacer una feria STEAM?"], disciplines: ["Ciencia (biología vegetal y fotosíntesis)", "Ingeniería (sistema de riego por goteo)", "Matemáticas (medición del crecimiento)", "Arte (señalización e ilustración)", "Emprendimiento (plan para los excedentes)"] } },
+                { id: 22, type: "content", title: "🔄 Ejemplo integrador: El semáforo del patio", content: "Problema: niños corren peligro en un cruce del patio. Ciencia: ¿cómo viaja la luz? Tecnología: cartulinas y linterna. Ingeniería: semáforo mecánico giratorio. Arte: señales grandes y coloridas. Matemáticas: ángulo de visión, altura ideal. Emprendimiento: manual de uso para otros grados.", extra: "Un solo proyecto toca las 6 disciplinas. Así se hace STEAM real.", project: { title: "Semáforo del patio", duration: "2 períodos (90 min)", difficulty: "Nivel medio", materials: ["Cartulinas rojo, amarillo y verde", "Tubo de cartón o palitos gruesos", "Pegamento y tijeras", "Marcadores gruesos", "Cinta adhesiva o masking tape"], steps: ["Identifica con tus estudiantes un cruce o zona de riesgo en el patio o pasillo.", "Forma equipos de 4-5 estudiantes. Cada equipo dibuja su diseño de semáforo en papel antes de construir.", "Distribuye los materiales: cartulinas de colores, tubo de cartón, pegamento y tijeras.", "Construyen el semáforo: base con tubo de cartón, círculos de colores recortados y pegados.", "Diseñan señales con instrucciones claras y letras grandes (Arte + comunicación visual).", "Prueban el semáforo en el patio real: ¿se ve bien desde lejos? ¿funciona en la zona de riesgo?", "Presentan su solución a otro grado: explican el problema detectado, el diseño y los resultados obtenidos."], disciplines: ["Ciencia (propagación de la luz)", "Ingeniería (diseño y construcción)", "Arte (señalización visual)", "Matemáticas (medidas y ángulos)", "Emprendimiento (presentación y manual de uso)"],
+                        think: [
+                            "Observen el cruce problemático 5 minutos. ¿Cuántos casi-accidentes ven? Anótenlo en la bitácora.",
+                            "Busquen imágenes de semáforos reales: ¿qué altura tienen? ¿por qué esos colores? ¿qué tamaño tienen los círculos?",
+                            "Cada equipo dibuja 2 diseños distintos en papel antes de construir. Argumenten cuál resuelve mejor el problema."
+                        ],
+                        make: [
+                            "Construyan el primer prototipo con cartulinas y tubo de cartón. No busquen perfección — construyan rápido y prueben.",
+                            "Lleven el prototipo al cruce real. ¿Se ve desde lejos? ¿Los colores son claros con la luz del sol o de las lámparas?",
+                            "Si algo no funciona, ajústenlo: tamaño, ubicación, colores. El primer intento casi nunca es el mejor — eso está bien."
+                        ],
+                        improve: [
+                            "¿Qué falló en la primera prueba? Ese fracaso es exactamente la información que necesitan para mejorar.",
+                            "Pidan a un estudiante de otro grado que use el semáforo sin instrucciones. ¿Lo entiende solo? Si no, hay que mejorar el diseño.",
+                            "Escriban instrucciones de 1 página para que otro grupo pueda replicar su semáforo en otra escuela. Eso es emprendimiento real."
+                        ]
+                    } },
+                { id: 23, type: "content", title: "🔄 Integración real: El filtro de agua", content: "Ciencia (¿cómo filtra el carbón?), Tecnología (embudo, botella), Ingeniería (diseño estable), Arte (decoración), Mates (medir capas).", extra: "Una misma actividad puede cubrir 4 o 5 disciplinas si la planeamos bien.", project: { title: "Filtro de agua casero", duration: "2 períodos (90 min)", difficulty: "Nivel fácil", materials: ["Botellas plásticas grandes (2 por equipo)", "Algodón o tela", "Arena limpia", "Grava o piedritas pequeñas", "Carbón activado (opcional)", "Agua con colorante o tierra para simular agua sucia"], steps: ["Pregunta problematizadora: '¿Qué pasaría si no tuviéramos agua limpia?' Discute 5 minutos en grupo.", "Corta la botella por la mitad. La parte superior (boca abajo) será el filtro; la inferior, el recipiente.", "Coloca capas en orden dentro de la botella-filtro: algodón en el fondo, luego arena, luego grava, luego carbón si hay.", "Prepara agua sucia con tierra o colorante en la otra mitad de la botella.", "Vierte el agua sucia por el filtro y observa cómo cambia. Compara el color antes y después.", "Mide y registra: ¿cuántos ml entran sucios? ¿cuántos salen más limpios? Completa la tabla de datos.", "Decora el filtro y crea una etiqueta con instrucciones claras. Presenta el diseño a la clase."], disciplines: ["Ciencia (filtración y propiedades del agua)", "Ingeniería (diseño por capas)", "Matemáticas (medición en ml)", "Arte (decoración y diseño gráfico)", "Emprendimiento (instrucciones y presentación)"],
+                        think: [
+                            "Investiguen: ¿cómo filtra el carbón el agua? ¿Por qué el algodón atrapa partículas? Busquen en libros o pregunten a alguien mayor.",
+                            "Observen agua limpia y agua sucia. Describan diferencias: color, olor, partículas visibles. Registren todo en la bitácora.",
+                            "Diseñen en papel el orden de las capas antes de construir. ¿Qué material va primero? ¿Por qué ese orden y no otro?"
+                        ],
+                        make: [
+                            "Construyan el filtro siguiendo su diseño. Primer intento: sigan el plan. Anoten cualquier problema que encuentren en el camino.",
+                            "Viertan agua sucia y midan cuántos ml entran y cuántos salen. Comparen el color antes y después. Registren los datos.",
+                            "Si el agua sigue sucia, cambien el orden de las capas o agreguen más material. Inténtenlo otra vez — cada intento enseña algo."
+                        ],
+                        improve: [
+                            "Comparen su filtro con el de otro equipo. ¿Cuál funcionó mejor? ¿Por qué? No se trata de ganar, sino de aprender del contraste.",
+                            "¿Qué harían diferente si tuvieran más material? ¿Y si tuvieran menos? Registren ambas respuestas en la bitácora.",
+                            "Diseñen una etiqueta con instrucciones claras para que alguien en casa pueda replicarlo. ¿Puede ser su familia el próximo beneficiario?"
+                        ]
+                    } },
+                { id: 24, type: "content", title: "🏫 Proyecto integrador: La huerta escolar", content: "Ciencia (crecimiento plantas), Mates (medir área riego), Ingeniería (sistema riego), Arte (señalización), Emprendimiento (vender excedentes).", extra: "Una huerta es un laboratorio STEAM al aire libre.", project: { title: "Huerta escolar STEAM", duration: "Proyecto de 2 semanas", difficulty: "Nivel fácil", materials: ["Botellas plásticas o cajitas de cartón resistente", "Tierra preparada o sustrato", "Semillas (frijol, rábano, hierbas aromáticas)", "Palitos de madera o popotes para el sistema de riego", "Cartulina y marcadores para señalización"], steps: ["Identifica un espacio disponible en el patio, ventana o pasillo. Puede ser en cajitas recicladas.", "Diseña el plano de la huerta: ¿qué plantas? ¿dónde va cada una? Cada equipo dibuja su diseño.", "Construye el sistema de riego por goteo: perfora el fondo de una botella pequeña para que gotee lentamente.", "Planta las semillas y etiqueta cada una con su nombre científico, común y fecha de siembra.", "Lleva un registro diario de crecimiento: altura en cm, número de hojas, color. Usa tabla de datos.", "Crea señales artísticas decoradas para identificar cada planta. Pueden tener ilustraciones hechas a mano.", "Al final del proyecto: planea qué hacer con los excedentes. ¿Donarlos? ¿Venderlos? ¿Hacer una feria STEAM?"], disciplines: ["Ciencia (biología vegetal y fotosíntesis)", "Ingeniería (sistema de riego por goteo)", "Matemáticas (medición del crecimiento)", "Arte (señalización e ilustración)", "Emprendimiento (plan para los excedentes)"],
+                        think: [
+                            "Investiguen qué necesita una planta para crecer: luz, agua, tierra, espacio. ¿Qué tiene su escuela disponible ahora mismo?",
+                            "Planifiquen el diseño de la huerta en papel: ¿cuántas plantas caben en el espacio? ¿Cuánto espacio necesita cada una? Usen medidas reales.",
+                            "Diseñen el sistema de riego por goteo antes de construirlo. ¿Cómo hará el agua para llegar lentamente a las raíces sin desperdiciar?"
+                        ],
+                        make: [
+                            "Construyan el sistema de riego: perforen el fondo de una botella pequeña. Pruébenlo con agua sola antes de plantar — ¿gotea o sale a chorros?",
+                            "Planten las semillas y configuren el riego. Primer día: ¿funciona el sistema? Ajústen si es necesario antes de que las plantas lo necesiten.",
+                            "Registren el crecimiento cada día: altura en cm, número de hojas, color. La tabla de datos es su herramienta científica más importante."
+                        ],
+                        improve: [
+                            "Semana 2: ¿qué plantas crecieron más? ¿Cuáles no? ¿A qué creen que se debe? Ajusten el riego de las que van mal y registren el cambio.",
+                            "Comparen su diseño de riego con el de otro equipo. ¿Cuál usó menos agua con mejor resultado? ¿Qué pueden copiar del otro diseño?",
+                            "Al final del proyecto, planeen el destino de las plantas: ¿donarlas, venderlas, hacer una feria STEAM? Ese plan es emprendimiento real."
+                        ]
+                    } },
                 { id: 25, type: "quiz", title: "🌱 Identifica el proyecto integrador", question: "En una huerta escolar, los estudiantes diseñan un sistema de riego por goteo con botellas. Pintan las botellas y las decoran. ¿Qué disciplinas se integran?", options: ["Solo Ingeniería", "Ingeniería + Arte", "Ingeniería + Arte + Emprendimiento", "Todas las anteriores"], correct: 3, explanation: "Ingeniería (diseño del sistema), Arte (decoración), Emprendimiento (podrían vender el sistema a otras escuelas). Es STEAM completo." },
                 { id: 26, type: "content", title: "⚠️ Error común: separar las disciplinas", content: "Un error frecuente es hacer 'hora de ciencia', luego 'hora de arte', sin conexión. Eso no es STEAM. La magia está en la integración.", extra: "STEAM no es una ensalada de materias. Es un batido: todo mezclado." },
                 { id: 27, type: "content", title: "🗺️ Mapa de integración (para planificar)", content: "Antes de un proyecto, pregúntese: ¿Qué ciencia hay? ¿Qué mates? ¿Qué arte? ¿Qué ingeniería? Si falta una, ¿podemos agregarla fácilmente?", extra: "Un buen proyecto STEAM toca al menos 4 de las 6 disciplinas." },
@@ -150,4 +207,47 @@ const courseData = {
             { id: 30, text: "¿Qué es la metacognición y por qué importa en STEAM?", options: ["Memorizar hechos científicos", "Pensar sobre cómo aprendemos y mejorar nuestro propio proceso", "Calcular el promedio de calificaciones", "Usar tecnología avanzada"], correct: 1, explanation: "Metacognición = pensar sobre el propio pensamiento. En STEAM los estudiantes reflexionan qué funcionó y qué cambiarían." }
         ]
     }
-};
+} // end steam course
+,
+{
+    id: 'abp',
+    title: 'Aprendizaje Basado en Proyectos',
+    subtitle: 'Diseña proyectos con impacto real en tu comunidad educativa',
+    icon: '🏗️',
+    color: '#2BA848',
+    gradient: 'linear-gradient(135deg, #1a4a2e, #2BA848)',
+    status: 'coming',
+    durationHours: 8,
+    totalCards: 60,
+    modules: [],
+    finalExam: null
+},
+{
+    id: 'design-thinking',
+    title: 'Design Thinking para Docentes',
+    subtitle: 'Resuelve problemas del aula con empatía y creatividad',
+    icon: '💡',
+    color: '#E83C8D',
+    gradient: 'linear-gradient(135deg, #6b1a47, #E83C8D)',
+    status: 'coming',
+    durationHours: 6,
+    totalCards: 45,
+    modules: [],
+    finalExam: null
+},
+{
+    id: 'evaluacion',
+    title: 'Herramientas de Evaluación',
+    subtitle: 'Rúbricas, portafolios y evaluación auténtica para el siglo XXI',
+    icon: '📊',
+    color: '#E9A037',
+    gradient: 'linear-gradient(135deg, #6b4a1a, #E9A037)',
+    status: 'coming',
+    durationHours: 5,
+    totalCards: 35,
+    modules: [],
+    finalExam: null
+}
+]; // end allCourses
+
+const courseData = allCourses[0]; // backward compat — STEAM es el curso por defecto
