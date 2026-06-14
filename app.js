@@ -204,6 +204,19 @@ async function loginWithEmail(email, password) {
             };
         }
 
+        // Restaurar nombre y foto desde localStorage — tiene prioridad sobre datos de nube
+        // (protege contra sync incompleto antes de cerrar pestaña)
+        try {
+            const _pk = `userProfile_${currentUser.id}`;
+            const _saved = localStorage.getItem(_pk);
+            if (_saved) {
+                const _p = JSON.parse(_saved);
+                if (!progress.dailyMissions) progress.dailyMissions = {};
+                if (_p.fullName) progress.dailyMissions.fullName = _p.fullName;
+                if (_p.profilePhoto) progress.dailyMissions.profilePhoto = _p.profilePhoto;
+            }
+        } catch(e) {}
+
         initExistingModuleDates();
         checkDailyStreak();
         loadDailyMissions();
@@ -282,6 +295,17 @@ async function checkExistingSession() {
             };
         }
 
+        try {
+            const _pk = `userProfile_${currentUser.id}`;
+            const _saved = localStorage.getItem(_pk);
+            if (_saved) {
+                const _p = JSON.parse(_saved);
+                if (!progress.dailyMissions) progress.dailyMissions = {};
+                if (_p.fullName) progress.dailyMissions.fullName = _p.fullName;
+                if (_p.profilePhoto) progress.dailyMissions.profilePhoto = _p.profilePhoto;
+            }
+        } catch(e) {}
+
         initExistingModuleDates();
         checkDailyStreak();
         loadDailyMissions();
@@ -320,7 +344,19 @@ function updateUI() {
     if (cardCounter) cardCounter.innerText = `${currentCardIndex + 1} / ${totalCards}`;
 
     const moduleBadge = document.getElementById("moduleBadge");
-    if (moduleBadge) moduleBadge.innerHTML = `Módulo ${currentModule} / 5`;
+    if (moduleBadge) moduleBadge.innerHTML = `Módulo ${currentModule} / ${modulesData.length}`;
+
+    // Nombre dinámico del curso en el encabezado
+    const _activeCourse = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === (currentCourseId || 'steam')) : null;
+    const _courseLabel = document.getElementById('courseNameLabel');
+    if (_courseLabel && _activeCourse) _courseLabel.textContent = _activeCourse.title;
+
+    // Color de la barra de progreso según el curso
+    const _courseColor = _activeCourse?.color || 'var(--brand-blue)';
+    const _cpBar = document.getElementById('courseProgressBar');
+    if (_cpBar) _cpBar.style.background = _courseColor;
+    const _cpPct = document.getElementById('courseProgressPercent');
+    if (_cpPct) _cpPct.style.color = _courseColor;
 
     const totalAll = modulesData.reduce((acc, m) => acc + m.cards.length, 0);
     // Filtrar tarjetas completadas del curso activo (por prefijo de ID o courseId guardado)
@@ -1085,8 +1121,11 @@ function renderModulesTab() {
 
     for (let i = 1; i <= totalModules; i++) {
         const mod = modulesData[i - 1];
-        const theme = (typeof MODULE_THEME !== 'undefined') ? MODULE_THEME[i] : { primary: '#0097A7', soft: '#E0F7FA' };
-        const illus = (typeof MODULE_ILLUSTRATIONS !== 'undefined') ? MODULE_ILLUSTRATIONS[i] : '';
+        const _ct = (typeof getCourseThemeAndIllus !== 'undefined')
+            ? getCourseThemeAndIllus(currentCourseId || 'steam', i)
+            : { theme: MODULE_THEME?.[i] || { primary: '#0097A7', soft: '#E0F7FA' }, illus: MODULE_ILLUSTRATIONS?.[i] || '' };
+        const theme = _ct.theme;
+        const illus = _ct.illus;
 
         const locked = isModuleLocked(i);
         const isCurrentMod = (i === currentModule);
@@ -1590,6 +1629,11 @@ document.getElementById('saveProfileBtn')?.addEventListener('click', () => {
     if (!progress.dailyMissions) progress.dailyMissions = {};
     if (name) progress.dailyMissions.fullName = name;
     if (hasPhoto && photoSrc) progress.dailyMissions.profilePhoto = photoSrc;
+
+    // Guardar perfil en clave dedicada de localStorage — sobrevive a recargas y resincs
+    const _profileKey = currentUser ? `userProfile_${currentUser.id}` : 'userProfile_local';
+    const _savedProfile = { fullName: progress.dailyMissions.fullName, profilePhoto: progress.dailyMissions.profilePhoto };
+    localStorage.setItem(_profileKey, JSON.stringify(_savedProfile));
 
     // Actualizar display en perfil
     const nameDisplay = document.getElementById('userEmailDisplay');
