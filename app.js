@@ -1,4 +1,4 @@
-// app.js - Curso STEAM con Supabase backend y gamificación completa
+﻿// app.js - Curso STEAM con Supabase backend y gamificación completa
 
 // ==================== CONFIGURACIÓN DE SUPABASE ====================
 // ⚠️ IMPORTANTE: Reemplaza con tus credenciales de Supabase
@@ -323,8 +323,14 @@ function updateUI() {
     if (moduleBadge) moduleBadge.innerHTML = `Módulo ${currentModule} / 5`;
 
     const totalAll = modulesData.reduce((acc, m) => acc + m.cards.length, 0);
-    const completedTotal = progress.completedCards?.length || 0;
-    const coursePercent = Math.round((completedTotal / totalAll) * 100);
+    // Filtrar tarjetas completadas del curso activo (por prefijo de ID o courseId guardado)
+    const _activeCoursePrefix = (currentCourseId || 'steam');
+    const completedTotal = (progress.completedCards || []).filter(id => {
+        // IDs nuevos llevan el prefijo del curso, STEAM usa módulo numérico
+        if (_activeCoursePrefix === 'steam') return /^\d+/.test(String(id)) || String(id).startsWith('steam') || String(id).startsWith('m');
+        return String(id).startsWith(_activeCoursePrefix);
+    }).length;
+    const coursePercent = Math.min(Math.round((completedTotal / totalAll) * 100), 100);
     const courseProgressBar = document.getElementById("courseProgressBar");
     if (courseProgressBar) courseProgressBar.style.width = `${coursePercent}%`;
     const courseProgressPercent = document.getElementById("courseProgressPercent");
@@ -345,13 +351,25 @@ function updateUI() {
 
     updateStreakDisplay();
 
-    // Botón de certificado en perfil
+    // Botón Estadísticas: solo visible para el admin
+    const _statsBtn = document.getElementById('statsSecretBtn');
+    if (_statsBtn) {
+        if (currentUser && currentUser.email === ADMIN_EMAIL) {
+            _statsBtn.classList.remove('hidden');
+        } else {
+            _statsBtn.classList.add('hidden');
+        }
+    }
+
+    // Botón de certificado en perfil — visible si aprobó el examen del curso activo
     const certBtn = document.getElementById('certDownloadBtn');
     if (certBtn) {
-        const examScore = progress.dailyMissions?.examScore;
-        if (examScore !== undefined) {
+        const _activeCid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+        const _scores = progress.dailyMissions?.examScores || {};
+        const _score = _scores[_activeCid] ?? progress.dailyMissions?.examScore;
+        if (_score !== undefined) {
             certBtn.classList.remove('hidden');
-            window._lastExamScore = examScore;
+            window._lastExamScore = _score;
         } else {
             certBtn.classList.add('hidden');
         }
@@ -565,6 +583,20 @@ function generateLevelCertificate(level) {
     showToast(`📜 Certificado de Nivel ${level} generado`, "success");
 }
 
+// ==================== UTILIDADES DE TEXTO ====================
+function _mdToHtml(text) {
+    if (!text) return '';
+    return text
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')      // **bold**
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')                   // *italic*
+        .replace(/\n•\s*/g, '</p><p class="card-bullet">• ')    // bullet después de \n
+        .replace(/^•\s*/gm, '<p class="card-bullet">• ')        // bullet al inicio de línea
+        .replace(/\n\n/g, '</p><p>')                             // párrafo doble
+        .replace(/\n/g, '<br>')                                  // salto simple
+        .replace(/\| (.+?) \|/g, (m) => m)                      // tablas — dejar como está
+        ;
+}
+
 // ==================== FUNCIONES BASE DEL CURSO ====================
 function renderCard() {
     const module = modulesData[currentModule - 1];
@@ -593,12 +625,18 @@ function renderCard() {
             saveProgress();
         }
 
-        const theme = (typeof MODULE_THEME !== 'undefined' && MODULE_THEME[currentModule]) || { primary: '#0097A7', soft: '#E0F7FA' };
-        const illus = (typeof MODULE_ILLUSTRATIONS !== 'undefined' && MODULE_ILLUSTRATIONS[currentModule]) || '';
+        const _courseTheme = (typeof getCourseThemeAndIllus !== 'undefined')
+            ? getCourseThemeAndIllus(currentCourseId || 'steam', currentModule)
+            : { theme: MODULE_THEME?.[currentModule] || { primary: '#0097A7', soft: '#E0F7FA' }, illus: MODULE_ILLUSTRATIONS?.[currentModule] || '' };
+        const theme = _courseTheme.theme;
+        const illus = _courseTheme.illus;
         const totalCards = module.cards.length;
         const profeName = getDisplayName();
-        const cardContent = (card.content || '').replace(/Profe Billy/g, profeName);
-        const cardExtra = (card.extra || '').replace(/Profe Billy/g, profeName);
+        const cardContent = _mdToHtml((card.content || '').replace(/Profe Billy/g, profeName));
+        const _rawExtra = typeof card.extra === 'object' && card.extra !== null
+            ? (card.extra.tip || '')
+            : (card.extra || '');
+        const cardExtra = _mdToHtml(_rawExtra.replace(/Profe Billy/g, profeName));
 
         container.innerHTML = `
         <div class="content-card" id="activeCard">
@@ -637,12 +675,21 @@ function renderCard() {
         // Bloquear botón Siguiente hasta responder correctamente
         if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = "0.4"; }
 
+        // Shuffle de opciones (seed por cardId para que sea consistente en repaso)
+        const _seed = (card.id || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        const _shuffled = card.options.map((opt, i) => ({ opt, orig: i }));
+        for (let i = _shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(((_seed * (i + 7)) % (i + 1) + (i + 1)) % (i + 1));
+            [_shuffled[i], _shuffled[j]] = [_shuffled[j], _shuffled[i]];
+        }
+        const _correctShuffled = _shuffled.findIndex(s => s.orig === card.correct);
+
         let optionsHtml = "";
-        card.options.forEach((opt, idx) => {
+        _shuffled.forEach((item, idx) => {
             optionsHtml += `
-            <button class="quiz-option w-full text-left p-3 rounded-2xl mb-2" data-opt="${idx}">
+            <button class="quiz-option w-full text-left p-3 rounded-2xl mb-2" data-opt="${idx}" data-orig="${item.orig}">
                 <span class="option-letter">${String.fromCharCode(65 + idx)}</span>
-                <span class="text-gray-700 text-sm font-medium">${opt}</span>
+                <span class="text-gray-700 text-sm font-medium">${item.opt}</span>
             </button>`;
         });
 
@@ -671,7 +718,7 @@ function renderCard() {
                 document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
 
                 const selected = parseInt(btn.dataset.opt);
-                const isCorrect = (selected === card.correct);
+                const isCorrect = (selected === _correctShuffled);
                 const feedbackDiv = document.getElementById('quizFeedback');
                 const hint = document.getElementById('quizHint');
                 if (hint) hint.classList.add('hidden');
@@ -746,11 +793,19 @@ function showComingSoon() {
     showToast('🎁 ¡Muy pronto! Los premios estarán disponibles próximamente.');
 }
 
+function _saveCoursePosition() {
+    if (!progress || !currentCourseId) return;
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    if (!progress.dailyMissions.coursePositions) progress.dailyMissions.coursePositions = {};
+    progress.dailyMissions.coursePositions[currentCourseId] = { module: currentModule, card: currentCardIndex };
+}
+
 function goToNextCard() {
     const module = modulesData[currentModule - 1];
     if (!module) return;
     if (currentCardIndex + 1 < module.cards.length) {
         currentCardIndex++;
+        _saveCoursePosition();
         saveProgress();
         renderCard();
         animateCard('next');
@@ -767,6 +822,7 @@ function goToNextCard() {
 function goToPrevCard() {
     if (currentCardIndex > 0) {
         currentCardIndex--;
+        _saveCoursePosition();
         saveProgress();
         renderCard();
         animateCard('prev');
@@ -774,14 +830,16 @@ function goToPrevCard() {
         currentModule--;
         const prevModule = modulesData[currentModule - 1];
         currentCardIndex = prevModule.cards.length - 1;
+        _saveCoursePosition();
         saveProgress();
         renderCard();
     }
 }
 
 function askModuleFeedback(moduleId) {
-    if (progress.moduleFeedback?.[moduleId]) { continueToNextModule(); return; }
-    const moduleName = modulesData[moduleId - 1].title;
+    const _feedbackKey = `${currentCourseId || 'steam'}-${moduleId}`;
+    if (progress.moduleFeedback?.[_feedbackKey]) { continueToNextModule(); return; }
+    const moduleName = modulesData[moduleId - 1]?.title || `Módulo ${moduleId}`;
     const feedbackHtml = `<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6"><h2 class="text-xl font-bold text-indigo-800 mb-2">📝 ¿Cómo te fue en ${moduleName}?</h2><div class="mb-4"><label class="block font-medium mb-2">Satisfacción (1-5)</label><div class="flex gap-2 justify-between" id="ratingStars">${[1, 2, 3, 4, 5].map(n => `<button data-rating="${n}" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>`).join('')}</div><input type="hidden" id="selectedRating" value="0"></div><div class="mb-4"><label class="block font-medium mb-2">NPS (0-10): ¿Recomendarías este curso a otro docente?</label><div class="grid grid-cols-5 gap-1">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button data-nps="${n}" class="nps-btn w-9 h-9 rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition text-sm">${n}</button>`).join('')}</div><input type="hidden" id="selectedNPS" value="-1"></div><div class="mb-4"><textarea id="feedbackComment" rows="3" class="w-full border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Comentario o sugerencia (opcional)"></textarea></div><div class="flex gap-2"><button id="submitFeedbackBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex-1 transition">Enviar</button><button id="skipFeedbackBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition">Omitir</button></div></div></div>`;
     document.body.insertAdjacentHTML('beforeend', feedbackHtml);
 
@@ -806,7 +864,7 @@ function askModuleFeedback(moduleId) {
         const comment = document.getElementById('feedbackComment').value;
         if (rating === 0) { alert("Por favor, selecciona una calificación de 1 a 5"); return; }
         if (nps === -1) { alert("Por favor, selecciona un puntaje NPS del 0 al 10"); return; }
-        progress.moduleFeedback[moduleId] = { moduleName, rating, nps, comment, timestamp: new Date().toISOString(), moduleId };
+        progress.moduleFeedback[_feedbackKey] = { moduleName, rating, nps, comment, timestamp: new Date().toISOString(), moduleId, courseId: currentCourseId || 'steam' };
         progress.npsHistory = progress.npsHistory || [];
         progress.npsHistory.push({ moduleId, moduleName, nps, timestamp: new Date().toISOString() });
         // Guardar también en tabla feedback para que el admin lo pueda ver
@@ -1699,7 +1757,7 @@ function renderExamCard() {
 
     const isLast = examCurrentQ >= total - 1;
     const cardHtml = `<div id="activeCard" class="content-card">
-        <div class="card-banner" style="background:linear-gradient(135deg,#5C35C5 0%,#7C3AED 100%)">
+        <div class="card-banner" style="background:#5C35C5">
             <div class="card-banner-svg">${examIllus}</div>
             <p class="card-banner-sub">⭐ Examen Final &nbsp;·&nbsp; Pregunta ${qNum} de ${total}</p>
         </div>
@@ -1798,7 +1856,11 @@ function showExamResults() {
     if (passed) addXP(100, "Examen aprobado");
     if (passed) {
         if (!progress.dailyMissions) progress.dailyMissions = {};
-        progress.dailyMissions.examScore = pct;
+        // Guardar puntaje por courseId para soportar múltiples cursos
+        const _cid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+        if (!progress.dailyMissions.examScores) progress.dailyMissions.examScores = {};
+        progress.dailyMissions.examScores[_cid] = pct;
+        progress.dailyMissions.examScore = pct; // backward compat
         progress.dailyMissions.examDate = new Date().toISOString().split('T')[0];
         window._lastExamScore = pct;
         // Mostrar botón de certificado en perfil
@@ -1812,7 +1874,7 @@ function showExamResults() {
         : `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="10" width="48" height="60" rx="8" stroke="rgba(255,255,255,0.9)" stroke-width="2.5"/><line x1="26" y1="30" x2="54" y2="30" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/><line x1="26" y1="40" x2="54" y2="40" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/><line x1="26" y1="50" x2="42" y2="50" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/></svg>`;
 
     const cardHtml = `<div id="activeCard" class="content-card">
-        <div class="card-banner" style="background:linear-gradient(135deg,${passed ? '#059669,#047857' : '#DC2626,#B91C1C'})">
+        <div class="card-banner" style="background:${passed ? '#059669' : '#DC2626'}">
             <div class="card-banner-svg">${resultIllus}</div>
             <p class="card-banner-sub" style="color:white;font-size:1rem;font-weight:800;opacity:1">
                 ${passed ? '¡Aprobaste el examen!' : 'Sigue practicando'}
@@ -1880,6 +1942,24 @@ async function generateCertificateFromExam(percentage) {
     const nombre = getDisplayName();
     const fecha = new Date().toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' });
 
+    // Datos del curso activo
+    const _cid2 = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+    const _course = (typeof allCourses !== 'undefined' && allCourses.find(c => c.id === _cid2)) || allCourses[0];
+    const courseTitle = _course.title || 'Metodología STEAM 2.0';
+    const courseDuration = _course.durationHours ? `${_course.durationHours} horas` : '10 horas';
+    const courseColor = _course.color || '#0097A7';
+    const courseGradient = _course.color || '#1A6B68';
+    const courseIcon = _course.icon || '🔬';
+
+    // Descripción específica por curso
+    const courseDescs = {
+        'steam': `Por haber completado satisfactoriamente el <strong>Curso STEAM 2.0 para Docentes</strong>, demostrando competencias en la integración de Ciencia, Tecnología, Ingeniería, Emprendimiento, Arte y Matemáticas en entornos educativos`,
+        'abp': `Por haber completado satisfactoriamente el curso <strong>Aprendizaje Basado en Proyectos para Docentes</strong>, demostrando dominio del ciclo ABP, diseño de proyectos auténticos y estrategias de evaluación formativa`,
+        'design-thinking': `Por haber completado satisfactoriamente el curso <strong>Design Thinking para Docentes</strong>, demostrando competencias en empatía, ideación, prototipado y evaluación iterativa para resolver problemas educativos`,
+        'evaluacion': `Por haber completado satisfactoriamente el curso <strong>Herramientas de Evaluación Auténtica</strong>, demostrando dominio en rúbricas, portafolios, autoevaluación, coevaluación y evaluación formativa`
+    };
+    const courseDesc = courseDescs[_course.id] || courseDescs['steam'];
+
     // Intentar cargar imágenes reales; si no existen, usar fallback SVG
     const [logoSrc, firmaSrc] = await Promise.all([
         _imgToBase64('logo-1bot-edoo.png'),
@@ -1888,23 +1968,22 @@ async function generateCertificateFromExam(percentage) {
 
     const logoHtml = logoSrc
         ? `<img src="${logoSrc}" alt="1bot · edoo" style="height:44px;object-fit:contain">`
-        : `<span style="font-family:Arial Black,sans-serif;font-size:18px;font-weight:900;color:#0097A7">1bot <span style="color:#E91E63">·</span> edoo</span>`;
+        : `<span style="font-family:Arial Black,sans-serif;font-size:18px;font-weight:900;color:${courseColor}">1bot <span style="color:#E91E63">·</span> edoo</span>`;
 
     const certHTML = `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Certificado STEAM - ${nombre}</title>
+<title>Certificado ${courseTitle} - ${nombre}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Inter',sans-serif; background:#F1F5F9; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
   .cert { background:white; width:800px; border-radius:24px; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,.15); }
-  .cert-top { background:linear-gradient(135deg,#0097A7 0%,#00BCD4 50%,#4CAF50 100%); padding:36px 48px 28px; position:relative; overflow:hidden; }
+  .cert-top { background:${courseGradient}; padding:36px 48px 28px; position:relative; overflow:hidden; }
   .cert-top::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,.08); }
   .cert-top::after  { content:''; position:absolute; bottom:-60px; left:20%; width:280px; height:280px; border-radius:50%; background:rgba(255,255,255,.05); }
-  .steam-letters { font-size:13px; font-weight:900; letter-spacing:.25em; display:flex; gap:2px; margin-bottom:8px; }
-  .s{color:#FFD600}.t{color:#FF5722}.e1{color:#4CAF50}.e2{color:#2196F3}.a{color:#E91E63}.m{color:#9C27B0}
+  .cert-icon  { font-size:32px; margin-bottom:8px; display:block; }
   .cert-title    { color:white; font-size:26px; font-weight:900; line-height:1.2; }
   .cert-subtitle { color:rgba(255,255,255,.82); font-size:12.5px; margin-top:5px; }
   .cert-body  { padding:32px 48px; }
@@ -1923,32 +2002,28 @@ async function generateCertificateFromExam(percentage) {
   .sign-name  { font-size:12.5px; font-weight:700; color:#0F172A; }
   .sign-role  { font-size:11px; color:#64748B; }
   .brand-area { display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
-  .print-btn  { background:#0097A7; color:white; border:none; padding:10px 22px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
-  .print-btn:hover { background:#00838F; }
+  .print-btn  { background:${courseColor}; color:white; border:none; padding:10px 22px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .print-btn:hover { opacity:.88; }
   @media print { body{background:none;padding:0} .cert{box-shadow:none;border-radius:0;width:100%} .print-btn{display:none} }
 </style>
 </head>
 <body>
 <div class="cert">
   <div class="cert-top">
-    <div class="steam-letters">
-      <span class="s">S</span><span class="t">T</span><span class="e1">E</span><span class="e2">E</span><span class="a">A</span><span class="m">M</span>
-    </div>
+    <span class="cert-icon">${courseIcon}</span>
     <h1 class="cert-title">Certificado de Finalización</h1>
-    <p class="cert-subtitle">Curso STEAM para Docentes · Formación Profesional</p>
+    <p class="cert-subtitle">${courseTitle} · Formación Profesional Docente</p>
   </div>
   <div class="cert-body">
     <p class="cert-otorga">Se otorga a</p>
     <p class="cert-nombre">${nombre}</p>
     <p class="cert-desc">
-      Por haber completado satisfactoriamente el <strong>Curso STEAM 2.0 para Docentes</strong>,
-      demostrando competencias en la integración de Ciencia, Tecnología, Ingeniería, Emprendimiento,
-      Arte y Matemáticas en entornos educativos, con un puntaje de
+      ${courseDesc}, con un puntaje de
       <strong>${Math.round(percentage)}% en el examen final</strong>.
     </p>
     <div class="cert-meta">
       <div class="meta-pill"><div class="label">Puntaje</div><div class="value">${Math.round(percentage)}%</div></div>
-      <div class="meta-pill"><div class="label">Duración</div><div class="value">10 horas</div></div>
+      <div class="meta-pill"><div class="label">Duración</div><div class="value">${courseDuration}</div></div>
       <div class="meta-pill"><div class="label">Emisión</div><div class="value">${fecha}</div></div>
     </div>
     <div class="cert-footer">
@@ -2140,11 +2215,14 @@ const _confettiColors = ['#FCC30A', '#2BA848', '#07B0E4', '#E9A037', '#E83C8D', 
 function showModuleComplete(moduleId, callback) {
     _moduleCompleteCallback = callback;
     const module = modulesData[moduleId - 1];
-    const theme = (typeof MODULE_THEME !== 'undefined' && MODULE_THEME[moduleId]) || { primary: '#07B0E4' };
-    const illus = (typeof MODULE_ILLUSTRATIONS !== 'undefined' && MODULE_ILLUSTRATIONS[moduleId]) || '';
+    const _ct = (typeof getCourseThemeAndIllus !== 'undefined')
+        ? getCourseThemeAndIllus(currentCourseId || 'steam', moduleId)
+        : { theme: MODULE_THEME?.[moduleId] || { primary: '#07B0E4' }, illus: MODULE_ILLUSTRATIONS?.[moduleId] || '' };
+    const theme = _ct.theme;
+    const illus = _ct.illus;
 
     const overlay = document.getElementById('moduleCompleteOverlay');
-    overlay.style.background = `radial-gradient(ellipse at 40% 20%, ${theme.primary}f0 0%, #1A2B4Bfa 100%)`;
+    overlay.style.background = theme.primary;
 
     const iconEl = document.getElementById('mcModuleIcon');
     iconEl.style.background = theme.primary;
@@ -2228,14 +2306,14 @@ function stopConfetti() {
 const ONBOARDING_SLIDES = [
     {
         emoji: '👋',
-        bg: 'linear-gradient(135deg,#1A6B68 0%,#07B0E4 100%)',
+        bg: '#1A6B68',
         title: '¡Bienvenido al Curso STEAM 2.0!',
         desc: 'Aprenderás metodología <strong>STEAM</strong> a tu ritmo con tarjetas interactivas, quiz, logros y un <strong>certificado oficial</strong> al finalizar.',
         extra: 'Este tutorial rápido te explicará todo lo que necesitas saber para aprovechar el curso al máximo.'
     },
     {
         emoji: '📖',
-        bg: 'linear-gradient(135deg,#FCC30A 0%,#E9A037 100%)',
+        bg: '#1A6B68',
         title: 'Las tarjetas de aprendizaje',
         desc: 'El contenido está organizado en <strong>tarjetas</strong>. Lee cada una y avanza tocando <strong>Siguiente →</strong> o deslizando la tarjeta hacia la izquierda.',
         extra: 'Puedes volver atrás con <strong>← Anterior</strong>. Tu progreso se guarda automáticamente — puedes cerrar la app y continuar donde lo dejaste.',
@@ -2243,7 +2321,7 @@ const ONBOARDING_SLIDES = [
     },
     {
         emoji: '🧩',
-        bg: 'linear-gradient(135deg,#2BA848 0%,#07B0E4 100%)',
+        bg: '#1A6B68',
         title: 'Quiz al finalizar cada módulo',
         desc: 'Al terminar cada módulo habrá un <strong>quiz de práctica</strong> con preguntas de opción múltiple. Selecciona tu respuesta y toca para confirmar.',
         extra: 'Si te equivocas, <strong>verás la respuesta correcta y una explicación</strong>. El quiz es formativo — no afecta tu calificación pero sí te da XP.',
@@ -2251,7 +2329,7 @@ const ONBOARDING_SLIDES = [
     },
     {
         emoji: '⚡',
-        bg: 'linear-gradient(135deg,#5C35C5 0%,#E83C8D 100%)',
+        bg: '#1A6B68',
         title: 'XP y niveles',
         desc: 'Ganas puntos de experiencia (<strong>XP</strong>) con cada actividad. Sube de nivel y desbloquea logros especiales.',
         extra: null,
@@ -2259,7 +2337,7 @@ const ONBOARDING_SLIDES = [
     },
     {
         emoji: '🗓️',
-        bg: 'linear-gradient(135deg,#07B0E4 0%,#1A6B68 100%)',
+        bg: '#1A6B68',
         title: 'Los 5 módulos del curso',
         desc: 'El curso tiene <strong>5 módulos</strong> que cubren las disciplinas STEEAM. Cada módulo se desbloquea automáticamente <strong>7 días después</strong> de completar el anterior.',
         extra: '¿No puedes esperar? Desde la pestaña <strong>Módulos</strong> puedes gastar <strong>200 XP</strong> para desbloquear el siguiente de inmediato.',
@@ -2267,7 +2345,7 @@ const ONBOARDING_SLIDES = [
     },
     {
         emoji: '📸',
-        bg: 'linear-gradient(135deg,#E9A037 0%,#E52642 100%)',
+        bg: '#1A6B68',
         title: 'Sube evidencias de tu práctica',
         desc: 'Aplica lo aprendido en tu aula y sube una <strong>foto como evidencia</strong>. Ganarás <strong>80 XP</strong> por cada módulo que documentes.',
         extra: 'Ve a <strong>Perfil → Gana más XP → Evidencia de práctica</strong>. Puedes subir hasta 5 fotos (una por módulo) para un total de 400 XP extra.',
@@ -2275,14 +2353,14 @@ const ONBOARDING_SLIDES = [
     },
     {
         emoji: '👤',
-        bg: 'linear-gradient(135deg,#5C35C5 0%,#07B0E4 100%)',
+        bg: '#1A6B68',
         title: 'Tu perfil — edítalo antes de terminar',
         desc: 'En la pestaña <strong>Perfil</strong> puedes ver tu XP, nivel, logros y racha de días activos.',
         extra: '⚠️ <strong>Importante:</strong> antes de descargar tu certificado, toca el botón <strong>✏️ Editar</strong> y escribe tu <strong>nombre completo correctamente</strong>. Ese nombre aparecerá en el diploma. También puedes subir tu foto.'
     },
     {
         emoji: '🎓',
-        bg: 'linear-gradient(135deg,#1A2B4B 0%,#5C35C5 100%)',
+        bg: '#1A6B68',
         title: 'El Examen Final y tu Certificado',
         desc: 'Cuando completes los 5 módulos, el botón <strong>Examen Final</strong> se activará. Son <strong>20 preguntas</strong> aleatorias del banco del curso.',
         extra: null,
@@ -2290,7 +2368,7 @@ const ONBOARDING_SLIDES = [
     },
     {
         emoji: '🏆',
-        bg: 'linear-gradient(135deg,#FCC30A 0%,#E83C8D 100%)',
+        bg: '#1A6B68',
         title: '¡Todo listo para empezar! 🚀',
         desc: 'Recuerda que el progreso se guarda en la nube. Puedes acceder al curso desde tu celular, tablet o computadora con la misma cuenta.',
         extra: '¿Tienes dudas durante el curso? Escríbele al administrador. ¡Mucho éxito y a aprender!',
@@ -2452,12 +2530,30 @@ function showCourseSelector() {
 function selectCourse(courseId) {
     const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === courseId) : null;
     if (!course || course.status !== 'available') return;
+
+    // Restaurar posición guardada para este curso (o inicio)
+    const _savedPos = progress?.dailyMissions?.coursePositions?.[courseId];
     currentCourseId = courseId;
     modulesData = course.modules;
+    if (_savedPos) {
+        currentModule = Math.max(1, Math.min(_savedPos.module || 1, modulesData.length));
+        currentCardIndex = Math.max(0, _savedPos.card || 0);
+        // Validar que el índice de tarjeta sea válido
+        const _maxCard = (modulesData[currentModule - 1]?.cards?.length || 1) - 1;
+        if (currentCardIndex > _maxCard) currentCardIndex = 0;
+    } else {
+        currentModule = 1;
+        currentCardIndex = 0;
+    }
+
     if (progress) {
         progress.currentCourseId = courseId;
         saveProgress();
     }
+
+    // Asegurarse de mostrar la tab home (tarjetas), no perfil
+    if (typeof switchTab === 'function') switchTab('home');
+
     document.getElementById('courseSelector')?.classList.add('hidden');
     document.getElementById('mainApp')?.classList.remove('hidden');
     renderCard();

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -111,7 +111,7 @@
             right: 12px;
             max-width: 420px;
             margin: 0 auto;
-            background: linear-gradient(135deg, var(--brand-dark), var(--brand-blue));
+            background: var(--brand-dark);
             color: white;
             padding: 12px 18px;
             border-radius: 16px;
@@ -293,7 +293,7 @@
 
         .module-progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--brand-blue), var(--brand-dark));
+            background: var(--brand-blue);
             border-radius: 9999px;
             transition: width .5s ease;
         }
@@ -319,7 +319,7 @@
         }
 
         .nav-btn-next {
-            background: linear-gradient(135deg, var(--brand-blue), var(--brand-dark));
+            background: var(--brand-blue);
             color: white;
             font-weight: 800;
             font-family: 'Nunito', sans-serif;
@@ -572,7 +572,7 @@
 <body>
 
     <!-- ==================== SELECTOR DE CURSOS ==================== -->
-    <div id="courseSelector" class="fixed inset-0 z-50 hidden overflow-y-auto" style="background:linear-gradient(135deg,#1A6B68 0%,#07B0E4 100%)">
+    <div id="courseSelector" class="fixed inset-0 z-50 hidden overflow-y-auto" style="background:#1A6B68">
         <div class="max-w-md mx-auto px-4 py-10">
             <div class="text-center mb-8">
                 <div class="text-5xl mb-3">📚</div>
@@ -589,7 +589,7 @@
 
         <!-- Parte superior — gradiente con info del curso -->
         <div class="shrink-0 flex flex-col items-center justify-center pt-14 pb-10 px-6 relative overflow-hidden"
-            style="background:linear-gradient(135deg,#1A6B68 0%,#07B0E4 100%)">
+            style="background:#1A6B68">
             <div class="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
             <div class="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none"></div>
             <div class="text-6xl mb-3 drop-shadow-lg">🚀</div>
@@ -735,7 +735,7 @@
 
             <!-- Tarjeta de perfil con gradiente -->
             <div class="rounded-3xl px-5 py-6 mb-4 relative overflow-hidden mt-3"
-                style="background:linear-gradient(135deg,#1A6B68 0%,#07B0E4 100%)">
+                style="background:#1A6B68">
                 <div class="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/5 pointer-events-none"></div>
                 <div class="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/5 pointer-events-none"></div>
 
@@ -812,7 +812,7 @@
             <!-- Botón certificado (visible solo si aprobó el examen) -->
             <button id="certDownloadBtn"
                 class="hidden w-full mb-4 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-sm"
-                style="background:linear-gradient(135deg,#5C35C5,#7C3AED)"
+                style="background:#5C35C5"
                 onclick="generateCertificateFromExam(window._lastExamScore||70)">
                 <i class="fas fa-certificate"></i> Descargar mi certificado
             </button>
@@ -887,7 +887,7 @@
             <!-- Reto diario -->
             <button onclick="showDailyChallenge()"
                 class="w-full mb-3 rounded-2xl p-4 flex items-center gap-3 text-left transition active:scale-95"
-                style="background:linear-gradient(135deg,#1A6B68,#07B0E4)">
+                style="background:#1A6B68">
                 <div class="text-3xl">⚡</div>
                 <div class="flex-1">
                     <p class="font-black text-white text-sm">Reto del día</p>
@@ -1206,7 +1206,7 @@
         <!-- ── Banner de instalación PWA ── -->
         <div id="installBanner"
             class="hidden fixed bottom-20 left-4 right-4 z-50 rounded-2xl shadow-2xl overflow-hidden"
-            style="background:linear-gradient(135deg,#1A6B68,#07B0E4)">
+            style="background:#1A6B68">
             <div class="flex items-center gap-3 px-4 py-3">
                 <img src="icon.svg" class="w-10 h-10 rounded-xl shrink-0">
                 <div class="flex-1 min-w-0">
