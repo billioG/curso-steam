@@ -151,6 +151,61 @@ const EV_ILLUSTRATIONS = {
     </svg>`,
 };
 
+// ── Tipos de Estudiantes: violeta / personas ──
+const TE_THEME = {
+    1: { primary: '#7C3AED', soft: '#EDE9FE' },
+    2: { primary: '#6D28D9', soft: '#E8E0FB' },
+    3: { primary: '#9333EA', soft: '#F3E8FF' },
+    4: { primary: '#7E22CE', soft: '#F5F3FF' },
+    5: { primary: '#5B21B6', soft: '#EDEDFF' },
+};
+const TE_ILLUSTRATIONS = {
+    // Módulo 1 — Mapa del aula: Grupo de personas
+    1: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="40" cy="22" r="8" stroke-width="2.2" fill="rgba(255,255,255,0.15)"/>
+        <path d="M24 56 C24 44 56 44 56 56" stroke-width="2.2"/>
+        <circle cx="18" cy="30" r="5.5" stroke-width="2" fill="rgba(255,255,255,0.1)"/>
+        <path d="M8 56 C8 47 28 47 28 56" stroke-width="2"/>
+        <circle cx="62" cy="30" r="5.5" stroke-width="2" fill="rgba(255,255,255,0.1)"/>
+        <path d="M52 56 C52 47 72 47 72 56" stroke-width="2"/>
+    </svg>`,
+    // Módulo 2 — Estilos de aprendizaje: Cerebro con rayos
+    2: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M40 14 C28 14 18 22 18 34 C18 42 22 48 30 52 L30 64 L50 64 L50 52 C58 48 62 42 62 34 C62 22 52 14 40 14Z" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/>
+        <line x1="40" y1="30" x2="40" y2="52" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <path d="M32 28 L36 36 L30 36 L36 46" stroke-width="2.2"/>
+        <path d="M48 28 L44 36 L50 36 L44 46" stroke-width="2.2"/>
+    </svg>`,
+    // Módulo 3 — Perfiles emocionales: Corazón y mente
+    3: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M40 62 L16 40 C10 34 10 24 20 20 C28 17 34 22 40 30 C46 22 52 17 60 20 C70 24 70 34 64 40 Z" stroke-width="2.2" fill="rgba(255,255,255,0.15)"/>
+        <circle cx="40" cy="24" r="6" stroke-width="2" fill="rgba(255,255,255,0.1)"/>
+        <line x1="40" y1="30" x2="40" y2="40" stroke-width="1.8"/>
+    </svg>`,
+    // Módulo 4 — Casos de estudio: Lupa sobre persona
+    4: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="36" cy="36" r="20" stroke-width="2.5" fill="rgba(255,255,255,0.1)"/>
+        <line x1="50" y1="50" x2="66" y2="66" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="36" cy="30" r="5" stroke-width="2" fill="rgba(255,255,255,0.15)"/>
+        <path d="M24 46 C24 38 48 38 48 46" stroke-width="2"/>
+    </svg>`,
+    // Módulo 5 — Estrategias: Rompecabezas de personas
+    5: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="12" y="12" width="24" height="24" rx="4" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/>
+        <rect x="44" y="12" width="24" height="24" rx="4" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/>
+        <rect x="12" y="44" width="24" height="24" rx="4" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/>
+        <rect x="44" y="44" width="24" height="24" rx="4" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/>
+        <circle cx="24" cy="21" r="3.5" stroke-width="1.8" fill="rgba(255,255,255,0.2)"/>
+        <circle cx="56" cy="21" r="3.5" stroke-width="1.8" fill="rgba(255,255,255,0.2)"/>
+        <path d="M18 28 C18 24 30 24 30 28" stroke-width="1.8"/>
+        <path d="M50 28 C50 24 62 24 62 28" stroke-width="1.8"/>
+        <line x1="24" y1="50" x2="24" y2="62" stroke-width="2"/>
+        <line x1="16" y1="56" x2="32" y2="56" stroke-width="2"/>
+        <line x1="56" y1="50" x2="56" y2="62" stroke-width="2"/>
+        <line x1="48" y1="56" x2="64" y2="56" stroke-width="2"/>
+    </svg>`,
+};
+
 // Función que retorna el theme e ilustración del módulo activo según el curso
 function getCourseThemeAndIllus(courseId, moduleIndex) {
     switch(courseId) {
@@ -168,6 +223,11 @@ function getCourseThemeAndIllus(courseId, moduleIndex) {
             return {
                 theme: EV_THEME[moduleIndex] || { primary: '#E9A037', soft: '#FDF3E3' },
                 illus: EV_ILLUSTRATIONS[moduleIndex] || EV_ILLUSTRATIONS[1]
+            };
+        case 'tipos-estudiantes':
+            return {
+                theme: TE_THEME[moduleIndex] || { primary: '#7C3AED', soft: '#EDE9FE' },
+                illus: TE_ILLUSTRATIONS[moduleIndex] || TE_ILLUSTRATIONS[1]
             };
         default:
             return {

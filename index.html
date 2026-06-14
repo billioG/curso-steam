@@ -13,7 +13,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Montserrat:wght@500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="iconos.js"></script>
     <style>
         :root {
             --brand-blue: #07B0E4;
@@ -124,6 +124,74 @@
             text-align: center;
             line-height: 1.4;
             word-break: break-word;
+        }
+
+        /* ── Simulación ── */
+        .simulation-card { background: white; border-radius: 20px; overflow: hidden; }
+        .sim-actions { display: flex; gap: 12px; padding: 0 16px 20px; }
+        .sim-btn {
+            flex: 1; border: none; border-radius: 16px; padding: 16px 8px;
+            font-size: 0.82rem; font-weight: 700; cursor: pointer; text-align: center;
+            line-height: 1.4; transition: transform .15s, opacity .15s;
+        }
+        .sim-btn:active { transform: scale(0.96); }
+        .sim-btn i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+        .sim-btn small { font-size: 0.68rem; font-weight: 400; opacity: 0.75; display: block; margin-top: 3px; }
+        .sim-btn-left { background: #FEE2E2; color: #991B1B; }
+        .sim-btn-right { background: #DCFCE7; color: #166534; }
+
+        /* ── Diagnóstico ── */
+        .diag-option {
+            display: flex; align-items: center; gap: 10px; width: 100%;
+            padding: 11px 14px; border-radius: 14px; border: 2px solid #e2e8f0;
+            background: #fff; cursor: pointer; text-align: left; font-size: 13.5px;
+            color: #1e293b; font-weight: 500; transition: all .15s ease;
+        }
+        .diag-option:hover:not(:disabled) { border-color: #7C3AED; background: #F5F3FF; }
+        .diag-option:disabled { cursor: default; }
+        .diag-opt-letter {
+            width: 26px; height: 26px; border-radius: 8px; background: #f1f5f9;
+            font-size: 11px; font-weight: 800; color: #64748b; display: flex;
+            align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s;
+        }
+        .diag-opt-text { flex: 1; line-height: 1.4; }
+        .diag-opt-correct { border-color: #16A34A !important; background: #F0FDF4 !important; }
+        .diag-opt-correct .diag-opt-letter { background: #16A34A; color: #fff; }
+        .diag-opt-wrong { border-color: #DC2626 !important; background: #FEF2F2 !important; }
+        .diag-opt-wrong .diag-opt-letter { background: #DC2626; color: #fff; }
+        .diag-feedback {
+            padding: 11px 14px; border-radius: 12px; font-size: 13px;
+            line-height: 1.5; color: #1e293b;
+        }
+        .diag-fb-correct { background: #F0FDF4; border: 1px solid #86efac; }
+        .diag-fb-wrong   { background: #FEF2F2; border: 1px solid #fca5a5; }
+        /* Results */
+        .diag-result-banner {
+            border-radius: 20px; padding: 24px 20px 20px; margin-bottom: 20px;
+            display: flex; flex-direction: column; align-items: center; gap: 6px; color: #fff;
+        }
+        .diag-result-emoji-big { font-size: 2.6rem; line-height: 1; }
+        .diag-result-title { font-size: 1.2rem; font-weight: 800; margin: 0; }
+        .diag-result-score { font-size: 13px; opacity: .85; }
+        .diag-result-body { }
+        .diag-result-desc { font-size: 14px; color: #334155; line-height: 1.55; margin-bottom: 6px; }
+        .diag-result-ref  { font-size: 11px; color: #94a3b8; margin-bottom: 20px; }
+        .diag-domains-title { font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+        .diag-domain-row { margin-bottom: 14px; }
+        .diag-domain-label { font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 5px; }
+        .diag-domain-bar-wrap { height: 8px; background: #f1f5f9; border-radius: 8px; overflow: hidden; margin-bottom: 5px; }
+        .diag-domain-bar { height: 100%; border-radius: 8px; transition: width .6s ease; }
+        .diag-domain-right { display: flex; align-items: center; gap: 8px; }
+        .diag-domain-pct { font-size: 13px; font-weight: 700; }
+        .diag-domain-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; border: 1px solid transparent; }
+        .diag-legend { font-size: 11px; color: #94a3b8; line-height: 1.6; padding: 12px; background: #f8fafc; border-radius: 12px; margin: 20px 0 16px; }
+        .diag-primary-btn {
+            display: block; width: 100%; padding: 14px; border: none; border-radius: 14px;
+            color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; margin-bottom: 10px;
+        }
+        .diag-secondary-btn {
+            display: block; width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 14px;
+            background: #fff; color: #64748b; font-weight: 600; font-size: 13px; cursor: pointer;
         }
 
         /* ── Quiz opciones ── */
@@ -376,31 +444,33 @@
             font-family: 'Nunito', sans-serif;
         }
 
-        .bnav-btn i {
-            font-size: 17px;
+        .bnav-btn .bnav-icon {
+            width: 22px;
+            height: 22px;
+            display: block;
+            margin: 0 auto 1px;
             color: #94a3b8;
             transition: color .18s;
+            flex-shrink: 0;
         }
+        .bnav-btn .bnav-icon svg { width: 100%; height: 100%; display: block; }
 
-        .bnav-btn span {
+        .bnav-btn .bnav-label {
             font-size: 9.5px;
             color: #94a3b8;
             font-weight: 600;
+            display: block;
         }
 
-        .bnav-btn.active i {
-            color: var(--brand-blue);
-        }
+        .bnav-btn.active .bnav-icon { color: var(--brand-blue); }
+        .bnav-btn.active .bnav-label { color: var(--brand-blue); font-weight: 800; }
+        .bnav-btn:hover .bnav-icon, .bnav-btn:hover .bnav-label { color: var(--brand-blue); }
 
-        .bnav-btn.active span {
-            color: var(--brand-blue);
-            font-weight: 800;
-        }
-
-        .bnav-btn:hover i,
-        .bnav-btn:hover span {
-            color: var(--brand-blue);
-        }
+        /* compat: si queda algún <i> de FA */
+        .bnav-btn i { font-size: 17px; color: #94a3b8; transition: color .18s; }
+        .bnav-btn.active i { color: var(--brand-blue); }
+        .bnav-btn:hover i { color: var(--brand-blue); }
+        .bnav-btn span:not(.bnav-label):not(.bnav-icon) { font-size: 9.5px; color: #94a3b8; font-weight: 600; }
 
         /* ── Stat pills ── */
         .stat-pill {
@@ -575,7 +645,8 @@
     <div id="courseSelector" class="fixed inset-0 z-50 hidden overflow-y-auto" style="background:#1A6B68">
         <div class="max-w-md mx-auto px-4 py-10">
             <div class="text-center mb-8">
-                <div class="text-5xl mb-3">📚</div>
+                <div class="mx-auto mb-3" style="width:80px;height:80px" id="courseSelectorIcon"></div>
+                <script>document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('courseSelectorIcon');if(el&&typeof ICONS!=='undefined')el.innerHTML=ICONS.books;});</script>
                 <h1 class="text-2xl font-black text-white">¿Qué quieres aprender hoy?</h1>
                 <p class="text-white/75 text-sm mt-2">Selecciona un curso para continuar</p>
             </div>
@@ -592,7 +663,8 @@
             style="background:#1A6B68">
             <div class="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
             <div class="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none"></div>
-            <div class="text-6xl mb-3 drop-shadow-lg">🚀</div>
+            <div class="mb-3 drop-shadow-lg mx-auto" style="width:80px;height:80px" id="loginRocketIcon"></div>
+            <script>document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('loginRocketIcon');if(el&&typeof ICONS!=='undefined')el.innerHTML=ICONS.rocket;});</script>
             <h1 class="text-2xl font-bold text-white">Curso STEAM</h1>
             <p class="text-cyan-100 text-sm mt-1 text-center">Formación profesional · 1bot - edoo</p>
             <div class="flex gap-6 mt-5">
@@ -671,7 +743,8 @@
             </div>
 
             <div class="mt-7 flex items-center justify-center gap-2 text-xs text-slate-400">
-                <i class="fas fa-cloud-upload-alt text-cyan-400"></i>
+                <span style="display:inline-flex;width:16px;height:16px;color:#22d3ee" id="loginCloudIcon"></span>
+                <script>document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('loginCloudIcon');if(el&&typeof ICONS!=='undefined')el.innerHTML=ICONS.cloudOk;});</script>
                 Tu progreso se guarda automáticamente en la nube
             </div>
         </div>
@@ -708,7 +781,7 @@
             <!-- Tarjeta de contenido -->
             <div id="cardContainer" class="mt-3 flex items-center justify-center">
                 <div class="text-center text-slate-400 py-12 w-full">
-                    <i class="fas fa-spinner fa-spin text-3xl mb-3 block" style="color:var(--brand-blue)"></i>
+                    <span data-icon="spinner" style="display:inline-flex;width:40px;height:40px;color:var(--brand-blue);margin:0 auto 12px"></span>
                     <p class="text-sm font-medium">Cargando curso…</p>
                 </div>
             </div>
@@ -716,14 +789,14 @@
             <!-- Navegación -->
             <div id="cardNavBar" class="flex items-center justify-between mt-4">
                 <button id="prevBtn" class="nav-btn-prev">
-                    <i class="fas fa-arrow-left text-xs"></i> Anterior
+                    <span data-icon="arrowLeft" style="display:inline-flex;width:14px;height:14px"></span> Anterior
                 </button>
                 <div class="text-center">
                     <span id="cardCounter" class="text-sm font-bold text-slate-700">1 / 13</span>
                     <p class="text-[10px] text-slate-400 mt-0.5">tarjeta</p>
                 </div>
                 <button id="nextBtn" class="nav-btn-next">
-                    Siguiente <i class="fas fa-arrow-right text-xs"></i>
+                    Siguiente <span data-icon="arrowRight" style="display:inline-flex;width:14px;height:14px"></span>
                 </button>
             </div>
         </div>
@@ -754,7 +827,7 @@
                     </div>
                     <button id="editProfileBtn"
                         class="bg-white/20 hover:bg-white/30 text-white rounded-xl px-3 py-1.5 text-xs font-semibold transition flex items-center gap-1 shrink-0">
-                        <i class="fas fa-pen text-[10px]"></i> Editar
+                        <span data-icon="pencil" style="display:inline-flex;width:13px;height:13px"></span> Editar
                     </button>
                 </div>
 
@@ -787,46 +860,95 @@
                 </div>
             </div>
 
-            <!-- Acciones en grid 2x2 -->
-            <div class="grid grid-cols-2 gap-3 mb-4">
+            <!-- ── Sección: Aprendizaje ── -->
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Aprendizaje</p>
+            <div class="flex flex-col gap-2 mb-5">
                 <button id="examBtn"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:bg-cyan-50 hover:border-cyan-300 transition shadow-sm">
-                    <i class="fas fa-clipboard-list text-cyan-500"></i> Examen Final
-                </button>
-                <button id="badgesBtn"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-purple-300 hover:bg-purple-50 transition shadow-sm">
-                    <i class="fas fa-medal text-purple-500"></i> Mis Logros
-                </button>
-                <button id="statsSecretBtn"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-emerald-300 hover:bg-emerald-50 transition shadow-sm">
-                    <i class="fas fa-chart-line text-emerald-500"></i> Estadísticas
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:bg-cyan-50 hover:border-cyan-300 transition shadow-sm">
+                    <div class="w-8 h-8 rounded-xl bg-cyan-50 flex items-center justify-center flex-shrink-0">
+                        <span data-icon="clipboard" style="display:inline-flex;width:16px;height:16px;color:#06b6d4"></span>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Examen Final</div>
+                        <div class="text-xs text-slate-400">Pon a prueba lo aprendido</div>
+                    </div>
+                    <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
                 </button>
                 <button id="missionsToggle"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm">
-                    <i class="fas fa-tasks text-amber-500"></i> Misiones
-                    <i class="fas fa-chevron-down text-[9px] ml-auto transition-transform duration-200"
-                        id="missionsChevron"></i>
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm">
+                    <div class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                        <span data-icon="target" style="display:inline-flex;width:16px;height:16px;color:#f59e0b"></span>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Misiones</div>
+                        <div class="text-xs text-slate-400">Retos diarios y objetivos</div>
+                    </div>
+                    <span data-icon="chevronDown" id="missionsChevron" style="display:inline-flex;width:14px;height:14px;transition:transform .2s;color:#cbd5e1;flex-shrink:0"></span>
+                </button>
+                <button id="diagProfileBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-violet-300 hover:bg-violet-50 transition shadow-sm"
+                    onclick="showDiagnosticResultFromProfile()">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#F5F3FF">
+                        <span data-icon="compass" style="display:inline-flex;width:16px;height:16px;color:#7c3aed"></span>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm" id="diagProfileBtnLabel">Diagnóstico pedagógico</div>
+                        <div class="text-xs text-slate-400">Conoce tu nivel de partida</div>
+                    </div>
+                    <span id="diagProfileBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style="background:#F5F3FF;color:#7C3AED"></span>
                 </button>
             </div>
 
-            <!-- Botón certificado (visible solo si aprobó el examen) -->
+            <!-- ── Sección: Logros y estadísticas ── -->
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Logros</p>
+            <div class="grid grid-cols-2 gap-2 mb-5">
+                <button id="badgesBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-purple-300 hover:bg-purple-50 transition shadow-sm">
+                    <span data-icon="medal" style="display:inline-flex;width:18px;height:18px;color:#a855f7;flex-shrink:0"></span>
+                    <div class="text-left"><div class="text-sm font-semibold">Mis Logros</div><div class="text-[10px] text-slate-400">Insignias</div></div>
+                </button>
+                <button id="statsSecretBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-emerald-300 hover:bg-emerald-50 transition shadow-sm">
+                    <span data-icon="barChart" style="display:inline-flex;width:18px;height:18px;color:#10b981;flex-shrink:0"></span>
+                    <div class="text-left"><div class="text-sm font-semibold">Estadísticas</div><div class="text-[10px] text-slate-400">Tu progreso</div></div>
+                </button>
+            </div>
+
+            <!-- ── Sección: Certificados ── -->
+            <div id="certSection" class="mb-5">
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Certificados</p>
+            <p id="certPlaceholder" class="text-xs text-slate-400 px-1 mb-2">Aprueba el examen de cualquier curso para obtener tu certificado.</p>
+            <!-- Botón certificado individual (visible si aprobó el examen del curso activo) -->
             <button id="certDownloadBtn"
-                class="hidden w-full mb-4 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-sm"
+                class="hidden w-full mb-2 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-sm"
                 style="background:#5C35C5"
                 onclick="generateCertificateFromExam(window._lastExamScore||70)">
-                <i class="fas fa-certificate"></i> Descargar mi certificado
+                <span data-icon="certificate" style="display:inline-flex;width:16px;height:16px;color:white;flex-shrink:0"></span>
+                <span>Certificado del curso actual</span>
             </button>
 
+            <!-- Botón certificado maestro (visible si aprobó TODOS los cursos) -->
+            <button id="masterCertBtn"
+                class="hidden w-full mb-4 py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-lg"
+                style="background:linear-gradient(135deg,#4c1d95,#7C3AED);border:2px solid rgba(255,255,255,0.2)"
+                onclick="generateMasterCertificate()">
+                <span style="font-size:16px">★</span>
+                <span>Certificado Maestro · Todos los cursos</span>
+                <span style="font-size:16px">★</span>
+            </button>
+
+            </div><!-- end certSection -->
+
             <!-- Gana más XP -->
-            <div class="mb-4">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">💡 Gana más XP</p>
+            <div class="mb-4 mt-2">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Gana más XP</p>
 
                 <!-- Compartir -->
                 <button id="shareAppBtn"
                     class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:bg-green-50 hover:border-green-200 transition mb-2">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
-                            <i class="fas fa-share-alt text-green-500"></i>
+                            <span data-icon="share" style="display:inline-flex;width:18px;height:18px;color:#22c55e"></span>
                         </div>
                         <div class="text-left">
                             <p class="text-sm font-semibold text-slate-700">Compartir el curso</p>
@@ -843,7 +965,7 @@
                     <div class="flex items-center justify-between mb-2.5">
                         <div class="flex items-center gap-3">
                             <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                                <i class="fas fa-user-plus text-blue-500"></i>
+                                <span data-icon="addUser" style="display:inline-flex;width:18px;height:18px;color:#3b82f6"></span>
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-slate-700">Referir a un colega</p>
@@ -859,8 +981,8 @@
                             class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 truncate min-w-0"
                             placeholder="Cargando tu link…">
                         <button id="copyReferralBtn"
-                            class="bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-3 py-2 text-xs font-bold transition shrink-0">
-                            <i class="fas fa-copy mr-1"></i>Copiar
+                            class="bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-3 py-2 text-xs font-bold transition shrink-0 flex items-center gap-1">
+                            <span data-icon="copy" style="display:inline-flex;width:12px;height:12px;color:white"></span>Copiar
                         </button>
                     </div>
                     <p id="referralCountDisplay" class="text-xs text-slate-400 mt-1.5 text-center"></p>
@@ -871,7 +993,7 @@
                     class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:bg-purple-50 hover:border-purple-200 transition">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
-                            <i class="fas fa-camera text-purple-500"></i>
+                            <span data-icon="camera" style="display:inline-flex;width:18px;height:18px;color:#a855f7"></span>
                         </div>
                         <div class="text-left">
                             <p class="text-sm font-semibold text-slate-700">Evidencia de práctica</p>
@@ -909,31 +1031,31 @@
             <div
                 class="bg-white rounded-2xl px-4 py-3 flex items-center justify-between shadow-sm border border-slate-100 mb-3">
                 <div id="syncIndicator" class="flex items-center gap-1.5 text-xs text-slate-500">
-                    <i class="fas fa-cloud-upload-alt text-emerald-400 text-xs"></i>
+                    <span id="syncIcon" data-icon="cloudOk" style="display:inline-flex;width:15px;height:15px;color:#34d399"></span>
                     <span id="syncStatus">Sincronizado</span>
                 </div>
                 <button onclick="if(typeof currentUser!=='undefined'&&currentUser)syncWithSupabase()"
-                    class="text-xs text-cyan-600 font-semibold hover:text-indigo-700 transition">
-                    <i class="fas fa-sync text-xs mr-1"></i>Sincronizar
+                    class="text-xs text-cyan-600 font-semibold hover:text-indigo-700 transition flex items-center gap-1">
+                    <span data-icon="sync" style="display:inline-flex;width:13px;height:13px"></span>Sincronizar
                 </button>
             </div>
 
             <!-- Cambiar curso -->
             <button onclick="showCourseSelector()"
                 class="w-full bg-white border border-slate-200 text-slate-600 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
-                <i class="fas fa-graduation-cap text-[#07B0E4]"></i> Cambiar curso
+                <span data-icon="switchCourse" style="display:inline-flex;width:16px;height:16px;color:#07B0E4"></span> Cambiar curso
             </button>
 
             <!-- Ver tutorial -->
             <button onclick="localStorage.removeItem('onboardingDone'); startOnboarding();"
                 class="w-full bg-white border border-slate-200 text-slate-500 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
-                <i class="fas fa-map-signs text-cyan-400"></i> Ver tutorial de nuevo
+                <span data-icon="compass" style="display:inline-flex;width:16px;height:16px;color:#22d3ee"></span> Ver tutorial de nuevo
             </button>
 
             <!-- Cerrar sesión -->
             <button id="logoutBtn"
                 class="w-full bg-white border border-red-100 text-red-500 font-semibold py-3 rounded-2xl text-sm hover:bg-red-50 transition flex items-center justify-center gap-2 shadow-sm">
-                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                <span data-icon="logout" style="display:inline-flex;width:16px;height:16px;color:#ef4444"></span> Cerrar sesión
             </button>
         </div>
 
@@ -942,7 +1064,7 @@
         <!-- ══════════════════════════════════════════ -->
         <div id="tabModulos" class="tab-panel hidden pt-16 px-4 pb-28">
             <div class="mt-4 mb-5">
-                <h2 class="text-xl font-bold text-slate-800">📚 Mis Módulos</h2>
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="modules" style="display:inline-flex;width:22px;height:22px;color:#07B0E4"></span> Mis Módulos</h2>
                 <p class="text-xs text-slate-400 mt-1">Un módulo por semana · Desbloqueo anticipado con XP</p>
             </div>
             <div id="modulesIndexList" class="space-y-3"></div>
@@ -957,14 +1079,14 @@
             <div class="modal-inner">
                 <div class="modal-drag"></div>
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-slate-800">🏅 Tus Logros</h2>
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="medal" style="display:inline-flex;width:22px;height:22px;color:#a855f7"></span> Tus Logros</h2>
                     <button id="closeBadgesBtn"
                         class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
                 </div>
                 <div id="badgesList" class="grid grid-cols-2 gap-3"></div>
-                <button id="shareBadgesBtn" class="mt-5 w-full text-white py-3 rounded-2xl text-sm font-bold transition"
+                <button id="shareBadgesBtn" class="mt-5 w-full text-white py-3 rounded-2xl text-sm font-bold transition flex items-center justify-center gap-2"
                     style="background:var(--brand-blue)">
-                    <i class="fas fa-share-alt mr-2"></i>Compartir mis logros
+                    <span data-icon="share" style="display:inline-flex;width:15px;height:15px;color:white"></span>Compartir mis logros
                 </button>
             </div>
         </div>
@@ -974,7 +1096,7 @@
             <div class="modal-inner">
                 <div class="modal-drag"></div>
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-slate-800">🎁 Canjear Premios</h2>
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="star" style="display:inline-flex;width:22px;height:22px;color:#f59e0b"></span> Canjear Premios</h2>
                     <button id="closeRedeemBtn"
                         class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
                 </div>
@@ -993,7 +1115,7 @@
             <div class="modal-inner">
                 <div class="modal-drag"></div>
                 <div class="flex justify-between items-center mb-5">
-                    <h2 class="text-xl font-bold text-slate-800">🏆 Ranking Docentes</h2>
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="trophy" style="display:inline-flex;width:22px;height:22px;color:#f59e0b"></span> Ranking Docentes</h2>
                     <button id="closeRankingBtn"
                         class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
                 </div>
@@ -1022,6 +1144,39 @@
                 </div>
                 <p class="text-white/50 text-sm" style="animation:pulse 1.5s ease-in-out infinite">Toca para continuar
                 </p>
+            </div>
+        </div>
+
+        <!-- ══ Diagnóstico Pedagógico ══ -->
+        <div id="diagOverlay" class="hidden fixed inset-0 z-[350] items-end justify-center"
+            style="background:rgba(0,0,0,0.65)">
+            <div class="bg-white w-full max-w-md rounded-t-[28px] flex flex-col" style="max-height:92vh">
+                <!-- Header -->
+                <div style="padding:20px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0">
+                    <div>
+                        <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#94a3b8;text-transform:uppercase;margin-bottom:2px">Diagnóstico Pedagógico</div>
+                        <div id="diagHeaderSub" style="font-size:14px;font-weight:700;color:#1e293b">¿Cuánto conoces sobre pedagogía?</div>
+                    </div>
+                    <button onclick="skipDiagnostic()" style="font-size:12px;color:#94a3b8;background:none;border:1px solid #e2e8f0;border-radius:20px;cursor:pointer;padding:4px 12px;flex-shrink:0;margin-left:12px">Saltar</button>
+                </div>
+                <!-- Progress bar -->
+                <div id="diagProgressWrap" style="padding:10px 20px 0;flex-shrink:0">
+                    <div style="height:5px;background:#f1f5f9;border-radius:5px;overflow:hidden">
+                        <div id="diagProgress" style="height:100%;background:#7C3AED;border-radius:5px;transition:width .35s ease;width:0%"></div>
+                    </div>
+                    <div style="text-align:right;margin-top:4px;font-size:11px;color:#94a3b8" id="diagCounter">1 de 20</div>
+                </div>
+                <!-- Scrollable question/results area -->
+                <div id="diagContent" style="overflow-y:auto;flex:1;padding:12px 20px 28px">
+                    <div id="diagDomainBadge" style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid transparent;margin-bottom:12px">...</div>
+                    <p id="diagQuestion" style="font-size:15px;font-weight:700;color:#1e293b;line-height:1.5;margin-bottom:16px"></p>
+                    <div id="diagOptions" style="display:flex;flex-direction:column;gap:8px"></div>
+                    <div id="diagFeedback" class="hidden" style="margin-top:12px"></div>
+                    <button id="diagNextBtn" class="hidden" onclick="nextDiagQuestion()"
+                        style="margin-top:16px;width:100%;padding:14px;background:#7C3AED;color:#fff;border:none;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;transition:opacity .2s">
+                        Siguiente →
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1066,7 +1221,7 @@
             <div class="modal-inner">
                 <div class="modal-drag"></div>
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-slate-800">📸 Evidencia de práctica</h2>
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="camera" style="display:inline-flex;width:22px;height:22px;color:#a855f7"></span> Evidencia de práctica</h2>
                     <button id="closeEvidenceBtn"
                         class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
                 </div>
@@ -1092,7 +1247,7 @@
                 <div id="evidenceDropZone"
                     onclick="document.getElementById('evidenceFileInput').click()"
                     class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition mb-3">
-                    <i class="fas fa-cloud-upload-alt text-3xl text-slate-300 mb-2 block"></i>
+                    <span data-icon="cloudUp" style="display:inline-flex;width:36px;height:36px;color:#cbd5e1;margin:0 auto 8px"></span>
                     <p id="evidenceDropText" class="text-sm text-slate-500 font-semibold">Toca para seleccionar una foto</p>
                     <p class="text-xs text-slate-400 mt-1">JPG o PNG · máx. 5 MB</p>
                 </div>
@@ -1115,7 +1270,7 @@
             <div class="modal-inner">
                 <div class="modal-drag"></div>
                 <div class="flex justify-between items-center mb-5">
-                    <h2 class="text-xl font-bold text-slate-800">✏️ Editar perfil</h2>
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="pencil" style="display:inline-flex;width:20px;height:20px;color:#07B0E4"></span> Editar perfil</h2>
                     <button id="closeEditProfileBtn"
                         class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
                 </div>
@@ -1131,7 +1286,7 @@
                         <label for="photoFileInput"
                             class="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs cursor-pointer shadow"
                             style="background:var(--brand-blue)">
-                            <i class="fas fa-camera"></i>
+                            <span data-icon="camera" style="display:inline-flex;width:14px;height:14px;color:white"></span>
                         </label>
                     </div>
                     <input type="file" id="photoFileInput" accept="image/*" class="hidden">
@@ -1173,23 +1328,23 @@
             <div class="modal-inner">
                 <div class="modal-drag"></div>
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-slate-800">📊 Estadísticas</h2>
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="barChart" style="display:inline-flex;width:22px;height:22px;color:#10b981"></span> Estadísticas</h2>
                     <button id="closeStatsBtn"
                         class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
                 </div>
                 <div id="statsContent"></div>
                 <div class="mt-4 flex gap-2 flex-wrap">
                     <button id="exportStatsBtn"
-                        class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-2xl flex-1 transition text-sm">
-                        <i class="fas fa-download mr-1.5"></i>CSV
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-2xl flex-1 transition text-sm flex items-center justify-center gap-1.5">
+                        <span data-icon="download" style="display:inline-flex;width:14px;height:14px;color:white"></span>CSV
                     </button>
                     <button id="clearStatsBtn"
-                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-4 rounded-2xl transition text-sm">
-                        <i class="fas fa-trash mr-1.5"></i>Limpiar
+                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-4 rounded-2xl transition text-sm flex items-center justify-center gap-1.5">
+                        <span data-icon="trash" style="display:inline-flex;width:14px;height:14px;color:white"></span>Limpiar
                     </button>
-                    <button id="syncNowBtn" class="text-white font-bold py-2.5 px-4 rounded-2xl transition text-sm"
+                    <button id="syncNowBtn" class="text-white font-bold py-2.5 px-4 rounded-2xl transition text-sm flex items-center justify-center gap-1.5"
                         style="background:var(--brand-blue)">
-                        <i class="fas fa-sync mr-1.5"></i>Sync
+                        <span data-icon="sync" style="display:inline-flex;width:14px;height:14px;color:white"></span>Sync
                     </button>
                 </div>
             </div>
@@ -1199,7 +1354,7 @@
         <div id="profeVideoBtn" class="hidden fixed bottom-20 right-4 z-40">
             <button
                 class="w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl shadow-xl transition flex items-center justify-center">
-                <i class="fas fa-video"></i>
+                <span data-icon="video" style="display:inline-flex;width:20px;height:20px;color:white"></span>
             </button>
         </div>
 
@@ -1226,25 +1381,39 @@
         <nav class="bottom-nav">
             <div class="flex items-center px-3">
                 <button id="bnavHome" class="bnav-btn active" onclick="switchTab('home')">
-                    <i class="fas fa-home"></i>
-                    <span>Inicio</span>
+                    <span class="bnav-icon" id="bnavHomeIcon"></span>
+                    <span class="bnav-label">Inicio</span>
                 </button>
                 <div id="rankingFloatBtn" class="flex-1 flex">
-                    <button class="bnav-btn w-full" onclick="switchTab('home')">
-                        <i class="fas fa-trophy"></i>
-                        <span>Ranking</span>
+                    <button class="bnav-btn w-full" onclick="showRankingModal ? showRankingModal() : null">
+                        <span class="bnav-icon" id="bnavRankingIcon"></span>
+                        <span class="bnav-label">Ranking</span>
                     </button>
                 </div>
                 <button id="bnavModulos" class="bnav-btn" onclick="switchTab('modulos')">
-                    <i class="fas fa-th-large"></i>
-                    <span>Módulos</span>
+                    <span class="bnav-icon" id="bnavModulosIcon"></span>
+                    <span class="bnav-label">Módulos</span>
                 </button>
                 <button id="bnavPerfil" class="bnav-btn" onclick="switchTab('perfil')">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Perfil</span>
+                    <span class="bnav-icon" id="bnavPerfilIcon"></span>
+                    <span class="bnav-label">Perfil</span>
                 </button>
             </div>
         </nav>
+        <script>
+          // Inyectar SVG icons en bottom nav al cargar
+          document.addEventListener('DOMContentLoaded', function() {
+            if (typeof ICONS === 'undefined') return;
+            const ni = document.getElementById('bnavHomeIcon');
+            const nr = document.getElementById('bnavRankingIcon');
+            const nm = document.getElementById('bnavModulosIcon');
+            const np = document.getElementById('bnavPerfilIcon');
+            if (ni) ni.innerHTML = ICONS.home;
+            if (nr) nr.innerHTML = ICONS.trophy;
+            if (nm) nm.innerHTML = ICONS.modules;
+            if (np) np.innerHTML = ICONS.profile;
+          });
+        </script>
 
         <script>
             function switchTab(tab) {
@@ -1278,6 +1447,19 @@
                     if (cb) document.getElementById('courseProgressBarPerfil').style.width = cb.style.width;
                     if (typeof displayReferralLink === 'function') displayReferralLink();
                     if (typeof checkReferrerReward === 'function') checkReferrerReward();
+                    // Update diagnostic badge in profile
+                    const diagResult = localStorage.getItem('diagResult');
+                    const diagBadge = document.getElementById('diagProfileBadge');
+                    const diagLabel = document.getElementById('diagProfileBtnLabel');
+                    if (diagResult && diagBadge && diagLabel) {
+                        try {
+                            const dr = JSON.parse(diagResult);
+                            const lvlMap = { inicial: '🔴 Inicial', proceso: '🟡 En Proceso', satisfactorio: '🟢 Satisfactorio', destacado: '💜 Destacado' };
+                            diagBadge.textContent = lvlMap[dr.level] || '';
+                            diagBadge.classList.remove('hidden');
+                            diagLabel.textContent = 'Ver mi diagnóstico';
+                        } catch(e) {}
+                    }
                 }
             }
         </script>
@@ -1291,7 +1473,7 @@
         <div class="bg-white w-full max-w-md rounded-t-3xl flex flex-col" style="max-height:80vh">
             <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
                 <div>
-                    <h3 class="font-black text-slate-800">💬 Comentarios</h3>
+                    <h3 class="font-black text-slate-800 flex items-center gap-1.5"><span data-icon="comments" style="display:inline-flex;width:18px;height:18px;color:#07B0E4"></span> Comentarios</h3>
                     <p class="text-xs text-slate-400 mt-0.5">Comparte dudas o aprendizajes de esta tarjeta</p>
                 </div>
                 <button onclick="document.getElementById('commentsModal').classList.add('hidden')"
@@ -1307,7 +1489,7 @@
                     <button onclick="submitComment()"
                         class="w-11 h-11 rounded-2xl flex items-center justify-center text-white self-end shrink-0"
                         style="background:#07B0E4">
-                        <i class="fas fa-paper-plane text-sm"></i>
+                        <span data-icon="send" style="display:inline-flex;width:18px;height:18px;color:white"></span>
                     </button>
                 </div>
             </div>
@@ -1349,7 +1531,7 @@
                 <button onclick="sendChatMessage()"
                     class="w-11 h-11 rounded-2xl flex items-center justify-center text-white shrink-0"
                     style="background:#07B0E4">
-                    <i class="fas fa-paper-plane text-sm"></i>
+                    <span data-icon="send" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center"></span>
                 </button>
             </div>
         </div>
@@ -1359,7 +1541,40 @@
 
     <script src="data.js"></script>
     <script src="ilustraciones.js"></script>
+    <script src="diagnostico.js"></script>
     <script src="app.js"></script>
+
+    <!-- ── Inicializar todos los iconos SVG data-icon ── -->
+    <script>
+    (function initDataIcons() {
+        function fill() {
+            if (typeof ICONS === 'undefined') return;
+            document.querySelectorAll('[data-icon]').forEach(function(el) {
+                var key = el.getAttribute('data-icon');
+                if (ICONS[key]) el.innerHTML = ICONS[key];
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fill);
+        } else {
+            fill();
+        }
+        // También escuchar mutaciones para iconos inyectados dinámicamente
+        var obs = new MutationObserver(function(muts) {
+            muts.forEach(function(m) {
+                m.addedNodes.forEach(function(n) {
+                    if (n.querySelectorAll) {
+                        n.querySelectorAll('[data-icon]').forEach(function(el) {
+                            var key = el.getAttribute('data-icon');
+                            if (typeof ICONS !== 'undefined' && ICONS[key]) el.innerHTML = ICONS[key];
+                        });
+                    }
+                });
+            });
+        });
+        obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+    })();
+    </script>
 </body>
 
 </html>

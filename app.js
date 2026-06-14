@@ -324,11 +324,17 @@ function updateUI() {
 
     const totalAll = modulesData.reduce((acc, m) => acc + m.cards.length, 0);
     // Filtrar tarjetas completadas del curso activo (por prefijo de ID o courseId guardado)
-    const _activeCoursePrefix = (currentCourseId || 'steam');
+    const _activeCourseId = (currentCourseId || 'steam');
+    // Map courseId to card ID prefix used in data.js
+    const _prefixMap = { 'steam': null, 'abp': 'abp-', 'design-thinking': 'dt-', 'evaluacion': 'ev-', 'tipos-estudiantes': 'te-' };
+    const _cardPrefix = _prefixMap[_activeCourseId];
     const completedTotal = (progress.completedCards || []).filter(id => {
-        // IDs nuevos llevan el prefijo del curso, STEAM usa módulo numérico
-        if (_activeCoursePrefix === 'steam') return /^\d+/.test(String(id)) || String(id).startsWith('steam') || String(id).startsWith('m');
-        return String(id).startsWith(_activeCoursePrefix);
+        const s = String(id);
+        if (!_cardPrefix) {
+            // STEAM cards: numeric IDs ("1","2") or old module-index format ("1-0"), never prefixed
+            return /^\d/.test(s) && !s.includes('-m');
+        }
+        return s.startsWith(_cardPrefix);
     }).length;
     const coursePercent = Math.min(Math.round((completedTotal / totalAll) * 100), 100);
     const courseProgressBar = document.getElementById("courseProgressBar");
@@ -365,15 +371,26 @@ function updateUI() {
     const certBtn = document.getElementById('certDownloadBtn');
     if (certBtn) {
         const _activeCid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
-        const _scores = progress.dailyMissions?.examScores || {};
-        const _score = _scores[_activeCid] ?? progress.dailyMissions?.examScore;
-        if (_score !== undefined) {
+        const _dm = progress.dailyMissions || {};
+        const _scores = _dm.examScores || {};
+        // Buscar puntaje: por courseId primero, luego legacy single-score para STEAM
+        const _score = (_scores[_activeCid] !== undefined) ? _scores[_activeCid]
+                     : (_activeCid === 'steam' && _dm.examScore !== undefined) ? _dm.examScore
+                     : undefined;
+        const _passed = _score !== undefined && _score >= 70;
+        if (_passed) {
             certBtn.classList.remove('hidden');
             window._lastExamScore = _score;
         } else {
             certBtn.classList.add('hidden');
         }
+        // Placeholder: oculto si hay algún certificado visible
+        const _masterVisible = !document.getElementById('masterCertBtn')?.classList.contains('hidden');
+        const _placeholder = document.getElementById('certPlaceholder');
+        if (_placeholder) _placeholder.classList.toggle('hidden', _passed || _masterVisible);
     }
+    // Master certificate — visible si todos los cursos están aprobados
+    _checkMasterCert();
 }
 
 function updateSyncStatus(status, message) {
@@ -381,9 +398,11 @@ function updateSyncStatus(status, message) {
     if (syncSpan) syncSpan.innerHTML = message;
     const syncIcon = document.querySelector("#syncIndicator i");
     if (syncIcon) {
-        if (status === "syncing") syncIcon.className = "fas fa-spinner fa-spin text-yellow-500";
-        else if (status === "offline") syncIcon.className = "fas fa-cloud-upload-alt text-gray-400";
-        else syncIcon.className = "fas fa-cloud-upload-alt text-green-500";
+        if (typeof ICONS !== 'undefined') {
+            if (status === "syncing") { syncIcon.style.color = '#eab308'; syncIcon.innerHTML = ICONS.spinner || ''; }
+            else if (status === "offline") { syncIcon.style.color = '#9ca3af'; syncIcon.innerHTML = ICONS.cloudUp || ''; }
+            else { syncIcon.style.color = '#34d399'; syncIcon.innerHTML = ICONS.cloudOk || ''; }
+        }
     }
 }
 
@@ -618,7 +637,7 @@ function renderCard() {
         // Habilitar navegación normal en tarjetas de contenido
         if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
 
-        const cardId = `${currentModule}-${currentCardIndex}`;
+        const cardId = card.id ? String(card.id) : `${currentModule}-${currentCardIndex}`;
         if (!progress.completedCards.includes(cardId)) {
             progress.completedCards.push(cardId);
             updateMissionProgress("cards", 1);
@@ -660,13 +679,15 @@ function renderCard() {
                     📋 Ver instrucciones para implementar en clase
                 </button>
             </div>` : ''}
-            <div class="card-swipe-hint">
-                <i class="fas fa-arrow-left"></i> &nbsp;desliza para navegar&nbsp; <i class="fas fa-arrow-right"></i>
+            <div class="card-swipe-hint" style="display:flex;align-items:center;justify-content:center;gap:6px">
+                <span style="display:inline-flex;width:13px;height:13px;opacity:.5">${ICONS?.arrowLeft||'←'}</span>
+                <span style="font-size:10px;opacity:.5">desliza para navegar</span>
+                <span style="display:inline-flex;width:13px;height:13px;opacity:.5">${ICONS?.arrowRight||'→'}</span>
             </div>
             <div class="px-4 pb-3">
                 <button onclick="showCardComments('${currentModule}-${currentCardIndex}')"
                     class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-slate-200 text-slate-500 text-xs font-semibold hover:bg-slate-50 transition">
-                    <i class="fas fa-comment-dots text-slate-400"></i> Comentarios y dudas de esta tarjeta
+                    <span style="display:inline-flex;width:15px;height:15px;color:#94a3b8">${ICONS?.comments||''}</span> Comentarios y dudas de esta tarjeta
                 </button>
             </div>
         </div>`;
@@ -676,7 +697,7 @@ function renderCard() {
         if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = "0.4"; }
 
         // Shuffle de opciones (seed por cardId para que sea consistente en repaso)
-        const _seed = (card.id || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        const _seed = String(card.id ?? '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
         const _shuffled = card.options.map((opt, i) => ({ opt, orig: i }));
         for (let i = _shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(((_seed * (i + 7)) % (i + 1) + (i + 1)) % (i + 1));
@@ -706,8 +727,8 @@ function renderCard() {
                 <h2>${card.question}</h2>
                 <div id="quizOptions">${optionsHtml}</div>
                 <div id="quizFeedback" class="hidden mt-3 p-3 rounded-2xl text-sm font-medium"></div>
-                <p id="quizHint" class="text-center text-xs text-gray-400 mt-3">
-                    <i class="fas fa-hand-pointer"></i> Selecciona una respuesta para continuar
+                <p id="quizHint" class="text-center text-xs text-gray-400 mt-3" style="display:flex;align-items:center;justify-content:center;gap:5px">
+                    <span style="display:inline-flex;width:14px;height:14px">${ICONS?.pointer||'👆'}</span> Selecciona una respuesta para continuar
                 </p>
             </div>
         </div>`;
@@ -736,7 +757,7 @@ function renderCard() {
                     feedbackDiv.classList.remove('hidden');
                     if (isCorrect) {
                         feedbackDiv.className = 'mt-3 p-3 rounded-2xl text-sm font-medium bg-green-50 text-green-700 border border-green-200';
-                        feedbackDiv.innerHTML = `<i class="fas fa-check-circle"></i> ¡Correcto! ${card.explanation}`;
+                        feedbackDiv.innerHTML = `<span style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:4px">${ICONS?.checkCircle||'✓'}</span> ¡Correcto! ${card.explanation}`;
                         const cardId = `${currentModule}-${currentCardIndex}`;
                         if (!progress.completedCards.includes(cardId)) {
                             progress.completedCards.push(cardId);
@@ -749,15 +770,108 @@ function renderCard() {
                         if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
                     } else {
                         feedbackDiv.className = 'mt-3 p-3 rounded-2xl text-sm font-medium bg-red-50 text-red-700 border border-red-200';
-                        feedbackDiv.innerHTML = `<i class="fas fa-times-circle"></i> Incorrecto. ${card.explanation}
-                            <button onclick="goToRefCard()" class="mt-2 block w-full text-center text-xs font-bold text-indigo-600 hover:underline py-1">← Repasar tarjeta relacionada</button>`;
+                        feedbackDiv.innerHTML = `<span style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:4px">${ICONS?.xCircle||'✗'}</span> Incorrecto. ${card.explanation}
+                            <button onclick="goToRefCard()" class="mt-2 block w-full text-center text-xs font-bold text-indigo-600 hover:underline py-1" style="display:flex;align-items:center;justify-content:center;gap:4px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.arrowLeft||''}</span> Repasar tarjeta relacionada</button>`;
                         if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
                     }
                 }
             });
         });
+    } else if (card.type === "simulation") {
+        if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = "0.4"; }
+
+        const _courseTheme = (typeof getCourseThemeAndIllus !== 'undefined')
+            ? getCourseThemeAndIllus(currentCourseId || 'steam', currentModule)
+            : { theme: { primary: '#7C3AED', soft: '#EDE9FE' }, illus: '' };
+        const simTheme = _courseTheme.theme;
+
+        container.innerHTML = `
+        <div class="simulation-card" id="activeCard">
+            <div class="card-banner" style="background:${simTheme.primary}">
+                <div class="card-banner-svg">${_courseTheme.illus}</div>
+                <p class="card-banner-sub">🎭 &nbsp;Simulación · Módulo ${currentModule} · ${currentCardIndex + 1} de ${module.cards.length}</p>
+            </div>
+            <div class="card-body">
+                <h2>${card.title}</h2>
+                <div class="sim-scenario" style="background:${simTheme.soft};border-left:4px solid ${simTheme.primary};border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:0.93rem;line-height:1.55;color:#374151">
+                    ${_mdToHtml(card.scenario || '')}
+                </div>
+                <p class="sim-statement" style="font-weight:700;font-size:1rem;color:#1e293b;margin-bottom:20px;text-align:center">"${card.statement || ''}"</p>
+                <div id="simFeedback" class="hidden mt-2 p-4 rounded-2xl text-sm font-medium"></div>
+            </div>
+            <div class="sim-actions" id="simActions">
+                <button id="simLeftBtn" onclick="handleSimulation('left')" class="sim-btn sim-btn-left">
+                    <span style="display:inline-flex;width:28px;height:28px;margin:0 auto 4px">${ICONS?.xMark||'✗'}</span><br><span>En desacuerdo</span><br><small>desliza ←</small>
+                </button>
+                <button id="simRightBtn" onclick="handleSimulation('right')" class="sim-btn sim-btn-right">
+                    <span style="display:inline-flex;width:28px;height:28px;margin:0 auto 4px">${ICONS?.check||'✓'}</span><br><span>De acuerdo</span><br><small>→ desliza</small>
+                </button>
+            </div>
+        </div>`;
+
+        // Store simulation data for swipe handler
+        container.dataset.simCorrect = card.correctSwipe || 'right';
+        container.dataset.simRight = card.rightOutcome || '';
+        container.dataset.simLeft = card.leftOutcome || '';
+        container.dataset.simPrimary = simTheme.primary;
+        container.dataset.simSoft = simTheme.soft;
+
+        // Swipe gesture for simulation
+        let _simTouchX = 0;
+        const _simCard = document.getElementById('activeCard');
+        if (_simCard) {
+            _simCard.addEventListener('touchstart', e => { _simTouchX = e.changedTouches[0].screenX; }, { passive: true });
+            _simCard.addEventListener('touchend', e => {
+                const diff = e.changedTouches[0].screenX - _simTouchX;
+                if (Math.abs(diff) > 60) handleSimulation(diff > 0 ? 'right' : 'left');
+            });
+        }
+        return; // skip initSwipe for simulations
     }
     initSwipe();
+}
+
+function handleSimulation(direction) {
+    const container = document.getElementById('cardContainer');
+    const actions = document.getElementById('simActions');
+    const feedback = document.getElementById('simFeedback');
+    const nextBtn = document.getElementById('nextBtn');
+    if (!container || !feedback) return;
+
+    const correct = container.dataset.simCorrect;
+    const isCorrect = (direction === correct);
+    const outcome = direction === 'right' ? container.dataset.simRight : container.dataset.simLeft;
+    const primary = container.dataset.simPrimary || '#7C3AED';
+
+    if (actions) actions.style.display = 'none';
+
+    const swipeLabel = direction === 'right' ? '→ De acuerdo' : '← En desacuerdo';
+    feedback.classList.remove('hidden');
+    if (isCorrect) {
+        feedback.className = 'mt-2 p-4 rounded-2xl text-sm font-medium bg-green-50 text-green-800 border border-green-200';
+        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#16a34a">${ICONS?.checkCircle||'✓'}</span> ¡Decisión acertada! (${swipeLabel})</div>${_mdToHtml(outcome)}`;
+        const _modC = modulesData[currentModule - 1];
+        const _cardC = _modC?.cards[currentCardIndex];
+        const _cidC = _cardC?.id || `${currentModule}-${currentCardIndex}`;
+        if (!progress.completedCards.includes(_cidC)) {
+            progress.completedCards.push(_cidC);
+            addXP(15, 'Simulación completada');
+            updateMissionProgress("cards", 1);
+            saveProgress();
+        }
+    } else {
+        feedback.className = 'mt-2 p-4 rounded-2xl text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200';
+        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#d97706">${ICONS?.lightbulb||'💡'}</span> Reflexiona... (${swipeLabel})</div>${_mdToHtml(outcome)}<div style="margin-top:10px;font-size:0.8rem;color:#92400e;display:flex;align-items:center;gap:4px"><span style="display:inline-flex;width:13px;height:13px">${ICONS?.refresh||''}</span> Puedes continuar — el aprendizaje está en la reflexión.</div>`;
+        const _modW = modulesData[currentModule - 1];
+        const _cardW = _modW?.cards[currentCardIndex];
+        const _cidW = _cardW?.id || `${currentModule}-${currentCardIndex}`;
+        if (!progress.completedCards.includes(_cidW)) {
+            progress.completedCards.push(_cidW);
+            updateMissionProgress("cards", 1);
+            saveProgress();
+        }
+    }
+    if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
 }
 
 function startCardTracking() {
@@ -1153,7 +1267,7 @@ function showBadgesModal() {
     let badgesHtml = "";
     Object.values(badges).forEach(badge => {
         const unlocked = progress.badges.includes(badge.id);
-        badgesHtml += `<div class="bg-gray-50 rounded-xl p-3 text-center ${unlocked ? 'border-2 border-yellow-400' : 'opacity-50'}"><div class="text-4xl mb-1">${badge.icon}</div><div class="font-bold text-sm">${badge.name}</div><div class="text-xs text-gray-500">${badge.desc}</div>${unlocked ? '<span class="text-green-500 text-xs"><i class="fas fa-check"></i> Desbloqueado</span>' : `<span class="text-gray-400 text-xs">+${badge.xpReward} XP</span>`}</div>`;
+        badgesHtml += `<div class="bg-gray-50 rounded-xl p-3 text-center ${unlocked ? 'border-2 border-yellow-400' : 'opacity-50'}"><div class="text-4xl mb-1">${badge.icon}</div><div class="font-bold text-sm">${badge.name}</div><div class="text-xs text-gray-500">${badge.desc}</div>${unlocked ? `<span class="text-green-500 text-xs" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.check||'✓'}</span> Desbloqueado</span>` : `<span class="text-gray-400 text-xs">+${badge.xpReward} XP</span>`}</div>`;
     });
     document.getElementById('badgesList').innerHTML = badgesHtml;
     document.getElementById('badgesModal').classList.remove('hidden');
@@ -1175,8 +1289,8 @@ function showRedeemModal() {
     prizes.forEach(prize => {
         const alreadyRedeemed = progress.redeemedPrizes?.includes(prize.id);
         prizesHtml += `<div class="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
-            <div><div class="text-2xl">${prize.icon}</div><div class="font-bold">${prize.name}</div><div class="text-xs text-gray-500">${prize.desc}</div><div class="text-xs text-yellow-600"><i class="fas fa-star"></i> ${prize.xpCost} XP</div>${prize.sponsor ? `<div class="text-xs text-green-600">Patrocinado por: ${prize.sponsor}</div>` : ''}</div>
-            ${!alreadyRedeemed && progress.xp >= prize.xpCost ? `<button data-prize="${prize.id}" data-cost="${prize.xpCost}" class="redeem-prize-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-sm transition">Canjear</button>` : (alreadyRedeemed ? '<span class="text-gray-400 text-sm"><i class="fas fa-check"></i> Canjeado</span>' : '<span class="text-gray-400 text-sm">❌ XP insuficiente</span>')}
+            <div><div class="text-2xl">${prize.icon}</div><div class="font-bold">${prize.name}</div><div class="text-xs text-gray-500">${prize.desc}</div><div class="text-xs text-yellow-600" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.star||'⭐'}</span> ${prize.xpCost} XP</div>${prize.sponsor ? `<div class="text-xs text-green-600">Patrocinado por: ${prize.sponsor}</div>` : ''}</div>
+            ${!alreadyRedeemed && progress.xp >= prize.xpCost ? `<button data-prize="${prize.id}" data-cost="${prize.xpCost}" class="redeem-prize-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-sm transition">Canjear</button>` : (alreadyRedeemed ? `<span class="text-gray-400 text-sm" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.check||'✓'}</span> Canjeado</span>` : '<span class="text-gray-400 text-sm">Sin XP</span>')}
         </div>`;
     });
     document.getElementById('prizesList').innerHTML = prizesHtml;
@@ -1203,7 +1317,7 @@ function showRedeemModal() {
 
 async function showRanking() {
     const listEl = document.getElementById("rankingList");
-    listEl.innerHTML = `<div class="text-center py-6 text-gray-400"><i class="fas fa-spinner fa-spin text-xl"></i></div>`;
+    listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:32px;height:32px;color:#94a3b8">${ICONS?.spinner||'...'}</span></div>`;
     document.getElementById("rankingModal").classList.remove("hidden");
 
     const { data, error } = await supabase
@@ -1956,7 +2070,8 @@ async function generateCertificateFromExam(percentage) {
         'steam': `Por haber completado satisfactoriamente el <strong>Curso STEAM 2.0 para Docentes</strong>, demostrando competencias en la integración de Ciencia, Tecnología, Ingeniería, Emprendimiento, Arte y Matemáticas en entornos educativos`,
         'abp': `Por haber completado satisfactoriamente el curso <strong>Aprendizaje Basado en Proyectos para Docentes</strong>, demostrando dominio del ciclo ABP, diseño de proyectos auténticos y estrategias de evaluación formativa`,
         'design-thinking': `Por haber completado satisfactoriamente el curso <strong>Design Thinking para Docentes</strong>, demostrando competencias en empatía, ideación, prototipado y evaluación iterativa para resolver problemas educativos`,
-        'evaluacion': `Por haber completado satisfactoriamente el curso <strong>Herramientas de Evaluación Auténtica</strong>, demostrando dominio en rúbricas, portafolios, autoevaluación, coevaluación y evaluación formativa`
+        'evaluacion': `Por haber completado satisfactoriamente el curso <strong>Herramientas de Evaluación Auténtica</strong>, demostrando dominio en rúbricas, portafolios, autoevaluación, coevaluación y evaluación formativa`,
+        'tipos-estudiantes': `Por haber completado satisfactoriamente el curso <strong>Conoce a Quien Enseñas</strong>, demostrando competencias en identificación de perfiles de aprendizaje, estrategias diferenciadas y atención a la diversidad del aula`
     };
     const courseDesc = courseDescs[_course.id] || courseDescs['steam'];
 
@@ -2046,6 +2161,140 @@ async function generateCertificateFromExam(percentage) {
     const win = window.open('', '_blank', 'width=860,height=640');
     if (win) {
         win.document.write(certHTML);
+        win.document.close();
+    } else {
+        showToast('Permite ventanas emergentes para ver el certificado.', 'error');
+    }
+}
+
+// ==================== CERTIFICADO MAESTRO ====================
+function _checkMasterCert() {
+    const btn = document.getElementById('masterCertBtn');
+    if (!btn || typeof allCourses === 'undefined') return;
+    const scores = progress?.dailyMissions?.examScores || {};
+    // Legacy: STEAM puede tener puntaje en examScore
+    const steamScore = scores['steam'] ?? progress?.dailyMissions?.examScore;
+    const allPassed = allCourses
+        .filter(c => c.status === 'available')
+        .every(c => {
+            const s = c.id === 'steam' ? steamScore : scores[c.id];
+            return s !== undefined && s >= 70;
+        });
+    btn.classList.toggle('hidden', !allPassed);
+    // Sync placeholder
+    const _certVisible = !document.getElementById('certDownloadBtn')?.classList.contains('hidden');
+    const _ph = document.getElementById('certPlaceholder');
+    if (_ph) _ph.classList.toggle('hidden', allPassed || _certVisible);
+}
+
+async function generateMasterCertificate() {
+    const nombre = getDisplayName();
+    const fecha = new Date().toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' });
+    const scores = progress?.dailyMissions?.examScores || {};
+    const steamScore = scores['steam'] ?? progress?.dailyMissions?.examScore ?? 0;
+
+    const [logoSrc, firmaSrc] = await Promise.all([
+        _imgToBase64('logo-1bot-edoo.png'),
+        _imgToBase64('firma.png')
+    ]);
+    const logoHtml = logoSrc
+        ? `<img src="${logoSrc}" alt="1bot · edoo" style="height:44px;object-fit:contain">`
+        : `<span style="font-family:Arial Black,sans-serif;font-size:18px;font-weight:900;color:#7C3AED">1bot <span style="color:#E91E63">·</span> edoo</span>`;
+    const firmaHtml = firmaSrc
+        ? `<img src="${firmaSrc}" class="sign-img" alt="Firma">`
+        : `<div style="height:50px"></div>`;
+
+    const availableCourses = allCourses.filter(c => c.status === 'available');
+    const totalHours = availableCourses.reduce((a, c) => a + (c.durationHours || 0), 0);
+    const avgScore = Math.round(availableCourses.reduce((a, c) => {
+        const s = c.id === 'steam' ? steamScore : (scores[c.id] || 0);
+        return a + s;
+    }, 0) / availableCourses.length);
+
+    const courseBadges = availableCourses.map(c => {
+        const s = c.id === 'steam' ? steamScore : (scores[c.id] || 0);
+        const colors = { 'steam':'#07B0E4','abp':'#2563EB','design-thinking':'#E83C8D','evaluacion':'#E9A037','tipos-estudiantes':'#7C3AED' };
+        const col = colors[c.id] || '#1A6B68';
+        return `<div style="background:${col}18;border:1.5px solid ${col}44;border-radius:12px;padding:8px 14px;display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
+            <div>
+                <div style="font-size:12px;font-weight:700;color:#0F172A">${c.title}</div>
+                <div style="font-size:10px;color:#64748B">${s}% · ${c.durationHours}h</div>
+            </div>
+        </div>`;
+    }).join('');
+
+    const masterHTML = `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<title>Certificado Maestro en Pedagogía Innovadora - ${nombre}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:#0F172A; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
+  .cert { background:white; width:820px; border-radius:28px; overflow:hidden; box-shadow:0 40px 80px rgba(0,0,0,.4); }
+  .cert-top { background:linear-gradient(135deg,#1e1b4b 0%,#4c1d95 50%,#7C3AED 100%); padding:44px 52px 36px; position:relative; overflow:hidden; }
+  .cert-top::before { content:''; position:absolute; top:-60px; right:-60px; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,.06); }
+  .cert-top::after  { content:''; position:absolute; bottom:-80px; left:10%; width:320px; height:320px; border-radius:50%; background:rgba(255,255,255,.04); }
+  .cert-stars { font-size:28px; margin-bottom:10px; letter-spacing:4px; position:relative; z-index:1; }
+  .cert-title { color:white; font-size:30px; font-weight:900; line-height:1.2; position:relative; z-index:1; }
+  .cert-subtitle { color:rgba(255,255,255,.75); font-size:13px; margin-top:6px; position:relative; z-index:1; }
+  .cert-body { padding:36px 52px; }
+  .cert-otorga { font-size:11px; color:#94A3B8; font-weight:700; text-transform:uppercase; letter-spacing:.15em; margin-bottom:6px; }
+  .cert-nombre { font-size:36px; font-weight:900; color:#0F172A; line-height:1.1; margin-bottom:10px; }
+  .cert-desc { font-size:14px; color:#475569; line-height:1.75; margin-bottom:24px; }
+  .cert-desc strong { color:#0F172A; }
+  .cert-meta { display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+  .meta-pill { background:#F8FAFC; border:1.5px solid #E2E8F0; border-radius:12px; padding:10px 18px; }
+  .meta-pill .label { font-size:10px; color:#94A3B8; font-weight:700; text-transform:uppercase; letter-spacing:.1em; margin-bottom:3px; }
+  .meta-pill .value { font-size:15px; color:#0F172A; font-weight:800; }
+  .courses-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:28px; }
+  .cert-footer { display:flex; align-items:flex-end; justify-content:space-between; border-top:1.5px solid #F1F5F9; padding-top:22px; }
+  .sign-block { text-align:center; }
+  .sign-img { height:70px; object-fit:contain; display:block; margin:0 auto 4px; }
+  .sign-line { width:190px; border-top:1.5px solid #CBD5E1; margin:0 auto 6px; }
+  .sign-name { font-size:12.5px; font-weight:700; color:#0F172A; }
+  .sign-role { font-size:11px; color:#64748B; }
+  .brand-area { display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
+  .print-btn { background:#7C3AED; color:white; border:none; padding:10px 22px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+  @media print { body{background:none;padding:0} .cert{box-shadow:none;border-radius:0;width:100%} .print-btn{display:none} }
+</style></head><body>
+<div class="cert">
+  <div class="cert-top">
+    <div class="cert-stars">★ ★ ★ ★ ★</div>
+    <h1 class="cert-title">Certificado Maestro en<br>Pedagogía Innovadora</h1>
+    <p class="cert-subtitle">Programa Completo de Formación Docente · 1bot · edoo</p>
+  </div>
+  <div class="cert-body">
+    <p class="cert-otorga">Se otorga con distinción a</p>
+    <p class="cert-nombre">${nombre}</p>
+    <p class="cert-desc">Por haber completado satisfactoriamente el <strong>Programa Completo de Formación Docente en Pedagogía Innovadora</strong>, superando los 5 cursos del programa con una calificación promedio de <strong>${avgScore}%</strong>, demostrando dominio integral en metodologías activas, diseño de aprendizaje y evaluación auténtica para el aula del siglo XXI.</p>
+    <div class="cert-meta">
+      <div class="meta-pill"><div class="label">Cursos completados</div><div class="value">${availableCourses.length} de ${availableCourses.length}</div></div>
+      <div class="meta-pill"><div class="label">Horas de formación</div><div class="value">${totalHours} horas</div></div>
+      <div class="meta-pill"><div class="label">Calificación promedio</div><div class="value">${avgScore}%</div></div>
+      <div class="meta-pill"><div class="label">Fecha de finalización</div><div class="value">${fecha}</div></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Cursos acreditados</div>
+    <div class="courses-grid">${courseBadges}</div>
+    <div class="cert-footer">
+      <div class="sign-block">
+        ${firmaHtml}
+        <div class="sign-line"></div>
+        <div class="sign-name">Guillermo B.</div>
+        <div class="sign-role">Director Académico · 1bot · edoo</div>
+      </div>
+      <div class="brand-area">
+        ${logoHtml}
+        <button class="print-btn" onclick="window.print()">⬇ Descargar PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>`;
+
+    const win = window.open('', '_blank');
+    if (win) {
+        win.document.write(masterHTML);
         win.document.close();
     } else {
         showToast('Permite ventanas emergentes para ver el certificado.', 'error');
@@ -2303,16 +2552,17 @@ function stopConfetti() {
 }
 
 // ==================== ONBOARDING ====================
+const ONBOARDING_SVG_ICONS = ['wave','flashCards','puzzle','lightning','calendar','photoStar','personCheck','graduation','trophyLarge'];
 const ONBOARDING_SLIDES = [
     {
-        emoji: '👋',
+        emoji: '👋', svgKey: 'wave',
         bg: '#1A6B68',
         title: '¡Bienvenido al Curso STEAM 2.0!',
         desc: 'Aprenderás metodología <strong>STEAM</strong> a tu ritmo con tarjetas interactivas, quiz, logros y un <strong>certificado oficial</strong> al finalizar.',
         extra: 'Este tutorial rápido te explicará todo lo que necesitas saber para aprovechar el curso al máximo.'
     },
     {
-        emoji: '📖',
+        emoji: '📖', svgKey: 'flashCards',
         bg: '#1A6B68',
         title: 'Las tarjetas de aprendizaje',
         desc: 'El contenido está organizado en <strong>tarjetas</strong>. Lee cada una y avanza tocando <strong>Siguiente →</strong> o deslizando la tarjeta hacia la izquierda.',
@@ -2320,7 +2570,7 @@ const ONBOARDING_SLIDES = [
         icon: '👆 Desliza ← para avanzar'
     },
     {
-        emoji: '🧩',
+        emoji: '🧩', svgKey: 'puzzle',
         bg: '#1A6B68',
         title: 'Quiz al finalizar cada módulo',
         desc: 'Al terminar cada módulo habrá un <strong>quiz de práctica</strong> con preguntas de opción múltiple. Selecciona tu respuesta y toca para confirmar.',
@@ -2328,7 +2578,7 @@ const ONBOARDING_SLIDES = [
         list: ['✅ Respuesta correcta: +15 XP', '❌ Respuesta incorrecta: verás la explicación', '🔁 Puedes repasar el módulo antes de intentarlo']
     },
     {
-        emoji: '⚡',
+        emoji: '⚡', svgKey: 'lightning',
         bg: '#1A6B68',
         title: 'XP y niveles',
         desc: 'Ganas puntos de experiencia (<strong>XP</strong>) con cada actividad. Sube de nivel y desbloquea logros especiales.',
@@ -2336,7 +2586,7 @@ const ONBOARDING_SLIDES = [
         list: ['📖 Completar una tarjeta: +10 XP', '✅ Quiz correcto: +15 XP', '📝 Dar retroalimentación por módulo: +20 XP', '📤 Compartir el curso: +50 XP al día', '👥 Referir a un colega: +100 XP', '📸 Subir evidencia de práctica: +80 XP']
     },
     {
-        emoji: '🗓️',
+        emoji: '🗓️', svgKey: 'calendar',
         bg: '#1A6B68',
         title: 'Los 5 módulos del curso',
         desc: 'El curso tiene <strong>5 módulos</strong> que cubren las disciplinas STEEAM. Cada módulo se desbloquea automáticamente <strong>7 días después</strong> de completar el anterior.',
@@ -2344,7 +2594,7 @@ const ONBOARDING_SLIDES = [
         list: ['🟡 Módulo 1: ¿Qué es STEAM? Origen y evolución', '🟢 Módulo 2: Las 6 disciplinas STEEAM', '🔵 Módulo 3: Metodologías Activas', '🟠 Módulo 4: Evaluación en STEAM', '🩷 Módulo 5: Retos en Guatemala y adaptación']
     },
     {
-        emoji: '📸',
+        emoji: '📸', svgKey: 'photoStar',
         bg: '#1A6B68',
         title: 'Sube evidencias de tu práctica',
         desc: 'Aplica lo aprendido en tu aula y sube una <strong>foto como evidencia</strong>. Ganarás <strong>80 XP</strong> por cada módulo que documentes.',
@@ -2352,14 +2602,14 @@ const ONBOARDING_SLIDES = [
         list: ['📷 La foto puede ser de tu pizarrón, actividad con estudiantes o material creado', '✅ Se acepta JPG y PNG hasta 5 MB']
     },
     {
-        emoji: '👤',
+        emoji: '👤', svgKey: 'personCheck',
         bg: '#1A6B68',
         title: 'Tu perfil — edítalo antes de terminar',
         desc: 'En la pestaña <strong>Perfil</strong> puedes ver tu XP, nivel, logros y racha de días activos.',
         extra: '⚠️ <strong>Importante:</strong> antes de descargar tu certificado, toca el botón <strong>✏️ Editar</strong> y escribe tu <strong>nombre completo correctamente</strong>. Ese nombre aparecerá en el diploma. También puedes subir tu foto.'
     },
     {
-        emoji: '🎓',
+        emoji: '🎓', svgKey: 'graduation',
         bg: '#1A6B68',
         title: 'El Examen Final y tu Certificado',
         desc: 'Cuando completes los 5 módulos, el botón <strong>Examen Final</strong> se activará. Son <strong>20 preguntas</strong> aleatorias del banco del curso.',
@@ -2367,7 +2617,7 @@ const ONBOARDING_SLIDES = [
         list: ['📊 Puntaje mínimo para aprobar: 70%', '🔁 Si no apruebas, puedes intentarlo de nuevo', '📄 Con nota aprobatoria, descarga tu certificado en PDF desde tu Perfil', '🏅 Las preguntas son aleatorias — cambian en cada intento']
     },
     {
-        emoji: '🏆',
+        emoji: '🏆', svgKey: 'trophyLarge',
         bg: '#1A6B68',
         title: '¡Todo listo para empezar! 🚀',
         desc: 'Recuerda que el progreso se guarda en la nube. Puedes acceder al curso desde tu celular, tablet o computadora con la misma cuenta.',
@@ -2387,6 +2637,12 @@ function startOnboarding() {
 function closeOnboarding() {
     document.getElementById('onboardingOverlay').classList.add('hidden');
     localStorage.setItem('onboardingDone', '1');
+    // Launch diagnostic unless already done or skipped
+    const diagDone = localStorage.getItem('diagDone');
+    const diagSkipped = localStorage.getItem('diagSkipped');
+    if (!diagDone && !diagSkipped && typeof startDiagnostic === 'function') {
+        setTimeout(startDiagnostic, 350);
+    }
 }
 
 function renderOnboardingSlide() {
@@ -2397,7 +2653,13 @@ function renderOnboardingSlide() {
     // Fondo dinámico
     const area = document.getElementById('onboardingSlideArea');
     area.style.background = slide.bg;
-    document.getElementById('onboardingEmoji').textContent = slide.emoji;
+    const _emojiEl = document.getElementById('onboardingEmoji');
+    _emojiEl.style.cssText = 'width:80px;height:80px;display:flex;align-items:center;justify-content:center;margin:0 auto';
+    if (typeof ICONS !== 'undefined' && slide.svgKey && ICONS[slide.svgKey]) {
+        _emojiEl.innerHTML = ICONS[slide.svgKey];
+    } else {
+        _emojiEl.textContent = slide.emoji;
+    }
     document.getElementById('onboardingTitle').textContent = slide.title;
     document.getElementById('onboardingDesc').innerHTML = slide.desc;
 
@@ -2500,24 +2762,42 @@ function showCourseSelector() {
     const list = document.getElementById('coursesList');
     if (!list || typeof allCourses === 'undefined') return;
 
+    // SVG illustrations per course — contextual and content-related
+    const _courseIllus = {
+        'steam': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="10" stroke="white" stroke-width="2.5"/><line x1="24" y1="6" x2="24" y2="14" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="34" x2="24" y2="42" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="6" y1="24" x2="14" y2="24" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="24" x2="42" y2="24" stroke="white" stroke-width="2.5" stroke-linecap="round"/><circle cx="24" cy="24" r="4" fill="white"/><path d="M30 18 C32 20 32 28 30 30" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/><path d="M18 18 C16 20 16 28 18 30" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+        'abp': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="10" width="32" height="28" rx="4" stroke="white" stroke-width="2.2"/><line x1="14" y1="20" x2="34" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="27" x2="28" y2="27" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/><circle cx="36" cy="35" r="7" fill="white" fill-opacity="0.15" stroke="white" stroke-width="1.8"/><path d="M33 35 L35.5 37.5 L39 32" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+        'design-thinking': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="24" cy="20" rx="13" ry="14" stroke="white" stroke-width="2.2"/><path d="M18 30 C18 34 20 36 24 36 C28 36 30 34 30 30" stroke="white" stroke-width="2.2" stroke-linecap="round"/><line x1="24" y1="36" x2="24" y2="40" stroke="white" stroke-width="2.2" stroke-linecap="round"/><line x1="20" y1="40" x2="28" y2="40" stroke="white" stroke-width="2.2" stroke-linecap="round"/><circle cx="20" cy="18" r="2" fill="white"/><circle cx="28" cy="18" r="2" fill="white"/><path d="M21 23 C22 25 26 25 27 23" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+        'evaluacion': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="6" width="28" height="36" rx="4" stroke="white" stroke-width="2.2"/><line x1="16" y1="16" x2="32" y2="16" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="22" x2="32" y2="22" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" stroke-linecap="round"/><path d="M16 29 L19 32 L24 26" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="27" y1="29" x2="32" y2="29" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+        'tipos-estudiantes': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="18" r="6" stroke="white" stroke-width="2.2"/><circle cx="32" cy="18" r="6" stroke="white" stroke-width="2.2"/><path d="M6 38 C6 32 10 28 16 28" stroke="white" stroke-width="2.2" stroke-linecap="round"/><path d="M42 38 C42 32 38 28 32 28" stroke="white" stroke-width="2.2" stroke-linecap="round"/><path d="M16 28 C18 26 22 25 24 25 C26 25 30 26 32 28" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" stroke-linecap="round"/><circle cx="24" cy="34" r="5" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/></svg>`
+    };
+
     list.innerHTML = allCourses.map(c => {
         const available = c.status === 'available';
+        const illus = _courseIllus[c.id] || `<svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="14" stroke="white" stroke-width="2.2"/></svg>`;
+        const scores = progress?.dailyMissions?.examScores || {};
+        const passed = scores[c.id] >= 70;
         return `
         <div onclick="${available ? `selectCourse('${c.id}')` : ''}"
-             class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-4 ${available ? 'cursor-pointer hover:bg-white/25 active:scale-95' : 'opacity-60'} transition-all">
+             class="backdrop-blur border rounded-2xl p-4 ${available ? 'cursor-pointer active:scale-95' : 'opacity-55'} transition-all"
+             style="background:${available ? c.color + '33' : 'rgba(255,255,255,0.06)'};border-color:${available ? c.color + '66' : 'rgba(255,255,255,0.12)'}">
             <div class="flex items-center gap-4">
-                <div class="text-4xl">${c.icon}</div>
+                <div style="width:48px;height:48px;background:${available ? c.color : 'rgba(255,255,255,0.1)'};border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    ${illus}
+                </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="font-bold text-white text-base leading-tight">${c.title}</h3>
-                    <p class="text-white/70 text-xs mt-0.5 leading-snug">${c.subtitle}</p>
-                    <div class="flex gap-2 mt-2 flex-wrap">
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${available ? 'bg-white/25 text-white' : 'bg-white/10 text-white/50'}">
-                            ${available ? '✅ Disponible' : '🔜 Próximamente'}
+                    <div class="flex items-center gap-2">
+                        <h3 class="font-bold text-white text-sm leading-tight">${c.title}</h3>
+                        ${passed ? `<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;background:rgba(255,255,255,0.2);color:white;flex-shrink:0">✓ Aprobado</span>` : ''}
+                    </div>
+                    <p class="text-white/65 text-xs mt-0.5 leading-snug">${c.subtitle}</p>
+                    <div class="flex gap-2 mt-1.5 flex-wrap">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="${available ? 'background:rgba(255,255,255,0.18);color:white' : 'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45)'}">
+                            ${available ? '● Disponible' : '○ Próximamente'}
                         </span>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-white/70">${c.durationHours}h · ${c.totalCards} tarjetas</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(0,0,0,0.2);color:rgba(255,255,255,0.7)">${c.durationHours}h · ${c.totalCards} tarjetas</span>
                     </div>
                 </div>
-                ${available ? '<i class="fas fa-chevron-right text-white/50 text-sm"></i>' : ''}
+                ${available ? `<span style="display:inline-flex;width:16px;height:16px;color:rgba(255,255,255,0.5);flex-shrink:0">${ICONS?.chevronRight||'›'}</span>` : ''}
             </div>
         </div>`;
     }).join('');
