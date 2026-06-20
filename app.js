@@ -4397,15 +4397,15 @@ function _renderPortfolioForm(existing) {
                     <p style="font-size:9px;color:#64748b;font-weight:600">/50 EXAMEN</p>
                 </div>
                 <div style="flex:1;font-size:12px;color:#475569">
-                    El portafolio vale <strong>50 puntos adicionales</strong>. Necesitas un total de <strong>75/100</strong> para obtener el certificado.
-                    <strong style="color:#15803d">Mínimo necesario en portafolio: ${Math.max(0, 75 - examScore50)} pts.</strong>
+                    El portafolio vale <strong>50 puntos adicionales</strong>. Necesitas un total de <strong>85/100</strong> para obtener el certificado.
+                    <strong style="color:#15803d">Mínimo necesario en portafolio: ${Math.max(0, 85 - examScore50)} pts.</strong>
                 </div>
             </div>
 
             <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">5 entregables · mínimo 100 palabras cada uno</p>
 
             ${PORTFOLIO_COURSES.map((c, i) => `
-            <div style="margin-bottom:16px">
+            <div style="margin-bottom:20px">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                     <div style="width:24px;height:24px;border-radius:6px;background:${c.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
                         <span style="font-size:10px;font-weight:800;color:white">${i+1}</span>
@@ -4419,7 +4419,17 @@ function _renderPortfolioForm(existing) {
                     onfocus="this.style.borderColor='${c.color}'"
                     onblur="this.style.borderColor='#e2e8f0'"
                 >${existing ? (existing['entregable_'+c.key]||'') : ''}</textarea>
-                <p id="wc_${c.key}" style="font-size:10px;color:#94a3b8;text-align:right;margin-top:3px">0 palabras</p>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">
+                    <label for="file_${c.key}" style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#64748b;cursor:pointer;padding:4px 8px;border:1.5px dashed #cbd5e1;border-radius:8px;transition:border-color .15s"
+                        onmouseover="this.style.borderColor='${c.color}'" onmouseout="this.style.borderColor='#cbd5e1'">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <span id="filelabel_${c.key}">Subir imagen o PDF</span>
+                        <input type="file" id="file_${c.key}" accept="image/*,.pdf" style="display:none"
+                            onchange="_portFileChange(this,'${c.key}','${c.color}')">
+                    </label>
+                    <p id="wc_${c.key}" style="font-size:10px;color:#94a3b8">0 palabras</p>
+                </div>
+                <div id="filepreview_${c.key}" style="margin-top:5px"></div>
             </div>`).join('')}
 
             <button onclick="submitPortfolio()" id="portSubmitBtn"
@@ -4447,6 +4457,41 @@ function _renderPortfolioForm(existing) {
             wc.style.color = words >= 100 ? '#16a34a' : '#94a3b8';
         }
     });
+}
+
+const _portFiles = {};
+
+function _portFileChange(input, key, color) {
+    const file = input.files[0];
+    if (!file) return;
+    _portFiles[key] = file;
+    const label = document.getElementById('filelabel_' + key);
+    const preview = document.getElementById('filepreview_' + key);
+    if (label) label.textContent = file.name.length > 28 ? file.name.substring(0, 25) + '…' : file.name;
+    if (!preview) return;
+    if (file.type.startsWith('image/')) {
+        const url = URL.createObjectURL(file);
+        preview.innerHTML = `<img src="${url}" style="max-width:100%;max-height:140px;border-radius:8px;border:1.5px solid ${color};object-fit:cover">`;
+    } else {
+        preview.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:#f8fafc;border:1.5px solid ${color};border-radius:8px;font-size:11px;color:#475569">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            ${file.name}
+        </div>`;
+    }
+}
+
+async function _uploadPortfolioFiles() {
+    const urls = {};
+    for (const key of Object.keys(_portFiles)) {
+        const file = _portFiles[key];
+        const path = `portfolios/${currentUser.id}/${key}_${Date.now()}_${file.name}`;
+        const { data, error } = await supabase.storage.from('portfolio-evidencias').upload(path, file, { upsert: true });
+        if (!error && data) {
+            const { data: pub } = supabase.storage.from('portfolio-evidencias').getPublicUrl(data.path);
+            urls[key] = pub.publicUrl;
+        }
+    }
+    return urls;
 }
 
 function _portWordCount(ta, wcId) {
@@ -4501,6 +4546,12 @@ async function submitPortfolio() {
 
     const examScore50 = Math.round((progress?.dailyMissions?.masterExamScore || 0) * 0.5);
 
+    // Subir archivos adjuntos (si los hay)
+    let fileUrls = {};
+    if (Object.keys(_portFiles).length > 0) {
+        try { fileUrls = await _uploadPortfolioFiles(); } catch(_) {}
+    }
+
     try {
         const res = await fetch(EVALUATE_PORTFOLIO_URL, {
             method: 'POST',
@@ -4527,6 +4578,7 @@ async function submitPortfolio() {
             combined_score:   result.combined,
             status:           result.passed ? 'passed' : 'evaluated',
             evaluated_at:     new Date().toISOString(),
+            file_urls:        Object.keys(fileUrls).length > 0 ? fileUrls : undefined,
         };
 
         if (_portfolioData?.id) {
@@ -4578,7 +4630,7 @@ function _renderPortfolioResults() {
             <div style="text-align:center;background:${passed?'linear-gradient(135deg,#14532d,#15803d)':'linear-gradient(135deg,#7f1d1d,#dc2626)'};border-radius:16px;padding:20px;margin-bottom:16px;color:white">
                 <p style="font-size:11px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Puntaje final</p>
                 <p style="font-size:3.5rem;font-weight:900;line-height:1">${combined}<span style="font-size:1.5rem;font-weight:600;opacity:.7">/100</span></p>
-                <p style="font-size:13px;font-weight:600;opacity:.9;margin-top:6px">${passed ? '¡Aprobado! Certificado Maestro desbloqueado' : `Necesitas 75/100 · Te faltan ${75-combined} puntos`}</p>
+                <p style="font-size:13px;font-weight:600;opacity:.9;margin-top:6px">${passed ? '¡Aprobado! Certificado Maestro desbloqueado' : `Necesitas 85/100 · Te faltan ${85-combined} puntos`}</p>
             </div>
 
             <!-- Desglose -->

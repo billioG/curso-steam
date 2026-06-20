@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS portfolios (
   -- Puntaje combinado final
   combined_score int,    -- ai_total + exam_score_50
 
+  -- URLs de archivos adjuntos por entregable
+  file_urls     jsonb,  -- { steam: "url", abp: "url", ... }
+
   -- Estado
   status        text DEFAULT 'pending',  -- pending | evaluated | passed | failed
   submitted_at  timestamptz DEFAULT now(),
