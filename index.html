@@ -1683,23 +1683,23 @@
                 </button>
             </div>
 
-            <!-- Cambiar curso -->
+            <!-- Cambiar curso (solo móvil — en escritorio aparece en sidebar) -->
             <button onclick="showCourseSelector()"
-                class="w-full bg-white border border-slate-200 text-slate-600 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
+                class="md:hidden w-full bg-white border border-slate-200 text-slate-600 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
                 <span data-icon="switchCourse" style="display:inline-flex;width:16px;height:16px;color:#07B0E4"></span>
                 Cambiar curso
             </button>
 
-            <!-- Ver tutorial -->
+            <!-- Ver tutorial (solo móvil) -->
             <button onclick="localStorage.removeItem('onboardingDone'); startOnboarding();"
-                class="w-full bg-white border border-slate-200 text-slate-500 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
+                class="md:hidden w-full bg-white border border-slate-200 text-slate-500 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
                 <span data-icon="compass" style="display:inline-flex;width:16px;height:16px;color:#22d3ee"></span> Ver
                 tutorial de nuevo
             </button>
 
-            <!-- Cerrar sesión -->
+            <!-- Cerrar sesión (solo móvil — en escritorio aparece en sidebar) -->
             <button id="logoutBtn"
-                class="w-full bg-white border border-red-100 text-red-500 font-semibold py-3 rounded-2xl text-sm hover:bg-red-50 transition flex items-center justify-center gap-2 shadow-sm">
+                class="md:hidden w-full bg-white border border-red-100 text-red-500 font-semibold py-3 rounded-2xl text-sm hover:bg-red-50 transition flex items-center justify-center gap-2 shadow-sm">
                 <span data-icon="logout" style="display:inline-flex;width:16px;height:16px;color:#ef4444"></span> Cerrar
                 sesión
             </button>
