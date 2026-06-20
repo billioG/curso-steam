@@ -2980,7 +2980,9 @@ function _checkMasterCert() {
     const portfolioScore  = progress?.dailyMissions?.portfolioAiTotal ?? null;
     const available       = allCourses.filter(c => c.status === 'available');
 
-    const allIndividualPassed = available.every(c => {
+    // Storytelling es opcional para el certificado maestro (curso nuevo, no requerido)
+    const requiredForMaster = available.filter(c => c.id !== 'storytelling');
+    const allIndividualPassed = requiredForMaster.every(c => {
         const s = c.id === 'steam' ? steamScore : scores[c.id];
         return s !== undefined && s >= 70;
     });
@@ -2988,7 +2990,7 @@ function _checkMasterCert() {
     // Sistema 50/50: examen vale 50pts, portafolio vale 50pts
     const examScore50    = masterExamScore !== undefined ? Math.round(masterExamScore * 0.5) : null;
     const combinedScore  = (examScore50 !== null && portfolioScore !== null) ? examScore50 + portfolioScore : null;
-    const masterPassed   = combinedScore !== null && combinedScore >= 75;
+    const masterPassed   = combinedScore !== null && combinedScore >= 85;
     const examTaken      = masterExamScore !== undefined;
     const portfolioDone  = portfolioScore !== null;
 
@@ -3009,7 +3011,7 @@ function _checkMasterCert() {
     if (scoreEl) {
         if (examTaken) {
             const portLabel = portfolioDone ? `${portfolioScore}/50` : '<span style="color:#94a3b8">Pendiente</span>';
-            const combinedLabel = combinedScore !== null ? `<strong style="color:${combinedScore>=75?'#16a34a':'#dc2626'}">${combinedScore}/100</strong>` : '—';
+            const combinedLabel = combinedScore !== null ? `<strong style="color:${combinedScore>=85?'#16a34a':'#dc2626'}">${combinedScore}/100</strong>` : '—';
             scoreEl.innerHTML = `
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
                     <div style="background:#f0f9ff;border-radius:12px;padding:10px;text-align:center;border:1px solid #bae6fd">
@@ -3020,12 +3022,12 @@ function _checkMasterCert() {
                         <p style="font-size:18px;font-weight:800;color:#15803d">${portLabel}</p>
                         <p style="font-size:10px;color:#64748b;margin-top:2px">Portafolio</p>
                     </div>
-                    <div style="background:${combinedScore===null?'#f8fafc':combinedScore>=75?'#f0fdf4':'#fef2f2'};border-radius:12px;padding:10px;text-align:center;border:1px solid ${combinedScore===null?'#e2e8f0':combinedScore>=75?'#86efac':'#fca5a5'}">
+                    <div style="background:${combinedScore===null?'#f8fafc':combinedScore>=85?'#f0fdf4':'#fef2f2'};border-radius:12px;padding:10px;text-align:center;border:1px solid ${combinedScore===null?'#e2e8f0':combinedScore>=85?'#86efac':'#fca5a5'}">
                         <p style="font-size:18px;font-weight:800">${combinedLabel}</p>
                         <p style="font-size:10px;color:#64748b;margin-top:2px">Total</p>
                     </div>
                 </div>
-                <p style="font-size:11px;color:#94a3b8;text-align:center">Aprobación: 75/100 puntos</p>`;
+                <p style="font-size:11px;color:#94a3b8;text-align:center">Aprobación: 85/100 puntos</p>`;
             scoreEl.classList.remove('hidden');
         } else {
             scoreEl.classList.add('hidden');
@@ -4424,7 +4426,15 @@ function _renderPortfolioForm(existing) {
                 style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#15803d,#16a34a);color:white;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px">
                 Enviar portafolio para evaluación IA
             </button>
-            <p style="font-size:10px;color:#94a3b8;text-align:center;margin-top:8px">La IA evaluará tu portafolio al instante y te dará retroalimentación personalizada</p>
+            <p style="font-size:10px;color:#94a3b8;text-align:center;margin-top:8px">
+                ${(()=>{
+                    const att = progress?.dailyMissions?.portfolioAttempts || 0;
+                    const rem = Math.max(0, 3 - att);
+                    return rem > 0
+                        ? `Intentos restantes: <strong style="color:#15803d">${rem}/3</strong> · La IA evaluará tu portafolio al instante`
+                        : `Sin intentos disponibles — espera 48 horas desde el último envío`;
+                })()}
+            </p>
         </div>`;
 
     // Inicializar contadores
@@ -4448,6 +4458,24 @@ function _portWordCount(ta, wcId) {
 }
 
 async function submitPortfolio() {
+    // Control de intentos: máximo 3, luego espera 48 horas
+    const MAX_ATTEMPTS = 3;
+    const COOLDOWN_MS  = 48 * 60 * 60 * 1000;
+    const attempts     = progress?.dailyMissions?.portfolioAttempts || 0;
+    const lastAttempt  = progress?.dailyMissions?.portfolioLastAttempt || null;
+
+    if (attempts >= MAX_ATTEMPTS) {
+        const elapsed = lastAttempt ? Date.now() - new Date(lastAttempt).getTime() : COOLDOWN_MS;
+        if (elapsed < COOLDOWN_MS) {
+            const hoursLeft = Math.ceil((COOLDOWN_MS - elapsed) / 3600000);
+            showToast(`Has usado los 3 intentos. Podrás intentarlo de nuevo en ${hoursLeft} hora${hoursLeft===1?'':'s'}.`, 'warning');
+            return;
+        } else {
+            // Reinicia el contador después de 48h
+            progress.dailyMissions.portfolioAttempts = 0;
+        }
+    }
+
     const entregables = {};
     let allOk = true;
     PORTFOLIO_COURSES.forEach(c => {
@@ -4510,6 +4538,8 @@ async function submitPortfolio() {
 
         // Guardar en progreso local
         if (!progress.dailyMissions) progress.dailyMissions = {};
+        progress.dailyMissions.portfolioAttempts    = (progress.dailyMissions.portfolioAttempts || 0) + 1;
+        progress.dailyMissions.portfolioLastAttempt = new Date().toISOString();
         progress.dailyMissions.portfolioAiTotal  = result.total;
         progress.dailyMissions.portfolioScores   = result.scores;
         progress.dailyMissions.portfolioFeedback = result.feedback;
