@@ -267,6 +267,7 @@ async function loginWithEmail(email, password) {
         checkDailyStreak();
         loadDailyMissions();
         await syncWithSupabase();
+        loadPortfolio(); // cargar portafolio desde Supabase (sin bloquear)
         return true;
     } catch (error) {
         showLoginError(_friendlyAuthError(error.message));
@@ -2975,21 +2976,63 @@ function _checkMasterCert() {
     if (typeof allCourses === 'undefined') return;
     const scores      = progress?.dailyMissions?.examScores || {};
     const steamScore  = scores['steam'] ?? progress?.dailyMissions?.examScore;
-    const masterScore = progress?.dailyMissions?.masterExamScore;
-    const available   = allCourses.filter(c => c.status === 'available');
+    const masterExamScore = progress?.dailyMissions?.masterExamScore;
+    const portfolioScore  = progress?.dailyMissions?.portfolioAiTotal ?? null;
+    const available       = allCourses.filter(c => c.status === 'available');
 
     const allIndividualPassed = available.every(c => {
         const s = c.id === 'steam' ? steamScore : scores[c.id];
         return s !== undefined && s >= 70;
     });
 
-    const masterPassed = masterScore !== undefined && masterScore >= 75;
+    // Sistema 50/50: examen vale 50pts, portafolio vale 50pts
+    const examScore50    = masterExamScore !== undefined ? Math.round(masterExamScore * 0.5) : null;
+    const combinedScore  = (examScore50 !== null && portfolioScore !== null) ? examScore50 + portfolioScore : null;
+    const masterPassed   = combinedScore !== null && combinedScore >= 75;
+    const examTaken      = masterExamScore !== undefined;
+    const portfolioDone  = portfolioScore !== null;
 
-    // Botón examen maestro: visible cuando todos los individuales están aprobados pero el maestro no
+    // Botón examen maestro: visible cuando todos individuales aprobados y examen aún no tomado
     const examBtn = document.getElementById('masterExamBtn');
-    if (examBtn) examBtn.classList.toggle('hidden', !allIndividualPassed || masterPassed);
+    if (examBtn) examBtn.classList.toggle('hidden', !allIndividualPassed || examTaken);
 
-    // Botón certificado maestro: visible solo cuando el examen maestro fue aprobado
+    // Botón portafolio: visible cuando examen tomado pero portafolio no enviado aún
+    const portBtn = document.getElementById('masterPortfolioBtn');
+    if (portBtn) portBtn.classList.toggle('hidden', !allIndividualPassed || !examTaken || portfolioDone || masterPassed);
+
+    // Botón ver resultados portafolio: visible cuando portafolio ya evaluado pero no aprobado aún (o para revisitar)
+    const portResultsBtn = document.getElementById('masterPortfolioResultsBtn');
+    if (portResultsBtn) portResultsBtn.classList.toggle('hidden', !portfolioDone || masterPassed);
+
+    // Resumen de puntaje combinado (si examen ya tomado)
+    const scoreEl = document.getElementById('masterScoreSummary');
+    if (scoreEl) {
+        if (examTaken) {
+            const portLabel = portfolioDone ? `${portfolioScore}/50` : '<span style="color:#94a3b8">Pendiente</span>';
+            const combinedLabel = combinedScore !== null ? `<strong style="color:${combinedScore>=75?'#16a34a':'#dc2626'}">${combinedScore}/100</strong>` : '—';
+            scoreEl.innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+                    <div style="background:#f0f9ff;border-radius:12px;padding:10px;text-align:center;border:1px solid #bae6fd">
+                        <p style="font-size:18px;font-weight:800;color:#0369a1">${examScore50}/50</p>
+                        <p style="font-size:10px;color:#64748b;margin-top:2px">Examen</p>
+                    </div>
+                    <div style="background:#f0fdf4;border-radius:12px;padding:10px;text-align:center;border:1px solid #bbf7d0">
+                        <p style="font-size:18px;font-weight:800;color:#15803d">${portLabel}</p>
+                        <p style="font-size:10px;color:#64748b;margin-top:2px">Portafolio</p>
+                    </div>
+                    <div style="background:${combinedScore===null?'#f8fafc':combinedScore>=75?'#f0fdf4':'#fef2f2'};border-radius:12px;padding:10px;text-align:center;border:1px solid ${combinedScore===null?'#e2e8f0':combinedScore>=75?'#86efac':'#fca5a5'}">
+                        <p style="font-size:18px;font-weight:800">${combinedLabel}</p>
+                        <p style="font-size:10px;color:#64748b;margin-top:2px">Total</p>
+                    </div>
+                </div>
+                <p style="font-size:11px;color:#94a3b8;text-align:center">Aprobación: 75/100 puntos</p>`;
+            scoreEl.classList.remove('hidden');
+        } else {
+            scoreEl.classList.add('hidden');
+        }
+    }
+
+    // Botón certificado maestro: visible solo cuando combinado aprobado
     const certBtn = document.getElementById('masterCertBtn');
     if (certBtn) certBtn.classList.toggle('hidden', !masterPassed);
 
@@ -3156,13 +3199,13 @@ function _showMasterExamResults() {
     const pct    = Math.round((correct / total) * 100);
     const passed = pct >= MASTER_EXAM.passingScore;
 
+    // Siempre guardar el puntaje del examen (independiente de si aprueba o no)
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    progress.dailyMissions.masterExamScore = pct;
+    progress.dailyMissions.masterExamDate  = localDateStr();
+    window._lastMasterExamScore = pct;
     if (passed) {
-        if (!progress.dailyMissions) progress.dailyMissions = {};
-        progress.dailyMissions.masterExamScore = pct;
-        progress.dailyMissions.masterExamDate  = localDateStr();
-        window._lastMasterExamScore = pct;
-        addXP(200, 'Examen Maestro aprobado');
-        if (!progress.badges.includes('masterDocente')) unlockBadge('masterDocente');
+        addXP(100, 'Parte 1 del Examen Maestro completada');
     }
     saveProgress();
     _masterExamActive = false;
@@ -3173,53 +3216,51 @@ function _showMasterExamResults() {
         ? allCourses.filter(c => c.status === 'available').reduce((a, c) => a + (c.durationHours || 0), 0)
         : 20;
 
+    const examScore50 = Math.round(pct * 0.5);
     document.getElementById('cardContainer').innerHTML = `
     <div id="activeCard" class="content-card">
-        <div class="card-banner" style="background:${passed ? 'linear-gradient(135deg,#1e1b4b,#7C3AED)' : '#DC2626'}">
+        <div class="card-banner" style="background:linear-gradient(135deg,#1e1b4b,#0369a1)">
             <div class="card-banner-svg">
-                ${passed
-                    ? `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="40" cy="32" r="18" stroke="rgba(255,255,255,0.9)" stroke-width="2.5"/>
-                        <path d="M28 54 L40 70 L52 54" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M33 32 L38 37 L48 27" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                       </svg>`
-                    : `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="40" cy="40" r="24" stroke="rgba(255,255,255,0.9)" stroke-width="2.5"/>
-                        <path d="M32 32 L48 48 M48 32 L32 48" stroke="white" stroke-width="3" stroke-linecap="round"/>
-                       </svg>`}
+                <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="40" cy="32" r="18" stroke="rgba(255,255,255,0.9)" stroke-width="2.5"/>
+                    <path d="M28 54 L40 70 L52 54" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M33 32 L38 37 L48 27" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </div>
-            <p class="card-banner-sub" style="color:white;font-size:1rem;font-weight:800;opacity:1">
-                ${passed ? '🎓 ¡Docente STEAM!' : 'Sigue preparándote'}
-            </p>
+            <p class="card-banner-sub" style="color:white;font-size:1rem;font-weight:800;opacity:1">Parte 1 completada · Examen de conocimiento</p>
             <p class="card-banner-sub" style="margin-top:2px">${correct} de ${total} correctas</p>
         </div>
         <div class="card-body" style="text-align:center">
-            <div class="rounded-2xl p-4 mb-4" style="background:${passed ? '#F3E8FF' : '#FEF2F2'}">
-                <p style="font-size:2.5rem;font-weight:900;color:${passed ? '#7C3AED' : '#DC2626'};line-height:1">${pct}%</p>
-                <p style="font-size:.8rem;font-weight:600;color:${passed ? '#6D28D9' : '#B91C1C'};margin-top:4px">
-                    ${passed ? `¡Superaste el ${MASTER_EXAM.passingScore}% requerido!` : `Necesitas ${MASTER_EXAM.passingScore}% para certificarte`}
-                </p>
+
+            <!-- Puntaje examen como /50 -->
+            <div style="background:#f0f9ff;border-radius:14px;padding:16px;margin-bottom:16px;border:1px solid #bae6fd">
+                <p style="font-size:11px;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Parte 1 · Examen de conocimiento</p>
+                <p style="font-size:2.8rem;font-weight:900;color:#0369a1;line-height:1">${examScore50}<span style="font-size:1.2rem;font-weight:600;color:#93c5fd">/50</span></p>
+                <p style="font-size:11px;color:#64748b;margin-top:4px">${pct}% de respuestas correctas</p>
             </div>
-            ${passed ? `
-            <div style="background:#F3E8FF;border-radius:14px;padding:12px;margin-bottom:16px;border:1px solid #DDD6FE">
-                <p style="font-size:11px;font-weight:700;color:#6D28D9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Formación total acreditada</p>
-                <p style="font-size:1.8rem;font-weight:900;color:#4C1D95">${totalHours} horas</p>
-                <p style="font-size:11px;color:#7C3AED">5 cursos completados · Programa completo</p>
+
+            <!-- Siguiente paso: portafolio -->
+            <div style="background:#f0fdf4;border-radius:14px;padding:14px;margin-bottom:16px;border:1px solid #86efac">
+                <p style="font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Siguiente paso</p>
+                <p style="font-size:13px;color:#166534;font-weight:600;margin-bottom:2px">Parte 2 · Portafolio de práctica</p>
+                <p style="font-size:11px;color:#64748b">Comparte 5 evidencias de lo que aplicaste en tu aula. La IA evaluará tu portafolio y dará retroalimentación personalizada. Vale 50 puntos.</p>
             </div>
-            <button onclick="generateMasterCertificate()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#4c1d95,#7C3AED);color:white;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:8px">
-                ★ Obtener Certificado · Docente STEAM
-            </button>` : ''}
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
                 <div style="background:#F0FDF4;border-radius:12px;padding:10px">
                     <p style="font-size:1.4rem;font-weight:700;color:#16A34A">${correct}</p>
-                    <p style="font-size:.7rem;color:#64748B;margin-top:2px">Correctas ✅</p>
+                    <p style="font-size:.7rem;color:#64748B;margin-top:2px">Correctas</p>
                 </div>
                 <div style="background:#FEF2F2;border-radius:12px;padding:10px">
                     <p style="font-size:1.4rem;font-weight:700;color:#DC2626">${total - correct}</p>
-                    <p style="font-size:.7rem;color:#64748B;margin-top:2px">Incorrectas ❌</p>
+                    <p style="font-size:.7rem;color:#64748B;margin-top:2px">Incorrectas</p>
                 </div>
             </div>
-            ${!passed ? `<button onclick="startMasterExam()" style="width:100%;padding:12px;border-radius:14px;border:2px solid #E2E8F0;background:white;color:#475569;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:6px">🔄 Reintentar examen</button>` : ''}
+
+            <button onclick="updateUI();switchTab('profile')" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#15803d,#16a34a);color:white;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:8px">
+                Ir a Portafolio →
+            </button>
+            <button onclick="startMasterExam()" style="width:100%;padding:10px;border-radius:14px;border:2px solid #E2E8F0;background:white;color:#475569;font-weight:600;font-size:12px;cursor:pointer;margin-bottom:6px">Repetir examen</button>
             <button onclick="updateUI();switchTab('profile')" style="color:#94A3B8;font-size:.75rem;padding:6px;background:none;border:none;cursor:pointer;width:100%">Volver al perfil</button>
         </div>
     </div>`;
@@ -4294,9 +4335,279 @@ async function submitComment() {
     }
 }
 
+// ==================== PORTAFOLIO DE PRÁCTICA (evaluado por IA) ====================
+
+const PORTFOLIO_COURSES = [
+    { key: 'steam', label: 'STEAM', color: '#07B0E4', prompt: 'Diseña un proyecto STEAM que hayas implementado o planificado para tu clase. Describe el reto, las disciplinas integradas, cómo participaron los estudiantes y qué aprendieron.' },
+    { key: 'abp',   label: 'ABP',   color: '#2BA848', prompt: 'Describe una pregunta motriz que diseñaste y el proyecto que generó. ¿Cuál fue el producto final? ¿Cómo se conectó con la vida real de tus estudiantes?' },
+    { key: 'dt',    label: 'Design Thinking', color: '#E83C8D', prompt: 'Describe una sesión de empatía, definición de problema o prototipado que realizaste con tus estudiantes. ¿Qué descubriste? ¿Qué solución propusieron?' },
+    { key: 'eval',  label: 'Evaluación Formativa', color: '#E9A037', prompt: 'Comparte un instrumento de evaluación auténtica que creaste (rúbrica, portafolio, exit ticket, etc.). ¿Cómo lo usaste? ¿Qué información te dio sobre el aprendizaje de tus estudiantes?' },
+    { key: 'tipos', label: 'Conoce a tus Estudiantes', color: '#7C3AED', prompt: 'Describe el perfil de aprendizaje de al menos 2 estudiantes de tu clase. ¿Qué descubriste sobre cómo aprenden? ¿Qué adaptaste en tu enseñanza?' },
+];
+
+let _portfolioData = null; // Datos del portafolio cargado desde Supabase
+
+async function loadPortfolio() {
+    if (!currentUser) return;
+    try {
+        const { data } = await supabase.from('portfolios')
+            .select('*').eq('user_id', currentUser.id)
+            .order('submitted_at', { ascending: false }).limit(1);
+        _portfolioData = data?.[0] || null;
+        if (_portfolioData?.ai_total !== undefined && _portfolioData?.ai_total !== null) {
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            progress.dailyMissions.portfolioAiTotal = _portfolioData.ai_total;
+            progress.dailyMissions.portfolioScores   = _portfolioData.ai_scores;
+            progress.dailyMissions.portfolioFeedback = _portfolioData.ai_feedback;
+            progress.dailyMissions.portfolioSummary  = _portfolioData.ai_summary;
+        }
+    } catch(e) { /* silent */ }
+}
+
+function showPortfolioModal() {
+    const modal = document.getElementById('portfolioModal');
+    if (!modal) return;
+
+    const existing = _portfolioData;
+    const alreadyEvaluated = existing?.ai_total !== undefined && existing?.ai_total !== null;
+
+    if (alreadyEvaluated) {
+        _renderPortfolioResults();
+    } else {
+        _renderPortfolioForm(existing);
+    }
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+}
+
+function _renderPortfolioForm(existing) {
+    const body = document.getElementById('portfolioBody');
+    if (!body) return;
+
+    const examScore50 = Math.round((progress?.dailyMissions?.masterExamScore || 0) * 0.5);
+
+    body.innerHTML = `
+        <div style="padding:16px 20px 8px">
+            <!-- Contexto puntaje -->
+            <div style="background:#f0f9ff;border-radius:12px;padding:12px 14px;margin-bottom:16px;border:1px solid #bae6fd;display:flex;align-items:center;gap:12px">
+                <div style="text-align:center;min-width:52px">
+                    <p style="font-size:20px;font-weight:900;color:#0369a1">${examScore50}</p>
+                    <p style="font-size:9px;color:#64748b;font-weight:600">/50 EXAMEN</p>
+                </div>
+                <div style="flex:1;font-size:12px;color:#475569">
+                    El portafolio vale <strong>50 puntos adicionales</strong>. Necesitas un total de <strong>75/100</strong> para obtener el certificado.
+                    <strong style="color:#15803d">Mínimo necesario en portafolio: ${Math.max(0, 75 - examScore50)} pts.</strong>
+                </div>
+            </div>
+
+            <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">5 entregables · mínimo 100 palabras cada uno</p>
+
+            ${PORTFOLIO_COURSES.map((c, i) => `
+            <div style="margin-bottom:16px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    <div style="width:24px;height:24px;border-radius:6px;background:${c.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <span style="font-size:10px;font-weight:800;color:white">${i+1}</span>
+                    </div>
+                    <p style="font-size:13px;font-weight:700;color:#1e293b">${c.label}</p>
+                </div>
+                <p style="font-size:11px;color:#64748b;margin-bottom:6px">${c.prompt}</p>
+                <textarea id="port_${c.key}" placeholder="Escribe aquí tu evidencia..."
+                    style="width:100%;min-height:100px;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;outline:none;transition:border-color .15s;color:#1e293b;line-height:1.6"
+                    oninput="_portWordCount(this,'wc_${c.key}')"
+                    onfocus="this.style.borderColor='${c.color}'"
+                    onblur="this.style.borderColor='#e2e8f0'"
+                >${existing ? (existing['entregable_'+c.key]||'') : ''}</textarea>
+                <p id="wc_${c.key}" style="font-size:10px;color:#94a3b8;text-align:right;margin-top:3px">0 palabras</p>
+            </div>`).join('')}
+
+            <button onclick="submitPortfolio()" id="portSubmitBtn"
+                style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#15803d,#16a34a);color:white;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px">
+                Enviar portafolio para evaluación IA
+            </button>
+            <p style="font-size:10px;color:#94a3b8;text-align:center;margin-top:8px">La IA evaluará tu portafolio al instante y te dará retroalimentación personalizada</p>
+        </div>`;
+
+    // Inicializar contadores
+    PORTFOLIO_COURSES.forEach(c => {
+        const ta = document.getElementById('port_'+c.key);
+        const wc = document.getElementById('wc_'+c.key);
+        if (ta && wc) {
+            const words = ta.value.trim().split(/\s+/).filter(Boolean).length;
+            wc.textContent = words + ' palabras';
+            wc.style.color = words >= 100 ? '#16a34a' : '#94a3b8';
+        }
+    });
+}
+
+function _portWordCount(ta, wcId) {
+    const wc = document.getElementById(wcId);
+    if (!wc) return;
+    const words = ta.value.trim().split(/\s+/).filter(Boolean).length;
+    wc.textContent = words + ' palabras';
+    wc.style.color = words >= 100 ? '#16a34a' : words >= 60 ? '#f59e0b' : '#ef4444';
+}
+
+async function submitPortfolio() {
+    const entregables = {};
+    let allOk = true;
+    PORTFOLIO_COURSES.forEach(c => {
+        const val = document.getElementById('port_'+c.key)?.value?.trim() || '';
+        entregables[c.key] = val;
+        const words = val.split(/\s+/).filter(Boolean).length;
+        if (words < 50) allOk = false;
+    });
+
+    if (!allOk) {
+        showToast('Cada entregable necesita al menos 50 palabras', 'warning');
+        return;
+    }
+
+    const btn = document.getElementById('portSubmitBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-9-9"/></svg>
+            Evaluando con IA… puede tomar 10-20 segundos
+        </span>`;
+    }
+
+    const examScore50 = Math.round((progress?.dailyMissions?.masterExamScore || 0) * 0.5);
+
+    try {
+        const res = await fetch(EVALUATE_PORTFOLIO_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+            body: JSON.stringify({ entregables, examScore50 }),
+        });
+
+        if (!res.ok) throw new Error('Error en evaluación: ' + res.status);
+        const result = await res.json();
+
+        // Guardar en Supabase
+        const record = {
+            user_id:          currentUser.id,
+            entregable_steam: entregables.steam,
+            entregable_abp:   entregables.abp,
+            entregable_dt:    entregables.dt,
+            entregable_eval:  entregables.eval,
+            entregable_tipos: entregables.tipos,
+            ai_scores:        result.scores,
+            ai_feedback:      result.feedback,
+            ai_total:         result.total,
+            ai_summary:       result.summary,
+            exam_score_50:    examScore50,
+            combined_score:   result.combined,
+            status:           result.passed ? 'passed' : 'evaluated',
+            evaluated_at:     new Date().toISOString(),
+        };
+
+        if (_portfolioData?.id) {
+            await supabase.from('portfolios').update(record).eq('id', _portfolioData.id);
+        } else {
+            const { data } = await supabase.from('portfolios').insert(record).select().single();
+            _portfolioData = data;
+        }
+
+        // Guardar en progreso local
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        progress.dailyMissions.portfolioAiTotal  = result.total;
+        progress.dailyMissions.portfolioScores   = result.scores;
+        progress.dailyMissions.portfolioFeedback = result.feedback;
+        progress.dailyMissions.portfolioSummary  = result.summary;
+        if (result.passed) {
+            addXP(200, 'Portafolio aprobado · Certificado Maestro desbloqueado');
+            if (!progress.badges.includes('masterDocente')) unlockBadge('masterDocente');
+        }
+        saveProgress();
+        _checkMasterCert();
+
+        _renderPortfolioResults();
+
+    } catch(e) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Reintentar envío'; }
+        showToast('Error al evaluar. Intenta de nuevo.', 'error');
+    }
+}
+
+function _renderPortfolioResults() {
+    const body = document.getElementById('portfolioBody');
+    if (!body) return;
+
+    const scores   = progress?.dailyMissions?.portfolioScores   || [];
+    const feedback = progress?.dailyMissions?.portfolioFeedback || [];
+    const summary  = progress?.dailyMissions?.portfolioSummary  || '';
+    const aiTotal  = progress?.dailyMissions?.portfolioAiTotal  ?? 0;
+    const examScore50 = Math.round((progress?.dailyMissions?.masterExamScore || 0) * 0.5);
+    const combined = examScore50 + aiTotal;
+    const passed   = combined >= 75;
+
+    body.innerHTML = `
+        <div style="padding:16px 20px">
+
+            <!-- Puntaje total -->
+            <div style="text-align:center;background:${passed?'linear-gradient(135deg,#14532d,#15803d)':'linear-gradient(135deg,#7f1d1d,#dc2626)'};border-radius:16px;padding:20px;margin-bottom:16px;color:white">
+                <p style="font-size:11px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Puntaje final</p>
+                <p style="font-size:3.5rem;font-weight:900;line-height:1">${combined}<span style="font-size:1.5rem;font-weight:600;opacity:.7">/100</span></p>
+                <p style="font-size:13px;font-weight:600;opacity:.9;margin-top:6px">${passed ? '¡Aprobado! Certificado Maestro desbloqueado' : `Necesitas 75/100 · Te faltan ${75-combined} puntos`}</p>
+            </div>
+
+            <!-- Desglose -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+                <div style="background:#f0f9ff;border-radius:12px;padding:12px;text-align:center;border:1px solid #bae6fd">
+                    <p style="font-size:22px;font-weight:800;color:#0369a1">${examScore50}/50</p>
+                    <p style="font-size:10px;color:#64748b;margin-top:2px">Examen de conocimiento</p>
+                </div>
+                <div style="background:#f0fdf4;border-radius:12px;padding:12px;text-align:center;border:1px solid #86efac">
+                    <p style="font-size:22px;font-weight:800;color:#15803d">${aiTotal}/50</p>
+                    <p style="font-size:10px;color:#64748b;margin-top:2px">Portafolio de práctica</p>
+                </div>
+            </div>
+
+            <!-- Resumen IA -->
+            ${summary ? `
+            <div style="background:#fefce8;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;margin-bottom:16px">
+                <p style="font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Retroalimentación general</p>
+                <p style="font-size:13px;color:#78350f;line-height:1.6">${summary}</p>
+            </div>` : ''}
+
+            <!-- Desglose por entregable -->
+            <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Por entregable</p>
+            ${PORTFOLIO_COURSES.map((c, i) => {
+                const s = scores[i] ?? 0;
+                const f = feedback[i] || '';
+                const barW = Math.round((s / 10) * 100);
+                return `
+                <div style="margin-bottom:12px;background:white;border:1px solid #e2e8f0;border-radius:12px;padding:12px;border-left:3px solid ${c.color}">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                        <p style="font-size:12px;font-weight:700;color:#1e293b">${c.label}</p>
+                        <span style="font-size:13px;font-weight:800;color:${s>=7?'#15803d':s>=5?'#d97706':'#dc2626'}">${s}/10</span>
+                    </div>
+                    <div style="height:5px;background:#f1f5f9;border-radius:99px;margin-bottom:8px;overflow:hidden">
+                        <div style="height:100%;width:${barW}%;background:${c.color};border-radius:99px;transition:width .4s ease"></div>
+                    </div>
+                    ${f ? `<p style="font-size:12px;color:#475569;line-height:1.6">${f}</p>` : ''}
+                </div>`;
+            }).join('')}
+
+            ${passed ? `
+            <button onclick="closePortfolioModal();generateMasterCertificate()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#4c1d95,#7C3AED);color:white;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px">
+                Obtener Certificado Maestro
+            </button>` : `
+            <button onclick="_renderPortfolioForm(_portfolioData)" style="width:100%;padding:12px;border-radius:14px;border:2px solid #e2e8f0;background:white;color:#475569;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px">
+                Mejorar portafolio y reenviar
+            </button>`}
+        </div>`;
+}
+
+function closePortfolioModal() {
+    const modal = document.getElementById('portfolioModal');
+    if (modal) { modal.classList.add('hidden'); modal.style.display = 'none'; }
+}
+
 // ==================== CHATBOT (Groq · Llama 3.3) ====================
 // La clave de Groq está en Supabase (privado) — nunca en este archivo público
-const GROQ_PROXY_URL = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/groq-proxy';
+const GROQ_PROXY_URL        = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/groq-proxy';
+const EVALUATE_PORTFOLIO_URL = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/evaluate-portfolio';
 
 const CHAT_SYSTEM = `Eres un asistente educativo altamente especializado en el enfoque STEAM y la propuesta curricular del Programa 1bot de la Universidad del Valle de Guatemala (UVG, 2020-2021).
 
