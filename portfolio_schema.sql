@@ -50,10 +50,4 @@ CREATE POLICY "Docente actualiza su portafolio"
 -- Admin puede ver todos (para panel admin)
 CREATE POLICY "Admin ve todos los portafolios"
   ON portfolios FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE profiles.id = auth.uid()
-      AND profiles.role = 'admin'
-    )
-  );
+  USING (public.is_admin());
