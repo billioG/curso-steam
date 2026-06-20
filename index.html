@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#07B0E4">
+    <meta name="description" content="Programa de Formación Docente — Curso STEAM 2.0 para docentes de Guatemala">
+    <title>Curso STEAM 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Montserrat:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="iconos.js"></script>
+    <style>
+        :root {
+            --brand-blue: #07B0E4;
+            --brand-orange: #E9A037;
+            --brand-pink: #E83C8D;
+            --brand-green: #2BA848;
+            --brand-yellow: #FCC30A;
+            --brand-red: #E52642;
+            --brand-dark: #1A6B68;
+            --brand-light: #EFF9FC;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--brand-light);
+            min-height: 100vh;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ── Animaciones ── */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.12)
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .6
+            }
+        }
+
+        .animate-in {
+            animation: slideInUp .3s ease forwards;
+        }
+
+        .badge-unlock {
+            animation: bounce .5s ease;
+        }
+
+        .streak-fire {
+            animation: pulse 1s infinite;
+        }
+
+        /* ── Toast ── */
+        .toast-notification {
+            position: fixed;
+            bottom: 76px;
+            left: 12px;
+            right: 12px;
+            max-width: 420px;
+            margin: 0 auto;
+            background: var(--brand-dark);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 16px;
+            z-index: 9999;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Nunito', sans-serif;
+            animation: fadeInUp .3s ease;
+            box-shadow: 0 8px 24px rgba(7, 176, 228, .35);
+            text-align: center;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        /* ── Simulación ── */
+        .simulation-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .sim-actions {
+            display: flex;
+            gap: 12px;
+            padding: 0 16px 20px;
+        }
+
+        .sim-btn {
+            flex: 1;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            line-height: 1.4;
+            transition: transform .15s, opacity .15s;
+        }
+
+        .sim-btn:active {
+            transform: scale(0.96);
+        }
+
+        .sim-btn i {
+            font-size: 1.4rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .sim-btn small {
+            font-size: 0.68rem;
+            font-weight: 400;
+            opacity: 0.75;
+            display: block;
+            margin-top: 3px;
+        }
+
+        .sim-btn-left {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .sim-btn-right {
+            background: #DCFCE7;
+            color: #166534;
+        }
+
+        /* ── Diagnóstico ── */
+        .diag-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 14px;
+            border: 2px solid #e2e8f0;
+            background: #fff;
+            cursor: pointer;
+            text-align: left;
+            font-size: 13.5px;
+            color: #1e293b;
+            font-weight: 500;
+            transition: all .15s ease;
+        }
+
+        .diag-option:hover:not(:disabled) {
+            border-color: #7C3AED;
+            background: #F5F3FF;
+        }
+
+        .diag-option:disabled {
+            cursor: default;
+        }
+
+        .diag-opt-letter {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all .15s;
+        }
+
+        .diag-opt-text {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .diag-opt-correct {
+            border-color: #16A34A !important;
+            background: #F0FDF4 !important;
+        }
+
+        .diag-opt-correct .diag-opt-letter {
+            background: #16A34A;
+            color: #fff;
+        }
+
+        .diag-opt-wrong {
+            border-color: #DC2626 !important;
+            background: #FEF2F2 !important;
+        }
+
+        .diag-opt-wrong .diag-opt-letter {
+            background: #DC2626;
+            color: #fff;
+        }
+
+        .diag-feedback {
+            padding: 11px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #1e293b;
+        }
+
+        .diag-fb-correct {
+            background: #F0FDF4;
+            border: 1px solid #86efac;
+        }
+
+        .diag-fb-wrong {
+            background: #FEF2F2;
+            border: 1px solid #fca5a5;
+        }
+
+        /* Results */
+        .diag-result-banner {
+            border-radius: 20px;
+            padding: 24px 20px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: #fff;
+        }
+
+        .diag-result-emoji-big {
+            font-size: 2.6rem;
+            line-height: 1;
+        }
+
+        .diag-result-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .diag-result-score {
+            font-size: 13px;
+            opacity: .85;
+        }
+
+        .diag-result-body {}
+
+        .diag-result-desc {
+            font-size: 14px;
+            color: #334155;
+            line-height: 1.55;
+            margin-bottom: 6px;
+        }
+
+        .diag-result-ref {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .diag-domains-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 12px;
+        }
+
+        .diag-domain-row {
+            margin-bottom: 14px;
+        }
+
+        .diag-domain-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 5px;
+        }
+
+        .diag-domain-bar-wrap {
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .diag-domain-bar {
+            height: 100%;
+            border-radius: 8px;
+            transition: width .6s ease;
+        }
+
+        .diag-domain-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .diag-domain-pct {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .diag-domain-tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            border: 1px solid transparent;
+        }
+
+        .diag-legend {
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.6;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin: 20px 0 16px;
+        }
+
+        .diag-primary-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .diag-secondary-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            background: #fff;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* ── Quiz opciones ── */
+        .quiz-option {
+            transition: all .18s ease;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+        }
+
+        .quiz-option:hover:not(:disabled) {
+            border-color: var(--brand-blue);
+            background: #E8F8FD;
+            transform: translateX(3px);
+        }
+
+        .quiz-option.correct {
+            border-color: #2BA848 !important;
+            background: #E6F1E6 !important;
+        }
+
+        .quiz-option.incorrect {
+            border-color: #E52642 !important;
+            background: #FCD7DA !important;
+        }
+
+        .quiz-option:disabled {
+            cursor: default;
+        }
+
+        .option-letter {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #E0F4FA;
+            color: var(--brand-blue);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 13px;
+            transition: all .18s;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .quiz-option.correct .option-letter {
+            background: #2BA848;
+            color: white;
+        }
+
+        .quiz-option.incorrect .option-letter {
+            background: #E52642;
+            color: white;
+        }
+
+        /* ── Tarjetas de contenido / quiz ── */
+        .content-card,
+        .quiz-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, .09);
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideInUp .3s ease;
+        }
+
+        /* ── Banner ilustrado (parte superior de la tarjeta) ── */
+        .card-banner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 20px 18px;
+            min-height: 160px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, .08);
+            border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+            top: 60%;
+        }
+
+        .card-banner-svg {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-banner-svg svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-banner-sub {
+            color: rgba(255, 255, 255, 0.88);
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 10px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.06em;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* ── Cuerpo de la tarjeta ── */
+        .card-body {
+            padding: 20px 24px;
+            flex: 1;
+        }
+
+        .card-body h2 {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #1a202c;
+            margin-bottom: 12px;
+            line-height: 1.35;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .card-body p {
+            color: #4a5568;
+            font-size: 0.95rem;
+            line-height: 1.75;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .card-key-insight {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border-left: 4px solid;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            padding: 0 24px 16px;
+        }
+
+        .card-swipe-hint {
+            text-align: center;
+            padding: 10px 0;
+            font-size: 11px;
+            color: #cbd5e0;
+        }
+
+        /* ── Barras de progreso ── */
+        .module-progress-bar {
+            height: 6px;
+            background: #C8EEF9;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .module-progress-fill {
+            height: 100%;
+            background: var(--brand-blue);
+            border-radius: 9999px;
+            transition: width .5s ease;
+        }
+
+        /* ── Botones de navegación ── */
+        .nav-btn-prev {
+            background: white;
+            border: 2px solid #e5e7eb;
+            color: #6b7280;
+            font-weight: 700;
+            font-family: 'Nunito', sans-serif;
+            padding: 10px 18px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all .18s;
+        }
+
+        .nav-btn-prev:hover {
+            border-color: var(--brand-blue);
+            color: var(--brand-blue);
+        }
+
+        .nav-btn-next {
+            background: var(--brand-blue);
+            color: white;
+            font-weight: 800;
+            font-family: 'Nunito', sans-serif;
+            padding: 10px 22px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 14px rgba(7, 176, 228, .4);
+            transition: all .18s;
+        }
+
+        .nav-btn-next:hover {
+            box-shadow: 0 6px 20px rgba(7, 176, 228, .5);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn-next:disabled {
+            background: #d1d5db;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Bottom navigation (mobile) ── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            right: 0;
+            z-index: 40;
+            background: white;
+            border-top: 1px solid #f1f5f9;
+            padding: 6px 0 env(safe-area-inset-bottom, 0);
+            max-width: 448px;
+            width: 100%;
+        }
+
+        /* Branding y acciones visibles solo en sidebar desktop */
+        .sidebar-brand { display: none; }
+        .sidebar-actions { display: none; }
+
+        /* ── Desktop: sidebar izquierdo ── */
+        @media (min-width: 768px) {
+            /* Sidebar */
+            .bottom-nav {
+                position: fixed !important;
+                top: 0 !important; bottom: 0 !important;
+                left: 0 !important; right: auto !important;
+                transform: none !important;
+                width: 176px !important;
+                max-width: 176px !important;
+                height: 100vh !important;
+                border-top: none !important;
+                border-right: 1px solid #e2e8f0 !important;
+                padding: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                background: #ffffff !important;
+                box-shadow: 2px 0 8px rgba(0,0,0,.04) !important;
+            }
+            .bottom-nav > .flex {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 8px !important;
+                flex: 1 !important;
+                gap: 2px !important;
+            }
+
+            /* Brand */
+            .sidebar-brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 18px 14px 14px;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .sidebar-brand-icon {
+                width: 34px; height: 34px; flex-shrink: 0;
+                background: linear-gradient(135deg, #1A6B68, #059669);
+                border-radius: 10px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 17px;
+            }
+            .sidebar-brand-text {
+                font-size: 11.5px; font-weight: 800;
+                color: #1e293b; line-height: 1.25;
+            }
+            .sidebar-brand-text small {
+                display: block; font-size: 9.5px;
+                color: #94a3b8; font-weight: 500;
+            }
+
+            /* Nav buttons — forzar layout horizontal */
+            .bnav-btn {
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                gap: 9px !important;
+                padding: 10px 12px !important;
+                border-radius: 10px !important;
+                width: 100% !important;
+                flex: none !important;
+                min-height: unset !important;
+            }
+            .bnav-btn .bnav-icon {
+                width: 18px !important; height: 18px !important;
+                flex-shrink: 0 !important; margin: 0 !important;
+            }
+            .bnav-btn .bnav-label {
+                font-size: 12.5px !important;
+                font-weight: 600 !important;
+                display: block !important;
+            }
+            .bnav-btn.active {
+                background: #eff6ff !important;
+            }
+            .bnav-btn.active .bnav-label,
+            .bnav-btn.active .bnav-icon { color: #4338ca !important; }
+            .bnav-btn:hover:not(.active) {
+                background: #f8fafc !important;
+            }
+
+            /* Ranking: mismo nivel que los demás, sin empujar al fondo */
+            #rankingFloatBtn {
+                margin-top: 0 !important;
+                flex: none !important;
+                border-top: none !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+                display: block !important;
+                width: 100% !important;
+            }
+
+            /* Acciones rápidas sidebar escritorio */
+            .sidebar-actions {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 6px !important;
+                padding: 12px 10px 16px !important;
+                margin-top: auto !important;
+                border-top: 1px solid #f1f5f9 !important;
+            }
+            .sidebar-action-btn {
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                width: 100% !important;
+                padding: 8px 12px !important;
+                border-radius: 10px !important;
+                font-size: 12px !important;
+                font-weight: 600 !important;
+                cursor: pointer !important;
+                border: 1px solid transparent !important;
+                transition: background .15s !important;
+            }
+            .sidebar-action-course {
+                background: #f0f9ff !important;
+                color: #0369a1 !important;
+                border-color: #bae6fd !important;
+            }
+            .sidebar-action-course:hover { background: #e0f2fe !important; }
+            .sidebar-action-logout {
+                background: #fff1f2 !important;
+                color: #e11d48 !important;
+                border-color: #fecdd3 !important;
+            }
+            .sidebar-action-logout:hover { background: #ffe4e6 !important; }
+            .sidebar-action-glosario { background: #f0fdfa !important; color: #0d9488 !important; border-color: #99f6e4 !important; }
+            .sidebar-action-glosario:hover { background: #ccfbf1 !important; }
+
+            /* Layout principal */
+            #mainApp {
+                max-width: none !important;
+                margin-left: 176px !important;
+            }
+            .top-bar {
+                left: 176px !important;
+                transform: none !important;
+                max-width: none !important;
+                width: calc(100% - 176px) !important;
+            }
+
+            /* Contenido: centrado, ancho cómodo, sin padding bottom de barra */
+            .tab-panel {
+                max-width: 620px !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                padding-bottom: 40px !important;
+            }
+        }
+
+        .bnav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 6px 8px;
+            border-radius: 14px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: all .18s;
+            flex: 1;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .bnav-btn .bnav-icon {
+            width: 22px;
+            height: 22px;
+            display: block;
+            margin: 0 auto 1px;
+            color: #94a3b8;
+            transition: color .18s;
+            flex-shrink: 0;
+        }
+
+        .bnav-btn .bnav-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .bnav-btn .bnav-label {
+            font-size: 9.5px;
+            color: #94a3b8;
+            font-weight: 600;
+            display: block;
+        }
+
+        .bnav-btn.active .bnav-icon {
+            color: var(--brand-blue);
+        }
+
+        .bnav-btn.active .bnav-label {
+            color: var(--brand-blue);
+            font-weight: 800;
+        }
+
+        .bnav-btn:hover .bnav-icon,
+        .bnav-btn:hover .bnav-label {
+            color: var(--brand-blue);
+        }
+
+        /* compat: si queda algún <i> de FA */
+        .bnav-btn i {
+            font-size: 17px;
+            color: #94a3b8;
+            transition: color .18s;
+        }
+
+        .bnav-btn.active i {
+            color: var(--brand-blue);
+        }
+
+        .bnav-btn:hover i {
+            color: var(--brand-blue);
+        }
+
+        .bnav-btn span:not(.bnav-label):not(.bnav-icon) {
+            font-size: 9.5px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* ── Stat pills ── */
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 11px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* ── Misc ── */
+        button {
+            cursor: pointer;
+            transition: all .18s ease;
+        }
+
+        button:active {
+            transform: scale(.96);
+        }
+
+        .rating-star,
+        .nps-btn {
+            cursor: pointer;
+            transition: all .1s ease;
+        }
+
+        .rating-star:hover,
+        .nps-btn:hover {
+            transform: scale(1.15);
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #7DD7F0;
+            border-radius: 9999px;
+        }
+
+        /* ── Efecto de tarjetas apiladas (Google Primer style) ── */
+        #cardContainer {
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        #cardContainer::before,
+        #cardContainer::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 24px;
+            pointer-events: none;
+        }
+
+        #cardContainer::before {
+            width: calc(100% - 20px);
+            bottom: 4px;
+            height: calc(100% - 12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .07);
+            z-index: -1;
+            opacity: 0.85;
+        }
+
+        #cardContainer::after {
+            width: calc(100% - 36px);
+            bottom: 0;
+            height: calc(100% - 20px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .05);
+            z-index: -2;
+            opacity: 0.6;
+        }
+
+        /* ── Animación slide entre tarjetas ── */
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(32px) scale(.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-32px) scale(.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .slide-in-right {
+            animation: slideInRight .28s cubic-bezier(.22, .68, 0, 1.2) forwards;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft .28s cubic-bezier(.22, .68, 0, 1.2) forwards;
+        }
+
+        /* ── Swipe estilo Tinder ── */
+        #activeCard {
+            touch-action: pan-y;
+            /* permite scroll vertical, captura horizontal */
+            user-select: none;
+            -webkit-user-select: none;
+            will-change: transform;
+        }
+
+        #activeCard img,
+        #activeCard * {
+            -webkit-user-drag: none;
+            user-drag: none;
+        }
+
+        /* ── Micro-interacciones: feedback táctil en botones de acción ── */
+        #nextBtn:active,
+        #prevBtn:active {
+            transform: scale(0.94);
+            transition: transform .1s ease;
+        }
+
+        #nextBtn,
+        #prevBtn {
+            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+            will-change: transform;
+        }
+
+        #nextBtn:hover {
+            box-shadow: 0 6px 20px rgba(7, 176, 228, .35);
+        }
+
+        /* ── Transición suave al cambiar de pestaña ── */
+        @keyframes tabFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-content-enter {
+            animation: tabFadeIn .22s ease forwards;
+        }
+
+        /* ── Skeleton loader para tarjetas ── */
+        @keyframes shimmer {
+            0% {
+                background-position: -400px 0;
+            }
+
+            100% {
+                background-position: 400px 0;
+            }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 800px 100%;
+            animation: shimmer 1.4s infinite linear;
+            border-radius: 12px;
+        }
+
+        /* ── Efecto press en opciones de quiz ── */
+        .quiz-option:active {
+            transform: scale(0.97);
+        }
+
+        .quiz-option {
+            transition: all .15s cubic-bezier(.22, .68, 0, 1.2);
+            will-change: transform, border-color, background;
+        }
+
+        .quiz-option:hover:not([disabled]) {
+            border-color: #818cf8 !important;
+            background: #f5f3ff !important;
+        }
+
+        /* ── Progress bar animada en el top de la tarjeta ── */
+        .card-progress-fill {
+            transition: width .5s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        /* ── Botones de navegación inferior: efecto ripple ── */
+        .nav-tab-btn {
+            position: relative;
+            overflow: hidden;
+            transition: color .18s ease;
+        }
+
+        .nav-tab-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: currentColor;
+            opacity: 0;
+            border-radius: inherit;
+            transition: opacity .15s ease;
+        }
+
+        .nav-tab-btn:active::after {
+            opacity: .08;
+        }
+
+        /* ── XP pop: animación cuando sumas puntos ── */
+        @keyframes xpPop {
+            0% {
+                transform: scale(1);
+            }
+
+            40% {
+                transform: scale(1.18);
+            }
+
+            70% {
+                transform: scale(0.95);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .xp-pop {
+            animation: xpPop .4s cubic-bezier(.22, .68, 0, 1.4) forwards;
+        }
+
+        /* ── Card banner con parallax suave al cargar ── */
+        @keyframes bannerSlide {
+            from {
+                transform: translateY(-8px);
+                opacity: .7;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .card-banner {
+            animation: bannerSlide .35s ease forwards;
+        }
+
+        /* ── Top bar ── */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 448px;
+            height: 56px;
+            z-index: 30;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* ── Tab panels ── */
+        .tab-panel {
+            min-height: calc(100vh - 56px - 66px);
+        }
+
+        /* ── Modales bottom-sheet ── */
+        .modal-sheet {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .5);
+            z-index: 50;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-inner {
+            background: white;
+            border-radius: 28px 28px 0 0;
+            width: 100%;
+            max-width: 448px;
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 0 20px 28px;
+        }
+
+        .modal-drag {
+            width: 40px;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 9999px;
+            margin: 12px auto 18px;
+        }
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#07B0E4">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="STEAM 2.0">
+    <link rel="apple-touch-icon" href="icon.svg">
+</head>
+
+<body>
+
+    <!-- ==================== SELECTOR DE CURSOS ==================== -->
+    <div id="courseSelector" class="fixed inset-0 z-50 hidden overflow-y-auto" style="background:#1A6B68">
+        <div class="max-w-md mx-auto px-4 py-10">
+            <div class="text-center mb-8">
+                <div class="mx-auto mb-3" style="width:80px;height:80px" id="courseSelectorIcon"></div>
+                <script>document.addEventListener('DOMContentLoaded', function () { var el = document.getElementById('courseSelectorIcon'); if (el && typeof ICONS !== 'undefined') el.innerHTML = ICONS.books; });</script>
+                <h1 class="text-2xl font-black text-white">¿Qué quieres aprender hoy?</h1>
+                <p class="text-white/75 text-sm mt-2">Selecciona un curso para continuar</p>
+            </div>
+            <div id="coursesList" class="space-y-4"></div>
+            <p class="text-center text-white/40 text-xs mt-8">Más cursos llegando pronto 🚀</p>
+        </div>
+    </div>
+
+    <!-- ==================== PANTALLA DE LOGIN ==================== -->
+    <div id="loginScreen" class="fixed inset-0 z-50 flex flex-col overflow-y-auto">
+
+        <!-- Parte superior — gradiente con info del curso -->
+        <div class="shrink-0 flex flex-col items-center justify-center pt-14 pb-10 px-6 relative overflow-hidden"
+            style="background:#1A6B68">
+            <div class="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
+            <div class="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none"></div>
+            <div class="mb-3 drop-shadow-lg mx-auto" style="width:80px;height:80px" id="loginRocketIcon"></div>
+            <script>document.addEventListener('DOMContentLoaded', function () { var el = document.getElementById('loginRocketIcon'); if (el && typeof ICONS !== 'undefined') el.innerHTML = ICONS.rocket; });</script>
+            <h1 class="text-2xl font-bold text-white">Formación Docente</h1>
+            <p class="text-cyan-100 text-sm mt-1 text-center">Pedagogía innovadora · Guatemala</p>
+            <div class="flex gap-6 mt-5">
+                <div class="text-center">
+                    <p class="text-white font-bold text-xl">5</p>
+                    <p class="text-cyan-200 text-xs">Cursos</p>
+                </div>
+                <div class="w-px bg-white/20 self-stretch"></div>
+                <div class="text-center">
+                    <p class="text-white font-bold text-xl">+20h</p>
+                    <p class="text-cyan-200 text-xs">Contenido</p>
+                </div>
+                <div class="w-px bg-white/20 self-stretch"></div>
+                <div class="text-center">
+                    <p class="text-xl">🏆</p>
+                    <p class="text-cyan-200 text-xs">Certificados</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parte inferior — formulario -->
+        <div class="flex-1 bg-white rounded-t-[32px] -mt-5 px-6 pt-7 pb-8">
+
+            <!-- Formulario login -->
+            <div id="emailLoginForm">
+                <div class="mb-3">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Correo
+                        electrónico</label>
+                    <input type="email" id="loginEmail" placeholder="tu@correo.com"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
+                </div>
+                <div class="mb-5">
+                    <label
+                        class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
+                </div>
+                <button id="doEmailLogin" class="w-full text-white font-bold py-3.5 rounded-2xl transition text-sm"
+                    style="background:var(--brand-blue)">
+                    Iniciar sesión
+                </button>
+                <div class="flex items-center justify-between mt-4">
+                    <p class="text-xs text-slate-400">
+                        ¿No tienes cuenta?
+                        <button id="showRegisterBtn" class="text-cyan-600 font-semibold hover:underline ml-1">Regístrate gratis</button>
+                    </p>
+                    <button id="showForgotBtn" class="text-xs text-slate-400 hover:text-indigo-600 underline">¿Olvidaste tu contraseña?</button>
+                </div>
+            </div>
+
+            <!-- Formulario recuperar contraseña -->
+            <div id="forgotForm" class="hidden">
+                <p class="text-sm text-slate-600 mb-4">Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Correo electrónico</label>
+                    <input type="email" id="forgotEmail" placeholder="tu@correo.com"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                </div>
+                <button id="doForgotPassword" class="w-full text-white font-bold py-3.5 rounded-2xl transition text-sm" style="background:var(--brand-blue)">
+                    Enviar enlace
+                </button>
+                <div id="forgotMsg" class="hidden mt-3 bg-emerald-50 text-emerald-700 text-sm text-center p-3 rounded-2xl border border-emerald-100"></div>
+                <p class="text-center text-xs text-slate-400 mt-4">
+                    <button id="backToLoginBtn" class="text-cyan-600 font-semibold hover:underline">← Volver al inicio de sesión</button>
+                </p>
+            </div>
+
+            <!-- Formulario registro -->
+            <div id="registerForm" class="hidden">
+                <div class="mb-3">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Correo
+                        electrónico</label>
+                    <input type="email" id="registerEmail" placeholder="tu@correo.com"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
+                </div>
+                <div class="mb-5">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Contraseña
+                        (mín. 6 caracteres)</label>
+                    <input type="password" id="registerPassword" placeholder="••••••••"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
+                </div>
+                <button id="doRegister"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl transition text-sm">
+                    Crear cuenta
+                </button>
+                <p class="text-center text-xs text-slate-400 mt-4">
+                    ¿Ya tienes cuenta?
+                    <button id="showLoginBtn" class="text-cyan-600 font-semibold hover:underline ml-1">Iniciar
+                        sesión</button>
+                </p>
+            </div>
+
+            <div id="loginError"
+                class="hidden mt-3 bg-red-50 text-red-600 text-sm text-center p-3 rounded-2xl border border-red-100">
+            </div>
+
+            <div class="mt-7 flex items-center justify-center gap-2 text-xs text-slate-400">
+                <span style="display:inline-flex;width:16px;height:16px;color:#22d3ee" id="loginCloudIcon"></span>
+                <script>document.addEventListener('DOMContentLoaded', function () { var el = document.getElementById('loginCloudIcon'); if (el && typeof ICONS !== 'undefined') el.innerHTML = ICONS.cloudOk; });</script>
+                Tu progreso se guarda automáticamente en la nube
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== APP PRINCIPAL ==================== -->
+    <div id="mainApp" class="max-w-md mx-auto hidden">
+
+        <!-- ── TOP BAR MINIMAL (fijo) ── -->
+        <div class="top-bar">
+            <div class="flex items-center justify-between px-4 h-full">
+                <div>
+                    <p id="courseNameLabel" class="text-[10px] text-slate-400 font-medium uppercase tracking-widest"
+                        style="font-family:'Montserrat',sans-serif">Curso STEAM</p>
+                    <span id="moduleBadge" class="text-sm font-extrabold text-slate-800"
+                        style="font-family:'Nunito',sans-serif">Módulo 1 / 5</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-28 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div id="courseProgressBar" class="h-full rounded-full transition-all duration-500"
+                            style="width:0%;background:var(--brand-blue)"></div>
+                    </div>
+                    <span id="courseProgressPercent" class="text-xs font-bold min-w-[30px] text-right"
+                        style="color:var(--brand-blue);font-family:'Montserrat',sans-serif">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: INICIO (estilo Tinder)               -->
+        <!-- ══════════════════════════════════════════ -->
+        <div id="tabHome" class="tab-panel pt-16 px-4 pb-28">
+
+            <!-- Tarjeta de contenido -->
+            <div id="cardContainer" class="mt-3 flex items-center justify-center">
+                <div class="text-center text-slate-400 py-12 w-full">
+                    <span data-icon="spinner"
+                        style="display:inline-flex;width:40px;height:40px;color:var(--brand-blue);margin:0 auto 12px"></span>
+                    <p class="text-sm font-medium">Cargando curso…</p>
+                </div>
+            </div>
+
+            <!-- Navegación -->
+            <div id="cardNavBar" class="flex items-center justify-between mt-4">
+                <button id="prevBtn" class="nav-btn-prev">
+                    <span data-icon="arrowLeft" style="display:inline-flex;width:14px;height:14px"></span> Anterior
+                </button>
+                <div class="text-center">
+                    <span id="cardCounter" class="text-sm font-bold text-slate-700">1 / 13</span>
+                    <p class="text-[10px] text-slate-400 mt-0.5">tarjeta</p>
+                </div>
+                <button id="nextBtn" class="nav-btn-next">
+                    Siguiente <span data-icon="arrowRight" style="display:inline-flex;width:14px;height:14px"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: PERFIL                               -->
+        <!-- ══════════════════════════════════════════ -->
+        <div id="tabPerfil" class="tab-panel hidden pt-16 px-4 pb-28">
+
+            <!-- Tarjeta de perfil con gradiente -->
+            <div class="rounded-3xl px-5 py-6 mb-4 relative overflow-hidden mt-3" style="background:#1A6B68">
+                <div class="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/5 pointer-events-none"></div>
+                <div class="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/5 pointer-events-none"></div>
+
+                <!-- Avatar + nombre -->
+                <div class="flex items-center gap-3 mb-5 relative">
+                    <button id="avatarFloatBtn"
+                        class="w-14 h-14 rounded-2xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-3xl transition overflow-hidden relative">
+                        <img id="profilePhotoPreview"
+                            class="hidden w-full h-full object-cover absolute inset-0 rounded-2xl" src="" alt="foto">
+                        <span id="avatarPreview">👨‍🏫</span>
+                    </button>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white/60 text-xs mb-0.5">Bienvenido de nuevo,</p>
+                        <p id="userEmailDisplay" class="text-white font-bold text-base leading-snug truncate">Docente
+                        </p>
+                    </div>
+                    <button id="editProfileBtn"
+                        class="bg-white/20 hover:bg-white/30 text-white rounded-xl px-3 py-1.5 text-xs font-semibold transition flex items-center gap-1 shrink-0">
+                        <span data-icon="pencil" style="display:inline-flex;width:13px;height:13px"></span> Editar
+                    </button>
+                </div>
+
+                <!-- Stats en grid 3 columnas -->
+                <div class="grid grid-cols-3 gap-2.5 mb-5 relative">
+                    <div class="bg-white/15 rounded-2xl py-3 text-center">
+                        <span id="xpDisplay" class="text-white font-bold text-2xl block">0</span>
+                        <span class="text-white/60 text-[11px]">XP</span>
+                    </div>
+                    <div class="bg-white/15 rounded-2xl py-3 text-center">
+                        <span id="levelDisplay" class="text-white font-bold text-2xl block">1</span>
+                        <span class="text-white/60 text-[11px]">Nivel</span>
+                    </div>
+                    <div class="bg-white/15 rounded-2xl py-3 text-center">
+                        <span id="streakDisplay" class="text-white font-bold text-2xl block">0</span>
+                        <span class="text-white/60 text-[11px]">Racha</span>
+                    </div>
+                </div>
+
+                <!-- Barra de progreso del módulo -->
+                <div class="bg-white/15 rounded-2xl px-4 py-3 border border-white/10 relative">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-white text-xs font-bold" id="moduleBadgePerfil">Módulo 1 / 5</span>
+                        <span class="text-white/80 text-xs font-semibold" id="courseProgressPercentPerfil">0%</span>
+                    </div>
+                    <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+                        <div id="courseProgressBarPerfil"
+                            class="h-full bg-white rounded-full transition-all duration-500" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Sección: Aprendizaje ── -->
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Aprendizaje</p>
+            <div class="flex flex-col gap-2 mb-5">
+                <button id="examBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:bg-cyan-50 hover:border-cyan-300 transition shadow-sm">
+                    <div class="w-8 h-8 rounded-xl bg-cyan-50 flex items-center justify-center flex-shrink-0">
+                        <span data-icon="clipboard"
+                            style="display:inline-flex;width:16px;height:16px;color:#06b6d4"></span>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Examen Final</div>
+                        <div class="text-xs text-slate-400">Pon a prueba lo aprendido</div>
+                    </div>
+                    <span data-icon="chevronRight"
+                        style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
+                </button>
+                <button id="missionsToggle"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm">
+                    <div class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                        <span data-icon="target"
+                            style="display:inline-flex;width:16px;height:16px;color:#f59e0b"></span>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Misiones</div>
+                        <div class="text-xs text-slate-400">Retos diarios y objetivos</div>
+                    </div>
+                    <span data-icon="chevronDown" id="missionsChevron"
+                        style="display:inline-flex;width:14px;height:14px;transition:transform .2s;color:#cbd5e1;flex-shrink:0"></span>
+                </button>
+                <!-- Panel de misiones — se despliega aquí, justo debajo del botón -->
+                <div id="dailyMissions" class="hidden bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 -mt-1">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-amber-700">🎯 Misiones de hoy</span>
+                        <span id="missionsReset" class="text-[10px] text-slate-400"></span>
+                    </div>
+                    <div id="missionsList" class="space-y-2 text-xs"></div>
+                </div>
+                <button id="courseRequestsBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-pink-300 hover:bg-pink-50 transition shadow-sm"
+                    onclick="showCourseRequests()">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FDF2F8">
+                        <span style="font-size:16px">💡</span>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Sugiere un curso</div>
+                        <div class="text-xs text-slate-400">Pide y vota por nuevos cursos</div>
+                    </div>
+                    <span data-icon="chevronRight"
+                        style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
+                </button>
+                <button id="diagProfileBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-violet-300 hover:bg-violet-50 transition shadow-sm"
+                    onclick="showDiagnosticResultFromProfile()">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style="background:#F5F3FF">
+                        <span data-icon="compass"
+                            style="display:inline-flex;width:16px;height:16px;color:#7c3aed"></span>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm" id="diagProfileBtnLabel">Diagnóstico
+                            pedagógico</div>
+                        <div class="text-xs text-slate-400">Conoce tu nivel de partida</div>
+                    </div>
+                    <span id="diagProfileBadge"
+                        class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+                        style="background:#F5F3FF;color:#7C3AED"></span>
+                </button>
+            </div>
+
+            <!-- Compendio PDF -->
+            <a href="recursos/contenido-completo.html" target="_blank"
+                class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-indigo-300 hover:bg-indigo-50 transition shadow-sm mb-2 no-underline block">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EEF2FF">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                </div>
+                <div class="text-left flex-1">
+                    <div class="font-semibold text-slate-700 text-sm">Compendio completo</div>
+                    <div class="text-xs text-slate-400">Todos los cursos y evaluaciones · Imprimible</div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+
+            <!-- Glosario pedagógico -->
+            <a href="glosario.html" target="_blank"
+                class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-teal-300 hover:bg-teal-50 transition shadow-sm mb-2 no-underline block">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#CCFBF1">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
+                </div>
+                <div class="text-left flex-1">
+                    <div class="font-semibold text-slate-700 text-sm">Glosario pedagógico</div>
+                    <div class="text-xs text-slate-400">70 términos de los 6 cursos con ejemplos</div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+
+            <!-- Casos de estudio -->
+            <a href="casos-estudio.html" target="_blank"
+                class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm mb-2 no-underline block">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FEF3C7">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <div class="text-left flex-1">
+                    <div class="font-semibold text-slate-700 text-sm">Casos de estudio</div>
+                    <div class="text-xs text-slate-400">Decisiones docentes con ramificaciones</div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+
+            <!-- ── Sección: Logros y estadísticas ── -->
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Logros</p>
+            <div class="grid grid-cols-2 gap-2 mb-5">
+                <button id="badgesBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-purple-300 hover:bg-purple-50 transition shadow-sm">
+                    <span data-icon="medal"
+                        style="display:inline-flex;width:18px;height:18px;color:#a855f7;flex-shrink:0"></span>
+                    <div class="text-left">
+                        <div class="text-sm font-semibold">Mis Logros</div>
+                        <div class="text-[10px] text-slate-400">Insignias</div>
+                    </div>
+                </button>
+                <button id="statsSecretBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-2 text-slate-700 font-semibold text-sm hover:border-emerald-300 hover:bg-emerald-50 transition shadow-sm">
+                    <span data-icon="barChart"
+                        style="display:inline-flex;width:18px;height:18px;color:#10b981;flex-shrink:0"></span>
+                    <div class="text-left">
+                        <div class="text-sm font-semibold">Estadísticas</div>
+                        <div class="text-[10px] text-slate-400">Tu progreso</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- ── Sección: Certificados ── -->
+            <div id="certSection" class="mb-5">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Certificados</p>
+                <!-- Estado por curso — renderizado dinámicamente por _checkMasterCert() -->
+                <div id="certCourseStatus" class="mb-3 space-y-1.5"></div>
+                <p id="certPlaceholder" class="text-xs text-slate-400 px-1 mb-2">Aprueba el examen de cualquier curso
+                    para obtener tu certificado.</p>
+                <!-- Botón certificado individual (visible si aprobó el examen del curso activo) -->
+                <button id="certDownloadBtn"
+                    class="hidden w-full mb-2 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-sm"
+                    style="background:#5C35C5" onclick="generateCertificateFromExam(window._lastExamScore||70)">
+                    <span data-icon="certificate"
+                        style="display:inline-flex;width:16px;height:16px;color:white;flex-shrink:0"></span>
+                    <span>Certificado del curso actual</span>
+                </button>
+
+                <!-- Examen maestro (visible cuando todos los cursos individuales están aprobados pero el maestro no) -->
+                <button id="masterExamBtn"
+                    class="hidden w-full mb-2 py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-lg"
+                    style="background:linear-gradient(135deg,#1A6B68,#07B0E4);border:2px solid rgba(255,255,255,0.2)"
+                    onclick="startMasterExam()">
+                    <span style="font-size:16px">🎓</span>
+                    <span>Examen Final · Docente del Siglo XXI</span>
+                    <span style="font-size:16px">🎓</span>
+                </button>
+                <!-- Botón certificado maestro (visible si aprobó el examen maestro) -->
+                <button id="masterCertBtn"
+                    class="hidden w-full mb-4 py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-lg"
+                    style="background:linear-gradient(135deg,#4c1d95,#7C3AED);border:2px solid rgba(255,255,255,0.2)"
+                    onclick="generateMasterCertificate()">
+                    <span style="font-size:16px">★</span>
+                    <span>Certificado · Docente del Siglo XXI</span>
+                    <span style="font-size:16px">★</span>
+                </button>
+
+            </div><!-- end certSection -->
+
+            <!-- ── Sección: Recursos descargables ── -->
+            <div id="resourcesSection" class="mb-5 hidden">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">📂 Recursos descargables</p>
+                <div id="courseResourcesSection"></div>
+            </div>
+
+            <!-- Gana más XP -->
+            <div class="mb-4 mt-2">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Gana más XP</p>
+
+                <!-- Compartir -->
+                <button id="shareAppBtn"
+                    class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:bg-green-50 hover:border-green-200 transition mb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+                            <span data-icon="share"
+                                style="display:inline-flex;width:18px;height:18px;color:#22c55e"></span>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-semibold text-slate-700">Compartir el curso</p>
+                            <p class="text-xs text-slate-400">Una vez al día · WhatsApp o redes</p>
+                        </div>
+                    </div>
+                    <span
+                        class="text-xs font-bold text-green-600 bg-green-50 border border-green-100 px-2 py-1 rounded-lg shrink-0">+50
+                        XP</span>
+                </button>
+
+                <!-- Referir docentes -->
+                <div class="bg-white border border-slate-200 rounded-2xl py-3 px-4 shadow-sm mb-2">
+                    <div class="flex items-center justify-between mb-2.5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                                <span data-icon="addUser"
+                                    style="display:inline-flex;width:18px;height:18px;color:#3b82f6"></span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-slate-700">Referir a un colega</p>
+                                <p class="text-xs text-slate-400">Por cada docente que se inscriba</p>
+                            </div>
+                        </div>
+                        <span
+                            class="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-lg shrink-0">+100
+                            XP</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="referralLinkDisplay" readonly
+                            class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 truncate min-w-0"
+                            placeholder="Cargando tu link…">
+                        <button id="copyReferralBtn"
+                            class="bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-3 py-2 text-xs font-bold transition shrink-0 flex items-center gap-1">
+                            <span data-icon="copy"
+                                style="display:inline-flex;width:12px;height:12px;color:white"></span>Copiar
+                        </button>
+                    </div>
+                    <p id="referralCountDisplay" class="text-xs text-slate-400 mt-1.5 text-center"></p>
+                </div>
+
+                <!-- Evidencia de práctica -->
+                <button id="uploadEvidenceBtn"
+                    class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:bg-purple-50 hover:border-purple-200 transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                            <span data-icon="camera"
+                                style="display:inline-flex;width:18px;height:18px;color:#a855f7"></span>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-semibold text-slate-700">Evidencia de práctica</p>
+                            <p class="text-xs text-slate-400">Foto aplicando STEAM en tu aula</p>
+                        </div>
+                    </div>
+                    <span
+                        class="text-xs font-bold text-purple-600 bg-purple-50 border border-purple-100 px-2 py-1 rounded-lg shrink-0">+80
+                        XP</span>
+                </button>
+            </div>
+
+            <!-- Reto diario -->
+            <button onclick="showDailyChallenge()"
+                class="w-full mb-3 rounded-2xl p-4 flex items-center gap-3 text-left transition active:scale-95"
+                style="background:#1A6B68">
+                <div class="text-3xl">⚡</div>
+                <div class="flex-1">
+                    <p class="font-black text-white text-sm">Reto del día</p>
+                    <p class="text-white/75 text-xs mt-0.5">¿Qué tanto sabes? Gana 15 XP</p>
+                </div>
+                <span class="text-xs font-bold bg-white/20 text-white px-2 py-1 rounded-lg shrink-0">+15 XP</span>
+            </button>
+
+            <!-- Sync -->
+            <div
+                class="bg-white rounded-2xl px-4 py-3 flex items-center justify-between shadow-sm border border-slate-100 mb-3">
+                <div id="syncIndicator" class="flex items-center gap-1.5 text-xs text-slate-500">
+                    <span id="syncIcon" data-icon="cloudOk"
+                        style="display:inline-flex;width:15px;height:15px;color:#34d399"></span>
+                    <span id="syncStatus">Sincronizado</span>
+                </div>
+                <button onclick="if(typeof currentUser!=='undefined'&&currentUser)syncWithSupabase()"
+                    class="text-xs text-cyan-600 font-semibold hover:text-indigo-700 transition flex items-center gap-1">
+                    <span data-icon="sync" style="display:inline-flex;width:13px;height:13px"></span>Sincronizar
+                </button>
+            </div>
+
+            <!-- Cambiar curso -->
+            <button onclick="showCourseSelector()"
+                class="w-full bg-white border border-slate-200 text-slate-600 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
+                <span data-icon="switchCourse" style="display:inline-flex;width:16px;height:16px;color:#07B0E4"></span>
+                Cambiar curso
+            </button>
+
+            <!-- Ver tutorial -->
+            <button onclick="localStorage.removeItem('onboardingDone'); startOnboarding();"
+                class="w-full bg-white border border-slate-200 text-slate-500 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm mb-2">
+                <span data-icon="compass" style="display:inline-flex;width:16px;height:16px;color:#22d3ee"></span> Ver
+                tutorial de nuevo
+            </button>
+
+            <!-- Cerrar sesión -->
+            <button id="logoutBtn"
+                class="w-full bg-white border border-red-100 text-red-500 font-semibold py-3 rounded-2xl text-sm hover:bg-red-50 transition flex items-center justify-center gap-2 shadow-sm">
+                <span data-icon="logout" style="display:inline-flex;width:16px;height:16px;color:#ef4444"></span> Cerrar
+                sesión
+            </button>
+        </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: MÓDULOS (índice + bloqueo por semana)-->
+        <!-- ══════════════════════════════════════════ -->
+        <div id="tabModulos" class="tab-panel hidden pt-16 px-4 pb-28">
+            <div class="mt-4 mb-5">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="modules"
+                        style="display:inline-flex;width:22px;height:22px;color:#07B0E4"></span> Mis Módulos</h2>
+                <p class="text-xs text-slate-400 mt-1">Un módulo por semana · Desbloqueo anticipado con XP</p>
+            </div>
+            <div id="modulesIndexList" class="space-y-3"></div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- MODALES                                                       -->
+        <!-- ============================================================ -->
+
+        <!-- Modal Logros -->
+        <div id="badgesModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="medal"
+                            style="display:inline-flex;width:22px;height:22px;color:#a855f7"></span> Tus Logros</h2>
+                    <button id="closeBadgesBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <div id="badgesList" class="grid grid-cols-2 gap-3"></div>
+                <button id="shareBadgesBtn"
+                    class="mt-5 w-full text-white py-3 rounded-2xl text-sm font-bold transition flex items-center justify-center gap-2"
+                    style="background:var(--brand-blue)">
+                    <span data-icon="share"
+                        style="display:inline-flex;width:15px;height:15px;color:white"></span>Compartir mis logros
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Canje de Premios -->
+        <div id="redeemModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="star"
+                            style="display:inline-flex;width:22px;height:22px;color:#f59e0b"></span> Canjear Premios
+                    </h2>
+                    <button id="closeRedeemBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <div id="prizesList" class="space-y-3 mb-4"></div>
+                <div class="bg-yellow-50 rounded-2xl p-3 text-center border border-yellow-100">
+                    <p class="text-sm text-slate-600">Tus puntos: <span id="xpForRedeem"
+                            class="font-bold text-yellow-600 text-base">0</span> XP</p>
+                </div>
+                <div id="raffleInfo" class="mt-2 text-center text-xs text-purple-600 bg-purple-50 p-2 rounded-2xl">
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Ranking -->
+        <div id="rankingModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="trophy"
+                            style="display:inline-flex;width:22px;height:22px;color:#f59e0b"></span> Ranking Docentes
+                    </h2>
+                    <button id="closeRankingBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <div id="rankingList" class="space-y-2 mb-4"></div>
+                <p class="text-center text-xs text-slate-400">Basado en XP acumulados · Actualizado en tiempo real</p>
+            </div>
+        </div>
+
+        <!-- Modal Sugerir Curso -->
+        <div id="courseRequestsModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">💡 Sugiere un curso</h2>
+                    <button id="closeCourseRequestsBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+
+                <div class="bg-pink-50 border border-pink-100 rounded-2xl p-4 mb-4">
+                    <p class="text-xs font-bold text-pink-700 mb-2 uppercase tracking-wide">Nueva sugerencia</p>
+                    <input type="text" id="newCourseTitleInput" placeholder="Nombre del curso que te gustaría ver"
+                        class="w-full bg-white border border-pink-200 rounded-xl px-3 py-2.5 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-pink-300">
+                    <textarea id="newCourseDescInput" placeholder="¿Por qué te ayudaría? (opcional)" rows="2"
+                        class="w-full bg-white border border-pink-200 rounded-xl px-3 py-2.5 text-sm mb-2 resize-none focus:outline-none focus:ring-2 focus:ring-pink-300"></textarea>
+                    <button id="submitCourseRequestBtn" class="w-full py-2.5 rounded-xl font-bold text-sm text-white bg-pink-500 hover:bg-pink-600 transition">
+                        Enviar sugerencia
+                    </button>
+                </div>
+
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Vota por las propuestas</p>
+                <div id="courseRequestsList" class="space-y-2 mb-2 max-h-[40vh] overflow-y-auto"></div>
+                <p class="text-center text-xs text-slate-400 mt-2">Las propuestas con más votos son las próximas en desarrollarse 🚀</p>
+            </div>
+        </div>
+
+        <!-- ══ Animación completar módulo ══ -->
+        <div id="moduleCompleteOverlay"
+            class="hidden fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
+            onclick="closeModuleComplete()">
+            <canvas id="confettiCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+            <div class="relative z-10 text-center px-8 select-none pointer-events-none">
+                <div class="text-7xl mb-3" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))">🎉</div>
+                <div id="mcModuleIcon"
+                    class="w-28 h-28 rounded-3xl mx-auto mb-5 flex items-center justify-center shadow-2xl p-4"></div>
+                <h2 class="text-3xl font-black text-white mb-1" style="text-shadow:0 2px 12px rgba(0,0,0,0.4)">¡Módulo
+                    completado!</h2>
+                <p id="mcModuleName" class="text-white/80 text-lg font-semibold mb-6"></p>
+                <div
+                    class="bg-white/25 backdrop-blur-sm rounded-2xl px-10 py-4 mb-6 inline-block border border-white/30">
+                    <p id="mcXP" class="text-yellow-300 font-black text-3xl"
+                        style="text-shadow:0 0 20px rgba(252,195,10,0.6)">+150 XP</p>
+                    <p class="text-white/70 text-xs mt-0.5">puntos ganados</p>
+                </div>
+                <p class="text-white/50 text-sm" style="animation:pulse 1.5s ease-in-out infinite">Toca para continuar
+                </p>
+            </div>
+        </div>
+
+        <!-- ══ Diagnóstico Pedagógico ══ -->
+        <div id="diagOverlay" class="hidden fixed inset-0 z-[350] items-end justify-center"
+            style="background:rgba(0,0,0,0.65)">
+            <div class="bg-white w-full max-w-md rounded-t-[28px] flex flex-col" style="max-height:92vh">
+                <!-- Header -->
+                <div
+                    style="padding:20px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0">
+                    <div>
+                        <div
+                            style="font-size:10px;font-weight:800;letter-spacing:1px;color:#94a3b8;text-transform:uppercase;margin-bottom:2px">
+                            Diagnóstico Pedagógico</div>
+                        <div id="diagHeaderSub" style="font-size:14px;font-weight:700;color:#1e293b">¿Cuánto conoces
+                            sobre pedagogía?</div>
+                    </div>
+                    <button onclick="skipDiagnostic()"
+                        style="font-size:12px;color:#94a3b8;background:none;border:1px solid #e2e8f0;border-radius:20px;cursor:pointer;padding:4px 12px;flex-shrink:0;margin-left:12px">Saltar</button>
+                </div>
+                <!-- Progress bar -->
+                <div id="diagProgressWrap" style="padding:10px 20px 0;flex-shrink:0">
+                    <div style="height:5px;background:#f1f5f9;border-radius:5px;overflow:hidden">
+                        <div id="diagProgress"
+                            style="height:100%;background:#7C3AED;border-radius:5px;transition:width .35s ease;width:0%">
+                        </div>
+                    </div>
+                    <div style="text-align:right;margin-top:4px;font-size:11px;color:#94a3b8" id="diagCounter">1 de 20
+                    </div>
+                </div>
+                <!-- Scrollable question/results area -->
+                <div id="diagContent" style="overflow-y:auto;flex:1;padding:12px 20px 28px">
+                    <div id="diagDomainBadge"
+                        style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid transparent;margin-bottom:12px">
+                        ...</div>
+                    <p id="diagQuestion"
+                        style="font-size:15px;font-weight:700;color:#1e293b;line-height:1.5;margin-bottom:16px"></p>
+                    <div id="diagOptions" style="display:flex;flex-direction:column;gap:8px"></div>
+                    <div id="diagFeedback" class="hidden" style="margin-top:12px"></div>
+                    <button id="diagNextBtn" class="hidden" onclick="nextDiagQuestion()"
+                        style="margin-top:16px;width:100%;padding:14px;background:#7C3AED;color:#fff;border:none;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;transition:opacity .2s">
+                        Siguiente →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ Onboarding ══ -->
+        <div id="onboardingOverlay" class="hidden fixed inset-0 z-[300] flex items-end justify-center"
+            style="background:rgba(0,0,0,0.65)">
+            <div class="bg-white w-full max-w-md rounded-t-[32px] overflow-hidden flex flex-col"
+                style="max-height:92vh">
+
+                <!-- Zona ilustración con color dinámico -->
+                <div id="onboardingSlideArea"
+                    class="relative flex flex-col items-center justify-center px-8 pt-10 pb-8 transition-all duration-500"
+                    style="min-height:240px">
+                    <button id="skipOnboardingBtn"
+                        class="absolute top-4 right-5 text-white/60 text-sm font-semibold hover:text-white transition">Saltar</button>
+                    <div id="onboardingEmoji" class="text-7xl mb-4"
+                        style="filter:drop-shadow(0 4px 16px rgba(0,0,0,0.25))">🚀</div>
+                    <h2 id="onboardingTitle" class="text-2xl font-black text-white text-center leading-tight"
+                        style="text-shadow:0 2px 8px rgba(0,0,0,0.2)"></h2>
+                </div>
+
+                <!-- Zona de texto -->
+                <div class="flex-1 overflow-y-auto px-6 pt-5 pb-2">
+                    <p id="onboardingDesc" class="text-slate-600 text-sm leading-relaxed"></p>
+                    <div id="onboardingExtra" class="mt-2"></div>
+                </div>
+
+                <!-- Puntos de progreso + botón -->
+                <div class="px-6 pb-8 pt-4 bg-white">
+                    <div id="onboardingDots" class="flex justify-center items-center gap-2 mb-4"></div>
+                    <div class="flex gap-2">
+                        <button id="onboardingBackBtn"
+                            class="hidden py-4 px-5 rounded-2xl font-bold text-slate-500 text-base border-2 border-slate-200 transition">
+                            ← Atrás
+                        </button>
+                        <button id="onboardingNextBtn"
+                            class="flex-1 py-4 rounded-2xl font-black text-white text-base transition"
+                            style="background:var(--brand-blue)">
+                            Siguiente →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Evidencia de Práctica -->
+        <div id="evidenceModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="camera"
+                            style="display:inline-flex;width:22px;height:22px;color:#a855f7"></span> Evidencia de
+                        práctica</h2>
+                    <button id="closeEvidenceBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <p class="text-sm text-slate-500 mb-4">Sube una foto de cómo aplicaste STEAM en tu aula y gana
+                    <strong>80 XP</strong> por cada módulo practicado.
+                </p>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">¿De qué
+                        módulo es?</label>
+                    <select id="evidenceModuleSelect"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none">
+                        <option value="">Selecciona un módulo…</option>
+                        <option value="1">Módulo 1 · ¿Qué es STEAM? Origen y evolución?</option>
+                        <option value="2">Módulo 2 · Las 6 disciplinas STEEAM </option>
+                        <option value="3">Módulo 3 · Metodologías Activas</option>
+                        <option value="4">Módulo 4 · Evaluación en STEAM</option>
+                        <option value="5">Módulo 5 · Retos en Guatemala y adaptación</option>
+                    </select>
+                </div>
+
+                <input type="file" id="evidenceFileInput" accept="image/*" class="hidden">
+                <div id="evidenceDropZone" onclick="document.getElementById('evidenceFileInput').click()"
+                    class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition mb-3">
+                    <span data-icon="cloudUp"
+                        style="display:inline-flex;width:36px;height:36px;color:#cbd5e1;margin:0 auto 8px"></span>
+                    <p id="evidenceDropText" class="text-sm text-slate-500 font-semibold">Toca para seleccionar una foto
+                    </p>
+                    <p class="text-xs text-slate-400 mt-1">JPG o PNG · máx. 5 MB</p>
+                </div>
+                <img id="evidencePreviewImg" class="hidden w-full max-h-44 object-cover rounded-2xl mb-3">
+
+                <button type="button" id="submitEvidenceBtn"
+                    class="w-full py-3.5 rounded-2xl font-bold text-sm text-white mb-4"
+                    style="background:var(--brand-blue)">
+                    Subir evidencia y ganar XP
+                </button>
+
+                <div id="previousEvidences" class="hidden">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Tus evidencias subidas</p>
+                    <div id="evidencesList" class="grid grid-cols-3 gap-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Editar Perfil -->
+        <div id="editProfileModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="pencil"
+                            style="display:inline-flex;width:20px;height:20px;color:#07B0E4"></span> Editar perfil</h2>
+                    <button id="closeEditProfileBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+
+                <!-- Foto de perfil -->
+                <div class="flex flex-col items-center mb-5">
+                    <div class="relative w-24 h-24 mb-3">
+                        <div id="editPhotoCircle"
+                            class="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center text-5xl overflow-hidden border-4 border-white shadow-md">
+                            <img id="editPhotoImg" class="hidden w-full h-full object-cover" src="" alt="">
+                            <span id="editPhotoEmoji">👨‍🏫</span>
+                        </div>
+                        <label for="photoFileInput"
+                            class="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs cursor-pointer shadow"
+                            style="background:var(--brand-blue)">
+                            <span data-icon="camera"
+                                style="display:inline-flex;width:14px;height:14px;color:white"></span>
+                        </label>
+                    </div>
+                    <input type="file" id="photoFileInput" accept="image/*" class="hidden">
+                    <p class="text-xs text-slate-400">Toca el ícono de cámara para subir tu foto</p>
+                </div>
+
+                <!-- Nombre completo -->
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Nombre completo</label>
+                    <input type="text" id="fullNameInput" placeholder="Ej: María García López"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:border-transparent"
+                        style="--tw-ring-color:var(--brand-blue)">
+                    <p class="text-xs text-slate-400 mt-1.5">Este nombre aparecerá en tu diploma</p>
+                </div>
+
+                <!-- Escuela -->
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Escuela o institución</label>
+                    <input type="text" id="schoolInput" placeholder="Ej: Escuela Oficial Rural Mixta No. 123"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:border-transparent"
+                        style="--tw-ring-color:var(--brand-blue)">
+                </div>
+
+                <!-- Departamento -->
+                <div class="mb-5">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Departamento</label>
+                    <select id="departmentInput"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:border-transparent"
+                        style="--tw-ring-color:var(--brand-blue)">
+                        <option value="">— Selecciona tu departamento —</option>
+                        <option value="Alta Verapaz">Alta Verapaz</option>
+                        <option value="Baja Verapaz">Baja Verapaz</option>
+                        <option value="Chimaltenango">Chimaltenango</option>
+                        <option value="Chiquimula">Chiquimula</option>
+                        <option value="El Progreso">El Progreso</option>
+                        <option value="Escuintla">Escuintla</option>
+                        <option value="Guatemala">Guatemala</option>
+                        <option value="Huehuetenango">Huehuetenango</option>
+                        <option value="Izabal">Izabal</option>
+                        <option value="Jalapa">Jalapa</option>
+                        <option value="Jutiapa">Jutiapa</option>
+                        <option value="Petén">Petén</option>
+                        <option value="Quetzaltenango">Quetzaltenango</option>
+                        <option value="Quiché">Quiché</option>
+                        <option value="Retalhuleu">Retalhuleu</option>
+                        <option value="Sacatepéquez">Sacatepéquez</option>
+                        <option value="San Marcos">San Marcos</option>
+                        <option value="Santa Rosa">Santa Rosa</option>
+                        <option value="Sololá">Sololá</option>
+                        <option value="Suchitepéquez">Suchitepéquez</option>
+                        <option value="Totonicapán">Totonicapán</option>
+                        <option value="Zacapa">Zacapa</option>
+                    </select>
+                </div>
+
+                <button id="saveProfileBtn" class="w-full py-3.5 rounded-2xl font-bold text-sm text-white"
+                    style="background:var(--brand-blue)">
+                    Guardar cambios
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Avatar -->
+        <div id="avatarModal" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl font-bold text-slate-800">🎨 Elige tu avatar</h2>
+                    <button id="closeAvatarBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <div class="grid grid-cols-5 gap-3" id="avatarGrid"></div>
+            </div>
+        </div>
+
+        <!-- Modal Estadísticas -->
+        <div id="statsPanel" class="hidden modal-sheet">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="barChart"
+                            style="display:inline-flex;width:22px;height:22px;color:#10b981"></span> Estadísticas</h2>
+                    <button id="closeStatsBtn"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <div id="statsContent"></div>
+                <div class="mt-4 flex gap-2 flex-wrap">
+                    <button id="exportStatsBtn"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-2xl flex-1 transition text-sm flex items-center justify-center gap-1.5">
+                        <span data-icon="download"
+                            style="display:inline-flex;width:14px;height:14px;color:white"></span>CSV
+                    </button>
+                    <button id="clearStatsBtn"
+                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-4 rounded-2xl transition text-sm flex items-center justify-center gap-1.5">
+                        <span data-icon="trash"
+                            style="display:inline-flex;width:14px;height:14px;color:white"></span>Limpiar
+                    </button>
+                    <button id="syncNowBtn"
+                        class="text-white font-bold py-2.5 px-4 rounded-2xl transition text-sm flex items-center justify-center gap-1.5"
+                        style="background:var(--brand-blue)">
+                        <span data-icon="sync"
+                            style="display:inline-flex;width:14px;height:14px;color:white"></span>Sync
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón oculto profe video -->
+        <div id="profeVideoBtn" class="hidden fixed bottom-20 right-4 z-40">
+            <button
+                class="w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl shadow-xl transition flex items-center justify-center">
+                <span data-icon="video" style="display:inline-flex;width:20px;height:20px;color:white"></span>
+            </button>
+        </div>
+
+        <!-- ── BOTTOM NAVIGATION BAR ── -->
+        <nav class="bottom-nav">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">🎓</div>
+                <div class="sidebar-brand-text">
+                    Formación Docente
+                    <small>Pedagogía Innovadora</small>
+                </div>
+            </div>
+            <div class="flex items-center px-3">
+                <button id="bnavHome" class="bnav-btn active" onclick="switchTab('home')">
+                    <span class="bnav-icon" id="bnavHomeIcon"></span>
+                    <span class="bnav-label">Inicio</span>
+                </button>
+                <div id="rankingFloatBtn" class="flex-1 flex">
+                    <button class="bnav-btn w-full" onclick="showRankingModal ? showRankingModal() : null">
+                        <span class="bnav-icon" id="bnavRankingIcon"></span>
+                        <span class="bnav-label">Ranking</span>
+                    </button>
+                </div>
+                <button id="bnavModulos" class="bnav-btn" onclick="switchTab('modulos')">
+                    <span class="bnav-icon" id="bnavModulosIcon"></span>
+                    <span class="bnav-label">Módulos</span>
+                </button>
+                <button id="bnavPerfil" class="bnav-btn" onclick="switchTab('perfil')">
+                    <span class="bnav-icon" id="bnavPerfilIcon"></span>
+                    <span class="bnav-label">Perfil</span>
+                </button>
+            </div>
+            <!-- Acciones rápidas — solo visibles en sidebar de escritorio -->
+            <div class="sidebar-actions">
+                <a href="glosario.html" target="_blank" class="sidebar-action-btn sidebar-action-glosario" style="text-decoration:none;display:flex;align-items:center;gap:8px">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
+                    Glosario
+                </a>
+                <button onclick="showCourseSelector()" class="sidebar-action-btn sidebar-action-course">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+                    Cambiar curso
+                </button>
+                <button id="sidebarLogoutBtn" class="sidebar-action-btn sidebar-action-logout">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Cerrar sesión
+                </button>
+            </div>
+        </nav>
+        <script>
+            // Inyectar SVG icons en bottom nav al cargar
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof ICONS === 'undefined') return;
+                const ni = document.getElementById('bnavHomeIcon');
+                const nr = document.getElementById('bnavRankingIcon');
+                const nm = document.getElementById('bnavModulosIcon');
+                const np = document.getElementById('bnavPerfilIcon');
+                if (ni) ni.innerHTML = ICONS.home;
+                if (nr) nr.innerHTML = ICONS.trophy;
+                if (nm) nm.innerHTML = ICONS.modules;
+                if (np) np.innerHTML = ICONS.profile;
+            });
+        </script>
+
+        <script>
+            function switchTab(tab) {
+                const tabs = ['tabHome', 'tabModulos', 'tabPerfil'];
+                const btns = ['bnavHome', 'bnavModulos', 'bnavPerfil'];
+                tabs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('hidden');
+                });
+                btns.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('active');
+                });
+                // Micro-animación: entrada suave de la pestaña activa
+                const _tabMap = { home: 'tabHome', modulos: 'tabModulos', perfil: 'tabPerfil' };
+                const _activeTab = document.getElementById(_tabMap[tab]);
+                if (_activeTab) {
+                    _activeTab.classList.remove('tab-content-enter');
+                    void _activeTab.offsetWidth; // reflow para reiniciar
+                    _activeTab.classList.add('tab-content-enter');
+                    setTimeout(() => _activeTab.classList.remove('tab-content-enter'), 300);
+                }
+
+                if (tab === 'home') {
+                    document.getElementById('tabHome').classList.remove('hidden');
+                    document.getElementById('bnavHome').classList.add('active');
+                } else if (tab === 'modulos') {
+                    document.getElementById('tabModulos').classList.remove('hidden');
+                    document.getElementById('bnavModulos').classList.add('active');
+                    if (typeof renderModulesTab === 'function') renderModulesTab();
+                } else if (tab === 'perfil') {
+                    document.getElementById('tabPerfil').classList.remove('hidden');
+                    document.getElementById('bnavPerfil').classList.add('active');
+                    // Sync progress values
+                    const mb = document.getElementById('moduleBadge');
+                    const cp = document.getElementById('courseProgressPercent');
+                    const cb = document.getElementById('courseProgressBar');
+                    if (mb) document.getElementById('moduleBadgePerfil').textContent = mb.textContent;
+                    if (cp) document.getElementById('courseProgressPercentPerfil').textContent = cp.textContent;
+                    if (cb) document.getElementById('courseProgressBarPerfil').style.width = cb.style.width;
+                    if (typeof displayReferralLink === 'function') displayReferralLink();
+                    if (typeof checkReferrerReward === 'function') checkReferrerReward();
+                    // Update diagnostic badge in profile
+                    const diagResult = localStorage.getItem('diagResult');
+                    const diagBadge = document.getElementById('diagProfileBadge');
+                    const diagLabel = document.getElementById('diagProfileBtnLabel');
+                    if (diagResult && diagBadge && diagLabel) {
+                        try {
+                            const dr = JSON.parse(diagResult);
+                            const lvlMap = { inicial: '🔴 Inicial', proceso: '🟡 En Proceso', satisfactorio: '🟢 Satisfactorio', destacado: '💜 Destacado' };
+                            diagBadge.textContent = lvlMap[dr.level] || '';
+                            diagBadge.classList.remove('hidden');
+                            diagLabel.textContent = 'Ver mi diagnóstico';
+                        } catch (e) { }
+                    }
+                }
+            }
+        </script>
+
+    </div><!-- /mainApp -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/idb@8.0.0/build/umd.js"></script>
+    <!-- ==================== MODAL COMENTARIOS POR TARJETA ==================== -->
+    <div id="commentsModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end justify-center"
+        onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="bg-white w-full max-w-md rounded-t-3xl flex flex-col" style="max-height:82vh"
+            onclick="event.stopPropagation()">
+            <!-- Handle visual para arrastrar -->
+            <div class="flex justify-center pt-3 pb-1 shrink-0">
+                <div class="w-10 h-1 bg-slate-200 rounded-full"></div>
+            </div>
+            <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100 shrink-0">
+                <div>
+                    <h3 class="font-black text-slate-800 flex items-center gap-1.5 text-base">
+                        <span data-icon="comments"
+                            style="display:inline-flex;width:18px;height:18px;color:#07B0E4"></span>
+                        Comentarios
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Comparte dudas o aprendizajes de esta tarjeta</p>
+                </div>
+                <button onclick="document.getElementById('commentsModal').classList.add('hidden')"
+                    class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-lg leading-none hover:bg-slate-200 transition">&times;</button>
+            </div>
+            <div id="commentsList" class="flex-1 overflow-y-auto px-4 py-3 space-y-4 min-h-[140px]"></div>
+            <div class="border-t border-slate-100 p-4 shrink-0">
+                <div class="flex gap-2 items-end">
+                    <textarea id="commentInput" rows="2" placeholder="Escribe tu comentario o duda..."
+                        class="flex-1 border border-slate-200 rounded-2xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#07B0E4]"
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitComment();}"></textarea>
+                    <button onclick="submitComment()"
+                        class="w-11 h-11 rounded-2xl flex items-center justify-center text-white shrink-0 transition hover:scale-105 active:scale-95"
+                        style="background:#07B0E4">
+                        <span data-icon="send" style="display:inline-flex;width:18px;height:18px;color:white"></span>
+                    </button>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1.5 text-right">Enter para enviar · Shift+Enter nueva línea</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== GEMINI CHATBOT ==================== -->
+    <!-- Botón flotante -->
+    <button id="chatToggleBtn" onclick="toggleChat()"
+        class="fixed z-40 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 overflow-hidden bg-white border-2 border-[#07B0E4]"
+        style="bottom:5.5rem;right:1rem;">
+        <img src="robot.png" alt="Asistente STEAM" class="w-14 h-14 object-contain">
+    </button>
+
+    <!-- Drawer del chat -->
+    <div id="chatDrawer" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-3xl flex flex-col" style="height:80vh">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+                <div class="flex items-center gap-3">
+                    <img src="robot.png" alt="Asistente" class="w-10 h-10 object-contain">
+                    <div>
+                        <h3 class="font-black text-slate-800">Asistente STEAM</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Powered by Grok · Dudas sobre metodología STEAM</p>
+                    </div>
+                </div>
+                <button onclick="toggleChat()"
+                    class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-lg leading-none">&times;</button>
+            </div>
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                <div class="bg-slate-100 text-slate-700 rounded-2xl rounded-tl-sm px-3 py-2.5 text-sm max-w-[85%]">
+                    Hola 👋 Soy tu asistente STEAM. Puedo ayudarte con dudas sobre metodología STEAM, ABP, Design
+                    Thinking, evaluación y cómo aplicarlos en Guatemala. ¿Qué quieres saber?
+                </div>
+            </div>
+            <div class="border-t border-slate-100 p-4 shrink-0 flex gap-2">
+                <input id="chatInput" type="text" placeholder="Escribe tu pregunta..."
+                    class="flex-1 border border-slate-200 rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#07B0E4]"
+                    onkeydown="if(event.key==='Enter')sendChatMessage()">
+                <button onclick="sendChatMessage()"
+                    class="w-11 h-11 rounded-2xl flex items-center justify-center text-white shrink-0"
+                    style="background:#07B0E4">
+                    <span data-icon="send"
+                        style="width:18px;height:18px;display:flex;align-items:center;justify-content:center"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== RETO DIARIO (disparado desde misiones) ==================== -->
+
+    <!-- ── Banner de instalación PWA — fuera de loginScreen/mainApp para que pueda mostrarse incluso antes de iniciar sesión ── -->
+    <div id="installBanner"
+        class="hidden fixed bottom-20 left-4 right-4 z-50 rounded-2xl shadow-2xl overflow-hidden"
+        style="background:#1A6B68">
+        <div class="flex items-center gap-3 px-4 py-3">
+            <img src="icon.svg" class="w-10 h-10 rounded-xl shrink-0">
+            <div class="flex-1 min-w-0">
+                <p class="text-white font-bold text-sm">Instalar Curso STEAM 2.0</p>
+                <p class="text-white/70 text-xs">Acceso rápido desde tu pantalla de inicio</p>
+            </div>
+            <button id="installBtn"
+                class="bg-white text-cyan-700 font-bold text-xs px-3 py-2 rounded-xl shrink-0 hover:bg-cyan-50 transition">
+                Instalar
+            </button>
+            <button id="dismissInstallBtn"
+                class="text-white/60 hover:text-white text-xl leading-none ml-1 shrink-0">&times;</button>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="ilustraciones.js"></script>
+    <script src="diagnostico.js"></script>
+    <script src="app.js"></script>
+
+    <!-- ── Inicializar todos los iconos SVG data-icon ── -->
+    <script>
+        (function initDataIcons() {
+            function fill() {
+                if (typeof ICONS === 'undefined') return;
+                document.querySelectorAll('[data-icon]').forEach(function (el) {
+                    var key = el.getAttribute('data-icon');
+                    if (ICONS[key]) el.innerHTML = ICONS[key];
+                });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', fill);
+            } else {
+                fill();
+            }
+            // También escuchar mutaciones para iconos inyectados dinámicamente
+            var obs = new MutationObserver(function (muts) {
+                muts.forEach(function (m) {
+                    m.addedNodes.forEach(function (n) {
+                        if (n.querySelectorAll) {
+                            n.querySelectorAll('[data-icon]').forEach(function (el) {
+                                var key = el.getAttribute('data-icon');
+                                if (typeof ICONS !== 'undefined' && ICONS[key]) el.innerHTML = ICONS[key];
+                            });
+                        }
+                    });
+                });
+            });
+            obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,4676 @@
+// app.js - Curso STEAM con Supabase backend y gamificación completa
+
+// ==================== CONFIGURACIÓN DE SUPABASE ====================
+// ⚠️ IMPORTANTE: Reemplaza con tus credenciales de Supabase
+const SUPABASE_URL = "https://grkjhzkgcmackbafqudu.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
+// El SDK de Supabase ya registra `window.supabase`; se reasigna con el cliente configurado.
+supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Fecha local YYYY-MM-DD (usa zona horaria del dispositivo, no UTC)
+function localDateStr() { return new Date().toLocaleDateString('en-CA'); }
+
+// Orden de la ruta de aprendizaje (de primero a último en desbloquearse)
+const COURSE_PATH_ORDER = ['design-thinking', 'tipos-estudiantes', 'abp', 'steam', 'evaluacion', 'storytelling'];
+if (typeof allCourses !== 'undefined') {
+    allCourses.sort((a, b) => {
+        const ai = COURSE_PATH_ORDER.indexOf(a.id);
+        const bi = COURSE_PATH_ORDER.indexOf(b.id);
+        return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+}
+
+// ==================== VARIABLES GLOBALES ====================
+let currentUser = null;
+let currentModule = 1;
+let currentCardIndex = 0;
+let modulesData = courseData.modules;
+
+// Devuelve el objeto completo del curso activo (no solo sus módulos) — usado para el examen final por curso
+function getActiveCourseData() {
+    if (typeof allCourses !== 'undefined' && typeof currentCourseId !== 'undefined') {
+        const found = allCourses.find(c => c.id === currentCourseId);
+        if (found) return found;
+    }
+    return courseData; // fallback: STEAM
+}
+let progress = null;
+let db = null;
+let currentAvatar = "👨‍🏫";
+let currentCardStartTime = null;
+let currentCardId = null;
+
+// ==================== AVATARES ====================
+const avatars = ["👨‍🏫", "👩‍🏫", "🧑‍🚀", "👩‍🔬", "🧙‍♂️", "🦸‍♀️", "🐧", "🤖", "🦉", "⭐"];
+
+// ==================== PREMIOS ====================
+const prizes = [
+    { id: "prize1", name: "📚 Guía STEAM", desc: "Libro digital exclusivo", xpCost: 150, icon: "📚", sponsor: null },
+    { id: "prize2", name: "🎓 Certificado Avanzado", desc: "Reconocimiento adicional", xpCost: 200, icon: "🎓", sponsor: null },
+    { id: "prize3", name: "🧩 Kit de materiales", desc: "Para tu salón de clases", xpCost: 500, icon: "🧩", sponsor: "Próximamente" },
+    { id: "prize4", name: "☕ Coffee Break", desc: "Gift card", xpCost: 100, icon: "☕", sponsor: null },
+    { id: "prize5", name: "📱 Asesoría 1:1", desc: "30 min con Profe Billy", xpCost: 300, icon: "📱", sponsor: null }
+];
+
+// ==================== LOGROS ====================
+const badges = {
+    firstCard: { id: "firstCard", name: "🌱 Primer paso", desc: "Completaste tu primera tarjeta", icon: "🌱", xpReward: 10 },
+    module1: { id: "module1", name: "📘 Primer módulo", desc: "Completaste el Módulo 1 de tu primer curso", icon: "📘", xpReward: 50 },
+    module2: { id: "module2", name: "🔧 En profundidad", desc: "Completaste el Módulo 2 de algún curso", icon: "🔧", xpReward: 50 },
+    module3: { id: "module3", name: "🧠 Metodólogo", desc: "Completaste el Módulo 3 de algún curso", icon: "🧠", xpReward: 50 },
+    module4: { id: "module4", name: "📊 Aplicador", desc: "Completaste el Módulo 4 de algún curso", icon: "📊", xpReward: 50 },
+    module5: { id: "module5", name: "🇬🇹 Experto local", desc: "Completaste el Módulo 5 de algún curso", icon: "🇬🇹", xpReward: 50 },
+    quizMaster: { id: "quizMaster", name: "🎯 Maestro de quizzes", desc: "10 quizzes correctos", icon: "🎯", xpReward: 30 },
+    feedbackGiver: { id: "feedbackGiver", name: "💬 Tu voz importa", desc: "Diste feedback en 3 módulos", icon: "💬", xpReward: 40 },
+    examPass: { id: "examPass", name: "🎓 Certificado STEAM", desc: "Aprobaste el examen final", icon: "🎓", xpReward: 100 },
+    allModules: { id: "allModules", name: "🏆 STEAM Master", desc: "Completaste todos los módulos", icon: "🏆", xpReward: 200 },
+    streak7: { id: "streak7", name: "🔥 Racha de 7 días", desc: "7 días seguidos aprendiendo", icon: "🔥", xpReward: 100 },
+    streak30: { id: "streak30", name: "⚡ Leyenda", desc: "30 días de racha", icon: "⚡", xpReward: 500 },
+    level5: { id: "level5", name: "🌟 Nivel 5", desc: "Alcanzaste el Nivel 5", icon: "🌟", xpReward: 100 }
+};
+
+// ==================== MISIONES DIARIAS ====================
+const dailyMissionsList = [
+    { id: "mission1", name: "📖 Completa 3 tarjetas", target: 3, type: "cards", reward: 30, current: 0 },
+    { id: "mission2", name: "✅ Responde 2 quizzes", target: 2, type: "quizzes", reward: 25, current: 0 },
+    { id: "mission3", name: "⭐ Gana 50 XP hoy", target: 50, type: "xp", reward: 20, current: 0 }
+];
+
+// ==================== INICIALIZAR INDEXEDDB ====================
+function initDB() {
+    return new Promise((resolve, reject) => {
+        if (db) { resolve(db); return; }
+        const request = indexedDB.open("SteamCourseDB", 3);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => { db = request.result; resolve(db); };
+        request.onupgradeneeded = (event) => {
+            const dbEvent = event.target.result;
+            if (!dbEvent.objectStoreNames.contains("progressCache")) {
+                dbEvent.createObjectStore("progressCache", { keyPath: "userId" });
+            }
+        };
+    });
+}
+
+function saveToLocalCache(userId, data) {
+    return initDB().then(db => {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("progressCache", "readwrite");
+            const store = tx.objectStore("progressCache");
+            store.put({ userId, data, updatedAt: Date.now() });
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    });
+}
+
+function loadFromLocalCache(userId) {
+    return initDB().then(db => {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction("progressCache", "readonly");
+            const store = tx.objectStore("progressCache");
+            const request = store.get(userId);
+            request.onsuccess = () => resolve(request.result?.data);
+            request.onerror = () => reject(request.error);
+        });
+    });
+}
+
+// ==================== SINCRONIZACIÓN CON SUPABASE ====================
+async function syncWithSupabase() {
+    if (!currentUser || !progress) return;
+
+    updateSyncStatus("syncing", "Sincronizando...");
+
+    try {
+        const { error } = await supabase
+            .from('progress')
+            .upsert({
+                user_id: currentUser.id,
+                email: currentUser.email,
+                current_module: currentModule,
+                current_card: currentCardIndex,
+                completed_cards: progress.completedCards || [],
+                xp: progress.xp || 0,
+                level: progress.level || 1,
+                badges: progress.badges || [],
+                redeemed_prizes: progress.redeemedPrizes || [],
+                quiz_correct_count: progress.quizCorrectCount || 0,
+                streak: progress.streak || 0,
+                last_activity_date: progress.lastActivityDate || localDateStr(),
+                daily_missions: progress.dailyMissions || {},
+                raffle_tickets: progress.raffleTickets || 0,
+                module_feedback: progress.moduleFeedback || {},
+                nps_history: progress.npsHistory || [],
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+
+        if (error) throw error;
+
+        await saveToLocalCache(currentUser.id, progress);
+        updateSyncStatus("online", "✓ Sincronizado");
+        setTimeout(() => updateSyncStatus("online", "✓ Sincronizado"), 2000);
+
+    } catch (error) {
+        console.error("Error sync:", error);
+        updateSyncStatus("offline", "⚠️ Sin conexión");
+        await saveToLocalCache(currentUser.id, progress);
+    }
+}
+
+async function loadFromSupabase() {
+    if (!currentUser) return null;
+
+    try {
+        const { data, error } = await supabase
+            .from('progress')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (error && error.code !== 'PGRST116') throw error;
+
+        if (data) {
+            return {
+                completedCards: data.completed_cards || [],
+                xp: data.xp || 0,
+                level: data.level || 1,
+                badges: data.badges || [],
+                redeemedPrizes: data.redeemed_prizes || [],
+                quizCorrectCount: data.quiz_correct_count || 0,
+                streak: data.streak || 0,
+                lastActivityDate: data.last_activity_date,
+                dailyMissions: data.daily_missions || {},
+                raffleTickets: data.raffle_tickets || 0,
+                moduleFeedback: data.module_feedback || {},
+                npsHistory: data.nps_history || []
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error("Error loading:", error);
+        return await loadFromLocalCache(currentUser.id);
+    }
+}
+
+// ==================== AUTENTICACIÓN ====================
+function _friendlyAuthError(msg) {
+    if (!msg) return 'Error desconocido. Intenta de nuevo.';
+    const m = msg.toLowerCase();
+    if (m.includes('invalid login') || m.includes('invalid credentials')) return 'Email o contraseña incorrectos.';
+    if (m.includes('email not confirmed'))  return 'Confirma tu email antes de ingresar.';
+    if (m.includes('rate limit'))           return 'Demasiados intentos. Espera unos minutos.';
+    if (m.includes('user already registered')) return 'Este email ya está registrado. Usa "Ingresar".';
+    if (m.includes('password'))             return 'La contraseña debe tener al menos 6 caracteres.';
+    if (m.includes('email'))               return 'Ingresa un email válido.';
+    if (m.includes('network') || m.includes('fetch')) return 'Sin conexión. Verifica tu internet.';
+    return msg;
+}
+
+async function loginWithEmail(email, password) {
+    if (!email || !email.includes('@')) { showLoginError('Ingresa un email válido.'); return false; }
+    if (!password || password.length < 6) { showLoginError('La contraseña debe tener al menos 6 caracteres.'); return false; }
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+
+        currentUser = data.user;
+        await checkUserAdminRole();
+        currentAvatar = currentUser.user_metadata?.avatar || "👨‍🏫";
+        document.getElementById("avatarPreview").innerHTML = currentAvatar;
+
+        const cloudProgress = await loadFromSupabase();
+
+        if (cloudProgress) {
+            progress = cloudProgress;
+            currentModule = cloudProgress.current_module || 1;
+            currentCardIndex = cloudProgress.current_card || 0;
+        } else {
+            progress = {
+                completedCards: [],
+                moduleFeedback: {},
+                npsHistory: [],
+                xp: 0,
+                level: 1,
+                badges: [],
+                redeemedPrizes: [],
+                quizCorrectCount: 0,
+                streak: 0,
+                lastActivityDate: localDateStr(),
+                dailyMissions: {},
+                raffleTickets: 0
+            };
+        }
+
+        // Restaurar nombre y foto desde localStorage — tiene prioridad sobre datos de nube
+        // (protege contra sync incompleto antes de cerrar pestaña)
+        try {
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            // Prioridad: localStorage > user_metadata (Supabase) > daily_missions (ya cargado)
+            const _meta = currentUser.user_metadata || {};
+            if (_meta.fullName     && !progress.dailyMissions.fullName)     progress.dailyMissions.fullName     = _meta.fullName;
+            if (_meta.profilePhoto && !progress.dailyMissions.profilePhoto) progress.dailyMissions.profilePhoto = _meta.profilePhoto;
+            if (_meta.school       && !progress.dailyMissions.school)       progress.dailyMissions.school       = _meta.school;
+            if (_meta.department   && !progress.dailyMissions.department)   progress.dailyMissions.department   = _meta.department;
+            const _pk = `userProfile_${currentUser.id}`;
+            const _saved = localStorage.getItem(_pk);
+            if (_saved) {
+                const _p = JSON.parse(_saved);
+                if (_p.fullName)     progress.dailyMissions.fullName     = _p.fullName;
+                if (_p.profilePhoto) progress.dailyMissions.profilePhoto = _p.profilePhoto;
+                if (_p.school)       progress.dailyMissions.school       = _p.school;
+                if (_p.department)   progress.dailyMissions.department   = _p.department;
+            }
+        } catch(e) {}
+
+        initExistingModuleDates();
+        checkDailyStreak();
+        loadDailyMissions();
+        await syncWithSupabase();
+        return true;
+    } catch (error) {
+        showLoginError(_friendlyAuthError(error.message));
+        return false;
+    }
+}
+
+async function registerWithEmail(email, password) {
+    if (!email || !email.includes('@')) { showLoginError('Ingresa un email válido.'); return false; }
+    if (!password || password.length < 6) { showLoginError('La contraseña debe tener al menos 6 caracteres.'); return false; }
+    try {
+        const { data, error } = await supabase.auth.signUp({
+            email, password,
+            options: { data: { avatar: "👨‍🏫", created_at: new Date().toISOString() } }
+        });
+        if (error) throw error;
+
+        currentUser = data.user;
+        await checkUserAdminRole();
+        currentAvatar = "👨‍🏫";
+
+        progress = {
+            completedCards: [],
+            moduleFeedback: {},
+            npsHistory: [],
+            xp: 0,
+            level: 1,
+            badges: [],
+            redeemedPrizes: [],
+            quizCorrectCount: 0,
+            streak: 1,
+            lastActivityDate: localDateStr(),
+            dailyMissions: {},
+            raffleTickets: 0
+        };
+
+        checkDailyStreak();
+        loadDailyMissions();
+        await syncWithSupabase();
+        showToast("¡Registro exitoso! Bienvenido al curso", "success");
+        return true;
+    } catch (error) {
+        showLoginError(_friendlyAuthError(error.message));
+        return false;
+    }
+}
+
+
+async function checkUserAdminRole() {
+    if (!currentUser) return;
+    try {
+        const { data, error } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
+        if (!error && data) {
+            currentUser.role = data.role;
+        } else {
+            currentUser.role = 'student';
+        }
+    } catch (e) {
+        currentUser.role = 'student';
+    }
+}
+
+
+async function logout() {
+    await supabase.auth.signOut();
+    currentUser = null;
+    progress = null;
+    document.getElementById("loginScreen").classList.remove("hidden");
+    document.getElementById("mainApp").classList.add("hidden");
+}
+
+async function checkExistingSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        currentUser = session.user;
+        await checkUserAdminRole();
+        currentAvatar = currentUser.user_metadata?.avatar || "👨‍🏫";
+        document.getElementById("avatarPreview").innerHTML = currentAvatar;
+
+        const cloudProgress = await loadFromSupabase();
+        if (cloudProgress) {
+            progress = cloudProgress;
+            currentModule = cloudProgress.current_module || 1;
+            currentCardIndex = cloudProgress.current_card || 0;
+        } else {
+            progress = {
+                completedCards: [], moduleFeedback: {}, npsHistory: [], xp: 0, level: 1,
+                badges: [], redeemedPrizes: [], quizCorrectCount: 0, streak: 0,
+                lastActivityDate: localDateStr(),
+                dailyMissions: {}, raffleTickets: 0
+            };
+        }
+
+        try {
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            const _meta = currentUser.user_metadata || {};
+            if (_meta.fullName     && !progress.dailyMissions.fullName)     progress.dailyMissions.fullName     = _meta.fullName;
+            if (_meta.profilePhoto && !progress.dailyMissions.profilePhoto) progress.dailyMissions.profilePhoto = _meta.profilePhoto;
+            if (_meta.school       && !progress.dailyMissions.school)       progress.dailyMissions.school       = _meta.school;
+            if (_meta.department   && !progress.dailyMissions.department)   progress.dailyMissions.department   = _meta.department;
+            const _pk = `userProfile_${currentUser.id}`;
+            const _saved = localStorage.getItem(_pk);
+            if (_saved) {
+                const _p = JSON.parse(_saved);
+                if (_p.fullName)     progress.dailyMissions.fullName     = _p.fullName;
+                if (_p.profilePhoto) progress.dailyMissions.profilePhoto = _p.profilePhoto;
+                if (_p.school)       progress.dailyMissions.school       = _p.school;
+                if (_p.department)   progress.dailyMissions.department   = _p.department;
+            }
+        } catch(e) {}
+
+        initExistingModuleDates();
+        checkDailyStreak();
+        loadDailyMissions();
+
+        document.getElementById("loginScreen").classList.add("hidden");
+        loadSavedProgress(true);
+        showCourseSelector();
+        return true;
+    }
+    return false;
+}
+
+function showLoginError(msg) {
+    const errorDiv = document.getElementById("loginError");
+    errorDiv.textContent = msg;
+    errorDiv.classList.remove("hidden");
+    setTimeout(() => errorDiv.classList.add("hidden"), 3000);
+}
+
+// ==================== FUNCIONES DE GAMIFICACIÓN ====================
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function updateUI() {
+    if (!progress) return;
+    const module = modulesData[currentModule - 1];
+    if (!module) return;
+
+    const totalCards = module.cards.length;
+    const cardCounter = document.getElementById("cardCounter");
+    if (cardCounter) cardCounter.innerText = `${currentCardIndex + 1} / ${totalCards}`;
+
+    const moduleBadge = document.getElementById("moduleBadge");
+    if (moduleBadge) moduleBadge.innerHTML = `Módulo ${currentModule} / ${modulesData.length}`;
+
+    // Nombre dinámico del curso en el encabezado
+    const _activeCourse = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === (currentCourseId || 'steam')) : null;
+    const _courseLabel = document.getElementById('courseNameLabel');
+    if (_courseLabel && _activeCourse) _courseLabel.textContent = _activeCourse.title;
+
+    // Color de la barra de progreso según el curso
+    const _courseColor = _activeCourse?.color || 'var(--brand-blue)';
+    const _cpBar = document.getElementById('courseProgressBar');
+    if (_cpBar) _cpBar.style.background = _courseColor;
+    const _cpPct = document.getElementById('courseProgressPercent');
+    if (_cpPct) _cpPct.style.color = _courseColor;
+
+    const totalAll = modulesData.reduce((acc, m) => acc + m.cards.length, 0);
+    // Filtrar tarjetas completadas del curso activo (por prefijo de ID o courseId guardado)
+    const _activeCourseId = (currentCourseId || 'steam');
+    // Map courseId to card ID prefix used in data.js
+    const _prefixMap = { 'steam': null, 'abp': 'abp-', 'design-thinking': 'dt-', 'evaluacion': 'ev-', 'tipos-estudiantes': 'te-' };
+    const _cardPrefix = _prefixMap[_activeCourseId];
+    const completedTotal = (progress.completedCards || []).filter(id => {
+        const s = String(id);
+        if (!_cardPrefix) {
+            // STEAM cards: numeric IDs ("1","2") or old module-index format ("1-0"), never prefixed
+            return /^\d/.test(s) && !s.includes('-m');
+        }
+        return s.startsWith(_cardPrefix);
+    }).length;
+    const coursePercent = Math.min(Math.round((completedTotal / totalAll) * 100), 100);
+    const courseProgressBar = document.getElementById("courseProgressBar");
+    if (courseProgressBar) courseProgressBar.style.width = `${coursePercent}%`;
+    const courseProgressPercent = document.getElementById("courseProgressPercent");
+    if (courseProgressPercent) courseProgressPercent.innerText = `${coursePercent}%`;
+
+    const xpDisplay = document.getElementById("xpDisplay");
+    if (xpDisplay) xpDisplay.innerText = progress.xp || 0;
+    const levelDisplay = document.getElementById("levelDisplay");
+    if (levelDisplay) levelDisplay.innerText = `Nv.${progress.level || 1}`;
+
+    // Mostrar nombre/email y foto en perfil
+    if (currentUser) {
+        const emailEl = document.getElementById("userEmailDisplay");
+        if (emailEl) emailEl.textContent = getDisplayName();
+        const photo = progress?.dailyMissions?.profilePhoto;
+        if (photo) updateProfilePhotoDisplay(photo);
+    }
+
+    updateStreakDisplay();
+
+    // Botón Estadísticas: solo visible para el admin
+    const _statsBtn = document.getElementById('statsSecretBtn');
+    if (_statsBtn) {
+        if (currentUser && (currentUser.role === 'admin' || currentUser.email === ADMIN_EMAIL)) {
+            _statsBtn.classList.remove('hidden');
+        } else {
+            _statsBtn.classList.add('hidden');
+        }
+    }
+
+    // Botón de certificado en perfil — visible si aprobó el examen del curso activo
+    const certBtn = document.getElementById('certDownloadBtn');
+    if (certBtn) {
+        const _activeCid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+        const _dm = progress.dailyMissions || {};
+        const _scores = _dm.examScores || {};
+        // Buscar puntaje: por courseId primero, luego legacy single-score para STEAM
+        const _score = (_scores[_activeCid] !== undefined) ? _scores[_activeCid]
+                     : (_activeCid === 'steam' && _dm.examScore !== undefined) ? _dm.examScore
+                     : undefined;
+        const _passed = _score !== undefined && _score >= 70;
+        if (_passed) {
+            certBtn.classList.remove('hidden');
+            window._lastExamScore = _score;
+        } else {
+            certBtn.classList.add('hidden');
+        }
+        // Placeholder: oculto si hay algún certificado visible
+        const _masterVisible = !document.getElementById('masterCertBtn')?.classList.contains('hidden');
+        const _placeholder = document.getElementById('certPlaceholder');
+        if (_placeholder) _placeholder.classList.toggle('hidden', _passed || _masterVisible);
+    }
+    // Master certificate — visible si todos los cursos están aprobados
+    _checkMasterCert();
+    renderCourseResources();
+}
+
+function updateSyncStatus(status, message) {
+    const syncSpan = document.getElementById("syncStatus");
+    if (syncSpan) syncSpan.innerHTML = message;
+    const syncIcon = document.querySelector("#syncIndicator i");
+    if (syncIcon) {
+        if (typeof ICONS !== 'undefined') {
+            if (status === "syncing") { syncIcon.style.color = '#eab308'; syncIcon.innerHTML = ICONS.spinner || ''; }
+            else if (status === "offline") { syncIcon.style.color = '#9ca3af'; syncIcon.innerHTML = ICONS.cloudUp || ''; }
+            else { syncIcon.style.color = '#34d399'; syncIcon.innerHTML = ICONS.cloudOk || ''; }
+        }
+    }
+}
+
+function saveProgress() {
+    if (!progress) return;
+    localStorage.setItem("steamProgressBackup", JSON.stringify(progress));
+    if (navigator.onLine && currentUser) {
+        syncWithSupabase();
+    } else if (currentUser) {
+        saveToLocalCache(currentUser.id, progress);
+    }
+    updateUI();
+    checkBadges();
+}
+
+function addXP(amount, reason) {
+    if (!progress) return;
+    progress.xp += amount;
+    showToast(`+${amount} XP ✨ (${reason})`, "success");
+    // Micro-animación en el contador de XP del top bar
+    const xpEl = document.getElementById('xpDisplay');
+    if (xpEl) {
+        xpEl.classList.remove('xp-pop');
+        void xpEl.offsetWidth;
+        xpEl.classList.add('xp-pop');
+        setTimeout(() => xpEl.classList.remove('xp-pop'), 450);
+    }
+
+    const newLevel = Math.floor(progress.xp / 200) + 1;
+    if (newLevel > progress.level) {
+        progress.level = newLevel;
+        showToast(`🎉 ¡SUBISTE AL NIVEL ${newLevel}!`, "levelup");
+        if (newLevel === 5 && !progress.badges.includes("level5")) unlockBadge("level5");
+        if (newLevel === 10) generateLevelCertificate(newLevel);
+        progress.raffleTickets = (progress.raffleTickets || 0) + 1;
+    }
+
+    updateMissionProgress("xp", amount);
+    saveProgress();
+    updateUI();
+}
+
+function unlockBadge(badgeId) {
+    if (progress.badges.includes(badgeId)) return;
+    const badge = badges[badgeId];
+    if (!badge) return;
+    progress.badges.push(badgeId);
+    addXP(badge.xpReward, `Logro: ${badge.name}`);
+    showToast(`🏅 ¡NUEVO LOGRO! ${badge.name} (+${badge.xpReward} XP)`, "badge");
+    saveProgress();
+}
+
+function checkBadges() {
+    if (!progress) return;
+    if (progress.completedCards.length >= 1 && !progress.badges.includes("firstCard")) unlockBadge("firstCard");
+
+    // Determinar prefijo de IDs del curso activo
+    const _cid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+    const _prefixMap = { 'steam': null, 'abp': 'abp-', 'design-thinking': 'dt-', 'evaluacion': 'ev-', 'tipos-estudiantes': 'te-' };
+    const _prefix = _prefixMap[_cid];
+
+    let modulesCompleted = 0;
+    for (let i = 1; i <= modulesData.length; i++) {
+        const moduleCardIds = modulesData[i - 1].cards.map(c => String(c.id));
+        const completedInModule = moduleCardIds.filter(id => progress.completedCards.includes(id)).length;
+        if (completedInModule === moduleCardIds.length) {
+            modulesCompleted++;
+            const _badgeKey = `module${i}`;
+            if (!progress.badges.includes(_badgeKey)) {
+                const _courseName = (typeof allCourses !== 'undefined' && allCourses.find(c => c.id === (currentCourseId || 'steam')))?.title || 'el curso';
+                badges[_badgeKey].desc = `Módulo ${i} de ${_courseName}`;
+                unlockBadge(_badgeKey);
+            }
+        }
+    }
+    if (modulesCompleted === modulesData.length && !progress.badges.includes("allModules")) unlockBadge("allModules");
+    if ((progress.quizCorrectCount || 0) >= 10 && !progress.badges.includes("quizMaster")) unlockBadge("quizMaster");
+    const feedbackCount = Object.keys(progress.moduleFeedback || {}).length;
+    if (feedbackCount >= 3 && !progress.badges.includes("feedbackGiver")) unlockBadge("feedbackGiver");
+}
+
+function checkDailyStreak() {
+    const today = localDateStr();
+    const lastActivity = progress.lastActivityDate;
+
+    if (!lastActivity) {
+        progress.streak = 1;
+        progress.lastActivityDate = today;
+        saveProgress();
+        return;
+    }
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toLocaleDateString('en-CA');
+
+    if (lastActivity === today) return;
+    else if (lastActivity === yesterdayStr) {
+        progress.streak = (progress.streak || 0) + 1;
+        progress.lastActivityDate = today;
+        saveProgress();
+        if (progress.streak === 7 && !progress.badges.includes("streak7")) unlockBadge("streak7");
+        if (progress.streak === 30 && !progress.badges.includes("streak30")) unlockBadge("streak30");
+        if (progress.streak % 5 === 0) addXP(20, `Racha de ${progress.streak} días`);
+    } else {
+        if (progress.streak > 1) showToast(`😢 Se rompió tu racha de ${progress.streak} días`, "warning");
+        progress.streak = 1;
+        progress.lastActivityDate = today;
+        saveProgress();
+    }
+    updateStreakDisplay();
+}
+
+function updateStreakDisplay() {
+    const streakSpan = document.getElementById("streakDisplay");
+    if (streakSpan) streakSpan.innerText = progress.streak || 0;
+}
+
+// ==================== MISIONES DIARIAS ====================
+function loadDailyMissions() {
+    const today = localDateStr();
+    const savedMissions = progress.dailyMissions || {};
+
+    if (savedMissions.date !== today) {
+        const newMissions = dailyMissionsList.map(m => ({ ...m, current: 0, completed: false, claimed: false }));
+        // Preservar campos de perfil y exámenes que también viven en dailyMissions
+        const { fullName, profilePhoto, examScores, examScore, masterExamScore, masterExamDate,
+                coursePositions, diagResult } = savedMissions;
+        progress.dailyMissions = {
+            date: today, missions: newMissions,
+            ...(fullName        && { fullName }),
+            ...(profilePhoto    && { profilePhoto }),
+            ...(examScores      && { examScores }),
+            ...(examScore !== undefined && { examScore }),
+            ...(masterExamScore !== undefined && { masterExamScore }),
+            ...(masterExamDate  && { masterExamDate }),
+            ...(coursePositions && { coursePositions }),
+            ...(diagResult      && { diagResult }),
+        };
+        saveProgress();
+    }
+    renderDailyMissions();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const hoursLeft = Math.round((tomorrow - new Date()) / (1000 * 60 * 60));
+    const resetSpan = document.getElementById("missionsReset");
+    if (resetSpan) resetSpan.innerText = `Reinicia en ${hoursLeft}h`;
+}
+
+function renderDailyMissions() {
+    const container = document.getElementById("missionsList");
+    if (!container) return;
+    const missions = progress.dailyMissions?.missions || [];
+    if (missions.length === 0) {
+        container.innerHTML = '<div class="text-gray-400 text-center">¡Completa misiones para ganar XP extra!</div>';
+        return;
+    }
+    let html = "";
+    missions.forEach(mission => {
+        const progressPercent = Math.min((mission.current / mission.target) * 100, 100);
+        html += `<div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-1">
+                <span>${mission.completed ? (mission.claimed ? "✅" : "🔓") : "⏳"}</span>
+                <span class="${mission.completed ? 'text-green-600' : 'text-gray-600'}">${mission.name}</span>
+                <span class="text-yellow-600">(+${mission.reward} XP)</span>
+            </div>
+            <div class="w-24 bg-gray-200 rounded-full h-1.5"><div class="bg-yellow-500 h-1.5 rounded-full" style="width: ${progressPercent}%"></div></div>
+            ${mission.completed && !mission.claimed ? `<button data-mission="${mission.id}" class="claim-mission-btn bg-green-500 text-white text-[10px] px-2 py-0.5 rounded hover:bg-green-600 transition">Reclamar</button>` : ''}
+        </div>`;
+    });
+    container.innerHTML = html;
+    document.querySelectorAll('.claim-mission-btn').forEach(btn => {
+        btn.addEventListener('click', () => claimMissionReward(btn.dataset.mission));
+    });
+}
+
+function updateMissionProgress(type, amount = 1) {
+    const missions = progress.dailyMissions?.missions || [];
+    let updated = false;
+    missions.forEach(mission => {
+        if (!mission.completed && mission.type === type) {
+            mission.current += amount;
+            if (mission.current >= mission.target) {
+                mission.completed = true;
+                showToast(`🎯 ¡Misión completada: ${mission.name}! Reclama tu recompensa`, "success");
+            }
+            updated = true;
+        }
+    });
+    if (updated) { saveProgress(); renderDailyMissions(); }
+}
+
+function claimMissionReward(missionId) {
+    const missions = progress.dailyMissions?.missions || [];
+    const mission = missions.find(m => m.id === missionId);
+    if (mission && mission.completed && !mission.claimed) {
+        mission.claimed = true;
+        addXP(mission.reward, `Misión: ${mission.name}`);
+        saveProgress();
+        renderDailyMissions();
+    }
+}
+
+function generateLevelCertificate(level) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 600; canvas.height = 400;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#F3F4F6'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#3B82F6'; ctx.lineWidth = 10; ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+    ctx.fillStyle = '#1E3A8A'; ctx.font = 'bold 24px Arial'; ctx.fillText(`CERTIFICADO DE NIVEL ${level}`, 150, 100);
+    ctx.font = '18px Arial'; ctx.fillStyle = '#333';
+    ctx.fillText(`Otorgado a: ${currentUser.email || currentUser.id.substring(0, 10)}`, 120, 180);
+    ctx.fillText(`Por alcanzar el Nivel ${level} en el Curso STEAM`, 120, 250);
+    ctx.fillText(`Fecha: ${new Date().toLocaleDateString()}`, 200, 320);
+    const link = document.createElement('a');
+    link.download = `certificado_nivel_${level}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    showToast(`📜 Certificado de Nivel ${level} generado`, "success");
+}
+
+// ==================== UTILIDADES DE TEXTO ====================
+function _mdToHtml(text) {
+    if (!text) return '';
+    return text
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')      // **bold**
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')                   // *italic*
+        .replace(/\n•\s*/g, '</p><p class="card-bullet">• ')    // bullet después de \n
+        .replace(/^•\s*/gm, '<p class="card-bullet">• ')        // bullet al inicio de línea
+        .replace(/\n\n/g, '</p><p>')                             // párrafo doble
+        .replace(/\n/g, '<br>')                                  // salto simple
+        .replace(/\| (.+?) \|/g, (m) => m)                      // tablas — dejar como está
+        ;
+}
+
+// ==================== FUNCIONES BASE DEL CURSO ====================
+function renderCard() {
+    const module = modulesData[currentModule - 1];
+    if (!module) return;
+    const card = module.cards[currentCardIndex];
+    if (!card) return;
+    const container = document.getElementById("cardContainer");
+    if (!container) return;
+
+    // Iniciar tracking de tiempo
+    if (currentCardId) stopCardTracking();
+    currentCardId = card.id || `${currentModule}-${currentCardIndex}`;
+    startCardTracking();
+
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+
+    if (card.type === "content") {
+        // Habilitar navegación normal en tarjetas de contenido
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
+
+        const cardId = card.id ? String(card.id) : `${currentModule}-${currentCardIndex}`;
+        if (!progress.completedCards.includes(cardId)) {
+            progress.completedCards.push(cardId);
+            updateMissionProgress("cards", 1);
+            saveProgress();
+        }
+
+        const _courseTheme = (typeof getCourseThemeAndIllus !== 'undefined')
+            ? getCourseThemeAndIllus(currentCourseId || 'steam', currentModule)
+            : { theme: MODULE_THEME?.[currentModule] || { primary: '#0097A7', soft: '#E0F7FA' }, illus: MODULE_ILLUSTRATIONS?.[currentModule] || '' };
+        const theme = _courseTheme.theme;
+        const illus = _courseTheme.illus;
+        const totalCards = module.cards.length;
+        const profeName = getDisplayName();
+        const cardContent = _mdToHtml((card.content || '').replace(/Profe Billy/g, profeName));
+        const _rawExtra = typeof card.extra === 'object' && card.extra !== null
+            ? (card.extra.tip || '')
+            : (card.extra || '');
+        const cardExtra = _mdToHtml(_rawExtra.replace(/Profe Billy/g, profeName));
+
+        container.innerHTML = `
+        <div class="content-card" id="activeCard">
+            <div class="card-banner" style="background:${theme.primary}">
+                <div class="card-banner-svg">${illus}</div>
+                <p class="card-banner-sub">${module.title} &nbsp;·&nbsp; ${currentCardIndex + 1} de ${totalCards}</p>
+            </div>
+            <div class="card-body">
+                <h2>${card.title}</h2>
+                <p>${cardContent}</p>
+                ${cardExtra ? `
+                <div class="card-key-insight" style="background:${theme.soft};border-color:${theme.primary};color:${theme.primary}">
+                    <span style="font-weight:700">💡 Dato clave:</span> ${cardExtra}
+                </div>` : ''}
+            </div>
+            ${card.project ? `
+            <div class="card-footer">
+                <button onclick="showProjectModal(${JSON.stringify(card).replace(/"/g, '&quot;')})"
+                    class="w-full text-white font-bold py-2.5 rounded-2xl text-sm transition flex items-center justify-center gap-2"
+                    style="background:${theme.primary}">
+                    📋 Ver instrucciones para implementar en clase
+                </button>
+            </div>` : ''}
+            <div class="card-swipe-hint" style="display:flex;align-items:center;justify-content:center;gap:6px">
+                <span style="display:inline-flex;width:13px;height:13px;opacity:.5">${ICONS?.arrowLeft||'←'}</span>
+                <span style="font-size:10px;opacity:.5">desliza para navegar</span>
+                <span style="display:inline-flex;width:13px;height:13px;opacity:.5">${ICONS?.arrowRight||'→'}</span>
+            </div>
+            <div class="px-4 pb-3">
+                <button id="commentCountBtn" onclick="showCardComments('${currentModule}-${currentCardIndex}')"
+                    class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-slate-200 text-slate-500 text-xs font-semibold hover:bg-slate-50 transition">
+                    <span style="display:inline-flex;width:15px;height:15px;color:#94a3b8;flex-shrink:0">${ICONS?.comments||''}</span><span>Comentarios y dudas</span><span style="background:#f1f5f9;color:#94a3b8;font-size:10px;font-weight:600;padding:1px 8px;border-radius:20px;margin-left:5px">...</span>
+                </button>
+            </div>
+        </div>`;
+
+        // Cargar conteo de comentarios en background
+        const _cntCardId = `${currentModule}-${currentCardIndex}`;
+        _fetchCommentCount(_cntCardId).then(n => _updateCommentCountBtn(_cntCardId, n));
+
+    } else if (card.type === "quiz") {
+        // Bloquear botón Siguiente hasta responder correctamente
+        if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = "0.4"; }
+
+        // Shuffle de opciones (seed por cardId para que sea consistente en repaso)
+        const _seed = String(card.id ?? '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        const _shuffled = card.options.map((opt, i) => ({ opt, orig: i }));
+        for (let i = _shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(((_seed * (i + 7)) % (i + 1) + (i + 1)) % (i + 1));
+            [_shuffled[i], _shuffled[j]] = [_shuffled[j], _shuffled[i]];
+        }
+        const _correctShuffled = _shuffled.findIndex(s => s.orig === card.correct);
+
+        let optionsHtml = "";
+        _shuffled.forEach((item, idx) => {
+            optionsHtml += `
+            <button class="quiz-option w-full text-left p-3 rounded-2xl mb-2" data-opt="${idx}" data-orig="${item.orig}">
+                <span class="option-letter">${String.fromCharCode(65 + idx)}</span>
+                <span class="text-gray-700 text-sm font-medium">${item.opt}</span>
+            </button>`;
+        });
+
+        const quizSvg = (typeof QUIZ_SVG !== 'undefined') ? QUIZ_SVG : '';
+        const quizThemePrimary = '#4f46e5';
+
+        container.innerHTML = `
+        <div class="quiz-card" id="activeCard">
+            <div class="card-banner" style="background:${quizThemePrimary}">
+                <div class="card-banner-svg">${quizSvg}</div>
+                <p class="card-banner-sub">✅ &nbsp;Quiz · Módulo ${currentModule}</p>
+            </div>
+            <div class="card-body">
+                <h2>${card.question}</h2>
+                <div id="quizOptions">${optionsHtml}</div>
+                <div id="quizFeedback" class="hidden mt-3 p-3 rounded-2xl text-sm font-medium"></div>
+                <p id="quizHint" class="text-center text-xs text-gray-400 mt-3" style="display:flex;align-items:center;justify-content:center;gap:5px">
+                    <span style="display:inline-flex;width:14px;height:14px">${ICONS?.pointer||'👆'}</span> Selecciona una respuesta para continuar
+                </p>
+            </div>
+        </div>`;
+
+        document.querySelectorAll('.quiz-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Desactivar todos los botones tras responder
+                document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+
+                const selected = parseInt(btn.dataset.opt);
+                const isCorrect = (selected === _correctShuffled);
+                const feedbackDiv = document.getElementById('quizFeedback');
+                const hint = document.getElementById('quizHint');
+                if (hint) hint.classList.add('hidden');
+
+                // Marcar visualmente la opción seleccionada
+                btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+                if (!isCorrect) {
+                    // Mostrar también la correcta
+                    document.querySelectorAll('.quiz-option').forEach(b => {
+                        if (parseInt(b.dataset.opt) === card.correct) b.classList.add('correct');
+                    });
+                }
+
+                if (feedbackDiv) {
+                    feedbackDiv.classList.remove('hidden');
+                    if (isCorrect) {
+                        feedbackDiv.className = 'mt-3 p-3 rounded-2xl text-sm font-medium bg-green-50 text-green-700 border border-green-200';
+                        feedbackDiv.innerHTML = `<span style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:4px">${ICONS?.checkCircle||'✓'}</span> ¡Correcto! ${card.explanation}`;
+                        const cardId = card.id ? String(card.id) : `${currentModule}-${currentCardIndex}`;
+                        if (!progress.completedCards.includes(cardId)) {
+                            progress.completedCards.push(cardId);
+                            addXP(10, `Quiz correcto: ${card.title || (card.question ? card.question.slice(0, 40) + (card.question.length > 40 ? '…' : '') : 'tarjeta')}`);
+                            progress.quizCorrectCount = (progress.quizCorrectCount || 0) + 1;
+                            updateMissionProgress("quizzes", 1);
+                            saveProgress();
+                        }
+                        // Habilitar Siguiente (el usuario avanza manualmente)
+                        if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
+                    } else {
+                        feedbackDiv.className = 'mt-3 p-3 rounded-2xl text-sm font-medium bg-red-50 text-red-700 border border-red-200';
+                        feedbackDiv.innerHTML = `<span style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:4px">${ICONS?.xCircle||'✗'}</span> Incorrecto. ${card.explanation}
+                            <button onclick="goToRefCard()" class="mt-2 block w-full text-center text-xs font-bold text-indigo-600 hover:underline py-1" style="display:flex;align-items:center;justify-content:center;gap:4px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.arrowLeft||''}</span> Repasar tarjeta relacionada</button>`;
+                        if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
+                    }
+                }
+            });
+        });
+    } else if (card.type === "simulation") {
+        if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = "0.4"; }
+
+        const _courseTheme = (typeof getCourseThemeAndIllus !== 'undefined')
+            ? getCourseThemeAndIllus(currentCourseId || 'steam', currentModule)
+            : { theme: { primary: '#7C3AED', soft: '#EDE9FE' }, illus: '' };
+        const simTheme = _courseTheme.theme;
+
+        container.innerHTML = `
+        <div class="simulation-card" id="activeCard">
+            <div class="card-banner" style="background:${simTheme.primary}">
+                <div class="card-banner-svg">${_courseTheme.illus}</div>
+                <p class="card-banner-sub">🎭 &nbsp;Simulación · Módulo ${currentModule} · ${currentCardIndex + 1} de ${module.cards.length}</p>
+            </div>
+            <div class="card-body">
+                <h2>${card.title}</h2>
+                <div class="sim-scenario" style="background:${simTheme.soft};border-left:4px solid ${simTheme.primary};border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:0.93rem;line-height:1.55;color:#374151">
+                    ${_mdToHtml(card.scenario || '')}
+                </div>
+                <p class="sim-statement" style="font-weight:700;font-size:1rem;color:#1e293b;margin-bottom:20px;text-align:center">"${card.statement || ''}"</p>
+                <div id="simFeedback" class="hidden mt-2 p-4 rounded-2xl text-sm font-medium"></div>
+            </div>
+            <div class="sim-actions" id="simActions">
+                <button id="simLeftBtn" onclick="handleSimulation('left')" class="sim-btn sim-btn-left">
+                    <span style="display:inline-flex;width:28px;height:28px;margin:0 auto 4px">${ICONS?.xMark||'✗'}</span><br><span>En desacuerdo</span><br><small>desliza ←</small>
+                </button>
+                <button id="simRightBtn" onclick="handleSimulation('right')" class="sim-btn sim-btn-right">
+                    <span style="display:inline-flex;width:28px;height:28px;margin:0 auto 4px">${ICONS?.check||'✓'}</span><br><span>De acuerdo</span><br><small>→ desliza</small>
+                </button>
+            </div>
+        </div>`;
+
+        // Store simulation data for swipe handler
+        container.dataset.simCorrect = card.correctSwipe || 'right';
+        container.dataset.simRight = card.rightOutcome || '';
+        container.dataset.simLeft = card.leftOutcome || '';
+        container.dataset.simPrimary = simTheme.primary;
+        container.dataset.simSoft = simTheme.soft;
+
+        // Swipe gesture for simulation
+        let _simTouchX = 0;
+        let _simTouchY = 0;
+        let _simDragging = false;
+        const _simCard = document.getElementById('activeCard');
+        if (_simCard) {
+            _simCard.addEventListener('touchstart', e => {
+                _simTouchX = e.touches[0].clientX;
+                _simTouchY = e.touches[0].clientY;
+                _simDragging = true;
+                _simCard.style.transition = 'none';
+            }, { passive: true });
+            _simCard.addEventListener('touchmove', e => {
+                if (!_simDragging) return;
+                const diffX = e.touches[0].clientX - _simTouchX;
+                const diffY = e.touches[0].clientY - _simTouchY;
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    const rotation = diffX / 12;
+                    _simCard.style.transform = `translateX(${diffX}px) rotate(${rotation}deg)`;
+                }
+            }, { passive: true });
+            _simCard.addEventListener('touchend', e => {
+                if (!_simDragging) return;
+                _simDragging = false;
+                const diffX = e.changedTouches[0].clientX - _simTouchX;
+                _simCard.style.transition = 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease';
+                if (diffX > 80) {
+                    _simCard.style.transform = 'translateX(120%) rotate(10deg)';
+                    _simCard.style.opacity = '0';
+                    setTimeout(() => {
+                        handleSimulation('right');
+                        _simCard.style.transition = 'none';
+                        _simCard.style.transform = 'translateX(0) rotate(0deg)';
+                        _simCard.style.opacity = '1';
+                        void _simCard.offsetWidth; // trigger reflow
+                        _simCard.style.transition = 'transform 0.25s ease, opacity 0.2s ease';
+                    }, 250);
+                } else if (diffX < -80) {
+                    _simCard.style.transform = 'translateX(-120%) rotate(-10deg)';
+                    _simCard.style.opacity = '0';
+                    setTimeout(() => {
+                        handleSimulation('left');
+                        _simCard.style.transition = 'none';
+                        _simCard.style.transform = 'translateX(0) rotate(0deg)';
+                        _simCard.style.opacity = '1';
+                        void _simCard.offsetWidth; // trigger reflow
+                        _simCard.style.transition = 'transform 0.25s ease, opacity 0.2s ease';
+                    }, 250);
+                } else {
+                    _simCard.style.transform = 'translateX(0) rotate(0deg)';
+                }
+            });
+        }
+    }
+    // Registrar swipe en cada tarjeta nueva (touch + mouse)
+    initSwipe();
+}
+
+function handleSimulation(direction) {
+    const container = document.getElementById('cardContainer');
+    const actions = document.getElementById('simActions');
+    const feedback = document.getElementById('simFeedback');
+    const nextBtn = document.getElementById('nextBtn');
+    if (!container || !feedback) return;
+
+    const correct = container.dataset.simCorrect;
+    const isCorrect = (direction === correct);
+    const outcome = direction === 'right' ? container.dataset.simRight : container.dataset.simLeft;
+    const primary = container.dataset.simPrimary || '#7C3AED';
+
+    if (actions) actions.style.display = 'none';
+
+    const swipeLabel = direction === 'right' ? '→ De acuerdo' : '← En desacuerdo';
+    feedback.classList.remove('hidden');
+    if (isCorrect) {
+        feedback.className = 'mt-2 p-4 rounded-2xl text-sm font-medium bg-green-50 text-green-800 border border-green-200';
+        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#16a34a">${ICONS?.checkCircle||'✓'}</span> ¡Decisión acertada! (${swipeLabel})</div>${_mdToHtml(outcome)}`;
+        const _modC = modulesData[currentModule - 1];
+        const _cardC = _modC?.cards[currentCardIndex];
+        const _cidC = _cardC?.id || `${currentModule}-${currentCardIndex}`;
+        if (!progress.completedCards.includes(_cidC)) {
+            progress.completedCards.push(_cidC);
+            addXP(15, 'Simulación completada');
+            updateMissionProgress("cards", 1);
+            saveProgress();
+        }
+    } else {
+        feedback.className = 'mt-2 p-4 rounded-2xl text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200';
+        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#d97706">${ICONS?.lightbulb||'💡'}</span> Reflexiona... (${swipeLabel})</div>${_mdToHtml(outcome)}<div style="margin-top:10px;font-size:0.8rem;color:#92400e;display:flex;align-items:center;gap:4px"><span style="display:inline-flex;width:13px;height:13px">${ICONS?.refresh||''}</span> Puedes continuar — el aprendizaje está en la reflexión.</div>`;
+        const _modW = modulesData[currentModule - 1];
+        const _cardW = _modW?.cards[currentCardIndex];
+        const _cidW = _cardW?.id || `${currentModule}-${currentCardIndex}`;
+        if (!progress.completedCards.includes(_cidW)) {
+            progress.completedCards.push(_cidW);
+            updateMissionProgress("cards", 1);
+            saveProgress();
+        }
+    }
+    if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
+}
+
+function startCardTracking() {
+    if (currentCardId) {
+        currentCardStartTime = Date.now();
+    }
+}
+
+function stopCardTracking() {
+    if (currentCardId && currentCardStartTime && currentUser) {
+        const timeSpent = Math.round((Date.now() - currentCardStartTime) / 1000);
+        if (timeSpent > 0) {
+            supabase.from('resource_views').insert({
+                resource_type: 'card',
+                resource_id: currentCardId,
+                user_id: currentUser.id,
+                time_spent_seconds: Math.min(timeSpent, 300)
+            }).then(({ error: e }) => { if (e) console.log("Track error:", e); });
+        }
+        currentCardStartTime = null;
+    }
+}
+
+function animateCard(direction) {
+    const card = document.getElementById('activeCard');
+    if (!card) return;
+    card.classList.remove('slide-in-left', 'slide-in-right');
+    void card.offsetWidth; // reflow
+    card.classList.add(direction === 'next' ? 'slide-in-right' : 'slide-in-left');
+}
+
+function showComingSoon() {
+    showToast('🎁 ¡Muy pronto! Los premios estarán disponibles próximamente.');
+}
+
+function _saveCoursePosition() {
+    if (!progress || !currentCourseId) return;
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    if (!progress.dailyMissions.coursePositions) progress.dailyMissions.coursePositions = {};
+    progress.dailyMissions.coursePositions[currentCourseId] = { module: currentModule, card: currentCardIndex };
+}
+
+function goToNextCard(animateExit = true) {
+    const module = modulesData[currentModule - 1];
+    if (!module) return;
+    if (currentCardIndex + 1 < module.cards.length) {
+        const action = () => {
+            currentCardIndex++;
+            _saveCoursePosition();
+            saveProgress();
+            renderCard();
+            animateCard('next');
+            updateMissionProgress("cards", 1);
+        };
+        if (animateExit) {
+            const card = document.getElementById('activeCard');
+            if (card) {
+                card.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+                card.style.transform = 'translateX(-120%) rotate(-10deg)';
+                card.style.opacity = '0';
+            }
+            setTimeout(action, 200);
+        } else {
+            action();
+        }
+    } else if (currentModule < modulesData.length) {
+        stopCardTracking();
+        showModuleComplete(currentModule, () => askModuleFeedback(currentModule));
+    } else {
+        stopCardTracking();
+        showModuleComplete(currentModule, () => askModuleFeedback(currentModule));
+    }
+}
+
+function goToPrevCard(animateExit = true) {
+    const action = () => {
+        _saveCoursePosition();
+        saveProgress();
+        renderCard();
+        animateCard('prev');
+    };
+    if (currentCardIndex > 0) {
+        const update = () => {
+            currentCardIndex--;
+            action();
+        };
+        if (animateExit) {
+            const card = document.getElementById('activeCard');
+            if (card) {
+                card.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+                card.style.transform = 'translateX(120%) rotate(10deg)';
+                card.style.opacity = '0';
+            }
+            setTimeout(update, 200);
+        } else {
+            update();
+        }
+    } else if (currentModule > 1) {
+        const update = () => {
+            currentModule--;
+            const prevModule = modulesData[currentModule - 1];
+            currentCardIndex = prevModule.cards.length - 1;
+            action();
+        };
+        if (animateExit) {
+            const card = document.getElementById('activeCard');
+            if (card) {
+                card.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+                card.style.transform = 'translateX(120%) rotate(10deg)';
+                card.style.opacity = '0';
+            }
+            setTimeout(update, 200);
+        } else {
+            update();
+        }
+    }
+}
+
+function askModuleFeedback(moduleId) {
+    const _feedbackKey = `${currentCourseId || 'steam'}-${moduleId}`;
+    if (progress.moduleFeedback?.[_feedbackKey]) { continueToNextModule(); return; }
+    const moduleName = modulesData[moduleId - 1]?.title || `Módulo ${moduleId}`;
+    const feedbackHtml = `<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6"><h2 class="text-xl font-bold text-indigo-800 mb-2">📝 ¿Cómo te fue en ${moduleName}?</h2><div class="mb-4"><label class="block font-medium mb-2">Satisfacción (1-5)</label><div class="flex gap-2 justify-between" id="ratingStars">${[1, 2, 3, 4, 5].map(n => `<button data-rating="${n}" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>`).join('')}</div><input type="hidden" id="selectedRating" value="0"></div><div class="mb-4"><label class="block font-medium mb-2">NPS (0-10): ¿Recomendarías este curso a otro docente?</label><div class="grid grid-cols-5 gap-1">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button data-nps="${n}" class="nps-btn w-9 h-9 rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition text-sm">${n}</button>`).join('')}</div><input type="hidden" id="selectedNPS" value="-1"></div><div class="mb-4"><textarea id="feedbackComment" rows="3" class="w-full border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Comentario o sugerencia (opcional)"></textarea></div><div class="flex gap-2"><button id="submitFeedbackBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex-1 transition">Enviar</button><button id="skipFeedbackBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition">Omitir</button></div></div></div>`;
+    document.body.insertAdjacentHTML('beforeend', feedbackHtml);
+
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', () => {
+            const rating = parseInt(star.dataset.rating);
+            document.getElementById('selectedRating').value = rating;
+            document.querySelectorAll('.rating-star').forEach((s, i) => { if (i < rating) s.classList.add('text-yellow-400'); else s.classList.remove('text-yellow-400'); });
+        });
+    });
+    document.querySelectorAll('.nps-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const nps = parseInt(btn.dataset.nps);
+            document.getElementById('selectedNPS').value = nps;
+            document.querySelectorAll('.nps-btn').forEach(b => { b.classList.remove('bg-indigo-500', 'text-white'); b.classList.add('bg-gray-200'); });
+            btn.classList.add('bg-indigo-500', 'text-white');
+        });
+    });
+    document.getElementById('submitFeedbackBtn').addEventListener('click', () => {
+        const rating = parseInt(document.getElementById('selectedRating').value);
+        const nps = parseInt(document.getElementById('selectedNPS').value);
+        const comment = document.getElementById('feedbackComment').value;
+        if (rating === 0) { alert("Por favor, selecciona una calificación de 1 a 5"); return; }
+        if (nps === -1) { alert("Por favor, selecciona un puntaje NPS del 0 al 10"); return; }
+        progress.moduleFeedback[_feedbackKey] = { moduleName, rating, nps, comment, timestamp: new Date().toISOString(), moduleId, courseId: currentCourseId || 'steam' };
+        progress.npsHistory = progress.npsHistory || [];
+        progress.npsHistory.push({ moduleId, moduleName, nps, timestamp: new Date().toISOString() });
+        // Guardar también en tabla feedback para que el admin lo pueda ver
+        supabase.from('feedback').insert({
+            user_id: currentUser.id,
+            module_id: moduleId,
+            module_name: moduleName,
+            rating,
+            nps,
+            comment: comment || null,
+            created_at: new Date().toISOString()
+        }).then(({ error: e }) => { if (e) console.log("Feedback insert error:", e); });
+        addXP(20, `Feedback módulo ${moduleId}`);
+        saveProgress();
+        document.querySelector('.fixed.bg-black.bg-opacity-50').remove();
+        continueToNextModule();
+    });
+    document.getElementById('skipFeedbackBtn').addEventListener('click', () => {
+        document.querySelector('.fixed.bg-black.bg-opacity-50').remove();
+        continueToNextModule();
+    });
+}
+
+// ==================== BLOQUEO DE MÓDULOS ====================
+// Para usuarios existentes que ya avanzaron, marcamos todos los módulos anteriores
+// al actual como desbloqueados desde hoy (no retroactivo = no castigo).
+function initExistingModuleDates() {
+    if (!progress || !currentModule) return;
+    const now = new Date().toISOString();
+    for (let m = 2; m <= currentModule; m++) {
+        if (!getModuleStartDate(m)) {
+            setModuleStartDate(m, now);
+            setModuleEarlyUnlock(m); // se considera desbloqueado
+        }
+    }
+}
+
+const XP_UNLOCK_COST = 200;
+const DAYS_PER_MODULE = 1;
+
+function getModuleStartDate(moduleNum) {
+    if (moduleNum === 1) return null; // módulo 1 siempre disponible
+    const dm = progress?.dailyMissions || {};
+    const cid = currentCourseId || 'steam';
+    return dm[`moduleStart_${cid}_${moduleNum}`] || dm[`moduleStart_${moduleNum}`] || null;
+}
+
+function setModuleStartDate(moduleNum, dateStr) {
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    const cid = currentCourseId || 'steam';
+    progress.dailyMissions[`moduleStart_${cid}_${moduleNum}`] = dateStr;
+}
+
+function isModuleEarlyUnlocked(moduleNum) {
+    const dm = progress?.dailyMissions || {};
+    const cid = currentCourseId || 'steam';
+    return dm[`moduleEarlyUnlock_${cid}_${moduleNum}`] === true || dm[`moduleEarlyUnlock_${moduleNum}`] === true;
+}
+
+function setModuleEarlyUnlock(moduleNum) {
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    const cid = currentCourseId || 'steam';
+    progress.dailyMissions[`moduleEarlyUnlock_${cid}_${moduleNum}`] = true;
+}
+
+function msUntilUnlock(moduleNum) {
+    const startDate = getModuleStartDate(moduleNum);
+    if (!startDate) return DAYS_PER_MODULE * 86400000;
+    const start = new Date(startDate).getTime();
+    const unlockAt = start + DAYS_PER_MODULE * 86400000;
+    return Math.max(0, unlockAt - Date.now());
+}
+
+// Compatibilidad: días enteros restantes (se usa solo donde no aplica el countdown en vivo)
+function daysUntilUnlock(moduleNum) {
+    return Math.ceil(msUntilUnlock(moduleNum) / 86400000);
+}
+
+function formatCountdown(ms) {
+    if (ms <= 0) return '¡Desbloqueado!';
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function isModuleLocked(moduleNum) {
+    if (moduleNum <= 1) return false;
+    if (isModuleEarlyUnlocked(moduleNum)) return false;
+    const startDate = getModuleStartDate(moduleNum);
+    if (!startDate) return true; // nunca se desbloqueó
+    return msUntilUnlock(moduleNum) > 0;
+}
+
+// ── Countdown en vivo: actualiza todos los elementos [data-unlock-ms] cada segundo ──
+let _countdownInterval = null;
+function startLiveCountdowns() {
+    if (_countdownInterval) return;
+    _countdownInterval = setInterval(() => {
+        const els = document.querySelectorAll('[data-unlock-ms]');
+        if (!els.length) return;
+        let anyUnlocked = false;
+        els.forEach(el => {
+            const remaining = parseInt(el.dataset.unlockMs, 10) - 1000;
+            el.dataset.unlockMs = String(Math.max(0, remaining));
+            el.textContent = formatCountdown(remaining);
+            if (remaining <= 0) anyUnlocked = true;
+        });
+        if (anyUnlocked) {
+            if (!document.getElementById('tabModulos')?.classList.contains('hidden')) {
+                renderModulesTab();
+            }
+        }
+    }, 1000);
+}
+
+async function unlockModuleWithXP(moduleNum) {
+    const cost = XP_UNLOCK_COST;
+    if ((progress.xp || 0) < cost) {
+        showToast(`Necesitas ${cost} XP para desbloquear este módulo. Tienes ${progress.xp || 0} XP.`, 'error');
+        return;
+    }
+    if (!isModuleLocked(moduleNum)) {
+        showToast('Este módulo ya está disponible.', 'info');
+        return;
+    }
+    progress.xp -= cost;
+    setModuleEarlyUnlock(moduleNum);
+    setModuleStartDate(moduleNum, new Date().toISOString());
+    saveProgress();
+    showToast(`🔓 ¡Módulo ${moduleNum} desbloqueado! (-${cost} XP)`, 'success');
+    renderModulesTab();
+    updateUI();
+}
+
+function renderModulesTab() {
+    const container = document.getElementById('modulesIndexList');
+    if (!container || !modulesData) return;
+
+    const totalModules = modulesData.length;
+    let html = '';
+
+    for (let i = 1; i <= totalModules; i++) {
+        const mod = modulesData[i - 1];
+        const _ct = (typeof getCourseThemeAndIllus !== 'undefined')
+            ? getCourseThemeAndIllus(currentCourseId || 'steam', i)
+            : { theme: MODULE_THEME?.[i] || { primary: '#0097A7', soft: '#E0F7FA' }, illus: MODULE_ILLUSTRATIONS?.[i] || '' };
+        const theme = _ct.theme;
+        const illus = _ct.illus;
+
+        const locked = isModuleLocked(i);
+        const isCurrentMod = (i === currentModule);
+        const moduleKey = `${currentCourseId || 'steam'}-${i}`;
+        const isCompleted = (i < currentModule) || !!(progress.completedModules?.[moduleKey]);
+        const remainingMs = locked ? msUntilUnlock(i) : 0;
+        const xpAvail = progress?.xp || 0;
+        const canPayXP = xpAvail >= XP_UNLOCK_COST;
+
+        // Cards seen in this module
+        const modCards = mod.cards || [];
+        const modCardIds = modCards.map(c => c.id);
+        const seenInMod = modCardIds.filter(id => (progress?.completedCards || []).includes(id)).length;
+        const pct = modCards.length > 0 ? Math.round((seenInMod / modCards.length) * 100) : 0;
+
+        let statusBadge = '';
+        let actionBtn = '';
+        let opacity = '';
+
+        if (locked) {
+            opacity = 'opacity-60';
+            statusBadge = `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-500">🔒 <span data-unlock-ms="${remainingMs}">${formatCountdown(remainingMs)}</span></span>`;
+            actionBtn = canPayXP
+                ? `<button onclick="unlockModuleWithXP(${i})" class="mt-3 w-full text-sm font-bold py-2 rounded-xl text-white" style="background:${theme.primary}">
+                       🔓 Desbloquear con ${XP_UNLOCK_COST} XP
+                   </button>`
+                : `<p class="mt-2 text-xs text-slate-400 text-center">Disponible en <span data-unlock-ms="${remainingMs}">${formatCountdown(remainingMs)}</span> · o con ${XP_UNLOCK_COST} XP</p>`;
+        } else if (isCompleted) {
+            statusBadge = `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✅ Completado</span>`;
+            actionBtn = `<button onclick="goToModule(${i})" class="mt-3 w-full text-sm font-semibold py-2 rounded-xl border-2" style="color:${theme.primary};border-color:${theme.primary}">
+                             Repasar módulo
+                         </button>`;
+        } else if (isCurrentMod) {
+            statusBadge = `<span class="text-xs font-semibold px-2 py-0.5 rounded-full text-white" style="background:${theme.primary}">▶ En curso</span>`;
+            actionBtn = `<button onclick="goToModule(${i})" class="mt-3 w-full text-sm font-bold py-2 rounded-xl text-white" style="background:${theme.primary}">
+                             Continuar →
+                         </button>`;
+        } else {
+            statusBadge = `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">○ Disponible</span>`;
+            actionBtn = `<button onclick="goToModule(${i})" class="mt-3 w-full text-sm font-bold py-2 rounded-xl text-white" style="background:${theme.primary}">
+                             Comenzar →
+                         </button>`;
+        }
+
+        html += `
+        <div class="rounded-2xl overflow-hidden shadow-sm border border-slate-100 ${opacity}">
+            <div class="flex items-center gap-3 p-3" style="background:${theme.soft}">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${theme.primary}">
+                    <div class="w-9 h-9">${illus}</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Módulo ${i}</span>
+                        ${statusBadge}
+                    </div>
+                    <p class="text-sm font-bold text-slate-800 leading-tight mt-0.5 truncate">${mod.title}</p>
+                </div>
+            </div>
+            <div class="bg-white px-4 py-3">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span>${seenInMod} / ${modCards.length} tarjetas</span>
+                    <span>${pct}%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5">
+                    <div class="h-1.5 rounded-full" style="width:${pct}%;background:${theme.primary};transition:width .4s"></div>
+                </div>
+                ${actionBtn}
+            </div>
+        </div>`;
+    }
+
+    container.innerHTML = html;
+    startLiveCountdowns();
+}
+
+function goToModule(modNum) {
+    if (isModuleLocked(modNum)) {
+        showToast(`El módulo ${modNum} está bloqueado.`, 'error');
+        return;
+    }
+    currentModule = modNum;
+    // Find first unseen card index for this module, or restart at 0
+    const mod = modulesData[modNum - 1];
+    let startIdx = 0;
+    if (mod) {
+        const seen = progress?.completedCards || [];
+        const firstUnseen = mod.cards.findIndex(c => !seen.includes(c.id));
+        startIdx = firstUnseen >= 0 ? firstUnseen : 0;
+    }
+    currentCardIndex = startIdx;
+    _saveCoursePosition();
+    saveProgress();
+    switchTab('home');
+    renderCard();
+    animateCard('next');
+}
+
+function _showExamPrompt() {
+    const cid   = currentCourseId || 'steam';
+    const score = (progress?.dailyMissions?.examScores || {})[cid] ?? progress?.dailyMissions?.examScore;
+    const alreadyPassed = score !== undefined && score >= 70;
+    if (alreadyPassed) return; // ya tiene certificado, no molestar
+
+    const courseTitle = (typeof allCourses !== 'undefined')
+        ? (allCourses.find(c => c.id === cid)?.title || 'este curso')
+        : 'este curso';
+
+    const el = document.createElement('div');
+    el.id = 'examPromptOverlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px';
+    el.innerHTML = `
+    <div style="background:white;border-radius:24px;max-width:360px;width:100%;padding:28px 24px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3)">
+        <div style="font-size:48px;margin-bottom:12px">🎓</div>
+        <h2 style="font-size:20px;font-weight:900;color:#0F172A;margin-bottom:8px">¡Curso completado!</h2>
+        <p style="font-size:14px;color:#475569;line-height:1.6;margin-bottom:20px">
+            Terminaste todas las tarjetas de <strong>${esc(courseTitle)}</strong>.<br>
+            ¿Listo para la evaluación final y obtener tu certificado?
+        </p>
+        <button onclick="document.getElementById('examPromptOverlay').remove();startExam();"
+            style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#4f46e5,#7C3AED);color:white;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:10px">
+            📝 Ir a la evaluación
+        </button>
+        <button onclick="document.getElementById('examPromptOverlay').remove();"
+            style="width:100%;padding:10px;border-radius:14px;border:2px solid #E2E8F0;background:white;color:#64748B;font-weight:600;font-size:13px;cursor:pointer">
+            Después
+        </button>
+    </div>`;
+    document.body.appendChild(el);
+}
+
+function continueToNextModule() {
+    const nextModule = currentModule + 1;
+    if (nextModule > modulesData.length) {
+        // Curso terminado — mostrar prompt de evaluación
+        currentModule = nextModule;
+        currentCardIndex = 0;
+        _saveCoursePosition();
+        saveProgress();
+        renderCard();
+        animateCard('next');
+        setTimeout(_showExamPrompt, 600);
+        return;
+    }
+
+    // Si el siguiente módulo no tiene marca de inicio, la asignamos ahora (inicia el countdown de 24h)
+    if (!getModuleStartDate(nextModule)) {
+        setModuleStartDate(nextModule, new Date().toISOString());
+        saveProgress();
+    }
+
+    if (isModuleLocked(nextModule)) {
+        const remainingMs = msUntilUnlock(nextModule);
+        const xp = progress?.xp || 0;
+        const canPay = xp >= XP_UNLOCK_COST;
+        const theme = (typeof MODULE_THEME !== 'undefined') ? MODULE_THEME[nextModule] : { primary: '#0097A7' };
+        const mod = modulesData[nextModule - 1];
+
+        const html = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-2">🔒</div>
+                    <h3 class="text-lg font-bold text-slate-800">Módulo ${nextModule} bloqueado</h3>
+                    <p class="text-sm text-slate-500 mt-1">${mod?.title || ''}</p>
+                </div>
+                <p class="text-sm text-slate-600 text-center mb-2">Este módulo se desbloquea en:</p>
+                <p class="text-center text-2xl font-black mb-3" style="color:${theme.primary}" data-unlock-ms="${remainingMs}">${formatCountdown(remainingMs)}</p>
+                <p class="text-sm text-slate-600 text-center mb-4">
+                    O puedes desbloquearlo ahora gastando <strong>${XP_UNLOCK_COST} XP</strong>.
+                </p>
+                <p class="text-center text-sm mb-5">Tu XP actual: <strong>${xp} ⚡</strong></p>
+                <div class="space-y-2">
+                    ${canPay ? `<button id="payXPBtn" class="w-full py-3 rounded-xl text-white font-bold text-sm" style="background:${theme.primary}">
+                        🔓 Desbloquear ahora (${XP_UNLOCK_COST} XP)
+                    </button>` : `<p class="text-center text-xs text-slate-400">Necesitas ${XP_UNLOCK_COST - xp} XP más para desbloqueo anticipado</p>`}
+                    <button id="goModulosBtn" class="w-full py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold text-sm">
+                        Ver mis módulos
+                    </button>
+                    <button id="closeModLockBtn" class="w-full py-2 text-slate-400 text-sm">Cerrar</button>
+                </div>
+            </div>
+        </div>`;
+
+        document.body.insertAdjacentHTML('beforeend', html);
+        const overlay = document.body.lastElementChild;
+        startLiveCountdowns();
+        overlay.querySelector('#closeModLockBtn')?.addEventListener('click', () => overlay.remove());
+        overlay.querySelector('#goModulosBtn')?.addEventListener('click', () => { overlay.remove(); switchTab('modulos'); });
+        if (canPay) {
+            overlay.querySelector('#payXPBtn')?.addEventListener('click', async () => {
+                overlay.remove();
+                await unlockModuleWithXP(nextModule);
+                if (!isModuleLocked(nextModule)) continueToNextModule();
+            });
+        }
+        return;
+    }
+
+    currentModule = nextModule;
+    currentCardIndex = 0;
+    _saveCoursePosition();
+    saveProgress();
+    renderCard();
+    animateCard('next');
+}
+
+let _swipeStartX = 0;
+let _swipeStartY = 0;
+let _swipeActive = false;
+
+function initSwipe() {
+    const card = document.getElementById('activeCard');
+    if (!card) return;
+
+    // ── Helpers compartidos touch + mouse ──────────────────
+    function onStart(clientX, clientY) {
+        _swipeStartX = clientX;
+        _swipeStartY = clientY;
+        _swipeActive = true;
+        card.style.transition = 'none';
+        card.style.cursor = 'grabbing';
+    }
+
+    function onMove(clientX, clientY) {
+        if (!_swipeActive) return;
+        const diffX = clientX - _swipeStartX;
+        const diffY = clientY - _swipeStartY;
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            const rotation = diffX / 14;
+            card.style.transform = `translateX(${diffX}px) rotate(${rotation}deg)`;
+            // Indicador visual de dirección
+            card.style.opacity = String(Math.max(0.6, 1 - Math.abs(diffX) / 400));
+        }
+    }
+
+    function onEnd(clientX) {
+        if (!_swipeActive) return;
+        _swipeActive = false;
+        card.style.cursor = '';
+        const diffX = clientX - _swipeStartX;
+        const THRESHOLD = 80;
+        card.style.transition = 'transform 0.28s cubic-bezier(0.175,0.885,0.32,1.275), opacity 0.22s ease';
+
+        if (diffX > THRESHOLD) {
+            // Swipe derecha → tarjeta anterior
+            card.style.transform = 'translateX(130%) rotate(12deg)';
+            card.style.opacity = '0';
+            setTimeout(() => goToPrevCard(false), 260);
+        } else if (diffX < -THRESHOLD) {
+            // Swipe izquierda → siguiente tarjeta
+            const nextBtn = document.getElementById('nextBtn');
+            if (nextBtn && nextBtn.disabled) {
+                card.style.transform = 'translateX(0) rotate(0deg)';
+                card.style.opacity = '1';
+                showToast('Responde el quiz antes de continuar', 'error');
+            } else {
+                card.style.transform = 'translateX(-130%) rotate(-12deg)';
+                card.style.opacity = '0';
+                setTimeout(() => goToNextCard(false), 260);
+            }
+        } else {
+            // Vuelve al centro con spring
+            card.style.transform = 'translateX(0) rotate(0deg)';
+            card.style.opacity = '1';
+        }
+    }
+
+    // ── Touch (móvil) ───────────────────────────────────────
+    card.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    card.addEventListener('touchmove',  e => onMove(e.touches[0].clientX, e.touches[0].clientY),  { passive: true });
+    card.addEventListener('touchend',   e => onEnd(e.changedTouches[0].clientX));
+
+    // ── Mouse (desktop) ─────────────────────────────────────
+    card.addEventListener('mousedown', e => { if (e.button === 0) onStart(e.clientX, e.clientY); });
+    // mousemove y mouseup en document para capturar cuando el cursor sale de la tarjeta
+    const onMouseMove = e => onMove(e.clientX, e.clientY);
+    const onMouseUp   = e => { onEnd(e.clientX); document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
+    card.addEventListener('mousedown', () => {
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup',   onMouseUp);
+    });
+
+    // Evitar que el drag arrastre texto/imágenes del navegador
+    card.addEventListener('dragstart', e => e.preventDefault());
+    card.style.cursor = 'grab';
+}
+
+// ==================== MODALES ====================
+function showBadgesModal() {
+    let badgesHtml = "";
+    Object.values(badges).forEach(badge => {
+        const unlocked = progress.badges.includes(badge.id);
+        badgesHtml += `<div class="bg-gray-50 rounded-xl p-3 text-center ${unlocked ? 'border-2 border-yellow-400' : 'opacity-50'}"><div class="text-4xl mb-1">${badge.icon}</div><div class="font-bold text-sm">${badge.name}</div><div class="text-xs text-gray-500">${badge.desc}</div>${unlocked ? `<span class="text-green-500 text-xs" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.check||'✓'}</span> Desbloqueado</span>` : `<span class="text-gray-400 text-xs">+${badge.xpReward} XP</span>`}</div>`;
+    });
+    document.getElementById('badgesList').innerHTML = badgesHtml;
+    document.getElementById('badgesModal').classList.remove('hidden');
+}
+
+function shareBadges() {
+    const badgesList = progress.badges.map(b => badges[b]?.name || b).join(", ");
+    const text = `🎓 He completado ${progress.badges.length} logros en el Curso STEAM de Profe Billy! Mi nivel: ${progress.level} | XP: ${progress.xp} #STEAM #ProfeBilly`;
+    const link = getReferralLink();
+    window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + link)}`, '_blank');
+    if (false) { // mantener else por compatibilidad
+        navigator.clipboard.writeText(text);
+        showToast("📋 Texto copiado al portapapeles", "info");
+    }
+}
+
+function showRedeemModal() {
+    let prizesHtml = "";
+    prizes.forEach(prize => {
+        const alreadyRedeemed = progress.redeemedPrizes?.includes(prize.id);
+        prizesHtml += `<div class="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
+            <div><div class="text-2xl">${prize.icon}</div><div class="font-bold">${prize.name}</div><div class="text-xs text-gray-500">${prize.desc}</div><div class="text-xs text-yellow-600" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.star||'⭐'}</span> ${prize.xpCost} XP</div>${prize.sponsor ? `<div class="text-xs text-green-600">Patrocinado por: ${prize.sponsor}</div>` : ''}</div>
+            ${!alreadyRedeemed && progress.xp >= prize.xpCost ? `<button data-prize="${prize.id}" data-cost="${prize.xpCost}" class="redeem-prize-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-sm transition">Canjear</button>` : (alreadyRedeemed ? `<span class="text-gray-400 text-sm" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.check||'✓'}</span> Canjeado</span>` : '<span class="text-gray-400 text-sm">Sin XP</span>')}
+        </div>`;
+    });
+    document.getElementById('prizesList').innerHTML = prizesHtml;
+    document.getElementById('xpForRedeem').innerText = progress.xp;
+    document.getElementById('redeemModal').classList.remove('hidden');
+    document.querySelectorAll('.redeem-prize-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const prizeId = btn.dataset.prize;
+            const cost = parseInt(btn.dataset.cost);
+            if (progress.xp >= cost && !progress.redeemedPrizes?.includes(prizeId)) {
+                progress.xp -= cost;
+                progress.redeemedPrizes = progress.redeemedPrizes || [];
+                progress.redeemedPrizes.push(prizeId);
+                saveProgress();
+                showToast(`🎁 ¡Canjeaste ${prizes.find(p => p.id === prizeId).name}!`, "success");
+                showRedeemModal();
+            }
+        });
+    });
+    const tickets = progress.raffleTickets || 0;
+    const raffleInfo = document.getElementById("raffleInfo");
+    if (raffleInfo) raffleInfo.innerHTML = `🎫 ${tickets} boletos de sorteo acumulados (cada 500 XP = 1 boleto)`;
+}
+
+const showRankingModal = () => showRanking();
+
+async function showRanking() {
+    const listEl = document.getElementById("rankingList");
+    listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:32px;height:32px;color:#94a3b8">${ICONS?.spinner||'...'}</span></div>`;
+    document.getElementById("rankingModal").classList.remove("hidden");
+
+    let { data, error } = await supabase
+        .from('ranking_view')
+        .select('user_id, nombre_usuario, full_name, profile_photo, xp, level')
+        .order('level', { ascending: false })
+        .order('xp',   { ascending: false })
+        .limit(100);
+
+    // Fallback: si la vista aún no tiene full_name/profile_photo, reintenta con columnas básicas
+    if (error) {
+        console.warn('ranking_view fallback (faltan columnas full_name/profile_photo):', error.message);
+        const fallback = await supabase
+            .from('ranking_view')
+            .select('user_id, nombre_usuario, xp, level')
+            .order('level', { ascending: false })
+            .order('xp',   { ascending: false })
+            .limit(100);
+        data = fallback.data;
+        error = fallback.error;
+    }
+
+    if (error) {
+        console.error('Error cargando ranking:', error.message);
+        listEl.innerHTML = `<div class="text-center text-gray-400 py-6">No se pudo cargar el ranking.<br><span class="text-xs">${error.message}</span></div>`;
+        return;
+    }
+    if (!data?.length) {
+        listEl.innerHTML = `<div class="text-center text-gray-400 py-6">Aún no hay participantes en el ranking.<br><span class="text-xs">¡Completa cursos y acumula XP para aparecer aquí!</span></div>`;
+        return;
+    }
+
+    // ── Definición de ligas por nivel ──────────────────────────────
+    const LEAGUES = [
+        { name: 'Liga Diamante', emoji: '💎', min: 11, color: '#06b6d4', bg: '#ecfeff' },
+        { name: 'Liga Platino',  emoji: '🪙', min: 8,  color: '#8b5cf6', bg: '#f5f3ff' },
+        { name: 'Liga Oro',      emoji: '🥇', min: 5,  color: '#f59e0b', bg: '#fffbeb' },
+        { name: 'Liga Plata',    emoji: '🥈', min: 3,  color: '#64748b', bg: '#f8fafc' },
+        { name: 'Liga Bronce',   emoji: '🥉', min: 1,  color: '#b45309', bg: '#fef3c7' },
+    ];
+
+    const getLeague = lvl => LEAGUES.find(l => lvl >= l.min) || LEAGUES[LEAGUES.length - 1];
+
+    // Agrupar usuarios en ligas, ordenados por XP dentro de cada liga
+    const leagueGroups = {};
+    data.forEach(user => {
+        const lvl = user.level || 1;
+        const league = getLeague(lvl);
+        if (!leagueGroups[league.name]) leagueGroups[league.name] = { ...league, members: [] };
+        leagueGroups[league.name].members.push(user);
+    });
+
+    const medals = ['🥇', '🥈', '🥉'];
+    let html = '';
+
+    // Mostrar ligas de mayor a menor
+    LEAGUES.forEach(leagueDef => {
+        const group = leagueGroups[leagueDef.name];
+        if (!group) return;
+
+        html += `
+        <div class="mb-5">
+            <div class="flex items-center gap-2 mb-2 px-1">
+                <span class="text-lg">${group.emoji}</span>
+                <span class="font-black text-sm" style="color:${group.color}">${group.name}</span>
+                <span class="text-xs text-slate-400 ml-auto">Nv. ${leagueDef.min}${leagueDef.min < 11 ? '–' + (LEAGUES[LEAGUES.indexOf(leagueDef) - 1]?.min - 1 || '+') : '+'}</span>
+            </div>`;
+
+        group.members.forEach((user, idx) => {
+            const isMe = user.user_id === currentUser.id;
+            const displayName = user.full_name || user.nombre_usuario || `Docente ${idx + 1}`;
+            const medal = medals[idx] || `<span class="text-xs font-bold text-slate-400">${idx + 1}</span>`;
+            const lvl = user.level || 1;
+            const avatar = user.profile_photo
+                ? `<img src="${user.profile_photo}" class="w-9 h-9 rounded-full object-cover flex-shrink-0" />`
+                : `<div class="w-9 h-9 rounded-full flex items-center justify-center text-lg flex-shrink-0" style="background:${group.bg}">👨‍🏫</div>`;
+
+            html += `
+            <div class="flex items-center gap-3 p-3 rounded-2xl mb-2 ${isMe ? 'border-2' : 'border border-slate-100'}" style="${isMe ? `border-color:${group.color};background:${group.bg}` : 'background:#f9fafb'}">
+                <span class="text-base w-6 text-center flex-shrink-0">${medal}</span>
+                ${avatar}
+                <div class="flex-1 min-w-0">
+                    <p class="font-bold text-slate-800 text-sm truncate">${displayName}${isMe ? ' <span style="color:' + group.color + '">(Tú)</span>' : ''}</p>
+                    <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full" style="color:${group.color};background:${group.bg}">Nv. ${lvl}</span>
+                </div>
+                <div class="text-right flex-shrink-0">
+                    <p class="font-bold text-sm" style="color:${group.color}">⭐ ${(user.xp || 0).toLocaleString()}</p>
+                    <p class="text-xs text-slate-400">XP</p>
+                </div>
+            </div>`;
+        });
+
+        html += `</div>`;
+    });
+
+    listEl.innerHTML = html;
+}
+
+// ==================== SOLICITUD Y VOTACIÓN DE CURSOS ====================
+async function showCourseRequests() {
+    document.getElementById('courseRequestsModal')?.classList.remove('hidden');
+    await loadCourseRequests();
+}
+
+document.getElementById('closeCourseRequestsBtn')?.addEventListener('click', () => {
+    document.getElementById('courseRequestsModal')?.classList.add('hidden');
+});
+
+async function loadCourseRequests() {
+    const listEl = document.getElementById('courseRequestsList');
+    if (!listEl) return;
+    listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:28px;height:28px;color:#94a3b8">${ICONS?.spinner||'...'}</span></div>`;
+
+    const { data, error } = await supabase
+        .from('course_requests')
+        .select('id, title, description, votes, voters, created_by')
+        .eq('status', 'pending')
+        .order('votes', { ascending: false });
+
+    if (error) {
+        console.error('Error cargando sugerencias:', error.message);
+        listEl.innerHTML = `<div class="text-center text-gray-400 py-6 text-sm">No se pudieron cargar las sugerencias en este momento.<br><span class="text-xs">Intenta de nuevo en unos minutos.</span></div>`;
+        return;
+    }
+    if (!data?.length) {
+        listEl.innerHTML = `<div class="text-center text-gray-400 py-6 text-sm">Sé el primero en sugerir un curso 🚀</div>`;
+        return;
+    }
+
+    const myId = currentUser?.id;
+    listEl.innerHTML = data.map(req => {
+        const voters = req.voters || [];
+        const iVoted = voters.includes(myId);
+        return `
+        <div class="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-slate-50">
+            <div class="flex-1 min-w-0">
+                <p class="font-bold text-slate-800 text-sm">${esc(req.title)}</p>
+                ${req.description ? `<p class="text-xs text-slate-500 mt-0.5">${esc(req.description)}</p>` : ''}
+            </div>
+            <button onclick="voteCourseRequest(${req.id})"
+                class="flex flex-col items-center justify-center w-12 h-12 rounded-xl font-bold text-xs flex-shrink-0 transition ${iVoted ? 'bg-pink-500 text-white' : 'bg-white border border-slate-200 text-slate-500 hover:border-pink-300'}">
+                <span>${iVoted ? '❤️' : '🤍'}</span>
+                <span>${req.votes || 0}</span>
+            </button>
+        </div>`;
+    }).join('');
+}
+
+function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.getElementById('submitCourseRequestBtn')?.addEventListener('click', async () => {
+    const titleInput = document.getElementById('newCourseTitleInput');
+    const descInput  = document.getElementById('newCourseDescInput');
+    const title = titleInput.value.trim();
+    if (!title) { showToast('Escribe el nombre del curso que sugieres', 'error'); return; }
+
+    const { error } = await supabase.from('course_requests').insert({
+        title,
+        description: descInput.value.trim() || null,
+        created_by: currentUser?.email || 'anónimo',
+        voters: []
+    });
+
+    if (error) {
+        console.error('Error enviando sugerencia:', error.message);
+        showToast('No se pudo enviar la sugerencia. Intenta de nuevo.', 'error');
+        return;
+    }
+    titleInput.value = '';
+    descInput.value = '';
+    showToast('💡 ¡Sugerencia enviada! Gracias por tu idea', 'success');
+    await loadCourseRequests();
+});
+
+async function voteCourseRequest(id) {
+    const myId = currentUser?.id;
+    if (!myId) return;
+
+    const { data: current, error: fetchErr } = await supabase
+        .from('course_requests').select('voters').eq('id', id).single();
+    if (fetchErr) { showToast('No se pudo registrar tu voto.', 'error'); return; }
+
+    let voters = current.voters || [];
+    const alreadyVoted = voters.includes(myId);
+    voters = alreadyVoted ? voters.filter(v => v !== myId) : [...voters, myId];
+
+    const { error } = await supabase.from('course_requests').update({ voters }).eq('id', id);
+    if (error) { showToast('No se pudo registrar tu voto.', 'error'); return; }
+
+    await loadCourseRequests();
+}
+
+// ==================== COMPARTIR · REFERIDOS · EVIDENCIA ====================
+
+// ── Compartir en redes (50 XP/día) ──────────────────────────────────────
+async function shareApp() {
+    const today = localDateStr();
+    const lastShare = progress?.dailyMissions?.lastShareDate;
+    const alreadyToday = lastShare === today;
+
+    // Dar XP antes de abrir el share (la promesa de navigator.share no siempre resuelve)
+    if (!alreadyToday) {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        progress.dailyMissions.lastShareDate = today;
+        addXP(50, 'Compartir el curso');
+        saveProgress();
+        showToast('🎉 +50 XP por compartir el curso', 'success');
+    } else {
+        showToast('Ya compartiste hoy. Vuelve mañana por más XP 😊', 'success');
+    }
+
+    const link = getReferralLink();
+    const text = '🚀 Estoy aprendiendo metodología STEAM con el Curso STEAM 2.0. ¡Únete gratis y transforma tu aula!';
+
+    if (navigator.share) {
+        try {
+            await navigator.share({ title: 'Curso STEAM 2.0', text, url: link });
+        } catch (e) {
+            // El usuario canceló el diálogo — no es error
+            if (e?.name !== 'AbortError') {
+                window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + link)}`, '_blank');
+            }
+        }
+    } else {
+        // Fallback: WhatsApp en escritorio o navegadores sin Web Share API
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + link)}`, '_blank');
+    }
+}
+
+// ── Referidos ────────────────────────────────────────────────────────────
+function getReferralLink() {
+    const code = currentUser?.id || '';
+    return `${window.location.origin}${window.location.pathname}?ref=${code}`;
+}
+
+function displayReferralLink() {
+    const el = document.getElementById('referralLinkDisplay');
+    if (el && currentUser) el.value = getReferralLink();
+}
+
+function copyReferralLink() {
+    const link = getReferralLink();
+    navigator.clipboard.writeText(link).catch(() => {
+        const el = document.getElementById('referralLinkDisplay');
+        if (el) { el.select(); document.execCommand('copy'); }
+    });
+    showToast('🔗 ¡Link copiado! Compártelo con tus colegas', 'success');
+}
+
+// Llamar al registrarse: si la URL tiene ?ref=ID, el nuevo usuario gana 50 XP
+async function checkReferralBonus() {
+    const params = new URLSearchParams(window.location.search);
+    const referrerId = params.get('ref');
+    if (!referrerId || referrerId === currentUser?.id) return;
+    if (progress?.dailyMissions?.referralBonusClaimed) return;
+
+    const { data } = await supabase.from('progress').select('user_id').eq('user_id', referrerId).maybeSingle();
+    if (!data) return; // código inválido
+
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    progress.dailyMissions.referralBonusClaimed = true;
+    progress.dailyMissions.referredBy = referrerId;
+    addXP(50, 'Inscripción por referido');
+    saveProgress();
+    showToast('🎉 +50 XP por unirte con el enlace de un colega', 'success');
+    window.history.replaceState({}, '', window.location.pathname); // limpiar URL
+}
+
+// Llamar al iniciar sesión: cobra XP pendiente por referidos
+async function checkReferrerReward() {
+    if (!currentUser || !progress) return;
+    try {
+        const { data, error } = await supabase
+            .from('progress')
+            .select('user_id')
+            .filter('daily_missions->>referredBy', 'eq', currentUser.id);
+        if (error || !data) return;
+
+        const total = data.length;
+        const claimed = progress.dailyMissions?.claimedReferrals || 0;
+        const pending = total - claimed;
+
+        const countEl = document.getElementById('referralCountDisplay');
+        if (countEl) countEl.textContent = total > 0
+            ? `${total} docente${total !== 1 ? 's' : ''} se inscribió${total !== 1 ? 'eron' : ''} con tu enlace`
+            : 'Aún nadie ha usado tu enlace';
+
+        if (pending > 0) {
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            progress.dailyMissions.claimedReferrals = total;
+            addXP(pending * 100, `${pending} referido${pending !== 1 ? 's' : ''} nuevo${pending !== 1 ? 's' : ''}`);
+            saveProgress();
+            showToast(`🎉 +${pending * 100} XP por ${pending} docente${pending !== 1 ? 's' : ''} que se inscribió${pending !== 1 ? 'eron' : ''} con tu enlace`, 'success');
+        }
+    } catch (_) { }
+}
+
+// ── Evidencia de práctica (80 XP por módulo, máx. 1 por módulo) ─────────
+function showEvidenceModal() {
+    const evidences = progress?.dailyMissions?.evidencias || [];
+    const listEl = document.getElementById('evidencesList');
+    const prevEl = document.getElementById('previousEvidences');
+
+    // Marcar módulos ya subidos en el select
+    const select = document.getElementById('evidenceModuleSelect');
+    if (select) {
+        [...select.options].forEach(opt => {
+            if (!opt.value) return;
+            const done = evidences.find(e => String(e.moduleId) === opt.value);
+            opt.textContent = opt.textContent.replace(' ✓', '');
+            if (done) opt.textContent += ' ✓';
+        });
+    }
+
+    if (evidences.length > 0) {
+        prevEl?.classList.remove('hidden');
+        if (listEl) listEl.innerHTML = evidences.map(e => `
+            <div class="relative rounded-xl overflow-hidden aspect-square bg-slate-100">
+                <img src="${e.url}" class="w-full h-full object-cover">
+                <span class="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">M${e.moduleId}</span>
+            </div>`).join('');
+    } else {
+        prevEl?.classList.add('hidden');
+    }
+
+    // Limpiar estado del form
+    document.getElementById('evidenceFileInput').value = '';
+    document.getElementById('evidencePreviewImg').classList.add('hidden');
+    document.getElementById('evidenceModuleSelect').value = '';
+
+    document.getElementById('evidenceModal').classList.remove('hidden');
+}
+
+async function submitEvidence() {
+    const moduleId = document.getElementById('evidenceModuleSelect').value;
+    const file = document.getElementById('evidenceFileInput').files[0];
+
+    if (!moduleId) { showToast('Selecciona un módulo', 'success'); return; }
+    if (!file) { showToast('Selecciona una imagen', 'success'); return; }
+    if (file.size > 5 * 1024 * 1024) { showToast('La imagen debe ser menor a 5 MB', 'success'); return; }
+
+    const existing = (progress.dailyMissions?.evidencias || []).find(e => String(e.moduleId) === moduleId);
+    if (existing) { showToast(`Ya subiste evidencia del módulo ${moduleId}`, 'success'); return; }
+
+    const btn = document.getElementById('submitEvidenceBtn');
+    btn.textContent = 'Subiendo…';
+    btn.disabled = true;
+
+    const saveEvidence = (url) => {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        if (!progress.dailyMissions.evidencias) progress.dailyMissions.evidencias = [];
+        progress.dailyMissions.evidencias.push({ url, moduleId: parseInt(moduleId), date: new Date().toISOString() });
+        addXP(80, `Evidencia módulo ${moduleId}`);
+        saveProgress();
+        document.getElementById('evidenceModal').classList.add('hidden');
+        showToast(`🎉 +80 XP por tu evidencia del módulo ${moduleId}`, 'success');
+    };
+
+    try {
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `${currentUser.id}/mod${moduleId}_${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from('evidencias').upload(path, file);
+        if (error) throw error;
+        const { data: urlData } = supabase.storage.from('evidencias').getPublicUrl(path);
+        saveEvidence(urlData.publicUrl);
+    } catch (_) {
+        // Fallback: guardar en base64 local si Storage no está disponible
+        const reader = new FileReader();
+        reader.onload = ev => saveEvidence(ev.target.result);
+        reader.readAsDataURL(file);
+    } finally {
+        btn.textContent = 'Subir evidencia y ganar XP';
+        btn.disabled = false;
+    }
+}
+
+// ==================== EDICIÓN DE PERFIL ====================
+function updateProfilePhotoDisplay(src) {
+    const img = document.getElementById('profilePhotoPreview');
+    const emoji = document.getElementById('avatarPreview');
+    if (src) {
+        img.src = src;
+        img.classList.remove('hidden');
+        emoji.style.display = 'none';
+    } else {
+        img.classList.add('hidden');
+        emoji.style.display = '';
+    }
+}
+
+function showEditProfile() {
+    const modal = document.getElementById('editProfileModal');
+    const nameInput = document.getElementById('fullNameInput');
+    const editImg = document.getElementById('editPhotoImg');
+    const editEmoji = document.getElementById('editPhotoEmoji');
+
+    nameInput.value = progress?.dailyMissions?.fullName || '';
+    const schoolEl = document.getElementById('schoolInput');
+    const deptEl   = document.getElementById('departmentInput');
+    if (schoolEl) schoolEl.value = progress?.dailyMissions?.school || '';
+    if (deptEl)   deptEl.value   = progress?.dailyMissions?.department || 'Individual';
+
+    const photo = progress?.dailyMissions?.profilePhoto;
+    if (photo) {
+        editImg.src = photo;
+        editImg.classList.remove('hidden');
+        editEmoji.style.display = 'none';
+    } else {
+        editImg.classList.add('hidden');
+        editEmoji.style.display = '';
+        editEmoji.textContent = currentAvatar || '👨‍🏫';
+    }
+
+    modal.classList.remove('hidden');
+}
+
+document.getElementById('editProfileBtn')?.addEventListener('click', showEditProfile);
+document.getElementById('closeEditProfileBtn')?.addEventListener('click', () => {
+    document.getElementById('editProfileModal').classList.add('hidden');
+});
+
+document.getElementById('photoFileInput')?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const src = ev.target.result;
+        const editImg = document.getElementById('editPhotoImg');
+        const editEmoji = document.getElementById('editPhotoEmoji');
+        editImg.src = src;
+        editImg.classList.remove('hidden');
+        editEmoji.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('saveProfileBtn')?.addEventListener('click', () => {
+    const name = document.getElementById('fullNameInput').value.trim();
+    const photoSrc = document.getElementById('editPhotoImg').src;
+    const hasPhoto = !document.getElementById('editPhotoImg').classList.contains('hidden');
+
+    const school = document.getElementById('schoolInput')?.value.trim() || '';
+    const department = document.getElementById('departmentInput')?.value || 'Individual';
+
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    if (name) progress.dailyMissions.fullName = name;
+    if (hasPhoto && photoSrc) progress.dailyMissions.profilePhoto = photoSrc;
+    progress.dailyMissions.school     = school || 'Individual';
+    progress.dailyMissions.department = department || '';
+
+    // Guardar perfil en localStorage Y en Supabase user_metadata para sincronizar entre dispositivos
+    const _profileKey = currentUser ? `userProfile_${currentUser.id}` : 'userProfile_local';
+    const _savedProfile = {
+        fullName: progress.dailyMissions.fullName,
+        profilePhoto: progress.dailyMissions.profilePhoto,
+        school: progress.dailyMissions.school,
+        department: progress.dailyMissions.department
+    };
+    localStorage.setItem(_profileKey, JSON.stringify(_savedProfile));
+    if (currentUser) {
+        supabase.auth.updateUser({ data: {
+            fullName:   progress.dailyMissions.fullName || currentUser.user_metadata?.fullName,
+            school:     progress.dailyMissions.school,
+            department: progress.dailyMissions.department
+        }}).catch(() => {});
+    }
+
+    // Actualizar display en perfil
+    const nameDisplay = document.getElementById('userEmailDisplay');
+    if (nameDisplay && name) nameDisplay.textContent = name;
+    if (hasPhoto && photoSrc) updateProfilePhotoDisplay(photoSrc);
+
+    // Recompensar perfil completo (nombre + foto) una sola vez
+    if (name && hasPhoto && !progress.dailyMissions.profileCompleteRewarded) {
+        progress.dailyMissions.profileCompleteRewarded = true;
+        addXP(30, 'Perfil completo');
+        showToast('✅ Perfil actualizado · +30 XP por completar tu perfil 🎉', 'success');
+    } else {
+        showToast('✅ Perfil actualizado', 'success');
+    }
+
+    saveProgress();
+    document.getElementById('editProfileModal').classList.add('hidden');
+});
+
+function showAvatarSelector() {
+    let html = "";
+    avatars.forEach(avatar => {
+        const selected = currentAvatar === avatar ? "border-4 border-indigo-500" : "border-2 border-gray-200";
+        html += `<button data-avatar="${avatar}" class="text-3xl p-2 rounded-full ${selected} hover:bg-gray-100 transition">${avatar}</button>`;
+    });
+    document.getElementById("avatarGrid").innerHTML = html;
+    document.getElementById("avatarModal").classList.remove("hidden");
+    document.querySelectorAll("[data-avatar]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            currentAvatar = btn.dataset.avatar;
+            progress.avatar = currentAvatar;
+            document.getElementById("avatarPreview").innerHTML = currentAvatar;
+            saveProgress();
+            document.getElementById("avatarModal").classList.add("hidden");
+            showToast("Avatar actualizado", "success");
+            supabase.auth.updateUser({ data: { avatar: currentAvatar } });
+        });
+    });
+}
+
+// ==================== MODAL DE PROYECTO (Think·Make·Improve) ====================
+function showProjectModal(card) {
+    const p = card.project;
+    if (!p) return;
+    const existing = document.getElementById('projectModal');
+    if (existing) existing.remove();
+
+    const materialsHtml = p.materials.map(m =>
+        `<span class="inline-block bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-full mb-1 mr-1">${m}</span>`).join('');
+
+    const disciplinesHtml = p.disciplines.map(d =>
+        `<span class="inline-block bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full mb-1 mr-1">${d}</span>`).join('');
+
+    const tmiSection = (p.think && p.make && p.improve) ? `
+        <div class="mt-5 border-t border-gray-100 pt-4">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Ciclo Think · Make · Improve</p>
+            <div class="rounded-2xl overflow-hidden border border-slate-100 mb-1">
+                <div class="bg-blue-50 px-4 py-2 flex items-center gap-2">
+                    <span class="text-lg">🧠</span>
+                    <span class="font-bold text-blue-700 text-sm">THINK — Investiga y planifica</span>
+                </div>
+                ${p.think.map((s, i) => `<div class="flex gap-3 px-4 py-2.5 border-t border-blue-50">
+                    <div class="w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${i + 1}</div>
+                    <p class="text-sm text-slate-700 leading-relaxed">${s}</p>
+                </div>`).join('')}
+            </div>
+            <div class="rounded-2xl overflow-hidden border border-slate-100 mb-1">
+                <div class="bg-amber-50 px-4 py-2 flex items-center gap-2">
+                    <span class="text-lg">🔨</span>
+                    <span class="font-bold text-amber-700 text-sm">MAKE — Construye y experimenta</span>
+                </div>
+                ${p.make.map((s, i) => `<div class="flex gap-3 px-4 py-2.5 border-t border-amber-50">
+                    <div class="w-5 h-5 rounded-full bg-amber-100 text-amber-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${i + 1}</div>
+                    <p class="text-sm text-slate-700 leading-relaxed">${s}</p>
+                </div>`).join('')}
+            </div>
+            <div class="rounded-2xl overflow-hidden border border-slate-100">
+                <div class="bg-green-50 px-4 py-2 flex items-center gap-2">
+                    <span class="text-lg">✨</span>
+                    <span class="font-bold text-green-700 text-sm">IMPROVE — Reflexiona y mejora</span>
+                </div>
+                ${p.improve.map((s, i) => `<div class="flex gap-3 px-4 py-2.5 border-t border-green-50">
+                    <div class="w-5 h-5 rounded-full bg-green-100 text-green-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${i + 1}</div>
+                    <p class="text-sm text-slate-700 leading-relaxed">${s}</p>
+                </div>`).join('')}
+            </div>
+        </div>` : '';
+
+    const cardIdKey = `${currentModule}-${currentCardIndex}`;
+    const modalHtml = `
+    <div id="projectModal" class="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+        <div class="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-3xl max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white px-5 pt-5 pb-3 border-b border-gray-100 flex items-center justify-between z-10">
+                <div>
+                    <h2 class="text-lg font-bold text-indigo-900">📋 ${p.title}</h2>
+                    <div class="flex gap-2 mt-1">
+                        <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">⏱ ${p.duration}</span>
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">📊 ${p.difficulty}</span>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('projectModal').remove()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 transition text-lg leading-none">&times;</button>
+            </div>
+            <div class="p-5">
+                <div class="mb-4">
+                    <h3 class="font-bold text-gray-800 mb-2">🧰 Materiales</h3>
+                    <div>${materialsHtml}</div>
+                </div>
+                <div class="mb-4">
+                    <h3 class="font-bold text-gray-800 mb-2">🔬 Disciplinas STEAM que integra</h3>
+                    <div>${disciplinesHtml}</div>
+                </div>
+                ${tmiSection}
+                <div class="mt-5 border-t border-gray-100 pt-4">
+                    <h3 class="font-bold text-gray-800 mb-1">📸 Subir evidencias <span class="text-xs text-gray-400 font-normal">(opcional)</span></h3>
+                    <p class="text-xs text-gray-500 mb-3">Describe cómo lo aplicaste en tu clase o agrega un enlace a fotos/video.</p>
+                    <textarea id="evidenceText" rows="3" placeholder="Describe cómo fue la actividad en tu clase..." class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-2"></textarea>
+                    <input id="evidenceUrl" type="url" placeholder="Enlace a fotos o video (opcional)" class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-3">
+                    <button onclick="submitProjectEvidence('${cardIdKey}', '${p.title.replace(/'/g, '')}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-2xl text-sm transition">
+                        📤 Enviar evidencia
+                    </button>
+                    <div id="evidenceStatus" class="mt-2 text-xs text-center text-gray-400"></div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+async function submitProjectEvidence(cardId, projectTitle) {
+    if (!currentUser) { showToast('Debes iniciar sesión', 'success'); return; }
+    const text = document.getElementById('evidenceText')?.value.trim();
+    const url = document.getElementById('evidenceUrl')?.value.trim();
+    if (!text && !url) { showToast('Por favor escribe una descripción o agrega un enlace', 'success'); return; }
+
+    const statusEl = document.getElementById('evidenceStatus');
+    if (statusEl) statusEl.textContent = 'Enviando…';
+
+    const { error } = await supabase.from('project_evidence').insert({
+        user_id: currentUser.id,
+        card_id: cardId,
+        project_title: projectTitle,
+        evidence_text: text || null,
+        evidence_url: url || null
+    });
+
+    if (error) {
+        if (statusEl) statusEl.textContent = `Error: ${error.message}`;
+    } else {
+        if (statusEl) { statusEl.textContent = '✅ ¡Evidencia enviada! Gracias por compartir.'; statusEl.className = 'mt-2 text-xs text-center text-green-600'; }
+        if (document.getElementById('evidenceText')) document.getElementById('evidenceText').value = '';
+        if (document.getElementById('evidenceUrl')) document.getElementById('evidenceUrl').value = '';
+        showToast('📸 ¡Evidencia enviada correctamente!', 'success');
+        addXP(15, 'Evidencia de proyecto enviada');
+    }
+}
+
+// ── Helper: nombre del docente logueado ──────────────────
+function getDisplayName() {
+    if (progress?.dailyMissions?.fullName) return progress.dailyMissions.fullName;
+    if (!currentUser?.email) return 'Profe';
+    const raw = currentUser.email.split('@')[0].replace(/[._-]/g, ' ');
+    return raw.replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// ── Helper: ir a la tarjeta de contenido anterior al quiz ──
+function goToRefCard() {
+    let idx = currentCardIndex - 1;
+    const mod = modulesData[currentModule - 1];
+    while (idx >= 0 && mod?.cards[idx]?.type !== 'content') idx--;
+    if (idx >= 0) { currentCardIndex = idx; renderCard(); }
+}
+
+// ==================== EXAMEN FINAL (formato tarjeta) ====================
+let examActive = false;
+let examCurrentQ = 0;
+let examAnswers = [];
+let examQuestions = []; // subconjunto aleatorio para este intento
+
+function _shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function startExam() {
+    // Verificar progreso usando los IDs reales de las tarjetas del curso activo
+    const totalCards = modulesData.reduce((acc, m) => acc + m.cards.length, 0);
+    const allCardIds = modulesData.flatMap(m => m.cards.map(c => String(c.id)));
+    const completedInCourse = allCardIds.filter(id => (progress.completedCards || []).includes(id)).length;
+    const minRequired = Math.ceil(totalCards * 0.8); // 80% mínimo para rendir el examen
+
+    if (completedInCourse < minRequired) {
+        const unseen = [];
+        modulesData.forEach(mod => {
+            const missing = mod.cards
+                .filter(card => !(progress.completedCards || []).includes(String(card.id)))
+                .map(card => `• "${card.title || card.question || `Tarjeta ${card.id}`}"`);
+            if (missing.length) unseen.push(`\n📚 ${mod.title}:\n${missing.join('\n')}`);
+        });
+        const faltante = minRequired - completedInCourse;
+        const detail = document.createElement('div');
+        detail.className = 'modal-sheet';
+        detail.style.zIndex = '9999';
+        detail.innerHTML = `<div class="modal-inner" style="max-height:80vh">
+            <div class="modal-drag"></div>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-bold text-slate-800">⚠️ Tarjetas pendientes</h3>
+                <button onclick="this.closest('.modal-sheet').remove()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 text-xl flex items-center justify-center">&times;</button>
+            </div>
+            <p class="text-sm text-slate-500 mb-4">Necesitas completar al menos el 80% del curso para rendir el examen (faltan ${faltante} tarjetas):</p>
+            <div class="space-y-3 text-sm">
+                ${unseen.map(block => `<div class="bg-red-50 border border-red-100 rounded-2xl p-3 text-red-700 whitespace-pre-line">${block.trim()}</div>`).join('')}
+            </div>
+        </div>`;
+        document.getElementById('mainApp').appendChild(detail);
+        return;
+    }
+    stopCardTracking();
+    examActive = true;
+    examCurrentQ = 0;
+    // Mezclar y tomar 20 preguntas del banco del curso ACTIVO (no siempre STEAM)
+    const allQ = _shuffleArray(getActiveCourseData().finalExam.questions);
+    examQuestions = allQ.slice(0, 20);
+    examAnswers = new Array(examQuestions.length).fill(null);
+    switchTab('home');
+    _hideNavBtns(true);
+    _setTopBarExam(true);
+    renderExamCard();
+    animateCard('next');
+}
+
+function _hideNavBtns(hide) {
+    const nb = document.getElementById('cardNavBar');
+    if (nb) nb.style.display = hide ? 'none' : '';
+}
+
+function _setTopBarExam(active) {
+    const badge = document.getElementById('moduleBadge');
+    const label = badge?.previousElementSibling; // "CURSO STEAM" label
+    const progressArea = document.querySelector('.top-bar .flex.items-center.gap-2');
+    if (active) {
+        if (badge) { badge.dataset.orig = badge.textContent; badge.textContent = 'Evaluación Final'; }
+        if (label) { label.dataset.orig = label.textContent; label.textContent = 'EXAMEN FINAL'; }
+        if (progressArea) progressArea.style.display = 'none';
+    } else {
+        if (badge?.dataset.orig) badge.textContent = badge.dataset.orig;
+        if (label?.dataset.orig) label.textContent = label.dataset.orig;
+        if (progressArea) progressArea.style.display = '';
+    }
+}
+
+function renderExamCard() {
+    const q = examQuestions[examCurrentQ];
+    const total = examQuestions.length;
+    const qNum = examCurrentQ + 1;
+    const pct = Math.round((qNum / total) * 100);
+    const saved = examAnswers[examCurrentQ];
+
+    const examIllus = `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M40 8 L44 22 H58 L47 31 L51 45 L40 36 L29 45 L33 31 L22 22 H36 Z" fill="rgba(255,255,255,0.92)"/>
+        <circle cx="63" cy="60" r="11" stroke="rgba(255,255,255,0.75)" stroke-width="2"/>
+        <text x="63" y="65" text-anchor="middle" font-size="13" fill="white" font-weight="bold">?</text>
+        <circle cx="19" cy="57" r="7" fill="rgba(255,255,255,0.35)"/>
+        <circle cx="19" cy="57" r="3.5" fill="rgba(255,255,255,0.65)"/>
+    </svg>`;
+
+    const optLetters = ['A', 'B', 'C', 'D'];
+    const optsHtml = q.options.map((opt, i) => {
+        const sel = saved === i;
+        return `<button onclick="selectExamAnswer(${i})" data-opt="${i}"
+            class="exam-opt w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium flex items-start gap-3 transition-all"
+            style="${sel ? 'border-color:#7C3AED;background:#EDE9FE;color:#4C1D95' : 'border-color:#E2E8F0;background:white;color:#374151'}">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold flex-shrink-0"
+                style="${sel ? 'background:#7C3AED;border-color:#7C3AED;color:white' : 'border-color:#CBD5E1;color:#64748B'}">${optLetters[i]}</span>
+            <span class="leading-snug pt-0.5">${opt}</span>
+        </button>`;
+    }).join('');
+
+    const isLast = examCurrentQ >= total - 1;
+    const cardHtml = `<div id="activeCard" class="content-card">
+        <div class="card-banner" style="background:#5C35C5">
+            <div class="card-banner-svg">${examIllus}</div>
+            <p class="card-banner-sub">⭐ Examen Final &nbsp;·&nbsp; Pregunta ${qNum} de ${total}</p>
+        </div>
+        <div class="card-body">
+            <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                <span>Progreso del examen</span><span>${pct}%</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-1.5 mb-4">
+                <div class="h-1.5 rounded-full transition-all" style="width:${pct}%;background:#7C3AED"></div>
+            </div>
+            <p style="font-size:1rem;font-weight:700;color:#1a202c;margin-bottom:1rem;line-height:1.45">${q.text}</p>
+            <div class="space-y-2" id="examOptions">${optsHtml}</div>
+        </div>
+        <div class="card-footer">
+            <button id="examNextBtn" onclick="goToNextExamCard()"
+                class="w-full py-3 rounded-xl font-bold text-sm text-white transition-all"
+                style="background:${saved !== null ? '#5C35C5' : '#C4B5FD'}"
+                ${saved === null ? 'disabled' : ''}>
+                ${isLast ? '✅ Ver mis resultados' : 'Siguiente pregunta →'}
+            </button>
+            <button onclick="exitExam()" class="w-full py-1.5 mt-1 text-slate-400 text-xs">Salir del examen</button>
+        </div>
+    </div>`;
+
+    document.getElementById('cardContainer').innerHTML = cardHtml;
+    // Swipe to advance (not back — exam is forward-only)
+    let _tx = 0;
+    const card = document.getElementById('activeCard');
+    if (card) {
+        card.addEventListener('touchstart', e => { _tx = e.changedTouches[0].screenX; }, { passive: true });
+        card.addEventListener('touchend', e => {
+            if (e.changedTouches[0].screenX - _tx < -50) goToNextExamCard();
+        }, { passive: true });
+    }
+}
+
+function selectExamAnswer(optIdx) {
+    const q = examQuestions[examCurrentQ];
+    const isCorrect = optIdx === q.correct;
+    examAnswers[examCurrentQ] = optIdx;
+
+    document.querySelectorAll('.exam-opt').forEach((btn, i) => {
+        const circle = btn.querySelector('span');
+        btn.disabled = true; // lock options after selecting
+        if (i === q.correct) {
+            // siempre resalta la correcta en verde
+            btn.style.cssText = 'border-color:#16A34A;background:#F0FDF4;color:#14532D';
+            circle.style.cssText = 'background:#16A34A;border-color:#16A34A;color:white';
+        } else if (i === optIdx && !isCorrect) {
+            // la elegida incorrecta en rojo
+            btn.style.cssText = 'border-color:#DC2626;background:#FEF2F2;color:#7F1D1D';
+            circle.style.cssText = 'background:#DC2626;border-color:#DC2626;color:white';
+        } else {
+            btn.style.cssText = 'border-color:#E2E8F0;background:white;color:#94A3B8';
+            circle.style.cssText = 'border-color:#CBD5E1;color:#94A3B8';
+        }
+    });
+
+    // Mostrar retroalimentación inline debajo de las opciones
+    const opts = document.getElementById('examOptions');
+    if (opts) {
+        const fb = document.createElement('div');
+        const optLetters = ['A', 'B', 'C', 'D'];
+        fb.style.cssText = `margin-top:12px;padding:10px 14px;border-radius:14px;font-size:.82rem;line-height:1.5;
+            background:${isCorrect ? '#F0FDF4' : '#FEF2F2'};
+            border:1.5px solid ${isCorrect ? '#86EFAC' : '#FECACA'};
+            color:${isCorrect ? '#14532D' : '#7F1D1D'}`;
+        fb.innerHTML = `<strong>${isCorrect ? '✅ ¡Correcto!' : `❌ Incorrecto · La correcta era ${optLetters[q.correct]}`}</strong>` +
+            (q.explanation ? `<br><span style="opacity:.85">${q.explanation}</span>` : '');
+        opts.appendChild(fb);
+    }
+
+    const nb = document.getElementById('examNextBtn');
+    if (nb) { nb.disabled = false; nb.style.background = '#5C35C5'; }
+}
+
+function goToNextExamCard() {
+    if (examAnswers[examCurrentQ] === null) { showToast('Selecciona una respuesta para continuar'); return; }
+    examCurrentQ++;
+    if (examCurrentQ >= examQuestions.length) {
+        showExamResults();
+    } else {
+        renderExamCard();
+        animateCard('next');
+    }
+}
+
+function showExamResults() {
+    const exam = getActiveCourseData().finalExam;
+    let correct = 0;
+    examQuestions.forEach((q, i) => { if (examAnswers[i] === q.correct) correct++; });
+    const pct = Math.round((correct / examQuestions.length) * 100);
+    const passed = pct >= exam.passingScore;
+
+    if (passed && !progress.badges.includes("examPass")) unlockBadge("examPass");
+    if (passed) addXP(100, "Examen aprobado");
+    if (passed) {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        // Guardar puntaje por courseId para soportar múltiples cursos
+        const _cid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+        if (!progress.dailyMissions.examScores) progress.dailyMissions.examScores = {};
+        progress.dailyMissions.examScores[_cid] = pct;
+        progress.dailyMissions.examScore = pct; // backward compat
+        progress.dailyMissions.examDate = localDateStr();
+        window._lastExamScore = pct;
+        // Mostrar botón de certificado en perfil
+        const certBtn = document.getElementById('certDownloadBtn');
+        if (certBtn) certBtn.classList.remove('hidden');
+    }
+    saveProgress();
+
+    const resultIllus = passed
+        ? `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M40 10 L44 24 H58 L47 33 L51 47 L40 38 L29 47 L33 33 L22 24 H36 Z" fill="rgba(255,255,255,0.95)"/><circle cx="62" cy="62" r="9" fill="rgba(255,255,255,0.3)"/><path d="M57 62 L61 66 L68 58" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        : `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="10" width="48" height="60" rx="8" stroke="rgba(255,255,255,0.9)" stroke-width="2.5"/><line x1="26" y1="30" x2="54" y2="30" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/><line x1="26" y1="40" x2="54" y2="40" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/><line x1="26" y1="50" x2="42" y2="50" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+    const cardHtml = `<div id="activeCard" class="content-card">
+        <div class="card-banner" style="background:${passed ? '#059669' : '#DC2626'}">
+            <div class="card-banner-svg">${resultIllus}</div>
+            <p class="card-banner-sub" style="color:white;font-size:1rem;font-weight:800;opacity:1">
+                ${passed ? '¡Aprobaste el examen!' : 'Sigue practicando'}
+            </p>
+            <p class="card-banner-sub" style="margin-top:2px">${correct} de ${examQuestions.length} correctas</p>
+        </div>
+        <div class="card-body" style="text-align:center">
+            <div class="rounded-2xl p-4 mb-4" style="background:${passed ? '#F0FDF4' : '#FEF2F2'}">
+                <p style="font-size:2.5rem;font-weight:900;color:${passed ? '#16A34A' : '#DC2626'};line-height:1">${pct}%</p>
+                <p style="font-size:.8rem;font-weight:600;color:${passed ? '#15803D' : '#B91C1C'};margin-top:4px">
+                    ${passed ? '¡Superaste el mínimo del ' + exam.passingScore + '%!' : 'Necesitas ' + exam.passingScore + '% para aprobar'}
+                </p>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                <div style="background:#F0FDF4;border-radius:12px;padding:12px">
+                    <p style="font-size:1.5rem;font-weight:700;color:#16A34A">${correct}</p>
+                    <p style="font-size:.75rem;color:#64748B;margin-top:2px">Correctas ✅</p>
+                </div>
+                <div style="background:#FEF2F2;border-radius:12px;padding:12px">
+                    <p style="font-size:1.5rem;font-weight:700;color:#DC2626">${examQuestions.length - correct}</p>
+                    <p style="font-size:.75rem;color:#64748B;margin-top:2px">Incorrectas ❌</p>
+                </div>
+            </div>
+            ${passed ? `<button onclick="generateCertificateFromExam(${pct})" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">📜 Obtener mi certificado</button>` : ''}
+            <button onclick="retryExam()" class="w-full py-3 rounded-xl font-bold text-sm" style="border:2px solid #E2E8F0;color:#475569;background:white;margin-bottom:4px">
+                🔄 Reintentar examen
+            </button>
+            <button onclick="exitExam()" style="color:#94A3B8;font-size:.75rem;padding:6px;background:none;border:none;cursor:pointer;width:100%">Volver al curso</button>
+        </div>
+    </div>`;
+
+    document.getElementById('cardContainer').innerHTML = cardHtml;
+}
+
+function retryExam() {
+    examCurrentQ = 0;
+    // Reintento: nuevo subconjunto aleatorio de 20 preguntas del curso ACTIVO
+    const allQ = _shuffleArray(getActiveCourseData().finalExam.questions);
+    examQuestions = allQ.slice(0, 20);
+    examAnswers = new Array(examQuestions.length).fill(null);
+    renderExamCard();
+    animateCard('next');
+}
+
+function exitExam() {
+    examActive = false;
+    examCurrentQ = 0;
+    examAnswers = [];
+    _hideNavBtns(false);
+    _setTopBarExam(false);
+    renderCard();
+}
+
+async function _imgToBase64(path) {
+    try {
+        const r = await fetch(path);
+        if (!r.ok) return null;
+        const blob = await r.blob();
+        return new Promise(res => {
+            const rd = new FileReader();
+            rd.onloadend = () => res(rd.result);
+            rd.readAsDataURL(blob);
+        });
+    } catch { return null; }
+}
+
+// Obtiene el código de verificación existente para este docente+certificado, o crea uno nuevo persistente
+async function getOrCreateCertCode(courseId, certType, fullName, score) {
+    if (!currentUser) return null;
+    try {
+        const { data: existing } = await supabase
+            .from('certificates')
+            .select('code')
+            .eq('user_id', currentUser.id)
+            .eq('cert_type', certType)
+            .eq('course_id', courseId || '')
+            .maybeSingle();
+        if (existing?.code) return existing.code;
+
+        const code = `DOC-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+        const { error } = await supabase.from('certificates').insert({
+            code, user_id: currentUser.id, course_id: courseId || null,
+            cert_type: certType, full_name: fullName, score: Math.round(score || 0)
+        });
+        if (error) { console.error('No se pudo registrar el certificado:', error.message); return code; }
+        return code;
+    } catch (e) {
+        console.error('Error generando código de certificado:', e);
+        return `DOC-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    }
+}
+
+function buildVerifyQRHtml(certCode) {
+    const verifyUrl = `${location.origin}${location.pathname.replace(/index\.html$/, '')}verificar.html?code=${encodeURIComponent(certCode)}`;
+    const qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=0&data=${encodeURIComponent(verifyUrl)}`;
+    return { verifyUrl, qrImg };
+}
+
+// Carga las firmas activas desde Supabase (con caché de sesión)
+let _cachedSignatures = null;
+async function _loadCertSignatures() {
+    if (_cachedSignatures) return _cachedSignatures;
+    try {
+        const { data } = await supabase.from('cert_signatures').select('*').eq('active', true).order('slot');
+        _cachedSignatures = data?.length ? data : [{ slot:1, signer_name:'Billy Abraham Gómez Sac', signer_role:'Coordinación del Programa', signature_url: null }];
+    } catch(_) {
+        _cachedSignatures = [{ slot:1, signer_name:'Billy Abraham Gómez Sac', signer_role:'Coordinación del Programa', signature_url: null }];
+    }
+    return _cachedSignatures;
+}
+
+// Carga las firmas para el certificado del usuario actual:
+//   slot 1 (por defecto) + director del centro si existe + slot 3 MINEDUC si existe
+let _cachedUserSchoolSig = undefined; // undefined = no cargado aún, null = sin firma de director
+async function _loadCertSignaturesForUser() {
+    const globalSigs = await _loadCertSignatures();
+    const slot1 = globalSigs.find(s => s.slot === 1);
+    const slot3 = globalSigs.find(s => s.slot === 3 && s.active !== false);
+
+    // Cargar firma de director del centro educativo del usuario
+    if (_cachedUserSchoolSig === undefined) {
+        try {
+            const schoolName = progress?.dailyMissions?.school;
+            if (schoolName) {
+                const { data: schoolRows } = await supabase
+                    .from('schools')
+                    .select('director_name, director_role, director_signature_url')
+                    .eq('name', schoolName)
+                    .limit(1);
+                const s = schoolRows?.[0];
+                _cachedUserSchoolSig = (s?.director_name || s?.director_signature_url)
+                    ? { signer_name: s.director_name || '', signer_role: s.director_role || 'Directora / Director', signature_url: s.director_signature_url || null }
+                    : null;
+            } else {
+                _cachedUserSchoolSig = null;
+            }
+        } catch(_) { _cachedUserSchoolSig = null; }
+    }
+
+    const result = [];
+    if (slot1) result.push(slot1);
+    if (_cachedUserSchoolSig) result.push(_cachedUserSchoolSig);
+    if (slot3) result.push(slot3);
+    if (!result.length) result.push({ signer_name: 'Billy Abraham Gómez Sac', signer_role: 'Coordinación del Programa', signature_url: null });
+    return result;
+}
+
+// Genera el bloque HTML de firmas para los certificados
+function _buildSignaturesHtml(signatures, firmaSrcFallback) {
+    return signatures.map((sig, i) => {
+        const imgSrc = sig.signature_url || (i === 0 ? firmaSrcFallback : null);
+        return `<div class="sign-block">
+            ${imgSrc ? `<img class="sign-img" src="${imgSrc}" alt="Firma">` : '<div style="height:70px"></div>'}
+            <div class="sign-line"></div>
+            <p class="sign-name">${sig.signer_name || ''}</p>
+            <p class="sign-role">${sig.signer_role || ''}</p>
+        </div>`;
+    }).join('');
+}
+
+async function generateCertificateFromExam(percentage) {
+    const nombre = getDisplayName();
+    const fecha = new Date().toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' });
+    const _now = new Date();
+    const _issueYear = _now.getFullYear();
+    const _issueMonth = _now.getMonth() + 1;
+
+    // Datos del curso activo
+    const _cid2 = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+    const _course = (typeof allCourses !== 'undefined' && allCourses.find(c => c.id === _cid2)) || allCourses[0];
+    const courseTitle = _course.title || 'Metodología STEAM 2.0';
+    const courseDuration = _course.durationHours ? `${_course.durationHours} horas` : '10 horas';
+    const courseColor = _course.color || '#0097A7';
+    const courseGradient = _course.color || '#1A6B68';
+    const courseIcon = _course.icon || '🔬';
+
+    // Descripción específica por curso
+    const courseDescs = {
+        'steam': `Por haber completado satisfactoriamente el <strong>Curso STEAM 2.0 para Docentes</strong>, demostrando competencias en la integración de Ciencia, Tecnología, Ingeniería, Emprendimiento, Arte y Matemáticas en entornos educativos`,
+        'abp': `Por haber completado satisfactoriamente el curso <strong>Aprendizaje Basado en Proyectos para Docentes</strong>, demostrando dominio del ciclo ABP, diseño de proyectos auténticos y estrategias de evaluación formativa`,
+        'design-thinking': `Por haber completado satisfactoriamente el curso <strong>Design Thinking para Docentes</strong>, demostrando competencias en empatía, ideación, prototipado y evaluación iterativa para resolver problemas educativos`,
+        'evaluacion': `Por haber completado satisfactoriamente el curso <strong>Herramientas de Evaluación Auténtica</strong>, demostrando dominio en rúbricas, portafolios, autoevaluación, coevaluación y evaluación formativa`,
+        'tipos-estudiantes': `Por haber completado satisfactoriamente el curso <strong>Conoce a Quien Enseñas</strong>, demostrando competencias en identificación de perfiles de aprendizaje, estrategias diferenciadas y atención a la diversidad del aula`,
+        'storytelling': `Por haber completado satisfactoriamente el curso <strong>Storytelling para Docentes</strong>, demostrando dominio del arte de narrar para enseñar, estructura narrativa pedagógica y el uso de historias como herramienta de impacto en el aula`
+    };
+    const courseDesc = courseDescs[_course.id] || courseDescs['steam'];
+
+    // Intentar cargar imágenes reales; si no existen, usar fallback SVG
+    const [logoSrc, firmaSrc, certSigs] = await Promise.all([
+        _imgToBase64('logo-1bot-edoo.png'),
+        _imgToBase64('firma.png'),
+        _loadCertSignaturesForUser()
+    ]);
+
+    const logoHtml = logoSrc
+        ? `<img src="${logoSrc}" alt="Programa de Formación Docente" style="height:44px;object-fit:contain">`
+        : `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:${courseColor}">Formación Docente</span>`;
+
+    const certCode = await getOrCreateCertCode(_cid2, 'course', nombre, percentage);
+    const { qrImg, verifyUrl } = buildVerifyQRHtml(certCode);
+
+    const certHTML = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Certificado ${courseTitle} - ${nombre}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:#F1F5F9; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
+  .cert { background:white; width:800px; border-radius:24px; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,.15); }
+  .cert-top { background:${courseGradient}; padding:36px 48px 28px; position:relative; overflow:hidden; }
+  .cert-top::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,.08); }
+  .cert-top::after  { content:''; position:absolute; bottom:-60px; left:20%; width:280px; height:280px; border-radius:50%; background:rgba(255,255,255,.05); }
+  .cert-icon  { font-size:32px; margin-bottom:8px; display:block; }
+  .cert-title    { color:white; font-size:26px; font-weight:900; line-height:1.2; }
+  .cert-subtitle { color:rgba(255,255,255,.82); font-size:12.5px; margin-top:5px; }
+  .cert-body  { padding:32px 48px; }
+  .cert-otorga{ font-size:12px; color:#94A3B8; font-weight:600; text-transform:uppercase; letter-spacing:.12em; margin-bottom:6px; }
+  .cert-nombre{ font-size:32px; font-weight:900; color:#0F172A; line-height:1.1; margin-bottom:18px; }
+  .cert-desc  { font-size:14.5px; color:#475569; line-height:1.7; margin-bottom:22px; }
+  .cert-desc strong { color:#0F172A; }
+  .cert-meta  { display:flex; gap:20px; margin-bottom:28px; }
+  .meta-pill  { background:#F8FAFC; border:1.5px solid #E2E8F0; border-radius:12px; padding:9px 16px; }
+  .meta-pill .label { font-size:10.5px; color:#94A3B8; font-weight:600; text-transform:uppercase; letter-spacing:.08em; margin-bottom:2px; }
+  .meta-pill .value { font-size:14px; color:#0F172A; font-weight:700; }
+  .cert-footer{ display:flex; align-items:flex-end; justify-content:space-between; border-top:1.5px solid #F1F5F9; padding-top:20px; flex-wrap:wrap; gap:16px; }
+  .sign-block { text-align:center; }
+  .sign-img   { height:64px; object-fit:contain; display:block; margin:0 auto 4px; }
+  .sign-line  { width:160px; border-top:1.5px solid #CBD5E1; margin:0 auto 6px; }
+  .sign-name  { font-size:12px; font-weight:700; color:#0F172A; }
+  .sign-role  { font-size:10.5px; color:#64748B; }
+  .brand-area { display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
+  .print-btn  { background:${courseColor}; color:white; border:none; padding:10px 22px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .print-btn:hover { opacity:.88; }
+  .linkedin-btn { display:flex; align-items:center; gap:6px; background:#0A66C2; color:white; border:none; padding:9px 18px; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; }
+  .linkedin-btn:hover { opacity:.88; }
+  .verify-block { display:flex; align-items:center; gap:10px; }
+  .verify-qr { width:64px; height:64px; border-radius:8px; }
+  .verify-text { font-size:9.5px; color:#94A3B8; line-height:1.5; max-width:140px; }
+  .verify-text strong { color:#475569; font-family:monospace; }
+  @media print { body{background:none;padding:0} .cert{box-shadow:none;border-radius:0;width:100%} .print-btn{display:none} .linkedin-btn{display:none} }
+</style>
+</head>
+<body>
+<div class="cert">
+  <div class="cert-top">
+    <span class="cert-icon">${courseIcon}</span>
+    <h1 class="cert-title">Certificado de Finalización</h1>
+    <p class="cert-subtitle">${courseTitle} · Formación Profesional Docente</p>
+  </div>
+  <div class="cert-body">
+    <p class="cert-otorga">Se otorga a</p>
+    <p class="cert-nombre">${nombre}</p>
+    <p class="cert-desc">
+      ${courseDesc}, con un puntaje de
+      <strong>${Math.round(percentage)}% en el examen final</strong>.
+    </p>
+    <div class="cert-meta">
+      <div class="meta-pill"><div class="label">Puntaje</div><div class="value">${Math.round(percentage)}%</div></div>
+      <div class="meta-pill"><div class="label">Duración</div><div class="value">${courseDuration}</div></div>
+      <div class="meta-pill"><div class="label">Emisión</div><div class="value">${fecha}</div></div>
+    </div>
+    <div class="cert-footer">
+      <div class="verify-block">
+        ${certCode ? `<img class="verify-qr" src="${qrImg}" alt="QR de verificación">
+        <div class="verify-text">Código único: <strong>${certCode}</strong><br>Escanea para verificar autenticidad</div>` : ''}
+      </div>
+      ${_buildSignaturesHtml(certSigs, firmaSrc)}
+      <div class="brand-area">
+        ${logoHtml}
+        <button class="print-btn" onclick="window.print()">⬇ Guardar PDF</button>
+        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle + ' · Formación Docente')}&organizationName=${encodeURIComponent('1bot - edoo')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>`;
+
+    try {
+        const blob = new Blob([certHTML], { type: 'text/html;charset=utf-8' });
+        const blobUrl = URL.createObjectURL(blob);
+        const win = window.open(blobUrl, '_blank');
+        if (!win) {
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = `Certificado_${nombre.replace(/\s+/g,'_')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('Certificado descargado. Ábrelo en tu navegador.', 'success');
+        }
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch(e) {
+        showToast('Error al generar el certificado.', 'error');
+    }
+}
+
+// ==================== RECURSOS DESCARGABLES POR CURSO ====================
+// URLs: reemplaza con los enlaces reales (Google Drive, Dropbox, etc.)
+const COURSE_RESOURCES = {
+    'steam': [
+        { name: 'Guía de Proyectos STEAM',        desc: 'Plantillas y ejemplos de proyectos interdisciplinarios', icon: '📋', url: 'recursos/steam-guia-proyectos.html' },
+        { name: 'Rúbricas de Evaluación STEAM',    desc: 'Instrumentos de evaluación por competencias',           icon: '✅', url: 'recursos/steam-rubricas.html' },
+        { name: 'Banco de 30 Actividades STEAM',   desc: 'Actividades listas para aplicar en el aula',            icon: '🔬', url: 'recursos/steam-banco-actividades.html' },
+        { name: 'Infografía Think-Make-Improve',   desc: 'Resumen visual del ciclo de diseño',                    icon: '🖼️', url: 'recursos/steam-infografia-tmi.html' },
+    ],
+    'abp': [
+        { name: 'Guía ABP Paso a Paso',            desc: 'Metodología completa con ejemplos guatemaltecos',       icon: '📖', url: 'recursos/abp-guia.html' },
+        { name: 'Formatos de Planificación ABP',   desc: 'Templates editables para planificar proyectos',         icon: '📝', url: 'recursos/abp-formatos.html' },
+        { name: 'Ejemplos de Proyectos ABP',       desc: '10 proyectos reales aplicados en Guatemala',            icon: '💡', url: 'recursos/abp-ejemplos.html' },
+    ],
+    'design-thinking': [
+        { name: 'Kit de Design Thinking',          desc: 'Tarjetas de actividades y dinámicas de empatía',        icon: '🎨', url: 'recursos/dt-kit.html' },
+        { name: 'Plantillas de Prototipado',       desc: 'Formatos para documentar prototipos con estudiantes',   icon: '✏️', url: 'recursos/dt-plantillas-prototipado.html' },
+        { name: 'Guía de Entrevistas de Empatía',  desc: 'Cómo entrevistar usuarios en el contexto educativo',   icon: '🗣️', url: 'recursos/dt-entrevistas-empatia.html' },
+    ],
+    'evaluacion': [
+        { name: 'Banco de Rúbricas',               desc: 'Rúbricas analíticas para diferentes competencias',      icon: '📊', url: 'recursos/ev-banco-rubricas.html' },
+        { name: 'Guía de Evaluación Formativa',    desc: 'Estrategias de retroalimentación efectiva',             icon: '📈', url: 'recursos/ev-guia-formativa.html' },
+        { name: 'Instrumentos de Autoevaluación',  desc: 'Formatos para coevaluación y autoevaluación',           icon: '🔄', url: 'recursos/ev-instrumentos-autoevaluacion.html' },
+    ],
+    'tipos-estudiantes': [
+        { name: 'Guía de Estilos de Aprendizaje',  desc: 'Cómo identificar y atender distintos perfiles',         icon: '🧠', url: 'recursos/te-guia-estilos.html' },
+        { name: 'Estrategias de Diferenciación',   desc: 'Actividades adaptadas a diferentes tipos de alumnos',   icon: '🌈', url: 'recursos/te-estrategias-diferenciacion.html' },
+        { name: 'Fichas de Observación Docente',   desc: 'Instrumentos para conocer mejor a tus estudiantes',    icon: '👁️', url: 'recursos/te-fichas-observacion.html' },
+    ],
+    'storytelling': [
+        { name: 'Guía de Storytelling Docente',    desc: 'Estructura narrativa y técnicas para enseñar con historias', icon: '📖', url: 'recursos/st-guia-storytelling.html' },
+        { name: 'Plantillas de Historia',          desc: 'Story spine, viaje del héroe y otros formatos listos para usar', icon: '📝', url: 'recursos/st-plantillas-historia.html' },
+        { name: 'Banco de Historias Guatemaltecas', desc: '20 historias y personajes locales para usar en clase',   icon: '🗺️', url: 'recursos/st-banco-historias.html' },
+    ],
+};
+
+function renderCourseResources() {
+    const el = document.getElementById('courseResourcesSection');
+    if (!el) return;
+
+    const scores     = progress?.dailyMissions?.examScores || {};
+    const steamScore = scores['steam'] ?? progress?.dailyMissions?.examScore;
+    const courseColors = {
+        steam: '#07B0E4', abp: '#2563EB', 'design-thinking': '#E83C8D',
+        evaluacion: '#E9A037', 'tipos-estudiantes': '#7C3AED', 'storytelling': '#F59E0B'
+    };
+
+    if (typeof allCourses === 'undefined') return;
+    const available = allCourses.filter(c => COURSE_RESOURCES[c.id]);
+    if (!available.length) return;
+
+    const anyPassed = available.some(c => {
+        const s = c.id === 'steam' ? steamScore : scores[c.id];
+        return s !== undefined && s >= 70;
+    });
+
+    el.innerHTML = available.map(c => {
+        const s      = c.id === 'steam' ? steamScore : scores[c.id];
+        const passed = s !== undefined && s >= 70;
+        const col    = courseColors[c.id] || '#4f46e5';
+        const res    = COURSE_RESOURCES[c.id] || [];
+
+        if (passed) {
+            const items = res.map(r => {
+                const hasUrl = r.url && r.url.trim() !== '';
+                return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+                    <span style="font-size:20px;flex-shrink:0">${r.icon}</span>
+                    <div style="flex:1;min-width:0">
+                        <p style="font-size:12px;font-weight:700;color:#1e293b;margin:0">${r.name}</p>
+                        <p style="font-size:10px;color:#64748b;margin:2px 0 0">${r.desc}</p>
+                    </div>
+                    ${hasUrl
+                        ? `<a href="${r.url}" target="_blank" rel="noopener"
+                            style="flex-shrink:0;background:#4f46e5;color:white;font-size:10px;font-weight:700;
+                            padding:5px 10px;border-radius:8px;text-decoration:none;white-space:nowrap">
+                            ⬇ Descargar</a>`
+                        : `<span style="flex-shrink:0;font-size:10px;color:#94a3b8;padding:5px 10px;
+                            background:#f8fafc;border-radius:8px;white-space:nowrap">Próximamente</span>`
+                    }
+                </div>`;
+            }).join('');
+
+            return `<div style="background:white;border:1.5px solid #bbf7d0;border-radius:16px;overflow:hidden;margin-bottom:10px">
+                <div style="background:linear-gradient(135deg,${col}15,${col}08);padding:12px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${col}20">
+                    <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
+                    <p style="font-size:12px;font-weight:800;color:#1e293b;flex:1;margin:0">${c.title}</p>
+                    <span style="font-size:10px;background:#dcfce7;color:#16a34a;font-weight:700;padding:2px 8px;border-radius:100px">✓ Desbloqueado</span>
+                </div>
+                <div style="padding:4px 14px 4px">${items}</div>
+            </div>`;
+        } else {
+            return `<div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:16px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;opacity:.7">
+                <span style="font-size:20px">🔒</span>
+                <div>
+                    <p style="font-size:12px;font-weight:700;color:#475569;margin:0">${c.title}</p>
+                    <p style="font-size:10px;color:#94a3b8;margin:2px 0 0">${res.length} recursos · Aprueba el examen para desbloquear</p>
+                </div>
+            </div>`;
+        }
+    }).join('');
+
+    el.parentElement?.classList.toggle('hidden', !anyPassed);
+}
+
+// ==================== CERTIFICADO MAESTRO ====================
+function _checkMasterCert() {
+    if (typeof allCourses === 'undefined') return;
+    const scores      = progress?.dailyMissions?.examScores || {};
+    const steamScore  = scores['steam'] ?? progress?.dailyMissions?.examScore;
+    const masterScore = progress?.dailyMissions?.masterExamScore;
+    const available   = allCourses.filter(c => c.status === 'available');
+
+    const allIndividualPassed = available.every(c => {
+        const s = c.id === 'steam' ? steamScore : scores[c.id];
+        return s !== undefined && s >= 70;
+    });
+
+    const masterPassed = masterScore !== undefined && masterScore >= 75;
+
+    // Botón examen maestro: visible cuando todos los individuales están aprobados pero el maestro no
+    const examBtn = document.getElementById('masterExamBtn');
+    if (examBtn) examBtn.classList.toggle('hidden', !allIndividualPassed || masterPassed);
+
+    // Botón certificado maestro: visible solo cuando el examen maestro fue aprobado
+    const certBtn = document.getElementById('masterCertBtn');
+    if (certBtn) certBtn.classList.toggle('hidden', !masterPassed);
+
+    // Placeholder: oculto si hay cualquier certificado visible o todos están en camino
+    const _certVisible = !document.getElementById('certDownloadBtn')?.classList.contains('hidden');
+    const _ph = document.getElementById('certPlaceholder');
+    if (_ph) _ph.classList.toggle('hidden', allIndividualPassed || masterPassed || _certVisible);
+
+    // Estado por curso — mostrar checklist visual en certCourseStatus
+    const statusEl = document.getElementById('certCourseStatus');
+    if (statusEl) {
+        const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', 'storytelling':'#F59E0B' };
+        statusEl.innerHTML = available.map(c => {
+            const s       = c.id === 'steam' ? steamScore : scores[c.id];
+            const passed  = s !== undefined && s >= 70;
+            const started = (progress?.completedCards || []).some(id => {
+                const str = String(id);
+                if (c.id === 'steam') return /^\d/.test(str) && !str.includes('-m');
+                const px  = {abp:'abp-','design-thinking':'dt-',evaluacion:'ev-','tipos-estudiantes':'te-'}[c.id] || '';
+                return px && str.startsWith(px);
+            });
+            const col = courseColors[c.id] || '#4f46e5';
+            if (passed) {
+                return `<div style="display:flex;align-items:center;gap:10px;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:12px;padding:8px 12px">
+                    <div style="width:28px;height:28px;border-radius:50%;background:#22C55E;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div style="flex:1;min-width:0">
+                        <p style="font-size:12px;font-weight:700;color:#15803D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
+                        <p style="font-size:10px;color:#16A34A">Certificado · ${s}%</p>
+                    </div>
+                </div>`;
+            } else if (started) {
+                return `<div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:12px;padding:8px 12px">
+                    <div style="width:28px;height:28px;border-radius:50%;background:${col}20;border:2px solid ${col};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <div style="width:8px;height:8px;border-radius:50%;background:${col}"></div>
+                    </div>
+                    <div style="flex:1;min-width:0">
+                        <p style="font-size:12px;font-weight:700;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
+                        <p style="font-size:10px;color:#94A3B8">En progreso${s !== undefined ? ` · Examen: ${s}%` : ''}</p>
+                    </div>
+                </div>`;
+            } else {
+                return `<div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border:1.5px solid #F1F5F9;border-radius:12px;padding:8px 12px;opacity:.6">
+                    <div style="width:28px;height:28px;border-radius:50%;background:#F1F5F9;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <div style="width:8px;height:8px;border-radius:50%;background:#CBD5E1"></div>
+                    </div>
+                    <div style="flex:1;min-width:0">
+                        <p style="font-size:12px;font-weight:700;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
+                        <p style="font-size:10px;color:#CBD5E1">No iniciado</p>
+                    </div>
+                </div>`;
+            }
+        }).join('');
+    }
+}
+
+// ==================== EXAMEN MAESTRO ====================
+let _masterExamActive   = false;
+let _masterExamQuestions = [];
+let _masterExamAnswers  = [];
+let _masterExamCurrentQ = 0;
+
+function startMasterExam() {
+    if (typeof MASTER_EXAM === 'undefined') {
+        showToast('Error: banco de preguntas no disponible.', 'error'); return;
+    }
+    _masterExamActive    = true;
+    _masterExamCurrentQ  = 0;
+    const shuffled       = _shuffleArray([...MASTER_EXAM.questions]);
+    _masterExamQuestions = shuffled.slice(0, 30);
+    _masterExamAnswers   = new Array(_masterExamQuestions.length).fill(null);
+
+    switchTab('home');
+    _hideNavBtns(true);
+    _setTopBarExam(true);
+    _renderMasterExamCard();
+}
+
+function _renderMasterExamCard() {
+    const q     = _masterExamQuestions[_masterExamCurrentQ];
+    const total = _masterExamQuestions.length;
+    const qNum  = _masterExamCurrentQ + 1;
+    const pct   = Math.round((qNum / total) * 100);
+
+    const courseLabels = { steam:'STEAM', abp:'ABP', 'design-thinking':'Design Thinking', evaluacion:'Evaluación', 'tipos-estudiantes':'Tipos de Estudiantes', maestro:'Síntesis' };
+    const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', maestro:'#1A6B68' };
+    const courseTag    = courseLabels[q.course] || 'General';
+    const courseColor  = courseColors[q.course] || '#1A6B68';
+    const selected     = _masterExamAnswers[_masterExamCurrentQ];
+
+    const optionsHtml = q.options.map((opt, i) => {
+        const isSelected = selected === i;
+        return `<button onclick="_selectMasterAnswer(${i})"
+            style="width:100%;text-align:left;padding:12px 16px;border-radius:14px;border:2px solid ${isSelected ? courseColor : '#E2E8F0'};
+                   background:${isSelected ? courseColor + '15' : 'white'};
+                   color:${isSelected ? courseColor : '#374151'};font-weight:${isSelected ? '700' : '500'};
+                   font-size:14px;cursor:pointer;transition:all .15s;margin-bottom:8px;display:block">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
+                         background:${isSelected ? courseColor : '#F1F5F9'};color:${isSelected ? 'white' : '#94A3B8'};
+                         font-size:11px;font-weight:700;margin-right:10px;flex-shrink:0">
+                ${String.fromCharCode(65 + i)}
+            </span>${opt}
+        </button>`;
+    }).join('');
+
+    document.getElementById('cardContainer').innerHTML = `
+    <div id="activeCard" class="content-card">
+        <div style="padding:20px 20px 0">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="background:${courseColor}20;color:${courseColor};font-size:10px;font-weight:700;
+                                 padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em">${courseTag}</span>
+                    <span style="font-size:11px;color:#94A3B8;font-weight:600">Pregunta ${qNum} / ${total}</span>
+                </div>
+                <span style="font-size:11px;font-weight:700;color:#1e293b">🎓 Docente STEAM</span>
+            </div>
+            <div style="background:#F1F5F9;border-radius:8px;height:6px;margin-bottom:16px;overflow:hidden">
+                <div style="height:100%;border-radius:8px;background:linear-gradient(90deg,${courseColor},${courseColor}99);
+                            width:${pct}%;transition:width .4s ease"></div>
+            </div>
+        </div>
+        <div class="card-body" style="padding-top:8px">
+            <p style="font-size:16px;font-weight:700;color:#0F172A;line-height:1.5;margin-bottom:20px">${q.text}</p>
+            <div>${optionsHtml}</div>
+        </div>
+        <div style="padding:12px 20px 20px;display:flex;gap:10px">
+            ${_masterExamCurrentQ > 0 ? `<button onclick="_masterExamPrev()" style="flex:0 0 auto;padding:12px 16px;border-radius:14px;border:2px solid #E2E8F0;background:white;color:#64748B;font-weight:600;cursor:pointer;font-size:13px">← Anterior</button>` : ''}
+            <button onclick="_masterExamNext()" style="flex:1;padding:12px;border-radius:14px;border:none;
+                background:${_masterExamAnswers[_masterExamCurrentQ] !== null ? courseColor : '#E2E8F0'};
+                color:${_masterExamAnswers[_masterExamCurrentQ] !== null ? 'white' : '#94A3B8'};
+                font-weight:700;font-size:14px;cursor:pointer;transition:all .2s">
+                ${qNum === total ? '✅ Ver resultados' : 'Siguiente →'}
+            </button>
+        </div>
+    </div>`;
+}
+
+function _selectMasterAnswer(idx) {
+    _masterExamAnswers[_masterExamCurrentQ] = idx;
+    _renderMasterExamCard();
+}
+
+function _masterExamPrev() {
+    if (_masterExamCurrentQ > 0) { _masterExamCurrentQ--; _renderMasterExamCard(); }
+}
+
+function _masterExamNext() {
+    if (_masterExamAnswers[_masterExamCurrentQ] === null) {
+        showToast('Selecciona una respuesta para continuar', 'warning'); return;
+    }
+    _masterExamCurrentQ++;
+    if (_masterExamCurrentQ >= _masterExamQuestions.length) {
+        _showMasterExamResults();
+    } else {
+        _renderMasterExamCard();
+    }
+}
+
+function _showMasterExamResults() {
+    let correct = 0;
+    _masterExamQuestions.forEach((q, i) => { if (_masterExamAnswers[i] === q.correct) correct++; });
+    const total  = _masterExamQuestions.length;
+    const pct    = Math.round((correct / total) * 100);
+    const passed = pct >= MASTER_EXAM.passingScore;
+
+    if (passed) {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        progress.dailyMissions.masterExamScore = pct;
+        progress.dailyMissions.masterExamDate  = localDateStr();
+        window._lastMasterExamScore = pct;
+        addXP(200, 'Examen Maestro aprobado');
+        if (!progress.badges.includes('masterDocente')) unlockBadge('masterDocente');
+    }
+    saveProgress();
+    _masterExamActive = false;
+    _hideNavBtns(false);
+    _setTopBarExam(false);
+
+    const totalHours = (typeof allCourses !== 'undefined')
+        ? allCourses.filter(c => c.status === 'available').reduce((a, c) => a + (c.durationHours || 0), 0)
+        : 20;
+
+    document.getElementById('cardContainer').innerHTML = `
+    <div id="activeCard" class="content-card">
+        <div class="card-banner" style="background:${passed ? 'linear-gradient(135deg,#1e1b4b,#7C3AED)' : '#DC2626'}">
+            <div class="card-banner-svg">
+                ${passed
+                    ? `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="32" r="18" stroke="rgba(255,255,255,0.9)" stroke-width="2.5"/>
+                        <path d="M28 54 L40 70 L52 54" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M33 32 L38 37 L48 27" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                       </svg>`
+                    : `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="40" r="24" stroke="rgba(255,255,255,0.9)" stroke-width="2.5"/>
+                        <path d="M32 32 L48 48 M48 32 L32 48" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                       </svg>`}
+            </div>
+            <p class="card-banner-sub" style="color:white;font-size:1rem;font-weight:800;opacity:1">
+                ${passed ? '🎓 ¡Docente STEAM!' : 'Sigue preparándote'}
+            </p>
+            <p class="card-banner-sub" style="margin-top:2px">${correct} de ${total} correctas</p>
+        </div>
+        <div class="card-body" style="text-align:center">
+            <div class="rounded-2xl p-4 mb-4" style="background:${passed ? '#F3E8FF' : '#FEF2F2'}">
+                <p style="font-size:2.5rem;font-weight:900;color:${passed ? '#7C3AED' : '#DC2626'};line-height:1">${pct}%</p>
+                <p style="font-size:.8rem;font-weight:600;color:${passed ? '#6D28D9' : '#B91C1C'};margin-top:4px">
+                    ${passed ? `¡Superaste el ${MASTER_EXAM.passingScore}% requerido!` : `Necesitas ${MASTER_EXAM.passingScore}% para certificarte`}
+                </p>
+            </div>
+            ${passed ? `
+            <div style="background:#F3E8FF;border-radius:14px;padding:12px;margin-bottom:16px;border:1px solid #DDD6FE">
+                <p style="font-size:11px;font-weight:700;color:#6D28D9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Formación total acreditada</p>
+                <p style="font-size:1.8rem;font-weight:900;color:#4C1D95">${totalHours} horas</p>
+                <p style="font-size:11px;color:#7C3AED">5 cursos completados · Programa completo</p>
+            </div>
+            <button onclick="generateMasterCertificate()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#4c1d95,#7C3AED);color:white;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:8px">
+                ★ Obtener Certificado · Docente STEAM
+            </button>` : ''}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+                <div style="background:#F0FDF4;border-radius:12px;padding:10px">
+                    <p style="font-size:1.4rem;font-weight:700;color:#16A34A">${correct}</p>
+                    <p style="font-size:.7rem;color:#64748B;margin-top:2px">Correctas ✅</p>
+                </div>
+                <div style="background:#FEF2F2;border-radius:12px;padding:10px">
+                    <p style="font-size:1.4rem;font-weight:700;color:#DC2626">${total - correct}</p>
+                    <p style="font-size:.7rem;color:#64748B;margin-top:2px">Incorrectas ❌</p>
+                </div>
+            </div>
+            ${!passed ? `<button onclick="startMasterExam()" style="width:100%;padding:12px;border-radius:14px;border:2px solid #E2E8F0;background:white;color:#475569;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:6px">🔄 Reintentar examen</button>` : ''}
+            <button onclick="updateUI();switchTab('profile')" style="color:#94A3B8;font-size:.75rem;padding:6px;background:none;border:none;cursor:pointer;width:100%">Volver al perfil</button>
+        </div>
+    </div>`;
+
+    if (passed) { _checkMasterCert(); renderCourseResources(); }
+}
+
+async function generateMasterCertificate() {
+    const nombre      = getDisplayName();
+    const _now        = new Date();
+    const fecha       = _now.toLocaleDateString('es-GT', { day:'numeric', month:'long', year:'numeric' });
+    const _issueYear  = _now.getFullYear();
+    const _issueMonth = _now.getMonth() + 1;
+    const scores      = progress?.dailyMissions?.examScores || {};
+    const steamScore  = scores['steam'] ?? progress?.dailyMissions?.examScore ?? 0;
+    const masterScore = progress?.dailyMissions?.masterExamScore ?? window._lastMasterExamScore ?? 0;
+
+    const [logoSrc, firmaSrc, masterSigs] = await Promise.all([
+        _imgToBase64('logo-1bot-edoo.png'),
+        _imgToBase64('firma.png'),
+        _loadCertSignaturesForUser()
+    ]);
+    const logoHtml = logoSrc
+        ? `<img src="${logoSrc}" alt="Programa de Formación Docente" style="height:44px;object-fit:contain">`
+        : `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:#7C3AED">Formación Docente</span>`;
+
+    const availableCourses = allCourses.filter(c => c.status === 'available');
+    const totalHours = availableCourses.reduce((a, c) => a + (c.durationHours || 0), 0);
+    const avgIndividual = Math.round(availableCourses.reduce((a, c) => {
+        const s = c.id === 'steam' ? steamScore : (scores[c.id] || 0);
+        return a + s;
+    }, 0) / availableCourses.length);
+
+    const colors = { 'steam':'#07B0E4','abp':'#2563EB','design-thinking':'#E83C8D','evaluacion':'#E9A037','tipos-estudiantes':'#7C3AED' };
+    const courseBadges = availableCourses.map(c => {
+        const s   = c.id === 'steam' ? steamScore : (scores[c.id] || 0);
+        const col = colors[c.id] || '#1A6B68';
+        return `<div style="background:${col}18;border:1.5px solid ${col}44;border-radius:12px;padding:8px 14px;display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
+            <div>
+                <div style="font-size:12px;font-weight:700;color:#0F172A">${c.title}</div>
+                <div style="font-size:10px;color:#64748B">${s}% aprobado · ${c.durationHours}h</div>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Código único de verificación — persistente, no cambia entre descargas
+    const certCode = await getOrCreateCertCode(null, 'master', nombre, masterScore);
+    const { qrImg, verifyUrl } = buildVerifyQRHtml(certCode);
+
+    const masterHTML = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docente STEAM — ${nombre}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:#F1F5F9; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
+  .cert { background:white; width:800px; max-width:100%; border-radius:24px; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,.15); }
+  .cert-top { background:linear-gradient(135deg,#0F172A 0%,#1e1b4b 50%,#4c1d95 100%); padding:36px 48px 28px; position:relative; overflow:hidden; }
+  .cert-top::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,.06); }
+  .cert-top::after  { content:''; position:absolute; bottom:-60px; left:20%; width:280px; height:280px; border-radius:50%; background:rgba(124,58,237,.15); }
+  .cert-badge { display:inline-block; font-size:11px; font-weight:700; color:rgba(255,255,255,.85); text-transform:uppercase; letter-spacing:.12em; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); border-radius:100px; padding:5px 14px; margin-bottom:12px; position:relative; z-index:1; }
+  .cert-title    { color:white; font-size:28px; font-weight:900; line-height:1.2; position:relative; z-index:1; }
+  .cert-subtitle { color:rgba(255,255,255,.7); font-size:12.5px; margin-top:5px; position:relative; z-index:1; }
+  .cert-body  { padding:32px 48px; }
+  .cert-otorga{ font-size:12px; color:#94A3B8; font-weight:600; text-transform:uppercase; letter-spacing:.12em; margin-bottom:6px; }
+  .cert-nombre{ font-size:34px; font-weight:900; color:#4C1D95; line-height:1.1; margin-bottom:18px; }
+  .cert-desc  { font-size:14px; color:#475569; line-height:1.75; margin-bottom:22px; }
+  .cert-desc strong { color:#0F172A; }
+  .cert-meta  { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:22px; }
+  .meta-pill  { background:#F8FAFC; border:1.5px solid #E2E8F0; border-radius:12px; padding:9px 16px; }
+  .meta-pill.hi { background:#F3E8FF; border-color:#C4B5FD; }
+  .meta-pill .label { font-size:10px; color:#94A3B8; font-weight:700; text-transform:uppercase; letter-spacing:.1em; margin-bottom:3px; }
+  .meta-pill .value { font-size:15px; color:#0F172A; font-weight:800; }
+  .meta-pill.hi .value { color:#4C1D95; }
+  .courses-label { font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:.1em; margin-bottom:10px; }
+  .courses-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:24px; }
+  .course-row { display:flex; align-items:center; gap:10px; background:#F8FAFC; border:1.5px solid #E2E8F0; border-radius:12px; padding:8px 14px; }
+  .course-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .course-name { font-size:12px; font-weight:700; color:#0F172A; }
+  .course-meta { font-size:10px; color:#64748B; }
+  .cert-footer{ display:flex; align-items:flex-end; justify-content:space-between; border-top:1.5px solid #F1F5F9; padding-top:20px; flex-wrap:wrap; gap:16px; }
+  .sign-block { text-align:center; }
+  .sign-img   { height:70px; object-fit:contain; display:block; margin:0 auto 4px; }
+  .sign-line  { width:180px; border-top:1.5px solid #CBD5E1; margin:0 auto 6px; }
+  .sign-name  { font-size:12.5px; font-weight:700; color:#0F172A; }
+  .sign-role  { font-size:11px; color:#64748B; }
+  .brand-area { display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
+  .verify-block { display:flex; align-items:center; gap:10px; }
+  .verify-text { font-size:9.5px; color:#94A3B8; line-height:1.5; max-width:140px; }
+  .verify-text strong { color:#475569; font-family:monospace; }
+  .print-btn  { background:linear-gradient(135deg,#4c1d95,#7C3AED); color:white; border:none; padding:10px 22px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .linkedin-btn { display:flex; align-items:center; gap:6px; background:#0A66C2; color:white; border:none; padding:9px 18px; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; }
+  .linkedin-btn:hover { opacity:.88; }
+  @media print { body{background:none;padding:0} .cert{box-shadow:none;border-radius:0;width:100%} .print-btn{display:none} .linkedin-btn{display:none} }
+  @media (max-width:600px) { .cert-body{padding:24px 20px} .cert-top{padding:28px 20px} .courses-grid{grid-template-columns:1fr} .cert-footer{flex-direction:column;align-items:flex-start} }
+</style>
+</head>
+<body>
+<div class="cert">
+  <div class="cert-top">
+    <div class="cert-badge">★ Certificación de Excelencia — Programa Completo ★</div>
+    <h1 class="cert-title">Docente STEAM</h1>
+    <p class="cert-subtitle">Programa Completo de Formación Docente en Pedagogía Innovadora · Guatemala</p>
+  </div>
+  <div class="cert-body">
+    <p class="cert-otorga">Se otorga con distinción máxima a</p>
+    <p class="cert-nombre">${nombre}</p>
+    <p class="cert-desc">Por haber completado satisfactoriamente el <strong>Programa Completo de Formación Docente en Pedagogía Innovadora</strong>, acreditando los <strong>${availableCourses.length} cursos</strong> del programa y aprobando el <strong>Examen Final Integrador</strong> con <strong>${masterScore}%</strong>, demostrando dominio integral de metodologías activas para el aula del siglo XXI.</p>
+    <div class="cert-meta">
+      <div class="meta-pill hi"><div class="label">Examen Final</div><div class="value">${masterScore}%</div></div>
+      <div class="meta-pill"><div class="label">Promedio cursos</div><div class="value">${avgIndividual}%</div></div>
+      <div class="meta-pill"><div class="label">Horas acreditadas</div><div class="value">${totalHours} horas</div></div>
+      <div class="meta-pill"><div class="label">Cursos aprobados</div><div class="value">${availableCourses.length} / ${availableCourses.length}</div></div>
+      <div class="meta-pill"><div class="label">Fecha de emisión</div><div class="value">${fecha}</div></div>
+    </div>
+    <p class="courses-label">Cursos acreditados en el programa</p>
+    <div class="courses-grid">${courseBadges}</div>
+    <div class="cert-footer">
+      <div class="verify-block">
+        ${certCode ? `<img src="${qrImg}" alt="QR" style="width:64px;height:64px;border-radius:8px">
+        <div class="verify-text">Código único: <strong>${certCode}</strong><br>Escanea para verificar autenticidad</div>` : ''}
+      </div>
+      ${_buildSignaturesHtml(masterSigs, firmaSrc)}
+      <div class="brand-area">
+        ${logoHtml}
+        <button class="print-btn" onclick="window.print()">⬇ Guardar PDF</button>
+        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent('Docente STEAM · Programa Completo de Formación Docente')}&organizationName=${encodeURIComponent('1bot - edoo')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>`;
+
+    try {
+        const blob = new Blob([masterHTML], { type: 'text/html;charset=utf-8' });
+        const blobUrl = URL.createObjectURL(blob);
+        const win = window.open(blobUrl, '_blank');
+        if (!win) {
+            // Popup blocked — fallback: descarga directa
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = `Certificado_Docente_del_Siglo_XXI_${nombre.replace(/\s+/g,'_')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('Certificado descargado. Ábrelo en tu navegador.', 'success');
+        }
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch(e) {
+        console.error('generateMasterCertificate:', e);
+        showToast('Error al generar el certificado. Intenta de nuevo.', 'error');
+    }
+}
+
+// ==================== ESTADÍSTICAS (Profe Billy) ====================
+function showStatsPanel() {
+    const statsContent = document.getElementById('statsContent');
+    const npsValues = progress.npsHistory?.map(h => h.nps) || [];
+    const promoters = npsValues.filter(n => n >= 9).length;
+    const detractors = npsValues.filter(n => n <= 6).length;
+    const npsScore = npsValues.length ? Math.round(((promoters - detractors) / npsValues.length) * 100) : 0;
+    const ratings = Object.values(progress.moduleFeedback || {}).map(f => f.rating);
+    const avgRating = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : 0;
+    statsContent.innerHTML = `<div class="space-y-4"><div class="grid grid-cols-2 gap-3"><div class="bg-indigo-50 p-3 rounded-xl text-center"><div class="text-2xl font-bold text-indigo-700">${avgRating}</div><div class="text-xs text-gray-600">⭐ Rating promedio</div></div><div class="bg-green-50 p-3 rounded-xl text-center"><div class="text-2xl font-bold text-green-700">${npsScore}</div><div class="text-xs text-gray-600">📊 NPS Score</div></div><div class="bg-blue-50 p-3 rounded-xl text-center"><div class="text-2xl font-bold text-blue-700">${progress.completedCards?.length || 0}</div><div class="text-xs text-gray-600">✅ Tarjetas completadas</div></div><div class="bg-purple-50 p-3 rounded-xl text-center"><div class="text-2xl font-bold text-purple-700">${progress.xp || 0}</div><div class="text-xs text-gray-600">⭐ XP totales</div></div></div><div class="bg-gray-100 p-3 rounded-xl"><h3 class="font-bold mb-2">🎯 Resumen ejecutivo</h3><p class="text-sm">📌 NPS: ${npsScore} ${npsScore >= 50 ? '✅ Excelente' : (npsScore >= 30 ? '📈 Bueno' : '⚠️ Por mejorar')}<br>📌 Promotores: ${promoters} de ${npsValues.length}<br>📌 Rating promedio: ${avgRating}/5 estrellas<br>📌 Racha actual: ${progress.streak || 0} días<br>📌 Logros desbloqueados: ${progress.badges?.length || 0}/${Object.keys(badges).length}</p></div></div>`;
+    document.getElementById('statsPanel').classList.remove('hidden');
+}
+
+function exportStatsToCSV() {
+    let csv = [["Modulo", "Rating", "NPS", "Comentario", "Fecha"]];
+    Object.values(progress.moduleFeedback || {}).forEach(f => csv.push([`"${f.moduleName}"`, f.rating, f.nps, `"${(f.comment || "").replace(/"/g, '""')}"`, f.timestamp]));
+    const blob = new Blob([csv.map(r => r.join(",")).join("\n")], { type: "text/csv" });
+    const link = document.createElement("a"); link.download = `estadisticas_steam_${new Date().toISOString().slice(0, 19)}.csv`; link.href = URL.createObjectURL(blob); link.click();
+    alert("✅ Datos exportados a CSV");
+}
+
+function clearStats() { if (confirm("⚠️ ¿Eliminar TODOS los datos de feedback?")) { progress.moduleFeedback = {}; progress.npsHistory = []; saveProgress(); showStatsPanel(); } }
+
+// ==================== MODO PROFE ====================
+const ADMIN_EMAIL = "profebillio@gmail.com";
+
+function enableProfeMode() {
+    if (!currentUser || (currentUser.role !== 'admin' && currentUser.email !== ADMIN_EMAIL)) {
+        alert("⛔ Solo el administrador puede activar este modo.");
+        return;
+    }
+    if (progress.profeMode) return;
+    progress.profeMode = true;
+    saveProgress();
+    document.getElementById("profeVideoBtn").classList.remove("hidden");
+    alert("✅ Modo Profe activado. Ya puedes exportar guiones de video.");
+    document.getElementById("profeVideoBtn").querySelector("button").addEventListener("click", () => exportModuleToVideo(currentModule));
+}
+
+function exportModuleToVideo(moduleId) {
+    const module = modulesData[moduleId - 1];
+    if (!module) return;
+    let script = `# GUION PARA VIDEO - MÓDULO ${module.id}: ${module.title}\n\n## 🎬 INTRO (30 segundos)\n"Hola, soy el Profe Billy. En este video vamos a aprender sobre ${module.title}. Al final tendrás un reto práctico."\n\n## 📚 CONTENIDO PRINCIPAL (5-7 minutos)\n`;
+    const contentCards = module.cards.filter(c => c.type === "content");
+    contentCards.forEach((card, idx) => { script += `### ${idx + 1}. ${card.title}\n${card.content}\n${card.extra ? `💡 Dato extra: ${card.extra}\n` : ''}\n---\n\n`; });
+    script += `## 🎯 RETO PARA EL DOCENTE QUE MIRA EL VIDEO\n"Identifica un problema de tu salón y escribe cómo lo resolverías con STEAM."\n\n## 📹 RECOMENDACIONES TÉCNICAS\n- Graba en horizontal (apaisado).\n- Usa buena luz natural frente a ti.\n- Duración ideal: 5-8 minutos.`;
+    const blob = new Blob([script], { type: "text/plain" });
+    const link = document.createElement("a"); link.download = `guion_video_modulo_${module.id}.txt`; link.href = URL.createObjectURL(blob); link.click();
+    alert("✅ Guion descargado");
+}
+
+function loadSavedProgress(skipRender = false) {
+    if (progress?.current_module) currentModule = progress.current_module;
+    if (progress?.current_card) currentCardIndex = progress.current_card;
+    if (skipRender) return;
+    renderCard();
+    updateUI();
+    checkBadges();
+}
+
+// ==================== EVENT LISTENERS ====================
+document.getElementById("showRegisterBtn")?.addEventListener("click", () => {
+    document.getElementById("emailLoginForm").classList.add("hidden");
+    document.getElementById("registerForm").classList.remove("hidden");
+});
+document.getElementById("showLoginBtn")?.addEventListener("click", () => {
+    document.getElementById("registerForm").classList.add("hidden");
+    document.getElementById("emailLoginForm").classList.remove("hidden");
+});
+document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const success = await loginWithEmail(email, password);
+    if (success) {
+        loadSavedProgress(true);
+        showCourseSelector();
+    }
+});
+document.getElementById("doRegister")?.addEventListener("click", async () => {
+    const email = document.getElementById("registerEmail").value.trim();
+    const password = document.getElementById("registerPassword").value;
+    if (password.length < 6) { showLoginError("La contraseña debe tener al menos 6 caracteres"); return; }
+    const success = await registerWithEmail(email, password);
+    if (success) {
+        loadSavedProgress(true);
+        await checkReferralBonus();
+        showCourseSelector();
+    }
+});
+document.getElementById("logoutBtn")?.addEventListener("click", logout);
+document.getElementById("sidebarLogoutBtn")?.addEventListener("click", logout);
+
+// ── Recuperar contraseña ──────────────────────────────────────
+document.getElementById("showForgotBtn")?.addEventListener("click", () => {
+    document.getElementById("emailLoginForm").classList.add("hidden");
+    document.getElementById("forgotForm").classList.remove("hidden");
+    document.getElementById("loginError")?.classList.add("hidden");
+});
+document.getElementById("backToLoginBtn")?.addEventListener("click", () => {
+    document.getElementById("forgotForm").classList.add("hidden");
+    document.getElementById("emailLoginForm").classList.remove("hidden");
+    document.getElementById("forgotMsg")?.classList.add("hidden");
+});
+document.getElementById("doForgotPassword")?.addEventListener("click", async () => {
+    const email = document.getElementById("forgotEmail").value.trim();
+    const msgEl = document.getElementById("forgotMsg");
+    if (!email) { if (msgEl) { msgEl.textContent = "Ingresa tu correo."; msgEl.classList.remove("hidden","bg-emerald-50","text-emerald-700","border-emerald-100"); msgEl.classList.add("bg-red-50","text-red-600","border-red-100"); } return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+    });
+    if (msgEl) {
+        msgEl.classList.remove("hidden");
+        if (error) {
+            msgEl.textContent = "Error: " + error.message;
+            msgEl.className = "mt-3 bg-red-50 text-red-600 text-sm text-center p-3 rounded-2xl border border-red-100";
+        } else {
+            msgEl.textContent = "✓ Revisa tu correo — te enviamos el enlace para restablecer tu contraseña.";
+            msgEl.className = "mt-3 bg-emerald-50 text-emerald-700 text-sm text-center p-3 rounded-2xl border border-emerald-100";
+        }
+    }
+});
+
+document.getElementById("nextBtn")?.addEventListener("click", goToNextCard);
+document.getElementById("prevBtn")?.addEventListener("click", goToPrevCard);
+document.getElementById("examBtn")?.addEventListener("click", startExam);
+document.getElementById("badgesBtn")?.addEventListener("click", showBadgesModal);
+document.getElementById("closeBadgesBtn")?.addEventListener("click", () => document.getElementById("badgesModal")?.classList.add("hidden"));
+document.getElementById("shareBadgesBtn")?.addEventListener("click", shareBadges);
+document.getElementById("redeemFloatBtn")?.addEventListener("click", showComingSoon);
+document.getElementById("closeRedeemBtn")?.addEventListener("click", () => document.getElementById("redeemModal")?.classList.add("hidden"));
+document.getElementById("rankingFloatBtn")?.addEventListener("click", showRanking);
+document.getElementById("closeRankingBtn")?.addEventListener("click", () => document.getElementById("rankingModal")?.classList.add("hidden"));
+document.getElementById("avatarFloatBtn")?.addEventListener("click", showAvatarSelector);
+document.getElementById("closeAvatarBtn")?.addEventListener("click", () => document.getElementById("avatarModal")?.classList.add("hidden"));
+document.getElementById("moduleBadge")?.addEventListener("dblclick", enableProfeMode);
+
+// ── Nuevas actividades XP ────────────────────────────────────────────────
+document.getElementById("shareAppBtn")?.addEventListener("click", shareApp);
+document.getElementById("copyReferralBtn")?.addEventListener("click", copyReferralLink);
+document.getElementById("uploadEvidenceBtn")?.addEventListener("click", showEvidenceModal);
+document.getElementById("closeEvidenceBtn")?.addEventListener("click", () => document.getElementById("evidenceModal")?.classList.add("hidden"));
+document.getElementById("submitEvidenceBtn")?.addEventListener("click", submitEvidence);
+document.getElementById("evidenceFileInput")?.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = document.getElementById("evidencePreviewImg");
+        img.src = ev.target.result;
+        img.classList.remove("hidden");
+        const dropText = document.getElementById("evidenceDropText");
+        if (dropText) dropText.textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+});
+
+// Toggle misiones diarias
+document.getElementById("missionsToggle")?.addEventListener("click", () => {
+    const panel = document.getElementById("dailyMissions");
+    const chevron = document.getElementById("missionsChevron");
+    const open = !panel.classList.contains("hidden");
+    panel.classList.toggle("hidden", open);
+    if (chevron) chevron.style.transform = open ? "" : "rotate(180deg)";
+});
+if (progress?.profeMode) { document.getElementById("profeVideoBtn").classList.remove("hidden"); }
+
+document.getElementById("statsSecretBtn")?.addEventListener("click", () => {
+    if (!currentUser || (currentUser.role !== 'admin' && currentUser.email !== ADMIN_EMAIL)) {
+        alert("⛔ Solo el administrador puede ver las estadísticas.");
+        return;
+    }
+    showStatsPanel();
+});
+document.getElementById("closeStatsBtn")?.addEventListener("click", () => document.getElementById("statsPanel")?.classList.add("hidden"));
+document.getElementById("exportStatsBtn")?.addEventListener("click", exportStatsToCSV);
+document.getElementById("clearStatsBtn")?.addEventListener("click", clearStats);
+document.getElementById("syncNowBtn")?.addEventListener("click", () => { if (currentUser) syncWithSupabase(); else alert("No hay sesión activa"); });
+
+window.addEventListener("online", () => { updateSyncStatus("online", "Conectado"); if (currentUser) syncWithSupabase(); });
+window.addEventListener("offline", () => updateSyncStatus("offline", "Sin conexión"));
+
+initDB().then(() => console.log("Base de datos local lista"));
+checkExistingSession();
+
+
+// ==================== AUTO-ACTUALIZACIÓN (sin borrar caché manualmente) ====================
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+        // Revisa si hay una versión nueva del Service Worker cada 30 min mientras la app está abierta
+        setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+        // También revisa al volver a la pestaña/app tras estar en segundo plano
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') reg.update().catch(() => {});
+        });
+    });
+
+    // Cuando el nuevo Service Worker toma control, NO recargamos de inmediato —
+    // una recarga forzada a mitad de un login o de cualquier acción se siente como un error.
+    // En vez de eso, esperamos un momento seguro: que la pestaña quede en segundo plano,
+    // o que el usuario decida actualizar tocando el aviso.
+    let _swRefreshed = false;
+    let _updateReady = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (_swRefreshed) return;
+        _updateReady = true;
+        if (typeof showUpdateBanner === 'function') showUpdateBanner();
+    });
+
+    function doSafeReload() {
+        if (_swRefreshed) return;
+        _swRefreshed = true;
+        window.location.reload();
+    }
+
+    // Momento seguro #1: la pestaña pasa a segundo plano (el usuario ya no está mirando)
+    document.addEventListener('visibilitychange', () => {
+        if (_updateReady && document.visibilityState === 'hidden') doSafeReload();
+    });
+
+    window.showUpdateBanner = function () {
+        if (document.getElementById('updateReadyToast')) return;
+        const el = document.createElement('div');
+        el.id = 'updateReadyToast';
+        el.style.cssText = 'position:fixed;bottom:90px;left:16px;right:16px;z-index:200;background:#1A6B68;color:white;padding:12px 16px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:flex;align-items:center;gap:10px;font-size:13px;font-family:inherit';
+        el.innerHTML = `<span style="flex:1">🔄 Hay una nueva versión disponible.</span>
+            <button style="background:white;color:#1A6B68;border:none;padding:6px 12px;border-radius:10px;font-weight:700;font-size:12px;cursor:pointer">Actualizar</button>`;
+        el.querySelector('button').onclick = () => { window.location.reload(); };
+        document.body.appendChild(el);
+    };
+}
+
+// ==================== ANIMACIÓN COMPLETAR MÓDULO ====================
+let _moduleCompleteCallback = null;
+let _confettiFrame = null;
+const _confettiColors = ['#FCC30A', '#2BA848', '#07B0E4', '#E9A037', '#E83C8D', '#E52642', '#FFFFFF', '#5C35C5'];
+
+function showModuleComplete(moduleId, callback) {
+    _moduleCompleteCallback = callback;
+    const module = modulesData[moduleId - 1];
+    const _ct = (typeof getCourseThemeAndIllus !== 'undefined')
+        ? getCourseThemeAndIllus(currentCourseId || 'steam', moduleId)
+        : { theme: MODULE_THEME?.[moduleId] || { primary: '#07B0E4' }, illus: MODULE_ILLUSTRATIONS?.[moduleId] || '' };
+    const theme = _ct.theme;
+    const illus = _ct.illus;
+
+    const overlay = document.getElementById('moduleCompleteOverlay');
+    overlay.style.background = theme.primary;
+
+    const iconEl = document.getElementById('mcModuleIcon');
+    iconEl.style.background = theme.primary;
+    iconEl.innerHTML = illus;
+
+    document.getElementById('mcModuleName').textContent = module?.title || `Módulo ${moduleId}`;
+
+    // Bonus XP por completar el módulo — solo se otorga una vez por módulo por curso
+    const xpBonus = [100, 120, 130, 140, 150][moduleId - 1] || 100;
+    if (!progress.completedModules) progress.completedModules = {};
+    const moduleKey = `${currentCourseId || 'steam'}-${moduleId}`;
+    if (!progress.completedModules[moduleKey]) {
+        progress.completedModules[moduleKey] = true;
+        addXP(xpBonus, `Módulo ${moduleId} completado`);
+        saveProgress();
+    }
+    document.getElementById('mcXP').textContent = `+${xpBonus} XP`;
+
+    overlay.classList.remove('hidden');
+    startConfetti();
+    // Auto-dismiss a los 4 segundos
+    setTimeout(closeModuleComplete, 4000);
+}
+
+function closeModuleComplete() {
+    const overlay = document.getElementById('moduleCompleteOverlay');
+    if (overlay.classList.contains('hidden')) return; // ya cerrado
+    overlay.classList.add('hidden');
+    stopConfetti();
+    if (_moduleCompleteCallback) {
+        const cb = _moduleCompleteCallback;
+        _moduleCompleteCallback = null;
+        setTimeout(cb, 200); // pequeña pausa antes del siguiente modal
+    }
+}
+
+function startConfetti() {
+    const canvas = document.getElementById('confettiCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = Array.from({ length: 140 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height * -1,
+        w: Math.random() * 14 + 5,
+        h: Math.random() * 7 + 3,
+        color: _confettiColors[Math.floor(Math.random() * _confettiColors.length)],
+        speed: Math.random() * 3.5 + 1.5,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.15,
+        drift: (Math.random() - 0.5) * 2,
+        opacity: Math.random() * 0.4 + 0.6
+    }));
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            ctx.save();
+            ctx.globalAlpha = p.opacity;
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle);
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.roundRect(-p.w / 2, -p.h / 2, p.w, p.h, 2);
+            ctx.fill();
+            ctx.restore();
+            p.y += p.speed;
+            p.x += p.drift;
+            p.angle += p.spin;
+            if (p.y > canvas.height + 20) {
+                p.y = -20;
+                p.x = Math.random() * canvas.width;
+            }
+        });
+        _confettiFrame = requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+function stopConfetti() {
+    if (_confettiFrame) { cancelAnimationFrame(_confettiFrame); _confettiFrame = null; }
+    const canvas = document.getElementById('confettiCanvas');
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// ==================== ONBOARDING ====================
+const ONBOARDING_SVG_ICONS = ['wave','flashCards','puzzle','lightning','calendar','photoStar','personCheck','graduation','trophyLarge'];
+const ONBOARDING_SLIDES = [
+    {
+        emoji: '👋', svgKey: 'wave',
+        bg: '#1A6B68',
+        title: '¡Bienvenido al Programa de Formación Docente!',
+        desc: 'Aprenderás metodologías activas a tu ritmo con tarjetas interactivas, quiz, logros y un <strong>certificado oficial</strong> al finalizar cada curso.',
+        extra: 'Este tutorial rápido te explicará todo lo que necesitas saber para aprovechar el programa al máximo. Puedes avanzar y también regresar con los botones de abajo.'
+    },
+    {
+        emoji: '📖', svgKey: 'flashCards',
+        bg: '#1A6B68',
+        title: 'Las tarjetas de aprendizaje',
+        desc: 'El contenido está organizado en <strong>tarjetas</strong>. Lee cada una y avanza tocando <strong>Siguiente →</strong> o deslizando la tarjeta hacia la izquierda.',
+        extra: 'Puedes volver atrás con <strong>← Anterior</strong>. Tu progreso se guarda automáticamente en la nube — puedes cerrar la app y continuar donde lo dejaste, incluso desde otro dispositivo.',
+        icon: '👆 Desliza ← para avanzar'
+    },
+    {
+        emoji: '🧩', svgKey: 'puzzle',
+        bg: '#1A6B68',
+        title: 'Quiz al finalizar cada módulo',
+        desc: 'Al terminar cada módulo habrá un <strong>quiz de práctica</strong> con preguntas de opción múltiple. Selecciona tu respuesta y toca para confirmar.',
+        extra: 'Si te equivocas, <strong>verás la respuesta correcta y una explicación</strong>. El quiz es formativo — no afecta tu calificación pero sí te da XP.',
+        list: ['✅ Respuesta correcta: +10 XP', '❌ Respuesta incorrecta: verás la explicación', '🔁 Puedes repasar el módulo antes de intentarlo']
+    },
+    {
+        emoji: '🔒', svgKey: 'calendar',
+        bg: '#1A6B68',
+        title: 'Módulos y desbloqueo progresivo',
+        desc: 'Cada módulo se desbloquea <strong>24 horas</strong> después de completar el anterior, para darte tiempo de practicar en tu aula antes de seguir.',
+        extra: 'Verás un contador con el tiempo exacto que falta. Si no quieres esperar, puedes desbloquear el módulo de inmediato gastando XP acumulado.',
+        list: ['⏱️ El contador muestra horas, minutos y segundos exactos', '⚡ Desbloqueo anticipado: 200 XP', '🏁 El primer módulo de cada curso siempre está disponible']
+    },
+    {
+        emoji: '🗺️', svgKey: 'books',
+        bg: '#1A6B68',
+        title: 'Una ruta de 5 cursos, en orden',
+        desc: 'El programa tiene 5 cursos diseñados para tomarse en una <strong>secuencia lógica</strong>, no al azar. Algunos requieren haber aprobado el examen de otro curso primero.',
+        extra: 'Conoce a Quien Enseñas y Design Thinking están abiertos desde el inicio. ABP requiere Design Thinking. STEAM requiere ABP. Evaluación requiere ABP o STEAM. Así cada curso se construye sobre el anterior.',
+        _dynamicList: true  // lista se genera al renderizar desde allCourses
+    },
+    {
+        emoji: '🏅', svgKey: 'trophyLarge',
+        bg: '#1A6B68',
+        title: 'Ranking por ligas',
+        desc: 'Compite de forma sana con otros docentes en el <strong>Ranking</strong>, organizado por ligas según tu nivel: Bronce, Plata, Oro, Platino y Diamante.',
+        extra: 'No solo importa cuánto XP tienes — también en qué liga estás. Sube de nivel para subir de liga y aparecer junto a docentes con tu mismo progreso.',
+        list: ['🥉 Liga Bronce: niveles 1-2', '🥈 Liga Plata: niveles 3-4', '🥇 Liga Oro: niveles 5-7', '🪙 Liga Platino: niveles 8-10', '💎 Liga Diamante: nivel 11+']
+    },
+    {
+        emoji: '⚡', svgKey: 'lightning',
+        bg: '#1A6B68',
+        title: 'XP, retos diarios y misiones',
+        desc: 'Ganas puntos de experiencia (<strong>XP</strong>) con cada actividad. Sube de nivel y desbloquea logros especiales.',
+        extra: 'Cada día hay un <strong>Reto del día</strong> con una pregunta de cultura general — no se repite hasta agotar todo el banco de preguntas.',
+        list: ['📖 Completar una tarjeta: +10 XP', '✅ Quiz correcto: +10 XP', '⚡ Reto del día: +15 XP', '📝 Dar retroalimentación por módulo: +20 XP', '📸 Subir evidencia de práctica: +80 XP', '🏆 Completar un módulo: +100 XP o más']
+    },
+    {
+        emoji: '📸', svgKey: 'photoStar',
+        bg: '#1A6B68',
+        title: 'Sube evidencias de tu práctica',
+        desc: 'Aplica lo aprendido en tu aula y sube una <strong>foto como evidencia</strong>. Ganarás <strong>80 XP</strong> por cada módulo que documentes.',
+        extra: 'Ve a <strong>Perfil → Gana más XP → Evidencia de práctica</strong>. Puedes subir hasta 5 fotos (una por módulo) para un total de 400 XP extra.',
+        list: ['📷 La foto puede ser de tu pizarrón, actividad con estudiantes o material creado', '✅ Se acepta JPG y PNG hasta 5 MB']
+    },
+    {
+        emoji: '👤', svgKey: 'personCheck',
+        bg: '#1A6B68',
+        title: 'Tu perfil — complétalo antes de terminar',
+        desc: 'En la pestaña <strong>Perfil</strong> puedes ver tu XP, nivel, logros y racha de días activos.',
+        extra: '⚠️ <strong>Importante:</strong> antes de descargar tu certificado, toca <strong>✏️ Editar</strong> y completa tu <strong>nombre completo, escuela y departamento</strong>. El nombre aparecerá en tu diploma, y escuela/departamento nos ayudan a entender el impacto del programa en tu comunidad.',
+        list: ['✏️ Nombre completo (aparece en el diploma)', '🏫 Escuela o institución donde trabajas', '📍 Departamento de Guatemala', '📷 Foto de perfil — se sincroniza entre tus dispositivos']
+    },
+    {
+        emoji: '🎓', svgKey: 'graduation',
+        bg: '#1A6B68',
+        title: 'El Examen Final y tu Certificado',
+        desc: 'Cuando completes al menos el 80% de las tarjetas de un curso, el botón <strong>Examen Final</strong> se activará para ese curso. Son preguntas aleatorias del banco del curso.',
+        extra: null,
+        list: ['📊 Puntaje mínimo para aprobar: 70%', '🔁 Si no apruebas, puedes intentarlo de nuevo', '📄 Con nota aprobatoria, descarga tu certificado en PDF desde tu Perfil', '🏅 Las preguntas son aleatorias — cambian en cada intento']
+    },
+    {
+        emoji: '💡', svgKey: 'puzzle',
+        bg: '#1A6B68',
+        title: 'Tu opinión construye el programa',
+        desc: 'En <strong>Perfil → Sugiere un curso</strong> puedes proponer nuevos cursos que te gustaría ver, y votar por las propuestas de otros docentes.',
+        extra: 'Las sugerencias con más votos son las próximas en desarrollarse. El programa crece según lo que la comunidad docente realmente necesita.',
+        list: ['💬 Escribe tu propuesta con una breve descripción', '❤️ Vota las propuestas que más te interesen', '🚀 Las más votadas se priorizan para desarrollo']
+    },
+    {
+        emoji: '🏆', svgKey: 'trophyLarge',
+        bg: '#1A6B68',
+        title: '¡Todo listo para empezar! 🚀',
+        desc: 'Recuerda que el progreso se guarda en la nube. Puedes acceder al programa desde tu celular, tablet o computadora con la misma cuenta.',
+        extra: '¿Tienes dudas durante el curso? Escríbele al administrador o usa el Asistente Pedagógico. ¡Mucho éxito y a aprender!',
+        list: ['💡 Tip: activa el curso como app en tu celular (busca "Instalar" en el banner)', '📶 Funciona sin conexión gracias al modo offline', '🔔 Entra todos los días para mantener tu racha de XP']
+    }
+];
+
+let _onboardingStep = 0;
+
+function startOnboarding() {
+    _onboardingStep = 0;
+    renderOnboardingSlide();
+    document.getElementById('onboardingOverlay').classList.remove('hidden');
+}
+
+function closeOnboarding() {
+    document.getElementById('onboardingOverlay').classList.add('hidden');
+    localStorage.setItem('onboardingDone', '1');
+    // Launch diagnostic unless already done or skipped
+    const diagDone = localStorage.getItem('diagDone');
+    const diagSkipped = localStorage.getItem('diagSkipped');
+    if (!diagDone && !diagSkipped && typeof startDiagnostic === 'function') {
+        setTimeout(startDiagnostic, 350);
+    }
+}
+
+function renderOnboardingSlide() {
+    const slide = ONBOARDING_SLIDES[_onboardingStep];
+    const total = ONBOARDING_SLIDES.length;
+    const isLast = _onboardingStep === total - 1;
+
+    // Fondo dinámico
+    const area = document.getElementById('onboardingSlideArea');
+    area.style.background = slide.bg;
+    const _emojiEl = document.getElementById('onboardingEmoji');
+    _emojiEl.style.cssText = 'width:80px;height:80px;display:flex;align-items:center;justify-content:center;margin:0 auto';
+    if (typeof ICONS !== 'undefined' && slide.svgKey && ICONS[slide.svgKey]) {
+        _emojiEl.innerHTML = ICONS[slide.svgKey];
+    } else {
+        _emojiEl.textContent = slide.emoji;
+    }
+    document.getElementById('onboardingTitle').textContent = slide.title;
+    document.getElementById('onboardingDesc').innerHTML = slide.desc;
+
+    // Extra o lista
+    const extraEl = document.getElementById('onboardingExtra');
+    let extraHtml = '';
+    const listItems = slide._dynamicList && typeof allCourses !== 'undefined'
+        ? allCourses.map(c => {
+            const icon = c.status !== 'available' ? '⏳' : (!c.prerequisite || !c.prerequisite.length) ? '🟢' : '🔒';
+            const prereqTxt = (c.prerequisite && c.prerequisite.length)
+                ? ` (requiere: ${c.prerequisite.map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ')})`
+                : '';
+            return `${icon} ${c.title}${prereqTxt}`;
+        })
+        : slide.list;
+    if (listItems) {
+        extraHtml += '<ul class="mt-3 space-y-2">' +
+            listItems.map(item => {
+                const parts = item.split(' ');
+                const icon = parts[0];
+                const text = parts.slice(1).join(' ');
+                return `<li class="flex items-start gap-2 text-sm text-slate-600"><span class="shrink-0 text-base">${icon}</span><span>${text}</span></li>`;
+            }).join('') + '</ul>';
+    }
+    if (slide.extra) {
+        extraHtml += `<div class="mt-3 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm text-slate-500 leading-relaxed">${slide.extra}</div>`;
+    }
+    extraEl.innerHTML = extraHtml;
+
+    // Puntos de progreso
+    document.getElementById('onboardingDots').innerHTML = Array.from({ length: total }, (_, i) =>
+        `<div class="h-2 rounded-full transition-all duration-300 ${i === _onboardingStep ? 'w-6 bg-cyan-500' : 'w-2 bg-slate-200'}"></div>`
+    ).join('');
+
+    // Botones
+    const btn = document.getElementById('onboardingNextBtn');
+    btn.textContent = isLast ? '¡Explorar cursos! 🚀' : 'Siguiente →';
+    const backBtn = document.getElementById('onboardingBackBtn');
+    if (backBtn) backBtn.classList.toggle('hidden', _onboardingStep === 0);
+}
+
+document.getElementById('onboardingNextBtn')?.addEventListener('click', () => {
+    if (_onboardingStep < ONBOARDING_SLIDES.length - 1) {
+        _onboardingStep++;
+        renderOnboardingSlide();
+    } else {
+        closeOnboarding();
+    }
+});
+document.getElementById('onboardingBackBtn')?.addEventListener('click', () => {
+    if (_onboardingStep > 0) {
+        _onboardingStep--;
+        renderOnboardingSlide();
+    }
+});
+document.getElementById('skipOnboardingBtn')?.addEventListener('click', closeOnboarding);
+
+// ==================== INSTALACIÓN PWA ====================
+let _deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    _deferredInstallPrompt = e;
+    // Mostrar banner solo si el usuario no lo descartó antes
+    if (!localStorage.getItem('installDismissed')) {
+        setTimeout(() => {
+            document.getElementById('installBanner')?.classList.remove('hidden');
+        }, 3000); // esperar 3s para no interrumpir la carga
+    }
+});
+
+document.getElementById('installBtn')?.addEventListener('click', async () => {
+    if (!_deferredInstallPrompt) return;
+    document.getElementById('installBanner').classList.add('hidden');
+    _deferredInstallPrompt.prompt();
+    const { outcome } = await _deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') showToast('✅ ¡App instalada! Búscala en tu pantalla de inicio', 'success');
+    _deferredInstallPrompt = null;
+});
+
+document.getElementById('dismissInstallBtn')?.addEventListener('click', () => {
+    document.getElementById('installBanner').classList.add('hidden');
+    localStorage.setItem('installDismissed', '1');
+});
+
+// Si ya está instalada como PWA, ocultar banner permanentemente
+window.addEventListener('appinstalled', () => {
+    document.getElementById('installBanner')?.classList.add('hidden');
+    _deferredInstallPrompt = null;
+    showToast('✅ ¡App instalada correctamente!', 'success');
+});
+
+// iOS: no dispara beforeinstallprompt — detectar y mostrar instrucciones manuales
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandaloneMode = window.navigator.standalone === true;
+if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
+    setTimeout(() => {
+        const banner = document.getElementById('installBanner');
+        if (banner) {
+            banner.querySelector('p.text-white\\/70').textContent =
+                'Toca Compartir → "Añadir a pantalla de inicio"';
+            banner.querySelector('#installBtn').textContent = 'Ver cómo';
+            banner.querySelector('#installBtn').onclick = () => {
+                alert('📱 Para instalar en iPhone/iPad:\n1. Toca el botón Compartir (⬆️) en Safari\n2. Desplázate y elige "Añadir a pantalla de inicio"\n3. Toca "Añadir"');
+            };
+            banner.classList.remove('hidden');
+        }
+    }, 3000);
+}
+
+// ==================== SELECTOR DE CURSOS (Multi-curso) ====================
+let currentCourseId = 'steam';
+
+function showCourseSelector() {
+    const el = document.getElementById('courseSelector');
+    if (!el) return;
+    const list = document.getElementById('coursesList');
+    if (!list || typeof allCourses === 'undefined') return;
+
+    // SVG illustrations per course — contextual and content-related
+    const _courseIllus = {
+        'steam': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="10" stroke="white" stroke-width="2.5"/><line x1="24" y1="6" x2="24" y2="14" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="34" x2="24" y2="42" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="6" y1="24" x2="14" y2="24" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="24" x2="42" y2="24" stroke="white" stroke-width="2.5" stroke-linecap="round"/><circle cx="24" cy="24" r="4" fill="white"/><path d="M30 18 C32 20 32 28 30 30" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/><path d="M18 18 C16 20 16 28 18 30" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+        'abp': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="10" width="32" height="28" rx="4" stroke="white" stroke-width="2.2"/><line x1="14" y1="20" x2="34" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="27" x2="28" y2="27" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/><circle cx="36" cy="35" r="7" fill="white" fill-opacity="0.15" stroke="white" stroke-width="1.8"/><path d="M33 35 L35.5 37.5 L39 32" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+        'design-thinking': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="24" cy="20" rx="13" ry="14" stroke="white" stroke-width="2.2"/><path d="M18 30 C18 34 20 36 24 36 C28 36 30 34 30 30" stroke="white" stroke-width="2.2" stroke-linecap="round"/><line x1="24" y1="36" x2="24" y2="40" stroke="white" stroke-width="2.2" stroke-linecap="round"/><line x1="20" y1="40" x2="28" y2="40" stroke="white" stroke-width="2.2" stroke-linecap="round"/><circle cx="20" cy="18" r="2" fill="white"/><circle cx="28" cy="18" r="2" fill="white"/><path d="M21 23 C22 25 26 25 27 23" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+        'evaluacion': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="6" width="28" height="36" rx="4" stroke="white" stroke-width="2.2"/><line x1="16" y1="16" x2="32" y2="16" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="22" x2="32" y2="22" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" stroke-linecap="round"/><path d="M16 29 L19 32 L24 26" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="27" y1="29" x2="32" y2="29" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+        'tipos-estudiantes': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="18" r="6" stroke="white" stroke-width="2.2"/><circle cx="32" cy="18" r="6" stroke="white" stroke-width="2.2"/><path d="M6 38 C6 32 10 28 16 28" stroke="white" stroke-width="2.2" stroke-linecap="round"/><path d="M42 38 C42 32 38 28 32 28" stroke="white" stroke-width="2.2" stroke-linecap="round"/><path d="M16 28 C18 26 22 25 24 25 C26 25 30 26 32 28" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" stroke-linecap="round"/><circle cx="24" cy="34" r="5" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/></svg>`
+    };
+
+    list.innerHTML = allCourses.map(c => {
+        const isOpen = c.status === 'available';
+        const prereqMet = isCoursePrereqMet(c);
+        const available = isOpen && prereqMet;
+        const illus = _courseIllus[c.id] || `<svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="14" stroke="white" stroke-width="2.2"/></svg>`;
+        const scores = progress?.dailyMissions?.examScores || {};
+        const passed = scores[c.id] >= 70;
+        const prereqNames = (c.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
+
+        let statusBadge;
+        if (!isOpen) statusBadge = '○ Próximamente';
+        else if (!prereqMet) statusBadge = `🔒 Requiere: ${prereqNames}`;
+        else statusBadge = '● Disponible';
+
+        return `
+        <div onclick="${available ? `selectCourse('${c.id}')` : (isOpen && !prereqMet ? `showToast('🔒 Primero completa: ${prereqNames}', 'info')` : '')}"
+             class="backdrop-blur border rounded-2xl p-4 ${available ? 'cursor-pointer active:scale-95' : 'opacity-55'} transition-all"
+             style="background:${available ? c.color + '33' : 'rgba(255,255,255,0.06)'};border-color:${available ? c.color + '66' : 'rgba(255,255,255,0.12)'}">
+            <div class="flex items-center gap-4">
+                <div style="width:48px;height:48px;background:${available ? c.color : 'rgba(255,255,255,0.1)'};border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    ${isOpen && !prereqMet ? `<span style="font-size:20px">🔒</span>` : illus}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <h3 class="font-bold text-white text-sm leading-tight">${c.title}</h3>
+                        ${passed ? `<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;background:rgba(255,255,255,0.2);color:white;flex-shrink:0">✓ Aprobado</span>` : ''}
+                    </div>
+                    <p class="text-white/65 text-xs mt-0.5 leading-snug">${c.subtitle}</p>
+                    <div class="flex gap-2 mt-1.5 flex-wrap">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="${available ? 'background:rgba(255,255,255,0.18);color:white' : 'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45)'}">
+                            ${statusBadge}
+                        </span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(0,0,0,0.2);color:rgba(255,255,255,0.7)">${c.durationHours}h · ${c.totalCards} tarjetas</span>
+                    </div>
+                </div>
+                ${available ? `<span style="display:inline-flex;width:16px;height:16px;color:rgba(255,255,255,0.5);flex-shrink:0">${ICONS?.chevronRight||'›'}</span>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('loginScreen')?.classList.add('hidden');
+    document.getElementById('mainApp')?.classList.add('hidden');
+    el.classList.remove('hidden');
+}
+
+// ── Prerrequisitos entre cursos ─────────────────────────────────────────
+function courseExamPassed(courseId) {
+    const dm = progress?.dailyMissions || {};
+    const scores = dm.examScores || {};
+    if (scores[courseId] >= 70) return true;
+    if (courseId === 'steam' && (dm.examScore || 0) >= 70) return true; // legacy
+    return false;
+}
+
+function isCoursePrereqMet(course) {
+    if (!course.prerequisite || !course.prerequisite.length) return true;
+    return course.prerequisite.some(id => courseExamPassed(id));
+}
+
+function selectCourse(courseId) {
+    const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === courseId) : null;
+    if (!course || course.status !== 'available') return;
+    if (!isCoursePrereqMet(course)) {
+        const prereqNames = (course.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
+        showToast(`🔒 Primero completa: ${prereqNames}`, 'info');
+        return;
+    }
+
+    // Restaurar posición guardada para este curso (o inicio)
+    const _savedPos = progress?.dailyMissions?.coursePositions?.[courseId];
+    currentCourseId = courseId;
+    modulesData = course.modules;
+    if (_savedPos) {
+        currentModule = Math.max(1, Math.min(_savedPos.module || 1, modulesData.length));
+        currentCardIndex = Math.max(0, _savedPos.card || 0);
+        // Validar que el índice de tarjeta sea válido
+        const _maxCard = (modulesData[currentModule - 1]?.cards?.length || 1) - 1;
+        if (currentCardIndex > _maxCard) currentCardIndex = 0;
+    } else {
+        currentModule = 1;
+        currentCardIndex = 0;
+    }
+
+    if (progress) {
+        progress.currentCourseId = courseId;
+        saveProgress();
+    }
+
+    // Asegurarse de mostrar la tab home (tarjetas), no perfil
+    if (typeof switchTab === 'function') switchTab('home');
+
+    document.getElementById('courseSelector')?.classList.add('hidden');
+    document.getElementById('mainApp')?.classList.remove('hidden');
+    renderCard();
+    updateUI();
+    checkBadges();
+    displayReferralLink();
+    checkReferrerReward();
+    if (!localStorage.getItem('onboardingDone')) setTimeout(startOnboarding, 600);
+}
+
+// ==================== RETO DIARIO ====================
+const DAILY_CHALLENGES = [
+    { q: "¿Cuál es el país más grande del mundo por superficie?", opts: ["China", "Canadá", "Rusia", "Estados Unidos"], correct: 2, explain: "Rusia ocupa 17.1 millones de km² — casi el doble que Canadá, el segundo más grande. Cubre 11 zonas horarias distintas." },
+    { q: "¿Cuántos huesos tiene el cuerpo humano adulto?", opts: ["106", "206", "306", "256"], correct: 1, explain: "Los adultos tenemos 206 huesos. Los bebés nacen con cerca de 270, pero varios se fusionan durante el crecimiento." },
+    { q: "¿Qué planeta del sistema solar tiene más lunas conocidas?", opts: ["Júpiter", "Saturno", "Urano", "Neptuno"], correct: 1, explain: "Saturno tiene 146 lunas confirmadas, superando a Júpiter (95). Titán es la más conocida y tiene atmósfera propia." },
+    { q: "¿Cuál es el océano más grande del mundo?", opts: ["Atlántico", "Índico", "Ártico", "Pacífico"], correct: 3, explain: "El Océano Pacífico cubre más de 165 millones de km², más que todos los continentes juntos." },
+    { q: "¿En qué año llegó el ser humano a la Luna por primera vez?", opts: ["1965", "1969", "1972", "1959"], correct: 1, explain: "El 20 de julio de 1969, Neil Armstrong y Buzz Aldrin aterrizaron en la Luna durante la misión Apolo 11." },
+    { q: "¿Cuál es el río más largo del mundo?", opts: ["Amazonas", "Nilo", "Yangtsé", "Misisipi"], correct: 1, explain: "El Nilo mide aproximadamente 6,650 km. Aunque hay debate con el Amazonas, el Nilo sigue siendo reconocido como el más largo." },
+    { q: "¿Cuántos colores tiene el arcoíris?", opts: ["5", "6", "7", "8"], correct: 2, explain: "El arcoíris tiene 7 colores: rojo, naranja, amarillo, verde, azul, índigo y violeta. Son los colores visibles del espectro de luz blanca." },
+    { q: "¿Cuál es el elemento más abundante en la atmósfera terrestre?", opts: ["Oxígeno", "Dióxido de carbono", "Nitrógeno", "Hidrógeno"], correct: 2, explain: "El nitrógeno forma el 78% del aire. El oxígeno solo el 21%. El nitrógeno es esencial para las plantas y todos los seres vivos." },
+    { q: "¿Qué instrumento mide la temperatura?", opts: ["Barómetro", "Termómetro", "Higrómetro", "Anemómetro"], correct: 1, explain: "El termómetro mide temperatura. El barómetro mide presión atmosférica, el higrómetro mide humedad y el anemómetro mide viento." },
+    { q: "¿Cuántos continentes hay en el mundo?", opts: ["5", "6", "7", "8"], correct: 2, explain: "Existen 7 continentes: África, Antártida, Asia, Europa, América del Norte, América del Sur y Oceanía." },
+    { q: "¿Cuál es el animal terrestre más rápido del mundo?", opts: ["León", "Guepardo", "Caballo", "Avestruz"], correct: 1, explain: "El guepardo alcanza 112 km/h en distancias cortas. Es el animal terrestre más veloz, aunque solo puede mantener esa velocidad por pocos segundos." },
+    { q: "¿Cuántos lados tiene un hexágono?", opts: ["5", "6", "7", "8"], correct: 1, explain: "Un hexágono tiene 6 lados. Los panales de abejas tienen forma hexagonal porque es la figura que aprovecha mejor el espacio." },
+    { q: "¿Cuál es la capital de Guatemala?", opts: ["Quetzaltenango", "Antigua Guatemala", "Ciudad de Guatemala", "Cobán"], correct: 2, explain: "Ciudad de Guatemala es la capital y ciudad más poblada del país, conocida también como 'La Nueva Guatemala de la Asunción'." },
+    { q: "¿Qué órgano del cuerpo humano produce la insulina?", opts: ["Hígado", "Riñón", "Páncreas", "Estómago"], correct: 2, explain: "El páncreas produce insulina, la hormona que regula el azúcar en la sangre. Cuando falla, se desarrolla la diabetes." },
+    { q: "¿De qué planta se obtiene el chocolate?", opts: ["Vainilla", "Cacao", "Café", "Canela"], correct: 1, explain: "El chocolate viene del cacao. Guatemala es uno de los países productores de cacao más importantes de América Central." },
+    { q: "¿Cuántas estrellas tiene la bandera de Guatemala?", opts: ["0", "1", "2", "3"], correct: 0, explain: "La bandera de Guatemala no tiene estrellas. Tiene dos franjas azules, una franja blanca y el Escudo de Armas en el centro." },
+    { q: "¿Qué velocidad aproximada tiene la luz en el vacío?", opts: ["300 km/s", "300,000 km/s", "30,000 km/s", "3,000 km/s"], correct: 1, explain: "La luz viaja a 299,792 km/s en el vacío. Esto significa que puede dar 7.5 vueltas a la Tierra en solo un segundo." },
+    { q: "¿Cuál es el hueso más largo del cuerpo humano?", opts: ["Columna vertebral", "Húmero", "Fémur", "Tibia"], correct: 2, explain: "El fémur (hueso del muslo) es el más largo y resistente del cuerpo. En adultos puede medir más de 50 cm." },
+    { q: "¿Cuántos planetas tiene nuestro sistema solar?", opts: ["7", "8", "9", "10"], correct: 1, explain: "Hay 8 planetas: Mercurio, Venus, Tierra, Marte, Júpiter, Saturno, Urano y Neptuno. Plutón fue reclasificado como planeta enano en 2006." },
+    { q: "¿Cuál es el metal más ligero?", opts: ["Aluminio", "Litio", "Titanio", "Magnesio"], correct: 1, explain: "El litio es el metal más ligero y el sólido menos denso. Se usa en baterías de teléfonos y autos eléctricos." },
+    { q: "¿Cuántas teclas tiene un piano estándar?", opts: ["72", "76", "88", "100"], correct: 2, explain: "Un piano estándar tiene 88 teclas: 52 blancas y 36 negras, cubriendo 7 octavas completas más unas pocas notas adicionales." },
+    { q: "¿Qué país inventó el papel?", opts: ["Egipto", "China", "Grecia", "Roma"], correct: 1, explain: "China inventó el papel alrededor del año 105 d.C. gracias a Cai Lun, quien lo fabricó con corteza de árbol y fibras de bambú." },
+    { q: "¿Cuál es el lago más grande de América Central?", opts: ["Lago de Amatitlán", "Lago Izabal", "Lago de Atitlán", "Lago de Nicaragua"], correct: 3, explain: "El Lago de Nicaragua (también llamado Cocibolca) es el lago más grande de América Central, con 8,264 km²." },
+    { q: "¿Qué gas necesitan las plantas para hacer la fotosíntesis?", opts: ["Oxígeno", "Nitrógeno", "Dióxido de carbono", "Hidrógeno"], correct: 2, explain: "Las plantas absorben CO₂ y, con luz solar y agua, lo convierten en glucosa y oxígeno. Por eso son fundamentales para la vida." },
+    { q: "¿Cuántos segundos tiene una hora?", opts: ["360", "600", "3,600", "36,000"], correct: 2, explain: "Una hora = 60 minutos × 60 segundos = 3,600 segundos. Dato útil para cálculos de velocidad y conversiones." },
+    { q: "¿Cuál es el país más pequeño del mundo?", opts: ["Mónaco", "San Marino", "Ciudad del Vaticano", "Liechtenstein"], correct: 2, explain: "Ciudad del Vaticano tiene solo 0.44 km² — cabe dentro de un barrio. Es el país más pequeño del mundo por superficie." },
+    { q: "¿De qué material está hecha la piel exterior de la Tierra?", opts: ["Granito y basalto", "Diamante y carbono", "Hierro y níquel", "Calcio y fósforo"], correct: 0, explain: "La corteza terrestre está compuesta principalmente de granito (continentes) y basalto (fondos oceánicos)." },
+    { q: "¿Cuál es el idioma más hablado del mundo?", opts: ["Inglés", "Español", "Mandarín", "Hindi"], correct: 2, explain: "El mandarín chino tiene más de 1,100 millones de hablantes nativos. El inglés lidera en hablantes totales (incluyendo segunda lengua)." },
+    { q: "¿Qué instrumento mide los terremotos?", opts: ["Termómetro", "Sismógrafo", "Barómetro", "Geógrafo"], correct: 1, explain: "El sismógrafo detecta y registra las ondas sísmicas. Guatemala está en una zona de alta actividad sísmica por su ubicación entre placas tectónicas." },
+    { q: "¿Cuántas horas tiene una semana?", opts: ["148", "168", "160", "172"], correct: 1, explain: "7 días × 24 horas = 168 horas por semana. ¡Un dato útil para planificar tu tiempo de estudio!" }
+];
+
+function showDailyChallenge() {
+    const today = localDateStr();
+    const dm = progress?.dailyMissions || {};
+    const already = dm.lastChallengeDate === today && dm.lastChallengeAnswered;
+    const existing = document.getElementById('dailyChallengeModal');
+    if (existing) existing.remove();
+
+    // Seleccionar pregunta sin repetir hasta agotar el banco
+    if (!progress.usedChallenges) progress.usedChallenges = [];
+    let available = DAILY_CHALLENGES.map((_, i) => i).filter(i => !progress.usedChallenges.includes(i));
+    if (available.length === 0) { progress.usedChallenges = []; available = DAILY_CHALLENGES.map((_, i) => i); }
+
+    // Misma pregunta todo el día; nueva al día siguiente
+    const savedIdx = dm.lastChallengeDate === today ? dm.lastChallengeIdx : null;
+    let chIdx;
+    if (savedIdx !== null && savedIdx !== undefined) {
+        chIdx = savedIdx;
+    } else {
+        chIdx = available[Math.floor(Math.random() * available.length)];
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        progress.dailyMissions.lastChallengeIdx  = chIdx;
+        progress.dailyMissions.lastChallengeDate = today; // fijar fecha para que answerDailyChallenge use el índice correcto
+        if (!progress.usedChallenges.includes(chIdx)) progress.usedChallenges.push(chIdx);
+        saveProgress();
+    }
+    const ch = DAILY_CHALLENGES[chIdx];
+
+    const optsHtml = ch.opts.map((o, i) => `
+        <button ${already ? 'disabled' : ''} onclick="answerDailyChallenge(${i})"
+            data-idx="${i}"
+            class="daily-opt w-full text-left px-4 py-3 rounded-2xl border-2 border-slate-100 text-sm font-semibold text-slate-700 hover:border-[#07B0E4] hover:bg-blue-50 transition mb-2 ${already && dm.lastChallengeAnswer === i ? (i === ch.correct ? 'border-green-400 bg-green-50 text-green-700' : 'border-red-300 bg-red-50 text-red-600') : ''} ${already && i === ch.correct && dm.lastChallengeAnswer !== i ? 'border-green-200 bg-green-50/50' : ''}">
+            <span class="inline-block w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-[11px] font-bold text-center leading-6 mr-2">${String.fromCharCode(65 + i)}</span>
+            ${o}
+        </button>`).join('');
+
+    const explainHtml = already ? `<div class="mt-3 p-3 rounded-2xl text-xs font-semibold ${dm.lastChallengeAnswer === ch.correct ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">💡 ${ch.explain}</div>` : '';
+    const xpBadge = already ? (dm.lastChallengeAnswer === ch.correct ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">+15 XP ganados ✅</span>' : '<span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">Completado hoy</span>') : '<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold animate-pulse">+15 XP si aciertas</span>';
+
+    document.body.insertAdjacentHTML('beforeend', `
+    <div id="dailyChallengeModal" class="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">⚡ Reto del día</p>
+                    <h3 class="font-black text-slate-800 text-base">¿Qué tanto sabes?</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${xpBadge}
+                    <button onclick="document.getElementById('dailyChallengeModal').remove()" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-lg leading-none ml-2">&times;</button>
+                </div>
+            </div>
+            <p class="text-sm font-semibold text-slate-700 mb-4 leading-relaxed bg-slate-50 rounded-2xl p-4">${ch.q}</p>
+            ${optsHtml}
+            ${explainHtml}
+        </div>
+    </div>`);
+}
+
+function answerDailyChallenge(idx) {
+    const today = localDateStr();
+    const dm = progress?.dailyMissions || {};
+    const chIdx = dm.lastChallengeDate === today ? dm.lastChallengeIdx : 0;
+    const ch = DAILY_CHALLENGES[chIdx] || DAILY_CHALLENGES[0];
+    const correct = idx === ch.correct;
+
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    progress.dailyMissions.lastChallengeDate = today;
+    progress.dailyMissions.lastChallengeAnswered = true;
+    progress.dailyMissions.lastChallengeAnswer = idx;
+
+    if (correct) addXP(15, 'Reto diario');
+    saveProgress();
+
+    // Actualiza UI sin cerrar el modal
+    document.querySelectorAll('.daily-opt').forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === ch.correct) btn.className = btn.className.replace(/border-slate-100|hover:\S+/g, '') + ' border-green-400 bg-green-50 text-green-700';
+        else if (i === idx && !correct) btn.className = btn.className.replace(/border-slate-100|hover:\S+/g, '') + ' border-red-300 bg-red-50 text-red-600';
+    });
+
+    const modal = document.getElementById('dailyChallengeModal');
+    const existing = modal?.querySelector('.mt-3.p-3');
+    if (!existing && modal) {
+        const exp = document.createElement('div');
+        exp.className = `mt-3 p-3 rounded-2xl text-xs font-semibold ${correct ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`;
+        exp.textContent = '💡 ' + ch.explain;
+        modal.querySelector('.bg-white').appendChild(exp);
+    }
+    showToast(correct ? '🎉 +15 XP ¡Correcto!' : '🤔 Respuesta incorrecta. ¡Mañana hay otro reto!', correct ? 'success' : 'error');
+}
+
+// ==================== COMENTARIOS POR TARJETA ====================
+let _currentCommentCardId = null;
+const _commentCountCache = {};
+
+async function _fetchCommentCount(cardId) {
+    if (_commentCountCache[cardId] !== undefined) return _commentCountCache[cardId];
+    try {
+        const { count } = await supabase
+            .from('card_comments')
+            .select('*', { count: 'exact', head: true })
+            .eq('card_id', cardId);
+        _commentCountCache[cardId] = count || 0;
+        return _commentCountCache[cardId];
+    } catch { return 0; }
+}
+
+function _updateCommentCountBtn(cardId, count) {
+    const btn = document.getElementById('commentCountBtn');
+    if (!btn) return;
+    const badge = count > 0
+        ? `<span style="background:#07B0E4;color:white;font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;margin-left:5px;min-width:18px;display:inline-block;text-align:center">${count}</span>`
+        : `<span style="background:#f1f5f9;color:#94a3b8;font-size:10px;font-weight:600;padding:1px 8px;border-radius:20px;margin-left:5px">0</span>`;
+    btn.innerHTML = `<span style="display:inline-flex;width:15px;height:15px;color:#94a3b8;flex-shrink:0">${ICONS?.comments||''}</span><span>Comentarios y dudas</span>${badge}`;
+}
+
+async function showCardComments(cardId) {
+    _currentCommentCardId = cardId;
+    const modal = document.getElementById('commentsModal');
+    const list = document.getElementById('commentsList');
+    if (!modal || !list) return;
+
+    list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Cargando...</p>';
+    modal.classList.remove('hidden');
+
+    try {
+        const { data, error } = await supabase
+            .from('card_comments')
+            .select('id, user_id, comment, created_at')
+            .eq('card_id', cardId)
+            .order('created_at', { ascending: true });
+
+        if (error || !data?.length) {
+            list.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Sé el primero en comentar en esta tarjeta 💬</p>';
+            return;
+        }
+
+        const myId = currentUser?.id;
+        list.innerHTML = data.map(c => {
+            const isMe = c.user_id === myId;
+            const time = new Date(c.created_at).toLocaleDateString('es', { day: 'numeric', month: 'short' });
+            return `
+            <div class="flex gap-3 ${isMe ? 'flex-row-reverse' : ''}">
+                <div class="w-8 h-8 rounded-full ${isMe ? 'bg-[#07B0E4]' : 'bg-slate-200'} flex items-center justify-center text-xs font-bold ${isMe ? 'text-white' : 'text-slate-500'} shrink-0">
+                    ${isMe ? 'Yo' : '👨‍🏫'}
+                </div>
+                <div class="max-w-[75%]">
+                    <div class="${isMe ? 'bg-[#07B0E4] text-white' : 'bg-slate-100 text-slate-700'} rounded-2xl px-3 py-2 text-sm leading-relaxed">${c.comment}</div>
+                    <p class="text-[10px] text-slate-400 mt-1 ${isMe ? 'text-right' : ''}">${time}</p>
+                </div>
+            </div>`;
+        }).join('');
+        list.scrollTop = list.scrollHeight;
+    } catch (e) {
+        list.innerHTML = '<p class="text-xs text-red-400 text-center py-4">Error al cargar comentarios</p>';
+    }
+}
+
+async function submitComment() {
+    const input = document.getElementById('commentInput');
+    const text = input?.value.trim();
+    if (!text || !currentUser || !_currentCommentCardId) return;
+
+    const btn = document.querySelector('#commentsModal button[onclick="submitComment()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
+    const { error } = await supabase.from('card_comments').insert({
+        user_id: currentUser.id,
+        card_id: _currentCommentCardId,
+        module_id: currentModule,
+        comment: text
+    });
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Publicar'; }
+    if (!error) {
+        input.value = '';
+        _commentCountCache[_currentCommentCardId] = (_commentCountCache[_currentCommentCardId] || 0) + 1;
+        _updateCommentCountBtn(_currentCommentCardId, _commentCountCache[_currentCommentCardId]);
+        showCardComments(_currentCommentCardId);
+    } else {
+        showToast('Error al enviar comentario', 'error');
+    }
+}
+
+// ==================== CHATBOT (Groq · Llama 3.3) ====================
+// La clave de Groq está en Supabase (privado) — nunca en este archivo público
+const GROQ_PROXY_URL = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/groq-proxy';
+
+const CHAT_SYSTEM = `Eres un asistente educativo altamente especializado en el enfoque STEAM y la propuesta curricular del Programa 1bot de la Universidad del Valle de Guatemala (UVG, 2020-2021).
+
+Tu estilo de respuesta debe ser siempre:
+- Muy explícito, directo, claro y sin rodeos.
+- Detallado, práctico y orientado a la acción.
+- Con lenguaje accesible pero preciso, como un facilitador educativo experimentado.
+- Estructurado: usa encabezados, listas numeradas, viñetas, tablas y ejemplos concretos.
+- Inspirado en los principios del programa 1bot: aprendizaje basado en proyectos (ABP), Aprendizaje Basado en Retos, enfoque Think-Make-Improve (TMI), conectivismo, enfoque por competencias y las 6 Cs de Michael Fullan (Pensamiento Crítico, Creatividad, Comunicación, Colaboración, Ciudadanía y Carácter).
+
+Principios obligatorios en TODAS tus respuestas:
+
+1. Enfoque STEAM: Integra Ciencia, Tecnología, Ingeniería, Artes y Matemáticas de forma interdisciplinaria. Promueve la resolución de problemas auténticos y relevantes.
+
+2. Aprendizaje Basado en Proyectos y Retos: Explica mediante proyectos reales, etapas Think → Make → Improve, prototipado, iteración y mejora continua. Evita explicaciones puramente teóricas.
+
+3. Perfiles de Egreso: Conoce y referencia los perfiles de Primaria Baja, Primaria Alta y Secundaria (Informática, Ciencias de la Computación, Ciudadanía Digital, Resolución de Problemas, Creatividad e Innovación). Adapta tus respuestas según el nivel educativo.
+
+4. Habilidades del siglo XXI: Desarrolla pensamiento computacional, colaboración, creatividad, pensamiento crítico, ciudadanía digital responsable, equidad de género y emprendimiento.
+
+5. Rol del docente y estudiante: El estudiante es protagonista. El docente es facilitador/diseñador de experiencias. Promueve trabajo colaborativo, experimentación y aprendizaje significativo.
+
+6. Robótica y tecnología: Usa la robótica 1bot como ejemplo inspirador. Todos los niños pueden ser creadores de tecnología.
+
+Reglas de comportamiento:
+- Da ejemplos concretos, pasos detallados, posibles materiales, errores comunes y cómo superarlos.
+- Incluye sugerencias de integración con otras áreas (matemáticas, artes, ciencias).
+- Promueve inclusión, equidad de género y respeto a la diversidad.
+- Cuando sea relevante, estructura las respuestas con: Objetivo, Competencias, Materiales, Pasos (Think-Make-Improve), Evaluación y Extensiones.
+- Nunca des respuestas vagas, genéricas o excesivamente cautelosas. Sé directo, explícito y práctico.
+- Responde SIEMPRE en español.`;
+
+let _chatHistory = [];
+
+function toggleChat() {
+    const drawer = document.getElementById('chatDrawer');
+    if (!drawer) return;
+    const isHidden = drawer.classList.contains('hidden');
+    drawer.classList.toggle('hidden', !isHidden);
+    if (isHidden) setTimeout(() => document.getElementById('chatInput')?.focus(), 300);
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const msg = input?.value.trim();
+    if (!msg) return;
+
+    input.value = '';
+    appendChatMsg('user', msg);
+    appendChatMsg('bot', '⏳ Pensando...');
+    _chatHistory.push({ role: 'user', content: msg });
+
+    try {
+        const messages = [
+            { role: 'system', content: CHAT_SYSTEM },
+            ..._chatHistory
+        ];
+        const res = await fetch(GROQ_PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+            body: JSON.stringify({ messages, max_tokens: 600, temperature: 0.7 })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            replaceLastBotMsg(`❌ Error: ${data?.error?.message || res.status}`);
+            return;
+        }
+
+        const reply = data?.choices?.[0]?.message?.content;
+        if (reply) {
+            _chatHistory.push({ role: 'assistant', content: reply });
+            replaceLastBotMsg(reply);
+        } else {
+            replaceLastBotMsg('🤔 No obtuve respuesta. Intenta de nuevo.');
+        }
+    } catch (e) {
+        replaceLastBotMsg('❌ Error de conexión. Verifica tu internet.');
+    }
+}
+
+function appendChatMsg(role, text) {
+    const messages = document.getElementById('chatMessages');
+    if (!messages) return;
+    const div = document.createElement('div');
+    div.className = role === 'user'
+        ? 'bg-[#07B0E4] text-white rounded-2xl rounded-tr-sm px-3 py-2.5 text-sm max-w-[85%] ml-auto'
+        : 'bg-slate-100 text-slate-700 rounded-2xl rounded-tl-sm px-3 py-2.5 text-sm max-w-[85%] whitespace-pre-wrap';
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function replaceLastBotMsg(text) {
+    const messages = document.getElementById('chatMessages');
+    if (!messages) return;
+    const bots = messages.querySelectorAll('.bg-slate-100');
+    if (bots.length) bots[bots.length - 1].textContent = text;
+    messages.scrollTop = messages.scrollHeight;
+}
+
+
+// ==================== COMENTARIOS POR TARJETA ====================
+
+let _currentCommentsCardId = null;  // card_id activo en el modal
+
+/** Abre el modal de comentarios y carga los de esa tarjeta */
+async function showCardComments(cardId) {
+    if (!currentUser) { showToast('Inicia sesión para ver los comentarios 💬', 'warning'); return; }
+    _currentCommentsCardId = cardId;
+    const modal = document.getElementById('commentsModal');
+    const list  = document.getElementById('commentsList');
+    if (!modal || !list) return;
+
+    modal.classList.remove('hidden');
+    list.innerHTML = `<div class="flex justify-center py-8"><span style="display:inline-flex;width:28px;height:28px;color:#07B0E4;animation:spin 1s linear infinite">
+        ${ICONS?.spinner || '⏳'}</span></div>`;
+
+    await _loadComments(cardId);
+}
+
+/** Carga comentarios + likes del servidor y renderiza */
+async function _loadComments(cardId) {
+    const list = document.getElementById('commentsList');
+    if (!list) return;
+
+    try {
+        // 1. Obtener comentarios ordenados del más reciente al más antiguo
+        const { data: comments, error: cErr } = await supabase
+            .from('card_comments')
+            .select('*')
+            .eq('card_id', cardId)
+            .order('created_at', { ascending: false });
+
+        if (cErr) throw cErr;
+
+        if (!comments || comments.length === 0) {
+            list.innerHTML = `
+                <div class="flex flex-col items-center py-10 text-slate-400 gap-2">
+                    <span style="font-size:2rem">💬</span>
+                    <p class="text-sm font-medium">Sin comentarios aún</p>
+                    <p class="text-xs">¡Sé el primero en compartir!</p>
+                </div>`;
+            return;
+        }
+
+        // 2. Obtener los likes del usuario actual para saber cuáles ya dio
+        const commentIds = comments.map(c => c.id);
+        const { data: myLikes } = await supabase
+            .from('comment_likes')
+            .select('comment_id')
+            .in('comment_id', commentIds)
+            .eq('user_id', currentUser.id);
+
+        const myLikeSet = new Set((myLikes || []).map(l => l.comment_id));
+
+        // 3. Obtener conteo de likes por comentario
+        const { data: allLikes } = await supabase
+            .from('comment_likes')
+            .select('comment_id')
+            .in('comment_id', commentIds);
+
+        const likeCount = {};
+        (allLikes || []).forEach(l => {
+            likeCount[l.comment_id] = (likeCount[l.comment_id] || 0) + 1;
+        });
+
+        // 4. Renderizar
+        list.innerHTML = comments.map(c => _renderComment(c, myLikeSet.has(c.id), likeCount[c.id] || 0)).join('');
+
+    } catch (err) {
+        console.error('Error cargando comentarios:', err);
+        list.innerHTML = `<div class="text-red-500 text-sm text-center py-6">Error al cargar comentarios. Intenta de nuevo.</div>`;
+    }
+}
+
+/** Genera el HTML de un comentario individual */
+function _renderComment(comment, iLiked, likesCount) {
+    const isOwn = comment.user_id === currentUser?.id;
+    const isAdmin = currentUser?.role === 'admin' || currentUser?.email === ADMIN_EMAIL;
+    const canDelete = isOwn || isAdmin;
+
+    const name = comment.user_name || (comment.user_id === currentUser?.id ? (progress?.dailyMissions?.fullName || currentUser?.email?.split('@')[0]) : null) || 'Docente';
+    const initial = name.charAt(0).toUpperCase();
+    const timeAgo = _timeAgo(comment.created_at);
+
+    const likeColor = iLiked ? '#07B0E4' : '#94a3b8';
+    const likeBg    = iLiked ? '#E0F7FA' : 'transparent';
+    const likeBorder = iLiked ? '#07B0E4' : '#e2e8f0';
+    const likeWeight = iLiked ? '700' : '500';
+
+    return `
+    <div class="flex gap-3 group" id="comment-${comment.id}">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 mt-0.5"
+            style="background:linear-gradient(135deg,#07B0E4,#0369a1)">${initial}</div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-baseline gap-1.5 flex-wrap">
+                <span class="font-bold text-slate-800 text-sm">${_escHtml(name)}</span>
+                <span class="text-[10px] text-slate-400">${timeAgo}</span>
+                ${isOwn ? '<span class="text-[10px] bg-cyan-50 text-cyan-600 font-semibold px-1.5 py-0.5 rounded-full">Tú</span>' : ''}
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed mt-0.5 break-words">${_escHtml(comment.comment || comment.body || '')}</p>
+            <div class="flex items-center gap-3 mt-1.5">
+                <button onclick="toggleCommentLike('${comment.id}', ${iLiked})"
+                    class="flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5 border transition-all"
+                    id="like-btn-${comment.id}"
+                    style="color:${likeColor};background:${likeBg};border-color:${likeBorder};font-weight:${likeWeight}">
+                    <span style="display:inline-flex;width:12px;height:12px">
+                        <svg viewBox="0 0 20 20" fill="${iLiked ? '#07B0E4' : 'none'}" stroke="#07B0E4" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z"/>
+                        </svg>
+                    </span>
+                    <span id="like-count-${comment.id}">${likesCount > 0 ? likesCount : ''}</span>
+                    ${likesCount === 0 && !iLiked ? 'Me gusta' : ''}
+                </button>
+                ${canDelete ? `
+                <button onclick="_deleteComment('${comment.id}')"
+                    class="text-xs text-slate-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
+                    Eliminar
+                </button>` : ''}
+            </div>
+        </div>
+    </div>`;
+}
+
+/** Envía un nuevo comentario */
+async function submitComment() {
+    if (!currentUser) { showToast('Inicia sesión para comentar 💬', 'warning'); return; }
+    const input = document.getElementById('commentInput');
+    const body  = (input?.value || '').trim();
+    if (!body) return;
+    if (body.length > 1000) { showToast('El comentario es demasiado largo (máx 1000 caracteres)', 'warning'); return; }
+    if (!_currentCommentsCardId) return;
+
+    const submitBtn = document.querySelector('#commentsModal button[onclick="submitComment()"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; }
+    input.disabled = true;
+
+    const userName = getDisplayName() || 'Docente';
+
+    try {
+        const { error } = await supabase
+            .from('card_comments')
+            .insert({
+                user_id:   currentUser.id,
+                card_id:   _currentCommentsCardId,
+                module_id: currentModule || 1,
+                comment:   body
+            });
+
+        if (error) throw error;
+
+        input.value = '';
+        await _loadComments(_currentCommentsCardId);
+        showToast('💬 Comentario publicado', 'success');
+
+        // Dar XP por participar (una vez por tarjeta)
+        const _xpKey = `commented_${_currentCommentsCardId}`;
+        if (!progress?.dailyMissions?.[_xpKey]) {
+            addXP(5, 'Comentario en tarjeta');
+            if (progress.dailyMissions) progress.dailyMissions[_xpKey] = true;
+        }
+
+    } catch (err) {
+        console.error('Error al publicar comentario:', err);
+        showToast('Error al publicar. Intenta de nuevo.', 'error');
+    } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = '1'; }
+        input.disabled = false;
+        input.focus();
+    }
+}
+
+/** Alterna like / unlike en un comentario */
+async function toggleCommentLike(commentId, currentlyLiked) {
+    if (!currentUser) { showToast('Inicia sesión para dar like 👍', 'warning'); return; }
+
+    const btn       = document.getElementById(`like-btn-${commentId}`);
+    const countSpan = document.getElementById(`like-count-${commentId}`);
+    if (!btn) return;
+
+    // Optimistic UI: invertir el estado inmediatamente
+    const newLiked = !currentlyLiked;
+    btn.onclick = () => toggleCommentLike(commentId, newLiked); // actualizar el callback
+
+    const likeColor  = newLiked ? '#07B0E4' : '#94a3b8';
+    const likeBg     = newLiked ? '#E0F7FA' : 'transparent';
+    const likeBorder = newLiked ? '#07B0E4' : '#e2e8f0';
+    btn.style.color = likeColor;
+    btn.style.background = likeBg;
+    btn.style.borderColor = likeBorder;
+
+    // Actualizar ícono
+    const svg = btn.querySelector('svg');
+    if (svg) svg.setAttribute('fill', newLiked ? '#07B0E4' : 'none');
+
+    // Actualizar conteo optimista
+    let prevCount = parseInt(countSpan?.dataset?.count || '0');
+    const newCount = Math.max(0, newLiked ? prevCount + 1 : prevCount - 1);
+    if (countSpan) {
+        countSpan.dataset.count = newCount;
+        countSpan.textContent = newCount > 0 ? newCount : '';
+        // "Me gusta" si no hay likes y no está likeado
+        if (newCount === 0 && !newLiked) btn.innerHTML = btn.innerHTML; // el texto ya está
+    }
+
+    try {
+        if (currentlyLiked) {
+            // Quitar like
+            await supabase
+                .from('comment_likes')
+                .delete()
+                .eq('user_id', currentUser.id)
+                .eq('comment_id', commentId);
+        } else {
+            // Dar like
+            await supabase
+                .from('comment_likes')
+                .insert({ user_id: currentUser.id, comment_id: commentId });
+        }
+    } catch (err) {
+        console.error('Error en like:', err);
+        // Revertir si falló
+        btn.onclick = () => toggleCommentLike(commentId, currentlyLiked);
+    }
+}
+
+/** Elimina un comentario (propio o admin) */
+async function _deleteComment(commentId) {
+    if (!currentUser) return;
+    if (!confirm('¿Eliminar este comentario?')) return;
+
+    try {
+        const { error } = await supabase
+            .from('card_comments')
+            .delete()
+            .eq('id', commentId);
+
+        if (error) throw error;
+
+        // Animar la salida del comentario
+        const el = document.getElementById(`comment-${commentId}`);
+        if (el) {
+            el.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(20px)';
+            setTimeout(() => el.remove(), 220);
+        }
+
+    } catch (err) {
+        console.error('Error eliminando comentario:', err);
+        showToast('No se pudo eliminar el comentario', 'error');
+    }
+}
+
+/** Tiempo relativo en español */
+function _timeAgo(isoDate) {
+    const now  = Date.now();
+    const then = new Date(isoDate).getTime();
+    const diff = Math.floor((now - then) / 1000);
+    if (diff < 60)    return 'ahora';
+    if (diff < 3600)  return `hace ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `hace ${Math.floor(diff / 3600)}h`;
+    if (diff < 604800) return `hace ${Math.floor(diff / 86400)}d`;
+    return new Date(isoDate).toLocaleDateString('es-GT', { day:'numeric', month:'short' });
+}
+
+/** Escapa HTML para evitar XSS en comentarios */
+function _escHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}

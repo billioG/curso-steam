@@ -1,0 +1,1884 @@
+// ============================================================
+// admin.js — Panel Administrativo · Formación Docente
+// ============================================================
+
+const SUPABASE_URL  = "https://grkjhzkgcmackbafqudu.supabase.co";
+const SUPABASE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
+const ADMIN_EMAILS  = ['billy@1bot.org'];
+
+// Cursos estáticos del programa (datos reales de data.js)
+const STATIC_COURSES = [
+    { id:'steam',            title:'Metodología STEAM 2.0',               durationHours:5,  totalCards:73, modules:5 },
+    { id:'abp',              title:'Aprendizaje Basado en Proyectos',      durationHours:4,  totalCards:61, modules:5 },
+    { id:'design-thinking',  title:'Design Thinking para Docentes',        durationHours:3,  totalCards:45, modules:4 },
+    { id:'evaluacion',       title:'Evaluación Formativa',                 durationHours:3,  totalCards:38, modules:4 },
+    { id:'tipos-estudiantes',title:'Conoce a Quien Enseñas',               durationHours:5,  totalCards:60, modules:5 },
+    { id:'storytelling',     title:'Storytelling para Docentes',           durationHours:4,  totalCards:50, modules:5 },
+];
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+let _allProgress = [];   // cache global de progreso
+let _charts = {};        // cache de instancias Chart.js
+let _cmsState = { step:1, courseId:null, isStatic:false, data:{ modules:[] } };
+let _currentModuleIdx = -1;
+let _usersCache = [];
+let _dbCourses = [];     // cursos adicionales desde BD
+let _coursesList = [];   // STATIC_COURSES + _dbCourses (para columnas dinámicas)
+
+// ────────────────────────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────────────────────────
+function toast(msg, ok=true) {
+    const el = document.getElementById('adminToast');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = `toast ${ok ? '' : 'bg-red-600'}`;
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 3000);
+}
+
+function fmt(n) { return new Intl.NumberFormat('es').format(n); }
+
+function fmtTime(s) {
+    if (!s || s <= 0) return '—';
+    if (s < 60) return `${s}s`;
+    if (s < 3600) return `${Math.round(s/60)} min`;
+    return `${(s/3600).toFixed(1)}h`;
+}
+
+function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('es-GT', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function fmtDateShort(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('es-GT', { day:'2-digit', month:'short' });
+}
+
+function fmtDateTime(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString('es-GT', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function esc(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getName(p) {
+    return p?.daily_missions?.fullName || (p?.email ? p.email.split('@')[0] : 'Docente');
+}
+
+function getSchool(p) { return p?.daily_missions?.school || 'Individual'; }
+function getDept(p)   { return p?.daily_missions?.department || 'Individual'; }
+
+function getEmail(p) { return p?.email || '—'; }
+
+function destroyChart(key) {
+    if (_charts[key]) { try { _charts[key].destroy(); } catch(e){} _charts[key] = null; }
+}
+
+function buildChart(key, ctx, config) {
+    destroyChart(key);
+    if (!ctx) return;
+    _charts[key] = new Chart(ctx, config);
+    return _charts[key];
+}
+
+function isActive30d(p) {
+    if (!p.updated_at) return false;
+    const d = new Date(p.updated_at);
+    return (Date.now() - d.getTime()) < 30 * 86400000;
+}
+
+function hasCertificate(p) {
+    const scores = p?.daily_missions?.examScores || {};
+    if (p?.daily_missions?.examScore >= 70) return true;
+    return Object.values(scores).some(s => s >= 70);
+}
+
+function getProgressPct(p, courseId='steam') {
+    const completed = (p.completed_cards || []).filter(id => {
+        const s = String(id);
+        if (courseId === 'steam') return /^\d/.test(s) && !s.includes('-m');
+        const prefix = courseId === 'abp' ? 'abp-' : courseId === 'design-thinking' ? 'dt-' : courseId === 'evaluacion' ? 'ev-' : courseId === 'tipos-estudiantes' ? 'te-' : '';
+        return prefix ? s.startsWith(prefix) : false;
+    }).length;
+    const courseInfo = STATIC_COURSES.find(c => c.id === courseId);
+    const total = courseInfo?.totalCards || 73;
+    return Math.round((completed / total) * 100);
+}
+
+function loader(id) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<div class="loader"><i class="fas fa-circle-notch fa-spin"></i> Cargando…</div>';
+}
+
+function empty(id, msg='Sin datos aún.') {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = `<p class="text-slate-400 text-sm text-center py-8">${msg}</p>`;
+}
+
+// ────────────────────────────────────────────────────────────
+// AUTH
+// ────────────────────────────────────────────────────────────
+async function checkAdminAuth() {
+    const { data:{ session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'admin-login.html'; return false; }
+    currentUser = session.user;
+
+    const isAdmin = ADMIN_EMAILS.includes(currentUser.email);
+
+    if (!isAdmin) {
+        alert('Acceso denegado. Solo administradores pueden entrar.');
+        await sb.auth.signOut();
+        window.location.href = 'admin-login.html';
+        return false;
+    }
+    document.getElementById('adminEmail').textContent = currentUser.email;
+    return true;
+}
+
+// ────────────────────────────────────────────────────────────
+// CARGAR PROGRESO GLOBAL (base de todos los cálculos)
+// ────────────────────────────────────────────────────────────
+function showConnectionError(show) {
+    let el = document.getElementById('adminConnError');
+    if (show) {
+        if (el) return; // ya visible
+        el = document.createElement('div');
+        el.id = 'adminConnError';
+        el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999;background:#DC2626;color:white;padding:12px 20px;text-align:center;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:12px';
+        el.innerHTML = `<span>⚠️ No se pudo conectar con el servidor. Revisa tu conexión a internet (no es un problema de los datos).</span>
+            <button style="background:white;color:#DC2626;border:none;padding:6px 14px;border-radius:8px;font-weight:700;cursor:pointer;font-size:12px">Reintentar</button>`;
+        el.querySelector('button').onclick = () => location.reload();
+        document.body.prepend(el);
+    } else if (el) {
+        el.remove();
+    }
+}
+
+async function fetchAllProgress() {
+    const { data, error } = await sb
+        .from('progress')
+        .select('user_id, email, xp, level, streak, completed_cards, updated_at, daily_missions, quiz_correct_count, badges')
+        .order('xp', { ascending: false });
+    if (error) {
+        console.error('progress fetch:', error);
+        showConnectionError(true);
+        return [];
+    }
+    showConnectionError(false);
+    _allProgress = data || [];
+    _usersCache  = [..._allProgress];
+    return _allProgress;
+}
+
+// ────────────────────────────────────────────────────────────
+// HELPER — módulos por curso
+// ────────────────────────────────────────────────────────────
+function getModuleCompletion(progress, courseId) {
+    const courseInfo = STATIC_COURSES.find(c => c.id === courseId);
+    if (!progress.length || !courseInfo) return { labels: [], data: [], enrolled: 0 };
+
+    if (courseId === 'steam') {
+        const ranges = [[1,13],[14,27],[28,41],[42,55],[56,73]];
+        // denominador: solo usuarios que tienen al menos 1 tarjeta STEAM (inscritos)
+        const enrolled = progress.filter(p =>
+            (p.completed_cards||[]).some(id => /^\d+$/.test(String(id)) && !String(id).includes('-'))
+        );
+        const enrolledCount = enrolled.length || 1;
+        return {
+            labels: ranges.map((_,i) => `Módulo ${i+1}`),
+            data: ranges.map(([s,e]) => {
+                const modIds = Array.from({length: e-s+1}, (_,k) => s+k);
+                const c = enrolled.filter(p => {
+                    const done = new Set((p.completed_cards||[]).map(id => parseInt(id)));
+                    return modIds.every(id => done.has(id));
+                }).length;
+                return Math.round((c / enrolledCount) * 100);
+            }),
+            enrolled: enrolledCount
+        };
+    }
+
+    const prefix = courseId==='abp' ? 'abp-' : courseId==='design-thinking' ? 'dt-' : courseId==='evaluacion' ? 'ev-' : courseId==='tipos-estudiantes' ? 'te-' : '';
+    const numMods = courseInfo.modules || 5;
+    // denominador: solo usuarios con al menos 1 tarjeta del curso
+    const enrolled = progress.filter(p =>
+        (p.completed_cards||[]).some(id => String(id).startsWith(prefix))
+    );
+    const enrolledCount = enrolled.length || 1;
+    const perMod = Math.ceil((courseInfo.totalCards || 60) / numMods);
+    return {
+        labels: Array.from({length: numMods}, (_,i) => `Módulo ${i+1}`),
+        data: Array.from({length: numMods}, (_,i) => {
+            const c = enrolled.filter(p => {
+                const doneCards = (p.completed_cards||[]).map(id => String(id)).filter(id => id.startsWith(`${prefix}m${i+1}-`));
+                return doneCards.length >= perMod;
+            }).length;
+            return Math.round((c / enrolledCount) * 100);
+        }),
+        enrolled: enrolledCount
+    };
+}
+
+function buildModuleChart(chartKey, canvasId, progress, courseId) {
+    const { labels, data, enrolled } = getModuleCompletion(progress, courseId);
+    buildChart(chartKey, document.getElementById(canvasId)?.getContext('2d'), {
+        type:'bar',
+        data:{
+            labels,
+            datasets:[{ label:`% de inscritos que completaron (n=${enrolled})`,
+                data,
+                backgroundColor:['#e0f2fe','#bfdbfe','#a5b4fc','#818cf8','#4f46e5'],
+                borderRadius:8, borderSkipped:false }]
+        },
+        options:{
+            plugins:{legend:{display:true, labels:{font:{size:10},boxWidth:0}}},
+            scales:{ y:{beginAtZero:true,max:100,grid:{color:'#f8fafc'},ticks:{callback:v=>v+'%',font:{size:10}}},
+                     x:{grid:{display:false},ticks:{font:{size:10}}} } }
+    });
+}
+
+// ────────────────────────────────────────────────────────────
+// DASHBOARD
+// ────────────────────────────────────────────────────────────
+async function loadDashboard() {
+    const progress = await fetchAllProgress();
+    const total = progress.length;
+    const active30 = progress.filter(isActive30d).length;
+    const totalCards = progress.reduce((a,p) => a + (p.completed_cards?.length||0), 0);
+    const horasFormacion = Math.round(totalCards * 3 / 60);
+    const completedFull = progress.filter(p => (p.completed_cards?.length||0) >= 70).length;
+    const tasaFinalizacion = total ? Math.round((completedFull/total)*100) : 0;
+
+    // Total de certificados = misma lógica que la tabla de cursos (garantiza coincidencia)
+    const totalCertificados = STATIC_COURSES.reduce((sum, c) => {
+        return sum + progress.filter(p => {
+            const sc = p?.daily_missions?.examScores || {};
+            return (sc[c.id] || 0) >= 70 ||
+                   (c.id === 'steam' && (p?.daily_missions?.examScore || 0) >= 70);
+        }).length;
+    }, 0);
+
+    // Banner de impacto
+    const now = new Date();
+    document.getElementById('dashPeriod').textContent =
+        `Actualizado ${now.toLocaleDateString('es-GT',{day:'2-digit',month:'long',year:'numeric'})}`;
+    document.getElementById('impactDocentes').textContent = fmt(total);
+    document.getElementById('impactHoras').textContent = fmt(horasFormacion)+'h';
+    document.getElementById('impactFinalizacion').textContent = tasaFinalizacion+'%';
+    document.getElementById('impactCertificados').textContent = fmt(totalCertificados);
+
+    // KPIs
+    document.getElementById('kpiActive').textContent = fmt(active30);
+    document.getElementById('kpiCards').textContent = fmt(totalCards);
+
+    // Tiempo promedio desde resource_views
+    const { data: rv } = await sb.from('resource_views').select('time_spent_seconds').not('time_spent_seconds','is',null);
+    const avgS = rv?.length ? Math.round(rv.reduce((a,b)=>a+(b.time_spent_seconds||0),0)/rv.length) : 0;
+    document.getElementById('kpiAvgTime').textContent = avgS ? fmtTime(avgS) : 'N/A';
+
+    // NPS
+    const { data: fb } = await sb.from('feedback').select('nps,rating');
+    let npsText = 'N/A';
+    if (fb?.length) {
+        const promoters = fb.filter(f=>f.nps>=9).length;
+        const detractors = fb.filter(f=>f.nps<=6).length;
+        const nps = Math.round(((promoters-detractors)/fb.length)*100);
+        npsText = nps;
+    }
+    document.getElementById('kpiNps').textContent = npsText;
+
+    // Gráfico XP top 10
+    const top10 = progress.slice(0,10);
+    buildChart('xp', document.getElementById('xpChart')?.getContext('2d'), {
+        type:'bar',
+        data:{
+            labels: top10.map(p => getName(p).substring(0,15)),
+            datasets:[{ label:'XP', data: top10.map(p=>p.xp||0),
+                backgroundColor: top10.map((_,i)=>`hsl(${230+i*8},70%,${60-i*2}%)`),
+                borderRadius:8, borderSkipped:false }]
+        },
+        options:{ plugins:{legend:{display:false}}, scales:{
+            y:{beginAtZero:true,grid:{color:'#f8fafc'},ticks:{font:{size:10}}},
+            x:{grid:{display:false},ticks:{font:{size:10}}}
+        }}
+    });
+
+    // Gráfico distribución de niveles
+    const lvlBuckets = { 'Inicio (0-20%)':0, 'Básico (21-50%)':0, 'Intermedio (51-80%)':0, 'Avanzado (81-100%)':0 };
+    progress.forEach(p => {
+        const pct = getProgressPct(p,'steam');
+        if (pct <= 20) lvlBuckets['Inicio (0-20%)']++;
+        else if (pct <= 50) lvlBuckets['Básico (21-50%)']++;
+        else if (pct <= 80) lvlBuckets['Intermedio (51-80%)']++;
+        else lvlBuckets['Avanzado (81-100%)']++;
+    });
+    buildChart('levels', document.getElementById('levelsChart')?.getContext('2d'), {
+        type:'doughnut',
+        data:{
+            labels: Object.keys(lvlBuckets),
+            datasets:[{ data: Object.values(lvlBuckets),
+                backgroundColor:['#f1f5f9','#bfdbfe','#818cf8','#4f46e5'],
+                borderWidth:2, borderColor:'#fff' }]
+        },
+        options:{ plugins:{ legend:{ position:'bottom', labels:{ font:{size:10}, boxWidth:12 } } }, cutout:'65%' }
+    });
+
+    // Progreso por módulo — curso seleccionado
+    const dashModSel = document.getElementById('dashModuleCourseSel');
+    buildModuleChart('module', 'moduleChart', progress, dashModSel?.value || 'steam');
+    dashModSel?.addEventListener('change', () => buildModuleChart('module', 'moduleChart', _allProgress, dashModSel.value));
+
+    // Actividad reciente
+    const recent = [...progress].sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at)).slice(0,6);
+    const act = document.getElementById('recentActivity');
+    if (act) {
+        if (!recent.length) { act.innerHTML='<p class="text-slate-400 text-sm text-center py-6">Sin actividad registrada.</p>'; }
+        else act.innerHTML = recent.map(p=>`
+            <div class="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
+                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs shrink-0">
+                    ${esc(getName(p).charAt(0).toUpperCase())}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-700 truncate">${esc(getName(p))}</p>
+                    <p class="text-xs text-slate-400">${esc(getEmail(p))}</p>
+                </div>
+                <div class="text-right shrink-0">
+                    <p class="text-xs font-bold text-amber-600"><i class="fas fa-star"></i> ${p.xp||0} XP</p>
+                    <p class="text-[10px] text-slate-400">${fmtDateTime(p.updated_at)}</p>
+                </div>
+            </div>`).join('');
+    }
+
+    // Tabla resumen por curso
+    renderCourseSummary(progress);
+}
+
+function renderCourseSummary(progress) {
+    const el = document.getElementById('courseSummaryTable');
+    if (!el) return;
+    const rows = STATIC_COURSES.map(c => {
+        const enrolled = progress.filter(p => {
+            const completed = p.completed_cards || [];
+            if (c.id === 'steam') return completed.some(id => /^\d/.test(String(id)) && !String(id).includes('-m'));
+            const prefix = c.id==='abp'?'abp-':c.id==='design-thinking'?'dt-':c.id==='evaluacion'?'ev-':c.id==='tipos-estudiantes'?'te-':'';
+            return completed.some(id => String(id).startsWith(prefix));
+        });
+        const certified = enrolled.filter(p => {
+            const sc = p?.daily_missions?.examScores || {};
+            return (sc[c.id]||0) >= 70 || (c.id==='steam' && (p?.daily_missions?.examScore||0)>=70);
+        }).length;
+        const avgPct = enrolled.length
+            ? Math.round(enrolled.reduce((a,p)=>a+getProgressPct(p,c.id),0)/enrolled.length) : 0;
+        return `<tr>
+            <td><p class="font-semibold text-slate-700 text-sm">${c.title}</p></td>
+            <td><span class="badge tag-blue">${enrolled.length} docentes</span></td>
+            <td>
+                <div class="flex items-center gap-2">
+                    <div class="flex-1 bg-slate-100 rounded-full h-1.5 min-w-[60px]">
+                        <div class="bg-indigo-500 h-1.5 rounded-full" style="width:${avgPct}%"></div>
+                    </div>
+                    <span class="text-xs font-bold text-slate-600">${avgPct}%</span>
+                </div>
+            </td>
+            <td><span class="badge tag-green">${certified} certificados</span></td>
+            <td><span class="text-xs text-slate-500">${c.durationHours}h · ${c.totalCards} tarjetas</span></td>
+        </tr>`;
+    });
+    el.innerHTML = `<table>
+        <thead><tr>
+            <th>Curso</th><th>Inscritos</th><th>Progreso promedio</th><th>Certificados</th><th>Datos</th>
+        </tr></thead>
+        <tbody>${rows.join('')}</tbody>
+    </table>`;
+}
+
+// ────────────────────────────────────────────────────────────
+// ANALYTICS
+// ────────────────────────────────────────────────────────────
+async function loadAnalytics() {
+    const progress = _allProgress.length ? _allProgress : await fetchAllProgress();
+    const total = progress.length;
+
+    // Completitud por módulo — curso seleccionado
+    const anModSel = document.getElementById('analyticsModuleCourseSel');
+    buildModuleChart('analyticsModule', 'analyticsModuleChart', progress, anModSel?.value || 'steam');
+    anModSel?.addEventListener('change', () => buildModuleChart('analyticsModule', 'analyticsModuleChart', _allProgress, anModSel.value));
+
+    // Donut distribución
+    const totalCardsAll = progress.reduce((a,p)=>a+(p.completed_cards?.length||0),0);
+    const totalQuizzes  = progress.reduce((a,p)=>a+(p.quiz_correct_count||0),0);
+    const totalBadges   = progress.reduce((a,p)=>a+(p.badges?.length||0),0);
+    const certified     = progress.filter(hasCertificate).length;
+    buildChart('analyticsDonut', document.getElementById('analyticsDonut')?.getContext('2d'), {
+        type:'doughnut',
+        data:{ labels:['Tarjetas completadas','Quizzes correctos','Logros desbloqueados','Certificados emitidos'],
+            datasets:[{data:[totalCardsAll,totalQuizzes,totalBadges,certified],
+                backgroundColor:['#818cf8','#34d399','#fbbf24','#4f46e5'],borderWidth:2,borderColor:'#fff'}]},
+        options:{ plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}},cutout:'60%' }
+    });
+
+    // Barras por curso
+    const courseAvg = STATIC_COURSES.map(c => {
+        const enrolled = progress.filter(p=>(p.completed_cards||[]).some(id=>{
+            const s=String(id);
+            if(c.id==='steam') return /^\d/.test(s)&&!s.includes('-m');
+            const px=c.id==='abp'?'abp-':c.id==='design-thinking'?'dt-':c.id==='evaluacion'?'ev-':c.id==='tipos-estudiantes'?'te-':'';
+            return px && s.startsWith(px);
+        }));
+        return enrolled.length ? Math.round(enrolled.reduce((a,p)=>a+getProgressPct(p,c.id),0)/enrolled.length) : 0;
+    });
+    buildChart('analyticsCourseBar', document.getElementById('analyticsCourseBar')?.getContext('2d'), {
+        type:'bar',
+        data:{ labels: STATIC_COURSES.map(c=>c.title.substring(0,20)),
+            datasets:[{label:'Progreso promedio %',data:courseAvg,
+                backgroundColor:['#07B0E4','#2563EB','#E83C8D','#E9A037','#7C3AED'],
+                borderRadius:8,borderSkipped:false}]},
+        options:{ indexAxis:'y', plugins:{legend:{display:false}},
+            scales:{ x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%',font:{size:10}}},
+                     y:{grid:{display:false},ticks:{font:{size:10}}} } }
+    });
+
+    // Diagnóstico — leer desde daily_missions.diagLevel si existe
+    const diagCounts = { inicial:0, proceso:0, satisfactorio:0, destacado:0, 'sin datos':0 };
+    progress.forEach(p => {
+        const dr = p?.daily_missions?.diagResult;
+        if (dr?.level && diagCounts[dr.level] !== undefined) diagCounts[dr.level]++;
+        else diagCounts['sin datos']++;
+    });
+    buildChart('analyticsDiag', document.getElementById('analyticsDiagChart')?.getContext('2d'), {
+        type:'doughnut',
+        data:{ labels:['Inicial','En Proceso','Satisfactorio','Destacado','Sin dato'],
+            datasets:[{data:Object.values(diagCounts),
+                backgroundColor:['#fca5a5','#fde68a','#86efac','#c4b5fd','#e2e8f0'],
+                borderWidth:2,borderColor:'#fff'}]},
+        options:{ plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}},cutout:'55%' }
+    });
+
+    // Engagement por docente — calculado desde progress (compatible con RLS)
+    const tbl = document.getElementById('analyticsSessionsTable');
+    if (tbl) {
+        const active = progress.filter(p => (p.completed_cards?.length || 0) > 0);
+        if (!active.length) { empty('analyticsSessionsTable', 'Sin registros de actividad aún.'); return; }
+
+        // Tiempo estimado: cada tarjeta ≈ 3 min de estudio
+        const MINS_PER_CARD = 3;
+        const sorted = [...active]
+            .sort((a, b) => (b.completed_cards?.length || 0) - (a.completed_cards?.length || 0))
+            .slice(0, 15);
+        const maxCards = sorted[0]?.completed_cards?.length || 1;
+
+        tbl.innerHTML = `<table>
+            <thead><tr><th>Docente</th><th>Tarjetas completadas · Tiempo estimado</th><th>XP</th><th>Último acceso</th></tr></thead>
+            <tbody>${sorted.map(p => {
+                const cards = p.completed_cards?.length || 0;
+                const mins  = cards * MINS_PER_CARD;
+                const hStr  = mins >= 60 ? `${Math.floor(mins/60)}h ${mins%60}m` : `${mins}m`;
+                const lastSeen = p.updated_at ? new Date(p.updated_at).toLocaleDateString('es-GT',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+                return `<tr>
+                <td class="font-medium text-slate-700">${esc(getName(p))}</td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 bg-slate-100 rounded-full h-2 min-w-[80px]">
+                            <div class="bg-indigo-500 h-2 rounded-full" style="width:${Math.round(cards/maxCards*100)}%"></div>
+                        </div>
+                        <span class="text-xs text-slate-600 whitespace-nowrap">${cards} tarjetas · <strong class="text-indigo-600">${hStr}</strong></span>
+                    </div>
+                </td>
+                <td><span class="badge tag-blue">${p.xp || 0} XP</span></td>
+                <td class="text-xs text-slate-500">${lastSeen}</td>
+            </tr>`;
+            }).join('')}</tbody>
+        </table>`;
+    }
+}
+
+// ────────────────────────────────────────────────────────────
+// USUARIOS
+// ────────────────────────────────────────────────────────────
+// user_id → school_id (asignaciones cargadas con loadUsers)
+let _userSchoolMap  = {};
+let _coordUserIds   = new Set(); // user_ids que son coordinadores
+
+async function loadUsers() {
+    const progress = _allProgress.length ? _allProgress : await fetchAllProgress();
+    _usersCache = [...progress];
+
+    // Fetch DB courses
+    if (!_dbCourses.length) {
+        const { data } = await sb.from('courses').select('id, title').order('created_at', { ascending: true });
+        _dbCourses = data || [];
+    }
+    _coursesList = [
+        ...STATIC_COURSES,
+        ..._dbCourses.filter(c => !STATIC_COURSES.find(s => s.id === c.id))
+    ];
+
+    // Fetch schools, asignaciones y coordinadores en paralelo
+    const [{ data: schoolsData }, { data: assignments }, { data: coordRows }] = await Promise.all([
+        sb.from('schools').select('id, name').order('name'),
+        sb.from('user_schools').select('user_id, school_id'),
+        sb.from('coordinators').select('user_id')
+    ]);
+    _schools = schoolsData || [];
+    _userSchoolMap = {};
+    (assignments || []).forEach(a => { _userSchoolMap[a.user_id] = a.school_id; });
+    _coordUserIds = new Set((coordRows || []).map(c => c.user_id));
+
+    renderUsersTable(progress);
+}
+
+async function assignTeacherSchool(userId, schoolId) {
+    if (!schoolId) {
+        await sb.from('user_schools').delete().eq('user_id', userId);
+        delete _userSchoolMap[userId];
+        toast('Centro removido.', 'success');
+        return;
+    }
+    const { error } = await sb.from('user_schools').upsert(
+        { user_id: userId, school_id: schoolId },
+        { onConflict: 'user_id,school_id' }
+    );
+    if (error) { toast('Error: ' + error.message, 'error'); return; }
+    _userSchoolMap[userId] = schoolId;
+    toast('Centro asignado.', 'success');
+}
+
+function hasCourseExamPassed(p, courseId) {
+    const scores = p?.daily_missions?.examScores || {};
+    if (courseId === 'steam') return (scores['steam'] ?? p?.daily_missions?.examScore ?? -1) >= 70;
+    return (scores[courseId] ?? -1) >= 70;
+}
+
+function hasCourseStarted(p, courseId) {
+    return (p.completed_cards || []).some(id => {
+        const s = String(id);
+        if (courseId === 'steam') return /^\d/.test(s) && !s.includes('-m');
+        const px = courseId==='abp'?'abp-':courseId==='design-thinking'?'dt-':courseId==='evaluacion'?'ev-':courseId==='tipos-estudiantes'?'te-':'';
+        return px ? s.startsWith(px) : false;
+    });
+}
+
+function renderUsersTable(users) {
+    const total = users.length;
+    const active = users.filter(isActive30d).length;
+    const certified = users.filter(hasCertificate).length;
+    document.getElementById('uTotal').textContent = total;
+    document.getElementById('uActive').textContent = active;
+    document.getElementById('uCert').textContent = certified;
+
+    const cont = document.getElementById('usersTableContainer');
+    if (!cont) return;
+    if (!users.length) { cont.innerHTML='<div class="loader">Sin docentes registrados aún.</div>'; return; }
+
+    const courses = _coursesList.length ? _coursesList : STATIC_COURSES;
+    const shortTitle = t => t.length > 14 ? t.substring(0,13)+'…' : t;
+
+    cont.innerHTML = `<div class="overflow-x-auto"><table>
+        <thead><tr>
+            <th>Docente</th><th>Correo</th><th>Escuela</th><th>XP</th><th>Racha</th><th>Diagnóstico</th>
+            ${courses.map(c=>`<th title="${esc(c.title)}">${shortTitle(c.title)}</th>`).join('')}
+            <th>Último acceso</th>
+        </tr></thead>
+        <tbody>${users.map(p => {
+            const activo = isActive30d(p);
+            const diag = p?.daily_missions?.diagResult;
+            const _diagMap = {
+                inicial:       '<span class="badge" style="background:#fee2e2;color:#991b1b;font-size:9px">Inicial</span>',
+                proceso:       '<span class="badge" style="background:#fef3c7;color:#92400e;font-size:9px">En Proceso</span>',
+                satisfactorio: '<span class="badge" style="background:#dcfce7;color:#166534;font-size:9px">Satisfactorio</span>',
+                destacado:     '<span class="badge" style="background:#f3e8ff;color:#6b21a8;font-size:9px">Destacado</span>',
+            };
+            const diagLabel = diag ? (_diagMap[diag.level] || '—') : '—';
+            const school = getSchool(p);
+            const courseCells = courses.map(c => {
+                if (hasCourseExamPassed(p, c.id)) {
+                    return `<td><span class="badge tag-green" style="font-size:9px">✓ Cert.</span></td>`;
+                } else if (hasCourseStarted(p, c.id)) {
+                    const pct = getProgressPct(p, c.id);
+                    return `<td><span class="badge tag-blue" style="font-size:9px">${pct}%</span></td>`;
+                }
+                return `<td><span class="text-slate-300 text-xs">—</span></td>`;
+            }).join('');
+            const isAdmin = getEmail(p) === 'billy@1bot.org';
+            const isCoord = _coordUserIds.has(p.user_id);
+            const roleBadge = isAdmin
+                ? '<span class="badge" style="background:#fef3c7;color:#92400e;font-size:9px">Admin</span>'
+                : isCoord
+                ? '<span class="badge" style="background:#ede9fe;color:#6d28d9;font-size:9px">Coordinador</span>'
+                : '<span class="badge" style="background:#f1f5f9;color:#475569;font-size:9px">Docente</span>';
+            return `<tr>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs shrink-0">${esc(getName(p).charAt(0).toUpperCase())}</div>
+                        <div>
+                            <p class="font-semibold text-slate-800 text-xs">${esc(getName(p))}</p>
+                            <div class="flex gap-1 mt-0.5">${roleBadge}${activo ? '<span class="badge tag-green" style="font-size:9px">Activo</span>' : ''}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-slate-400 text-xs">${esc(getEmail(p))}</td>
+                <td class="text-xs">
+                    <select onchange="assignTeacherSchool('${p.user_id}', this.value)"
+                        class="border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-300 max-w-[130px]"
+                        title="${esc(school)}">
+                        <option value="">— Sin centro —</option>
+                        ${_schools.map(s => `<option value="${s.id}" ${_userSchoolMap[p.user_id] === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}
+                    </select>
+                </td>
+                <td><span class="font-bold text-amber-600 text-xs"><i class="fas fa-star text-yellow-400"></i> ${fmt(p.xp||0)}</span></td>
+                <td class="text-xs"><i class="fas fa-fire text-orange-400"></i> ${p.streak||0}d</td>
+                <td class="text-xs">${diagLabel}</td>
+                ${courseCells}
+                <td class="text-slate-400 text-xs whitespace-nowrap">${fmtDateTime(p.updated_at)}</td>
+            </tr>`;
+        }).join('')}</tbody>
+    </table></div>`;
+}
+
+function filterUsers(q) {
+    if (!q.trim()) { renderUsersTable(_usersCache); return; }
+    const ql = q.toLowerCase();
+    renderUsersTable(_usersCache.filter(p =>
+        getName(p).toLowerCase().includes(ql)  ||
+        getEmail(p).toLowerCase().includes(ql) ||
+        getSchool(p).toLowerCase().includes(ql)||
+        getDept(p).toLowerCase().includes(ql)
+    ));
+}
+
+// ────────────────────────────────────────────────────────────
+// FEEDBACK
+// ────────────────────────────────────────────────────────────
+async function loadFeedback() {
+    const { data:fb, error } = await sb.from('feedback').select('*').order('created_at',{ascending:false});
+    if (error || !fb) { empty('feedbackList','Error al cargar feedback.'); return; }
+
+    document.getElementById('fbTotal').textContent = fb.length || 0;
+
+    if (fb.length) {
+        const promoters  = fb.filter(f=>f.nps>=9).length;
+        const detractors = fb.filter(f=>f.nps<=6).length;
+        const nps = Math.round(((promoters-detractors)/fb.length)*100);
+        document.getElementById('fbNps').textContent = nps;
+        const avgRating = (fb.reduce((a,f)=>a+(f.rating||0),0)/fb.length).toFixed(1);
+        document.getElementById('fbRating').textContent = avgRating+' / 5';
+
+        // NPS distribution chart
+        const npsBuckets = { 'Promotores (9-10)': promoters, 'Neutros (7-8)': fb.filter(f=>f.nps>=7&&f.nps<=8).length, 'Detractores (0-6)': detractors };
+        buildChart('nps', document.getElementById('npsChart')?.getContext('2d'), {
+            type:'doughnut',
+            data:{ labels: Object.keys(npsBuckets),
+                datasets:[{data:Object.values(npsBuckets),backgroundColor:['#34d399','#fbbf24','#f87171'],borderWidth:2,borderColor:'#fff'}]},
+            options:{ plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}},cutout:'60%' }
+        });
+
+        // Rating por módulo
+        const modRating = {};
+        fb.forEach(f => {
+            const k = f.module_id ? `Módulo ${f.module_id}` : 'General';
+            if (!modRating[k]) modRating[k] = [];
+            modRating[k].push(f.rating||0);
+        });
+        const modKeys = Object.keys(modRating);
+        const modAvg  = modKeys.map(k => (modRating[k].reduce((a,b)=>a+b,0)/modRating[k].length).toFixed(1));
+        buildChart('rating', document.getElementById('ratingChart')?.getContext('2d'), {
+            type:'bar',
+            data:{ labels:modKeys,
+                datasets:[{label:'Rating promedio',data:modAvg,backgroundColor:'#fbbf24',borderRadius:8,borderSkipped:false}]},
+            options:{ plugins:{legend:{display:false}},
+                scales:{ y:{beginAtZero:true,max:5,ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10}}} } }
+        });
+    } else {
+        ['fbNps','fbRating'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent='N/A'; });
+    }
+
+    const list = document.getElementById('feedbackList');
+    if (!list) return;
+    if (!fb.length) { list.innerHTML='<div class="card text-center text-slate-400 py-8 text-sm">No hay feedback registrado aún.</div>'; return; }
+
+    // Build name map from progress cache
+    const nameMap = {};
+    _allProgress.forEach(p => { if (p.user_id) nameMap[p.user_id] = { name: getName(p), email: getEmail(p) }; });
+
+    // Group by user_id
+    const byUser = {};
+    fb.forEach(f => {
+        const key = f.user_id || '__anon__';
+        if (!byUser[key]) byUser[key] = { user_id: f.user_id, items: [] };
+        byUser[key].items.push(f);
+    });
+
+    const userGroups = Object.values(byUser).sort((a,b) => b.items.length - a.items.length);
+
+    list.innerHTML = userGroups.map((ug, idx) => {
+        const info   = nameMap[ug.user_id] || { name: 'Docente anónimo', email: '' };
+        const count  = ug.items.length;
+        const avgRat = ug.items.reduce((a,f)=>a+(f.rating||0),0) / count;
+        const avgNps = ug.items.filter(f=>f.nps!==null).reduce((a,f)=>a+(f.nps||0),0) / (ug.items.filter(f=>f.nps!==null).length||1);
+        const npsColor = avgNps>=9?'tag-green':avgNps>=7?'tag-amber':'tag-red';
+        const npsLabel = avgNps>=9?'Promotor':avgNps>=7?'Neutro':'Detractor';
+        return `
+        <div class="card" style="margin-bottom:8px">
+            <div class="flex items-center justify-between gap-3 cursor-pointer select-none" onclick="toggleFeedbackUser('fbu-${idx}','fchev-${idx}')">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm shrink-0">
+                        ${esc(info.name.charAt(0).toUpperCase())}
+                    </div>
+                    <div>
+                        <p class="font-semibold text-slate-800 text-sm">${esc(info.name)}</p>
+                        <p class="text-xs text-slate-400">${esc(info.email)} · <strong>${count}</strong> respuesta${count!==1?'s':''}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span class="badge tag-amber"><i class="fas fa-star"></i> ${avgRat.toFixed(1)}/5</span>
+                    <span class="badge ${npsColor}">${npsLabel}</span>
+                    <i id="fchev-${idx}" class="fas fa-chevron-down text-slate-300 text-xs transition-transform duration-200"></i>
+                </div>
+            </div>
+            <div id="fbu-${idx}" class="hidden mt-4 space-y-3 border-t border-slate-50 pt-4">
+                ${ug.items.map(f=>`
+                <div class="bg-slate-50 rounded-xl p-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+                        <span class="font-semibold text-slate-700 text-sm">${f.module_name || (f.module_id ? `Módulo ${f.module_id}` : 'General')}</span>
+                        <div class="flex gap-2 flex-wrap">
+                            ${f.rating ? `<span class="badge tag-amber"><i class="fas fa-star"></i> ${f.rating}/5</span>` : ''}
+                            ${f.nps !== null ? `<span class="badge tag-blue">NPS: ${f.nps}</span>` : ''}
+                            <span class="badge ${f.nps>=9?'tag-green':f.nps>=7?'tag-amber':'tag-red'}" style="font-size:9px">${f.nps>=9?'Promotor':f.nps>=7?'Neutro':'Detractor'}</span>
+                        </div>
+                    </div>
+                    ${f.comment ? `<p class="text-xs text-slate-600 italic mt-1">"${esc(f.comment)}"</p>` : ''}
+                    <p class="text-[10px] text-slate-400 mt-1">${fmtDateTime(f.created_at)}</p>
+                </div>`).join('')}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function toggleFeedbackUser(panelId, chevId) {
+    const panel = document.getElementById(panelId);
+    const chev  = document.getElementById(chevId);
+    if (!panel) return;
+    const isHidden = panel.classList.toggle('hidden');
+    if (chev) chev.style.transform = isHidden ? '' : 'rotate(180deg)';
+}
+
+// ────────────────────────────────────────────────────────────
+// CMS — GESTIÓN DE CURSOS
+// ────────────────────────────────────────────────────────────
+async function loadCMS() {
+    const cont = document.getElementById('cmsCoursesList');
+    if (!cont) return;
+    cont.innerHTML = '<div class="loader"><i class="fas fa-circle-notch fa-spin"></i> Cargando cursos…</div>';
+
+    const { data: dbCourses } = await sb.from('courses').select('*').order('created_at',{ascending:false});
+
+    // Estáticos primero, luego los de BD
+    const staticCards = STATIC_COURSES.map(c => ({...c, isStatic:true}));
+    const allCourses  = [...staticCards, ...(dbCourses||[])];
+
+    const enrolled = {};
+    _allProgress.forEach(p => {
+        STATIC_COURSES.forEach(c => {
+            const has = (p.completed_cards||[]).some(id=>{
+                const s=String(id);
+                if(c.id==='steam') return /^\d/.test(s)&&!s.includes('-m');
+                const px=c.id==='abp'?'abp-':c.id==='design-thinking'?'dt-':c.id==='evaluacion'?'ev-':c.id==='tipos-estudiantes'?'te-':'';
+                return px && s.startsWith(px);
+            });
+            if (has) enrolled[c.id] = (enrolled[c.id]||0)+1;
+        });
+    });
+
+    cont.innerHTML = allCourses.map(c => {
+        const isStatic = !!c.isStatic;
+        const docentes = enrolled[c.id] || 0;
+        const statusBadge = (c.status==='available'||isStatic)
+            ? '<span class="badge tag-green">Disponible</span>'
+            : '<span class="badge tag-slate">Próximamente</span>';
+        return `<div class="card">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg shrink-0"
+                     style="background:${c.color||'#4f46e5'}">
+                    ${isStatic
+    ? '<i class="fas fa-book-open text-white text-xl"></i>'
+    : '<i class="fas fa-graduation-cap text-white text-xl"></i>'}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <h3 class="font-bold text-slate-800">${c.title}</h3>
+                        ${statusBadge}
+                        ${isStatic ? '<span class="badge tag-blue">Programa base</span>' : '<span class="badge tag-violet">Personalizado</span>'}
+                    </div>
+                    ${c.subtitle ? `<p class="text-xs text-slate-500 mb-1">${c.subtitle}</p>` : ''}
+                    ${c.description ? `<p class="text-xs text-slate-500 mb-1">${c.description}</p>` : ''}
+                    <div class="flex gap-4 text-xs text-slate-400 mt-1">
+                        <span><i class="fas fa-users mr-1"></i>${docentes} docentes</span>
+                        ${c.durationHours ? `<span><i class="fas fa-clock mr-1"></i>${c.durationHours}h</span>` : ''}
+                        ${c.totalCards || c.modules ? `<span><i class="fas fa-cards-blank mr-1"></i>${c.totalCards||'—'} tarjetas</span>` : ''}
+                        ${isStatic ? '<span class="text-amber-600"><i class="fas fa-lock mr-1"></i>Contenido en data.js</span>' : ''}
+                    </div>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                    <button data-cid="${c.id}" data-static="${isStatic}" class="edit-cms-btn btn-secondary text-xs">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    ${!isStatic ? `<button data-cid="${c.id}" class="delete-cms-btn btn-danger text-xs">
+                        <i class="fas fa-trash"></i>
+                    </button>` : ''}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    document.querySelectorAll('.edit-cms-btn').forEach(btn =>
+        btn.addEventListener('click', () => openCMSModal(btn.dataset.cid, btn.dataset.static==='true'))
+    );
+    document.querySelectorAll('.delete-cms-btn').forEach(btn =>
+        btn.addEventListener('click', () => deleteCourse(btn.dataset.cid))
+    );
+}
+
+async function deleteCourse(id) {
+    if (!confirm('¿Eliminar este curso? Esta acción no se puede deshacer.')) return;
+    const { error } = await sb.from('courses').delete().eq('id', id);
+    if (error) { toast('Error al eliminar: '+error.message, false); return; }
+    toast('Curso eliminado.');
+    loadCMS();
+}
+
+// ── CMS Modal ────────────────────────────────────────────────
+async function openCMSModal(courseId=null, isStatic=false) {
+    _cmsState = { step:1, courseId, isStatic, data:{ modules:[] } };
+    cmsGoStep(1);
+
+    const modal = document.getElementById('cmsModal');
+    const titleEl = document.getElementById('cmsModalTitle');
+    const subEl   = document.getElementById('cmsModalSubtitle');
+    const warn    = document.getElementById('csStaticWarning');
+
+    if (courseId) {
+        titleEl.textContent = 'Editar Curso';
+        subEl.textContent   = isStatic ? 'Editando metadatos del curso base' : 'Editando curso personalizado';
+        warn?.classList.toggle('hidden', !isStatic);
+
+        if (isStatic) {
+            // Cargar metadatos del curso estático
+            const sc = STATIC_COURSES.find(c=>c.id===courseId)||{};
+            document.getElementById('csTitle').value    = sc.title||'';
+            document.getElementById('csId').value       = sc.id||'';
+            document.getElementById('csId').disabled    = true;
+            document.getElementById('csSubtitle').value = sc.subtitle||'';
+            document.getElementById('csColor').value    = sc.color||'#4f46e5';
+            document.getElementById('csColorPicker').value = sc.color||'#4f46e5';
+            document.getElementById('csDuration').value = sc.durationHours||'';
+            document.getElementById('csStatus').value   = 'available';
+        } else {
+            // Cargar desde BD
+            const { data } = await sb.from('courses').select('*').eq('id', courseId).maybeSingle();
+            if (data) {
+                document.getElementById('csTitle').value    = data.title||'';
+                document.getElementById('csId').value       = data.id||'';
+                document.getElementById('csId').disabled    = true;
+                document.getElementById('csSubtitle').value = data.subtitle||'';
+                document.getElementById('csColor').value    = data.color||'#4f46e5';
+                document.getElementById('csColorPicker').value = data.color||'#4f46e5';
+                document.getElementById('csDuration').value = data.duration_hours||'';
+                document.getElementById('csStatus').value   = data.status||'available';
+                if (data.content) {
+                    _cmsState.data = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+                }
+            }
+        }
+    } else {
+        titleEl.textContent = 'Nuevo Curso';
+        subEl.textContent   = 'Se guardará en Supabase y estará disponible en la app';
+        warn?.classList.add('hidden');
+        document.getElementById('csId').disabled = false;
+        document.getElementById('cmsModal').querySelector('form') && document.getElementById('cmsModal').querySelector('form').reset();
+        ['csTitle','csId','csSubtitle','csDuration'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+        document.getElementById('csColor').value = '#4f46e5';
+        document.getElementById('csColorPicker').value = '#4f46e5';
+        document.getElementById('csStatus').value = 'available';
+    }
+
+    renderModulesEditor();
+    modal.classList.remove('hidden');
+}
+
+function cmsGoStep(n) {
+    _cmsState.step = n;
+    document.querySelectorAll('.cms-step').forEach(el => el.classList.remove('active'));
+    const stepEl = document.getElementById(`cmsStep${n}`);
+    if (stepEl) stepEl.classList.add('active');
+
+    document.querySelectorAll('.cms-tab-btn').forEach(btn => {
+        const active = parseInt(btn.dataset.step) === n;
+        btn.classList.toggle('border-indigo-500',active);
+        btn.classList.toggle('text-indigo-600',active);
+        btn.classList.toggle('border-transparent',!active);
+        btn.classList.toggle('text-slate-400',!active);
+    });
+
+    const prev = document.getElementById('cmsPrevBtn');
+    const next = document.getElementById('cmsNextBtn');
+    const save = document.getElementById('cmsSaveBtn');
+    if (prev) prev.classList.toggle('hidden', n===1);
+    if (next) next.classList.toggle('hidden', n===3);
+    if (save) save.classList.toggle('hidden', n!==3);
+
+    if (n===2) renderModulesEditor();
+    if (n===3) renderModuleSelector();
+}
+
+function cmsStepNav(dir) {
+    const newStep = _cmsState.step + dir;
+    if (newStep<1||newStep>3) return;
+    if (dir>0 && _cmsState.step===1) {
+        if (!document.getElementById('csTitle').value.trim() || !document.getElementById('csId').value.trim()) {
+            showCmsError('El título y el ID son obligatorios.'); return;
+        }
+        hideCmsError();
+    }
+    cmsGoStep(newStep);
+}
+
+function showCmsError(msg) { const e=document.getElementById('cmsError'); if(e){e.textContent=msg;e.classList.remove('hidden');} }
+function hideCmsError()    { const e=document.getElementById('cmsError'); if(e) e.classList.add('hidden'); }
+
+// ── Módulos ──────────────────────────────────────────────────
+function renderModulesEditor() {
+    const cont = document.getElementById('modulesEditor');
+    const msg  = document.getElementById('noModulesMsg');
+    if (!cont) return;
+    const modules = _cmsState.data.modules || [];
+    if (msg) msg.style.display = modules.length ? 'none' : 'block';
+    cont.innerHTML = modules.map((m,i) => `
+        <div class="module-item">
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-slate-400 w-6">M${i+1}</span>
+                <input class="input-field text-sm flex-1" value="${m.title||''}"
+                    oninput="_cmsState.data.modules[${i}].title=this.value" placeholder="Título del módulo">
+                <button onclick="removeModule(${i})" class="text-red-400 hover:text-red-600 p-1"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-xs text-slate-400 mt-2 ml-9">${m.cards?.length||0} tarjetas</p>
+        </div>`).join('');
+}
+
+function addModule() {
+    if (!_cmsState.data.modules) _cmsState.data.modules = [];
+    _cmsState.data.modules.push({ id: `m${_cmsState.data.modules.length+1}`, title:'Nuevo módulo', cards:[] });
+    renderModulesEditor();
+}
+
+function removeModule(idx) {
+    if (!confirm('¿Eliminar este módulo y todas sus tarjetas?')) return;
+    _cmsState.data.modules.splice(idx,1);
+    renderModulesEditor();
+}
+
+// ── Tarjetas ─────────────────────────────────────────────────
+function renderModuleSelector() {
+    const sel = document.getElementById('moduleSelector');
+    if (!sel) return;
+    const modules = _cmsState.data.modules || [];
+    sel.innerHTML = '<option value="">Selecciona un módulo</option>' +
+        modules.map((m,i)=>`<option value="${i}">${m.title||`Módulo ${i+1}`}</option>`).join('');
+    document.getElementById('noCardsMsg').textContent = 'Selecciona un módulo para ver sus tarjetas.';
+    document.getElementById('cardsEditor').innerHTML = '';
+}
+
+function loadModuleCards(modIdx) {
+    _currentModuleIdx = parseInt(modIdx);
+    const cont = document.getElementById('cardsEditor');
+    const msg  = document.getElementById('noCardsMsg');
+    if (isNaN(_currentModuleIdx)||_currentModuleIdx<0) { cont.innerHTML=''; return; }
+    const cards = _cmsState.data.modules[_currentModuleIdx]?.cards || [];
+    if (msg) msg.style.display = cards.length ? 'none' : 'block';
+    cont.innerHTML = cards.map((c,i)=>`
+        <div class="card-item">
+            <span class="card-type-badge type-${c.type||'content'}">${{content:'Contenido',quiz:'Quiz',project:'Proyecto',simulation:'Simulación'}[c.type]||c.type}</span>
+            <span class="text-sm text-slate-700 flex-1 truncate">${c.title||'Sin título'}</span>
+            <button onclick="editCard(${_currentModuleIdx},${i})" class="text-indigo-400 hover:text-indigo-600 p-1 text-xs"><i class="fas fa-edit"></i></button>
+            <button onclick="removeCard(${_currentModuleIdx},${i})" class="text-red-400 hover:text-red-600 p-1 text-xs"><i class="fas fa-times"></i></button>
+        </div>`).join('');
+    if (msg && cards.length) msg.style.display='none';
+}
+
+function addCard() {
+    if (_currentModuleIdx<0||isNaN(_currentModuleIdx)) { toast('Selecciona un módulo primero.',false); return; }
+    const cards = _cmsState.data.modules[_currentModuleIdx].cards;
+    const newCard = { id:`card-${Date.now()}`, type:'content', title:'Nueva tarjeta', content:'', extra:'' };
+    cards.push(newCard);
+    loadModuleCards(_currentModuleIdx);
+    editCard(_currentModuleIdx, cards.length-1);
+}
+
+function removeCard(modIdx, cardIdx) {
+    _cmsState.data.modules[modIdx].cards.splice(cardIdx,1);
+    loadModuleCards(modIdx);
+}
+
+function editCard(modIdx, cardIdx) {
+    const card = _cmsState.data.modules[modIdx]?.cards?.[cardIdx];
+    if (!card) return;
+    document.getElementById('ceModuleIdx').value = modIdx;
+    document.getElementById('ceCardIdx').value   = cardIdx;
+    document.getElementById('ceType').value      = card.type||'content';
+    document.getElementById('ceTitle').value     = card.title||'';
+    document.getElementById('cardEditorTitle').textContent = `Editar tarjeta — Módulo ${modIdx+1}`;
+    updateCardEditorFields(card);
+    document.getElementById('cardEditorModal').classList.remove('hidden');
+}
+
+function updateCardEditorFields(card=null) {
+    const type  = document.getElementById('ceType')?.value || 'content';
+    const cont  = document.getElementById('ceContentFields');
+    if (!cont) return;
+
+    const val = f => card?.[f] || '';
+    const optVal = (card?.options||['','','','']).map(o=>o||'');
+
+    if (type==='content') {
+        cont.innerHTML = `
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Contenido principal *</label>
+            <textarea id="ceContent" rows="4" class="input-field" placeholder="Explicación de la tarjeta…">${val('content')}</textarea></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Extra / Dato curioso</label>
+            <textarea id="ceExtra" rows="2" class="input-field" placeholder="Información complementaria…">${val('extra')}</textarea></div>`;
+    } else if (type==='quiz') {
+        cont.innerHTML = `
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Pregunta *</label>
+            <textarea id="ceQuestion" rows="2" class="input-field" placeholder="¿Pregunta de opción múltiple?">${val('question')}</textarea></div>
+            ${[0,1,2,3].map(i=>`
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Opción ${i+1}</label>
+            <input id="ceOpt${i}" class="input-field" placeholder="Opción ${i+1}" value="${optVal[i]}"></div>`).join('')}
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Opción correcta (0-3)</label>
+            <select id="ceCorrect" class="input-field">
+                ${[0,1,2,3].map(i=>`<option value="${i}" ${val('correct')==i?'selected':''}>${i+1}ª opción</option>`).join('')}
+            </select></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Explicación</label>
+            <textarea id="ceExplanation" rows="2" class="input-field" placeholder="Por qué es correcta…">${val('explanation')}</textarea></div>`;
+    } else if (type==='project') {
+        cont.innerHTML = `
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Descripción del proyecto *</label>
+            <textarea id="ceContent" rows="4" class="input-field" placeholder="Descripción del proyecto…">${val('content')}</textarea></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Objetivo / Instrucciones</label>
+            <textarea id="ceExtra" rows="2" class="input-field" placeholder="Instrucciones para el docente…">${val('extra')}</textarea></div>`;
+    } else if (type==='simulation') {
+        cont.innerHTML = `
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Escenario *</label>
+            <textarea id="ceScenario" rows="3" class="input-field" placeholder="Describe el escenario de simulación…">${val('scenario')}</textarea></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Enunciado (afirmación)</label>
+            <textarea id="ceStatement" rows="2" class="input-field" placeholder="Afirmación a evaluar…">${val('statement')}</textarea></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Respuesta correcta</label>
+            <select id="ceCorrectSwipe" class="input-field">
+                <option value="right" ${val('correctSwipe')==='right'?'selected':''}>Correcto / Verdadero (deslizar derecha)</option>
+                <option value="left"  ${val('correctSwipe')==='left' ?'selected':''}>Incorrecto / Falso (deslizar izquierda)</option>
+            </select></div>
+            <div><label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Retroalimentación</label>
+            <textarea id="ceLeftOutcome" rows="2" class="input-field" placeholder="Explicación si desliza izquierda…">${val('leftOutcome')}</textarea></div>`;
+    }
+}
+
+function saveCardEdit() {
+    const modIdx  = parseInt(document.getElementById('ceModuleIdx').value);
+    const cardIdx = parseInt(document.getElementById('ceCardIdx').value);
+    const type    = document.getElementById('ceType').value;
+    const title   = document.getElementById('ceTitle').value.trim();
+    if (!title) { toast('El título de la tarjeta es obligatorio.',false); return; }
+
+    let card = { id: _cmsState.data.modules[modIdx]?.cards?.[cardIdx]?.id || `card-${Date.now()}`, type, title };
+
+    if (type==='content'||type==='project') {
+        card.content = document.getElementById('ceContent')?.value||'';
+        card.extra   = document.getElementById('ceExtra')?.value||'';
+    } else if (type==='quiz') {
+        card.question    = document.getElementById('ceQuestion')?.value||'';
+        card.options     = [0,1,2,3].map(i=>document.getElementById(`ceOpt${i}`)?.value||'');
+        card.correct     = parseInt(document.getElementById('ceCorrect')?.value||'0');
+        card.explanation = document.getElementById('ceExplanation')?.value||'';
+    } else if (type==='simulation') {
+        card.scenario     = document.getElementById('ceScenario')?.value||'';
+        card.statement    = document.getElementById('ceStatement')?.value||'';
+        card.correctSwipe = document.getElementById('ceCorrectSwipe')?.value||'right';
+        card.leftOutcome  = document.getElementById('ceLeftOutcome')?.value||'';
+    }
+
+    _cmsState.data.modules[modIdx].cards[cardIdx] = card;
+    closeCardEditor();
+    loadModuleCards(modIdx);
+    toast('Tarjeta guardada.');
+}
+
+function closeCardEditor() {
+    document.getElementById('cardEditorModal').classList.add('hidden');
+}
+
+// ── Guardar curso en Supabase ────────────────────────────────
+async function saveCourse() {
+    hideCmsError();
+    const title    = document.getElementById('csTitle').value.trim();
+    const id       = document.getElementById('csId').value.trim().toLowerCase().replace(/\s+/g,'-');
+    const subtitle = document.getElementById('csSubtitle').value.trim();
+    const color    = document.getElementById('csColor').value.trim();
+    const duration = parseInt(document.getElementById('csDuration').value)||0;
+    const status   = document.getElementById('csStatus').value;
+
+    if (!title||!id) { showCmsError('Título e ID son obligatorios.'); return; }
+
+    const totalCards = (_cmsState.data.modules||[]).reduce((a,m)=>a+(m.cards?.length||0),0);
+    const payload = { id, title, subtitle, color, status,
+        duration_hours: duration, total_cards: totalCards,
+        content: _cmsState.data,
+        updated_at: new Date().toISOString(),
+        created_by: currentUser?.id };
+
+    const saveBtn = document.getElementById('cmsSaveBtn');
+    if (saveBtn) { saveBtn.disabled=true; saveBtn.textContent='Guardando…'; }
+
+    let error;
+    if (_cmsState.courseId && !_cmsState.isStatic) {
+        ({ error } = await sb.from('courses').update({...payload}).eq('id', _cmsState.courseId));
+    } else if (!_cmsState.courseId) {
+        ({ error } = await sb.from('courses').upsert(payload, { onConflict:'id' }));
+    }
+
+    if (saveBtn) { saveBtn.disabled=false; saveBtn.textContent='Guardar curso'; }
+
+    if (error) { showCmsError('Error: '+error.message); return; }
+    toast('Curso guardado correctamente. ✓');
+    document.getElementById('cmsModal').classList.add('hidden');
+    loadCMS();
+}
+
+// ────────────────────────────────────────────────────────────
+// REPORTES
+// ────────────────────────────────────────────────────────────
+function escapeCSV(v) {
+    if (v===null||v===undefined) return '';
+    const s = String(v);
+    if (s.includes(',')||s.includes('"')||s.includes('\n')) return `"${s.replace(/"/g,'""')}"`;
+    return s;
+}
+
+function downloadCSV(filename, rows) {
+    const csv = rows.map(r=>r.map(escapeCSV).join(',')).join('\n');
+    const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('CSV descargado.');
+}
+
+async function exportUsersCSV() {
+    const progress = _allProgress.length ? _allProgress : await fetchAllProgress();
+    const headers  = ['Nombre','Correo','XP','Nivel','Tarjetas completadas','Racha (días)','Diagnóstico','Certificado','Último acceso'];
+    const rows = [headers, ...progress.map(p => {
+        const diag = p?.daily_missions?.diagResult;
+        const diagLabel = diag ? ({inicial:'Inicial',proceso:'En Proceso',satisfactorio:'Satisfactorio',destacado:'Destacado'}[diag.level]||'—') : '—';
+        return [getName(p), getEmail(p), p.xp||0, p.level||1,
+            p.completed_cards?.length||0, p.streak||0,
+            diagLabel, hasCertificate(p)?'Sí':'No', fmtDate(p.updated_at)];
+    })];
+    downloadCSV(`docentes_${new Date().toISOString().slice(0,10)}.csv`, rows);
+}
+
+async function exportProgressCSV() {
+    const progress = _allProgress.length ? _allProgress : await fetchAllProgress();
+    const headers  = ['Nombre','Correo','Curso','Tarjetas completadas','Progreso %','Examen %','Certificado'];
+    const rows = [headers];
+    progress.forEach(p => {
+        STATIC_COURSES.forEach(c => {
+            const pct = getProgressPct(p, c.id);
+            const scores = p?.daily_missions?.examScores || {};
+            const examScore = c.id==='steam' ? (scores['steam']??p?.daily_missions?.examScore??null) : (scores[c.id]??null);
+            const cert = examScore !== null && examScore >= 70;
+            rows.push([getName(p), getEmail(p), c.title, p.completed_cards?.length||0, pct+'%',
+                examScore!==null ? examScore+'%' : '—', cert?'Sí':'No']);
+        });
+    });
+    downloadCSV(`progreso_cursos_${new Date().toISOString().slice(0,10)}.csv`, rows);
+}
+
+async function exportFeedbackCSV() {
+    const { data:fb } = await sb.from('feedback').select('*').order('created_at',{ascending:false});
+    if (!fb?.length) { toast('No hay feedback para exportar.',false); return; }
+    const headers = ['Módulo','Rating (1-5)','NPS (0-10)','Categoría NPS','Comentario','Fecha'];
+    const rows = [headers, ...fb.map(f=>[
+        f.module_name||`Módulo ${f.module_id}`||'General',
+        f.rating||'—', f.nps||'—',
+        f.nps>=9?'Promotor':f.nps>=7?'Neutro':'Detractor',
+        f.comment||'', fmtDate(f.created_at)
+    ])];
+    downloadCSV(`feedback_${new Date().toISOString().slice(0,10)}.csv`, rows);
+}
+
+async function exportFullBackup() {
+    const tables = ['progress','feedback','courses','resource_views'];
+    const allData = { exportDate: new Date().toISOString() };
+    for (const t of tables) {
+        const { data } = await sb.from(t).select('*');
+        allData[t] = data || [];
+    }
+    const blob = new Blob([JSON.stringify(allData,null,2)],{type:'application/json'});
+    const a = document.createElement('a');
+    a.download = `backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    toast('Backup descargado.');
+}
+
+// ── Informe ejecutivo (print) ────────────────────────────────
+async function generateExecutiveReport() {
+    const progress = _allProgress.length ? _allProgress : await fetchAllProgress();
+    const total     = progress.length;
+    const active30  = progress.filter(isActive30d).length;
+    const certified = progress.filter(hasCertificate).length;
+    const totalCards= progress.reduce((a,p)=>a+(p.completed_cards?.length||0),0);
+    const horasForm = Math.round(totalCards*3/60);
+    const completedFull = progress.filter(p=>(p.completed_cards?.length||0)>=70).length;
+    const tasaFin   = total ? Math.round((completedFull/total)*100) : 0;
+    const { data:fb } = await sb.from('feedback').select('nps');
+    let npsScore = 'N/A';
+    if (fb?.length) {
+        const p2=fb.filter(f=>f.nps>=9).length, d=fb.filter(f=>f.nps<=6).length;
+        npsScore = Math.round(((p2-d)/fb.length)*100);
+    }
+    const now = new Date().toLocaleDateString('es-GT',{day:'2-digit',month:'long',year:'numeric'});
+
+    const html = `<div style="font-family:Georgia,serif;max-width:800px;margin:0 auto;color:#1e293b">
+        <div style="background:linear-gradient(135deg,#1A6B68,#07B0E4);color:white;padding:40px;border-radius:16px;margin-bottom:32px">
+            <p style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px">Informe Ejecutivo de Impacto</p>
+            <h1 style="font-size:28px;font-weight:900;margin:0 0 8px">Formación Docente en Pedagogía Innovadora</h1>
+            <p style="opacity:.8;margin:0">Guatemala — ${now}</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px">
+            ${[
+                ['Docentes alcanzados', fmt(total),       'fas fa-chalkboard-teacher', '#4f46e5'],
+                ['Activos (30 días)',   fmt(active30),    'fas fa-user-check',         '#0891b2'],
+                ['Horas de formación', horasForm+'h',    'fas fa-clock',              '#d97706'],
+                ['Certificados emitidos', fmt(certified), 'fas fa-award',             '#16a34a'],
+            ].map(([l,v,icon,color])=>`
+            <div style="background:#f8fafc;padding:20px;border-radius:12px;text-align:center">
+                <div style="width:44px;height:44px;border-radius:50%;background:${color}1a;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">
+                    <i class="${icon}" style="color:${color};font-size:18px"></i>
+                </div>
+                <p style="font-size:28px;font-weight:900;margin:0;color:#1e293b">${v}</p>
+                <p style="font-size:11px;color:#64748b;margin:4px 0 0;text-transform:uppercase;letter-spacing:1px">${l}</p>
+            </div>`).join('')}
+        </div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:32px">
+            <thead><tr style="background:#f8fafc">
+                <th style="text-align:left;padding:12px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748b;border-bottom:2px solid #e2e8f0">Indicador</th>
+                <th style="text-align:right;padding:12px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748b;border-bottom:2px solid #e2e8f0">Valor</th>
+                <th style="text-align:right;padding:12px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#64748b;border-bottom:2px solid #e2e8f0">Meta</th>
+            </tr></thead>
+            <tbody>
+                ${[['Docentes inscritos',fmt(total),'—'],
+                   ['Tasa de finalización',tasaFin+'%','70%'],
+                   ['Tasa de certificación',total?Math.round(certified/total*100)+'%':'—','50%'],
+                   ['NPS de satisfacción',npsScore,'≥ 30'],
+                   ['Horas de formación generadas',horasForm+'h','—'],
+                   ['Tarjetas de contenido completadas',fmt(totalCards),'—']].map(([l,v,m])=>`
+                <tr style="border-bottom:1px solid #f1f5f9">
+                    <td style="padding:12px;font-size:14px">${l}</td>
+                    <td style="padding:12px;font-size:16px;font-weight:700;text-align:right;color:#1A6B68">${v}</td>
+                    <td style="padding:12px;font-size:13px;text-align:right;color:#94a3b8">${m}</td>
+                </tr>`).join('')}
+            </tbody>
+        </table>
+        <div style="background:#f8fafc;padding:24px;border-radius:12px;margin-bottom:32px">
+            <h3 style="font-size:15px;font-weight:700;margin:0 0 12px;color:#1e293b">Cursos del programa</h3>
+            ${STATIC_COURSES.map(c=>`
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:13px">
+                <span style="color:#1e293b">${c.title}</span>
+                <span style="color:#64748b">${c.durationHours}h · ${c.totalCards} tarjetas</span>
+            </div>`).join('')}
+        </div>
+        <p style="font-size:11px;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;padding-top:20px">
+            Generado el ${now} · Plataforma de Formación Docente
+        </p>
+    </div>`;
+    showReportPreview(html);
+}
+
+// ── Informe MINEDUC ──────────────────────────────────────────
+async function generateMineduc() {
+    const progress  = _allProgress.length ? _allProgress : await fetchAllProgress();
+    const total     = progress.length;
+    const certified = progress.filter(hasCertificate).length;
+    const active    = progress.filter(isActive30d).length;
+    const totalCards= progress.reduce((a,p)=>a+(p.completed_cards?.length||0),0);
+    const horasForm = Math.round(totalCards*3/60);
+    const completedFull = progress.filter(p=>(p.completed_cards?.length||0)>=70).length;
+    const { data:fb } = await sb.from('feedback').select('nps,rating');
+    let npsScore='N/A', avgRating='N/A';
+    if (fb?.length) {
+        const p2=fb.filter(f=>f.nps>=9).length, d=fb.filter(f=>f.nps<=6).length;
+        npsScore = Math.round(((p2-d)/fb.length)*100);
+        avgRating = (fb.reduce((a,f)=>a+(f.rating||0),0)/fb.length).toFixed(1);
+    }
+    const now = new Date().toLocaleDateString('es-GT',{day:'2-digit',month:'long',year:'numeric'});
+    const year = new Date().getFullYear();
+
+    // Tasa de certificación por curso (% con examen ≥70%)
+    const courseCertRates = STATIC_COURSES.map(c => {
+        const enrolled = progress.filter(p => (p.completed_cards||[]).some(id => {
+            const s = String(id);
+            if (c.id === 'steam') return /^\d+$/.test(s);
+            const px = c.id==='abp'?'abp-':c.id==='design-thinking'?'dt-':c.id==='evaluacion'?'ev-':c.id==='tipos-estudiantes'?'te-':'';
+            return px && s.startsWith(px);
+        }));
+        const passed = enrolled.filter(p => {
+            const sc = p.daily_missions?.examScores || {};
+            const v = c.id === 'steam' ? (sc['steam'] ?? p.daily_missions?.examScore ?? -1) : (sc[c.id] ?? -1);
+            return v >= 70;
+        });
+        const rate = enrolled.length ? Math.round(passed.length / enrolled.length * 100) : 0;
+        return { ...c, enrolledCount: enrolled.length, passedCount: passed.length, rate };
+    });
+
+    const html = `<div style="font-family:Arial,sans-serif;max-width:800px;margin:0 auto;color:#000;font-size:13px">
+        <div style="text-align:center;border-bottom:3px solid #1A6B68;padding-bottom:20px;margin-bottom:24px">
+            <h1 style="font-size:20px;font-weight:900;margin:8px 0">INFORME DE AVANCE — PROGRAMA DE FORMACIÓN DOCENTE</h1>
+            <h2 style="font-size:16px;font-weight:600;margin:4px 0;color:#1A6B68">Pedagogía Innovadora con Metodología STEAM</h2>
+            <p style="font-size:12px;color:#555;margin:8px 0 0">Guatemala · ${year}</p>
+            <p style="font-size:11px;color:#888;margin:4px 0 0">Fecha de corte: ${now}</p>
+        </div>
+
+        <h3 style="background:#1A6B68;color:white;padding:10px 16px;border-radius:6px;font-size:13px">1. RESUMEN EJECUTIVO</h3>
+        <p>El presente informe documenta el avance del programa de formación docente en pedagogía innovadora con énfasis en metodología STEAM, implementado a través de una plataforma digital de aprendizaje. El programa está dirigido a docentes del sistema educativo guatemalteco de todos los niveles.</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px">
+            <thead><tr style="background:#f0f4f8"><th style="text-align:left;padding:8px;border:1px solid #ddd">Indicador</th><th style="text-align:center;padding:8px;border:1px solid #ddd">Resultado</th></tr></thead>
+            <tbody>
+                ${[['Docentes inscritos en la plataforma',fmt(total)],
+                   ['Docentes activos (últimos 30 días)',fmt(active)],
+                   ['Tasa de retención activa',total?Math.round(active/total*100)+'%':'—'],
+                   ['Docentes que completaron al menos un curso',completedFull+' ('+( total?Math.round(completedFull/total*100):0 )+'%)'],
+                   ['Certificados emitidos',fmt(certified)],
+                   ['Horas de formación generadas',horasForm+' horas'],
+                   ['Interacciones de aprendizaje (tarjetas)',fmt(totalCards)],
+                   ['Satisfacción docente (NPS)',npsScore+' / 100'],
+                   ['Rating promedio de módulos',avgRating+' / 5.0']].map(([l,v])=>`
+                <tr><td style="padding:8px;border:1px solid #ddd">${l}</td><td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:bold;color:#1A6B68">${v}</td></tr>`).join('')}
+            </tbody>
+        </table>
+
+        <h3 style="background:#1A6B68;color:white;padding:10px 16px;border-radius:6px;font-size:13px">2. CONTENIDO Y MÉTRICAS DE IMPACTO POR CURSO</h3>
+        <p>El programa está compuesto por los siguientes cursos en modalidad asincrónica de autoaprendizaje. La <strong>Tasa de certificación</strong> mide el porcentaje de docentes inscritos que aprobaron el examen final del curso (≥70%).</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px">
+            <thead><tr style="background:#f0f4f8">
+                <th style="text-align:left;padding:8px;border:1px solid #ddd">Curso</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Duración</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Unidades</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Inscritos</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Tasa de certificación</th>
+            </tr></thead>
+            <tbody>
+                ${courseCertRates.map((c,i)=>`<tr ${i%2===0?'style="background:#fafafa"':''}>
+                    <td style="padding:8px;border:1px solid #ddd">${c.title}</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${c.durationHours}h</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${c.totalCards} tarjetas · ${c.modules} módulos</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${c.enrolledCount}</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:bold;color:${c.rate>=60?'#1A6B68':c.rate>=30?'#d97706':'#dc2626'}">${c.passedCount} / ${c.enrolledCount} (${c.rate}%)</td>
+                </tr>`).join('')}
+                <tr style="font-weight:bold;background:#e8f5e9">
+                    <td style="padding:8px;border:1px solid #ddd">TOTAL DEL PROGRAMA</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${STATIC_COURSES.reduce((a,c)=>a+c.durationHours,0)}h</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${STATIC_COURSES.reduce((a,c)=>a+c.totalCards,0)} tarjetas</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center">—</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center">—</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="background:#1A6B68;color:white;padding:10px 16px;border-radius:6px;font-size:13px">3. DISTRIBUCIÓN GEOGRÁFICA POR DEPARTAMENTO</h3>
+        <p>Participación y avance de docentes según el departamento que registraron en su perfil. Los docentes sin departamento registrado aparecen como "Individual".</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px">
+            <thead><tr style="background:#f0f4f8">
+                <th style="text-align:left;padding:8px;border:1px solid #ddd">Departamento</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Docentes</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Activos (30d)</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Certificados</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Tarjetas totales</th>
+            </tr></thead>
+            <tbody>
+                ${(() => {
+                    const byDept = {};
+                    progress.forEach(p => {
+                        const dept = getDept(p);
+                        if (!byDept[dept]) byDept[dept] = { count:0, active:0, certs:0, cards:0 };
+                        byDept[dept].count++;
+                        if (isActive30d(p)) byDept[dept].active++;
+                        if (hasCertificate(p)) byDept[dept].certs++;
+                        byDept[dept].cards += (p.completed_cards?.length || 0);
+                    });
+                    return Object.entries(byDept)
+                        .sort((a,b) => b[1].count - a[1].count)
+                        .map(([dept, d], i) => `<tr ${i%2===0?'style="background:#fafafa"':''}>
+                            <td style="padding:8px;border:1px solid #ddd;font-weight:${dept!=='Individual'?'bold':'normal'}">${dept}</td>
+                            <td style="padding:8px;border:1px solid #ddd;text-align:center">${d.count}</td>
+                            <td style="padding:8px;border:1px solid #ddd;text-align:center">${d.active} (${Math.round(d.active/d.count*100)}%)</td>
+                            <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#1A6B68;font-weight:bold">${d.certs}</td>
+                            <td style="padding:8px;border:1px solid #ddd;text-align:center">${fmt(d.cards)}</td>
+                        </tr>`).join('');
+                })()}
+            </tbody>
+        </table>
+
+        <h3 style="background:#1A6B68;color:white;padding:10px 16px;border-radius:6px;font-size:13px">4. SISTEMA DE EVALUACIÓN Y CERTIFICACIÓN</h3>
+        <p>Cada curso cuenta con evaluación formativa continua (quizzes por módulo) y un examen final de 20 preguntas aleatorias. Para obtener el certificado, el docente debe alcanzar una calificación mínima del 70%. Los certificados se generan en formato PDF con nombre del participante, fecha, puntaje y código único.</p>
+
+        <h3 style="background:#1A6B68;color:white;padding:10px 16px;border-radius:6px;font-size:13px">5. REFERENCIAS PEDAGÓGICAS</h3>
+        <p>El programa está fundamentado en: el Currículo Nacional Base (CNB) de Guatemala, los estándares ISTE para docentes, el marco de competencias UNESCO ICT, y las prácticas de la Organización Buck Institute for Education (PBLWorks) en Aprendizaje Basado en Proyectos.</p>
+
+        <div style="margin-top:40px;border-top:2px solid #1A6B68;padding-top:20px;display:flex;justify-content:center">
+            <div style="text-align:center;min-width:220px">
+                <div style="border-top:1px solid #000;padding-top:8px;margin-top:60px;font-size:11px;color:#555">
+                    <p style="margin:0;font-weight:bold">Billy Abraham Gómez Sac</p>
+                    <p style="margin:2px 0">Coordinador del Programa</p>
+                </div>
+            </div>
+        </div>
+        <p style="font-size:10px;color:#94a3b8;text-align:center;margin-top:24px">Documento generado automáticamente · ${now}</p>
+    </div>`;
+    showReportPreview(html);
+}
+
+function showReportPreview(html) {
+    const card = document.getElementById('reportPreviewCard');
+    const cont = document.getElementById('reportPreviewContent');
+    const print = document.getElementById('printArea');
+    if (cont) cont.innerHTML = html;
+    if (print) print.innerHTML = html;
+    if (card) { card.style.display='block'; card.scrollIntoView({behavior:'smooth'}); }
+}
+
+// ────────────────────────────────────────────────────────────
+// CONFIGURACIÓN — FIRMAS DINÁMICAS
+// ────────────────────────────────────────────────────────────
+function saveConfig() { toast('Configuración guardada (solo en esta sesión).'); }
+
+let _signatures = [];
+let _schools    = [];
+
+async function loadSettings() {
+    await Promise.all([loadSignatures(), loadSchools(), loadCoordinators()]);
+}
+
+// ── Firmas ──────────────────────────────────────────────────
+async function loadSignatures() {
+    const { data } = await sb.from('cert_signatures').select('*').order('slot');
+    _signatures = data || [];
+    renderSignatures();
+}
+
+function renderSignatures() {
+    const container = document.getElementById('signaturesContainer');
+    if (!container) return;
+    const slotLabels = ['', 'Coordinador del Programa (defecto)', 'Director / Coordinador del Centro', 'Delegado MINEDUC'];
+    container.innerHTML = _signatures.map(sig => `
+    <div class="border border-slate-200 rounded-xl p-4 space-y-3" id="sigSlot${sig.slot}">
+        <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">Firma ${sig.slot} — ${slotLabels[sig.slot]}</span>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <span class="text-xs text-slate-500">Activa</span>
+                <div class="relative">
+                    <input type="checkbox" class="sr-only peer" id="sigActive${sig.slot}" ${sig.active ? 'checked' : ''} onchange="toggleSigSlot(${sig.slot})">
+                    <div class="w-9 h-5 bg-slate-200 peer-checked:bg-indigo-500 rounded-full transition-colors"></div>
+                    <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4"></div>
+                </div>
+            </label>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+            <input id="sigName${sig.slot}" class="input-field text-sm" placeholder="Nombre completo" value="${esc(sig.signer_name)}">
+            <input id="sigRole${sig.slot}" class="input-field text-sm" placeholder="Cargo" value="${esc(sig.signer_role)}">
+        </div>
+        <div class="flex items-center gap-3">
+            ${sig.signature_url
+                ? `<img src="${sig.signature_url}" class="h-12 object-contain border border-slate-200 rounded-lg px-2">`
+                : `<div class="h-12 w-28 border-2 border-dashed border-slate-200 rounded-lg flex items-center justify-center text-xs text-slate-400">Sin firma</div>`}
+            <label class="btn-secondary text-xs cursor-pointer">
+                <i class="fas fa-upload mr-1"></i>Subir imagen
+                <input type="file" accept="image/*" class="hidden" onchange="uploadSignature(${sig.slot}, this)">
+            </label>
+            ${sig.signature_url ? `<button onclick="clearSignature(${sig.slot})" class="text-xs text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>` : ''}
+        </div>
+    </div>`).join('');
+}
+
+function toggleSigSlot(slot) {
+    const sig = _signatures.find(s => s.slot === slot);
+    if (sig) sig.active = document.getElementById(`sigActive${slot}`)?.checked;
+}
+
+async function uploadSignature(slot, input) {
+    const file = input.files[0];
+    if (!file) return;
+    toast('Subiendo firma…', 'info');
+    const ext  = file.name.split('.').pop();
+    const path = `slot${slot}_${Date.now()}.${ext}`;
+    const { error: upErr } = await sb.storage.from('signatures').upload(path, file, { upsert: true });
+    if (upErr) { toast('Error al subir: ' + upErr.message, 'error'); return; }
+    const { data: urlData } = sb.storage.from('signatures').getPublicUrl(path);
+    const sig = _signatures.find(s => s.slot === slot);
+    if (sig) { sig.signature_url = urlData.publicUrl; renderSignatures(); }
+    toast('Imagen subida. Guarda para confirmar.', 'success');
+}
+
+async function clearSignature(slot) {
+    if (!confirm('¿Quitar la imagen de firma del slot ' + slot + '?')) return;
+    const sig = _signatures.find(s => s.slot === slot);
+    if (sig) { sig.signature_url = null; renderSignatures(); }
+}
+
+async function saveSignatures() {
+    for (const sig of _signatures) {
+        const name = document.getElementById(`sigName${sig.slot}`)?.value?.trim() || '';
+        const role = document.getElementById(`sigRole${sig.slot}`)?.value?.trim() || '';
+        const active = document.getElementById(`sigActive${sig.slot}`)?.checked ?? sig.active;
+        const { error } = await sb.from('cert_signatures').upsert({
+            slot: sig.slot, signer_name: name, signer_role: role,
+            signature_url: sig.signature_url || null, active, updated_at: new Date().toISOString()
+        }, { onConflict: 'slot' });
+        if (error) { toast('Error guardando firma ' + sig.slot + ': ' + error.message, 'error'); return; }
+    }
+    toast('Firmas guardadas correctamente.', 'success');
+    await loadSignatures();
+}
+
+// ── Escuelas ─────────────────────────────────────────────────
+async function loadSchools() {
+    const { data } = await sb.from('schools').select('*').order('name');
+    _schools = data || [];
+    renderSchools();
+    // Poblar select del modal de coordinadores
+    const sel = document.getElementById('coordSchoolInput');
+    if (sel) {
+        sel.innerHTML = '<option value="">Selecciona centro educativo…</option>' +
+            _schools.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+    }
+}
+
+function renderSchools() {
+    const el = document.getElementById('schoolsList');
+    if (!el) return;
+    if (!_schools.length) { el.innerHTML = '<p class="text-xs text-slate-400 text-center py-3">Sin centros registrados.</p>'; return; }
+    el.innerHTML = _schools.map(s => `
+    <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
+        <div>
+            <p class="text-sm font-semibold text-slate-700">${esc(s.name)}</p>
+            ${s.code ? `<p class="text-xs text-slate-400">Código: ${esc(s.code)}</p>` : ''}
+            ${s.director_name ? `<p class="text-xs text-indigo-500 mt-0.5"><i class="fas fa-signature mr-1"></i>${esc(s.director_name)}</p>` : ''}
+        </div>
+        <div class="flex items-center gap-2 ml-3">
+            <button onclick="openDirectorSigModal('${s.id}')" class="text-indigo-400 hover:text-indigo-600 text-xs" title="Firma del director"><i class="fas fa-signature"></i></button>
+            <button onclick="deleteSchool('${s.id}')" class="text-red-400 hover:text-red-600 text-xs"><i class="fas fa-trash"></i></button>
+        </div>
+    </div>`).join('');
+
+    // Actualizar checkboxes en modal de coordinador
+    const cb = document.getElementById('coordSchoolCheckboxes');
+    if (cb) {
+        cb.innerHTML = _schools.length
+            ? _schools.map(s => `
+                <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 rounded-lg px-1 py-0.5">
+                    <input type="checkbox" class="coord-school-cb rounded" value="${s.id}">
+                    <span class="text-sm text-slate-700">${esc(s.name)}</span>
+                </label>`).join('')
+            : '<p class="text-xs text-slate-400">No hay centros creados aún.</p>';
+    }
+}
+
+function openAddSchoolModal() {
+    document.getElementById('schoolNameInput').value = '';
+    document.getElementById('schoolCodeInput').value = '';
+    document.getElementById('schoolModal').classList.remove('hidden');
+}
+
+async function saveSchool() {
+    const name = document.getElementById('schoolNameInput').value.trim();
+    const code = document.getElementById('schoolCodeInput').value.trim();
+    if (!name) { toast('El nombre es obligatorio.', 'error'); return; }
+    const { error } = await sb.from('schools').insert({ name, code: code || null });
+    if (error) { toast('Error: ' + error.message, 'error'); return; }
+    document.getElementById('schoolModal').classList.add('hidden');
+    toast('Centro educativo agregado.', 'success');
+    await loadSchools();
+}
+
+async function deleteSchool(id) {
+    if (!confirm('¿Eliminar este centro educativo?')) return;
+    await sb.from('schools').delete().eq('id', id);
+    toast('Centro eliminado.', 'success');
+    await loadSchools();
+}
+
+// ── Firma de director por escuela ─────────────────────────────
+let _dirSigUrl = null; // URL temporal mientras se edita el modal
+
+function openDirectorSigModal(schoolId) {
+    const s = _schools.find(x => x.id === schoolId);
+    if (!s) return;
+    document.getElementById('dirSigSchoolId').value = schoolId;
+    document.getElementById('dirSigName').value = s.director_name || '';
+    document.getElementById('dirSigRole').value = s.director_role || '';
+    _dirSigUrl = s.director_signature_url || null;
+    _renderDirSigPreview();
+    document.getElementById('directorSigModal').classList.remove('hidden');
+}
+
+function _renderDirSigPreview() {
+    const preview = document.getElementById('dirSigImgPreview');
+    const clearBtn = document.getElementById('dirSigClearBtn');
+    if (_dirSigUrl) {
+        preview.innerHTML = `<img src="${_dirSigUrl}" class="h-14 object-contain border border-slate-200 rounded-lg px-2 mb-1">`;
+        clearBtn.classList.remove('hidden');
+    } else {
+        preview.innerHTML = `<div class="h-10 w-28 border-2 border-dashed border-slate-200 rounded-lg flex items-center justify-center text-xs text-slate-400 mb-1">Sin firma</div>`;
+        clearBtn.classList.add('hidden');
+    }
+}
+
+async function uploadDirectorSig(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const schoolId = document.getElementById('dirSigSchoolId').value;
+    toast('Subiendo firma…', 'info');
+    const path = `director/${schoolId}_${Date.now()}.${file.name.split('.').pop()}`;
+    const { error } = await sb.storage.from('signatures').upload(path, file, { upsert: true });
+    if (error) { toast('Error al subir imagen: ' + error.message, 'error'); return; }
+    const { data: urlData } = sb.storage.from('signatures').getPublicUrl(path);
+    _dirSigUrl = urlData.publicUrl;
+    _renderDirSigPreview();
+    toast('Imagen subida. Guarda para confirmar.', 'success');
+}
+
+function clearDirectorSig() {
+    _dirSigUrl = null;
+    _renderDirSigPreview();
+}
+
+async function saveDirectorSig() {
+    const schoolId = document.getElementById('dirSigSchoolId').value;
+    const name = document.getElementById('dirSigName').value.trim();
+    const role = document.getElementById('dirSigRole').value.trim();
+    const { error } = await sb.from('schools').update({
+        director_name: name || null,
+        director_role: role || null,
+        director_signature_url: _dirSigUrl || null,
+    }).eq('id', schoolId);
+    if (error) { toast('Error: ' + error.message, 'error'); return; }
+    document.getElementById('directorSigModal').classList.add('hidden');
+    toast('Firma de director guardada.', 'success');
+    await loadSchools();
+}
+
+// ── Coordinadores ─────────────────────────────────────────────
+async function loadCoordinators() {
+    const { data } = await sb.from('coordinators').select('*, schools(id, name)').order('name');
+    const el = document.getElementById('coordsList');
+    if (!el) return;
+    const rows = data || [];
+    if (!rows.length) { el.innerHTML = '<p class="text-xs text-slate-400 text-center py-3">Sin coordinadores registrados.</p>'; return; }
+
+    // Agrupar por user_id
+    const byUser = {};
+    rows.forEach(c => {
+        if (!byUser[c.user_id]) byUser[c.user_id] = { name: c.name, email: c.email, user_id: c.user_id, schools: [] };
+        byUser[c.user_id].schools.push({ id: c.school_id, name: c.schools?.name || c.school_id });
+    });
+
+    el.innerHTML = Object.values(byUser).map(c => {
+        const schoolTags = c.schools.map(s =>
+            `<span class="inline-flex items-center gap-1 bg-indigo-50 text-indigo-600 text-xs font-medium px-2 py-0.5 rounded-full">
+                ${esc(s.name)}
+                <button onclick="deleteCoordinator('${c.user_id}','${s.id}')" class="text-indigo-300 hover:text-red-500 leading-none ml-0.5" title="Quitar este centro">&times;</button>
+             </span>`
+        ).join('');
+        const schoolIds = c.schools.map(s => s.id).join(',');
+        return `
+        <div class="bg-slate-50 rounded-xl px-4 py-3">
+            <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-700">${esc(c.name || c.email)}</p>
+                    <p class="text-xs text-slate-400 mb-2">${esc(c.email)}</p>
+                    <div class="flex flex-wrap gap-1">${schoolTags}</div>
+                </div>
+                <a href="coordinator.html?coord=${c.user_id}" target="_blank"
+                   class="shrink-0 text-xs text-indigo-500 hover:underline whitespace-nowrap">
+                    <i class="fas fa-external-link-alt"></i> Ver panel
+                </a>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function openAddCoordModal() {
+    document.getElementById('coordEmailInput').value = '';
+    document.getElementById('coordNameInput').value  = '';
+    document.getElementById('coordUserId').value = '';
+    document.getElementById('coordSearchResult').classList.add('hidden');
+    // Desmarcar todos los checkboxes
+    document.querySelectorAll('.coord-school-cb').forEach(cb => cb.checked = false);
+    const btn = document.getElementById('coordSaveBtn');
+    btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed';
+    document.getElementById('coordModal').classList.remove('hidden');
+    setTimeout(() => document.getElementById('coordEmailInput').focus(), 100);
+}
+
+function clearCoordSearch() {
+    document.getElementById('coordUserId').value = '';
+    document.getElementById('coordSearchResult').classList.add('hidden');
+    const btn = document.getElementById('coordSaveBtn');
+    btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed';
+}
+
+async function searchCoordByEmail() {
+    const email   = document.getElementById('coordEmailInput').value.trim().toLowerCase();
+    const resultEl = document.getElementById('coordSearchResult');
+    const btn      = document.getElementById('coordSaveBtn');
+    if (!email) { toast('Ingresa un correo primero.', 'error'); return; }
+
+    resultEl.className = 'rounded-xl px-4 py-3 text-sm bg-slate-50 border border-slate-200';
+    resultEl.innerHTML = '<i class="fas fa-spinner fa-spin mr-2 text-slate-400"></i>Buscando…';
+    resultEl.classList.remove('hidden');
+
+    // Buscar en progress (tiene user_id + email + nombre)
+    const { data: found } = await sb.from('progress')
+        .select('user_id, email, daily_missions')
+        .eq('email', email)
+        .limit(1);
+
+    if (found?.length) {
+        const p = found[0];
+        const nombre = p.daily_missions?.displayName || p.daily_missions?.fullName || email.split('@')[0];
+        document.getElementById('coordUserId').value  = p.user_id;
+        document.getElementById('coordNameInput').value = nombre;
+        resultEl.className = 'rounded-xl px-4 py-3 text-sm bg-green-50 border border-green-200 text-green-700';
+        resultEl.innerHTML = `<i class="fas fa-check-circle mr-2"></i><strong>${nombre}</strong> encontrado — listo para asignar.`;
+        btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+    } else {
+        document.getElementById('coordUserId').value = '';
+        resultEl.className = 'rounded-xl px-4 py-3 text-sm bg-red-50 border border-red-200 text-red-600';
+        resultEl.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>No se encontró ningún usuario con ese correo. Debe registrarse primero en la plataforma.`;
+        btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed';
+    }
+}
+
+async function saveCoordinator() {
+    const name   = document.getElementById('coordNameInput').value.trim();
+    const email  = document.getElementById('coordEmailInput').value.trim().toLowerCase();
+    const userId = document.getElementById('coordUserId').value;
+    const selectedSchools = [...document.querySelectorAll('.coord-school-cb:checked')].map(cb => cb.value);
+
+    if (!userId)              { toast('Busca el usuario por email primero.', 'error'); return; }
+    if (!selectedSchools.length) { toast('Selecciona al menos un centro educativo.', 'error'); return; }
+    if (!name)                { toast('Ingresa el nombre del coordinador.', 'error'); return; }
+
+    // Insertar una fila por cada escuela seleccionada
+    const rows = selectedSchools.map(sid => ({ user_id: userId, school_id: sid, name, email }));
+    const { error } = await sb.from('coordinators').upsert(rows, { onConflict: 'user_id,school_id' });
+    if (error) { toast('Error: ' + error.message, 'error'); return; }
+
+    // Asignar también en user_schools para que aparezca en la vista de docentes
+    const schoolRows = selectedSchools.map(sid => ({ user_id: userId, school_id: sid }));
+    await sb.from('user_schools').upsert(schoolRows, { onConflict: 'user_id,school_id' });
+
+    document.getElementById('coordModal').classList.add('hidden');
+    toast(`${name} registrado en ${selectedSchools.length} centro(s).`, 'success');
+    await loadCoordinators();
+}
+
+async function deleteCoordinator(userId, schoolId) {
+    if (!confirm('¿Quitar acceso a este coordinador?')) return;
+    await sb.from('coordinators').delete().eq('user_id', userId).eq('school_id', schoolId);
+    toast('Coordinador eliminado.', 'success');
+    await loadCoordinators();
+}
+
+// ────────────────────────────────────────────────────────────
+// NAVEGACIÓN
+// ────────────────────────────────────────────────────────────
+function switchView(view) {
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    const vEl = document.getElementById(`${view}View`);
+    if (vEl) vEl.classList.add('active');
+
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    const bEl = document.querySelector(`.nav-btn[data-view="${view}"]`);
+    if (bEl) bEl.classList.add('active');
+
+    if (view==='dashboard') loadDashboard();
+    if (view==='analytics') loadAnalytics();
+    if (view==='users')     loadUsers();
+    if (view==='feedback')  loadFeedback();
+    if (view==='cms')       loadCMS();
+    if (view==='settings')  loadSettings();
+}
+
+function closeSidebar() {
+    document.getElementById('sidebar')?.classList.remove('open');
+    document.getElementById('overlay')?.classList.add('hidden');
+}
+
+// ────────────────────────────────────────────────────────────
+// EVENT LISTENERS
+// ────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-btn').forEach(btn =>
+    btn.addEventListener('click', () => { switchView(btn.dataset.view); closeSidebar(); })
+);
+
+document.getElementById('menuBtn')?.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('hidden');
+});
+
+document.getElementById('logoutAdminBtn')?.addEventListener('click', async () => {
+    await sb.auth.signOut();
+    window.location.href = 'admin-login.html';
+});
+
+document.getElementById('newCourseBtn')?.addEventListener('click', () => openCMSModal(null, false));
+document.getElementById('closeCmsModal')?.addEventListener('click', () => {
+    document.getElementById('cmsModal').classList.add('hidden');
+});
+
+// Color picker sync
+document.getElementById('csColorPicker')?.addEventListener('input', e => {
+    const ci = document.getElementById('csColor');
+    if (ci) ci.value = e.target.value;
+});
+document.getElementById('csColor')?.addEventListener('input', e => {
+    const cp = document.getElementById('csColorPicker');
+    if (cp && /^#[0-9a-f]{6}$/i.test(e.target.value)) cp.value = e.target.value;
+});
+
+// CMS step tabs
+document.querySelectorAll('.cms-tab-btn').forEach(btn =>
+    btn.addEventListener('click', () => cmsGoStep(parseInt(btn.dataset.step)))
+);
+
+document.getElementById('resetAnalyticsBtn')?.addEventListener('click', async () => {
+    if (!confirm('¿Resetear analytics? Se eliminarán TODOS los eventos. No se puede deshacer.')) return;
+    const fakeId = '00000000-0000-0000-0000-000000000000';
+    await sb.from('user_events').delete().neq('id', fakeId);
+    await sb.from('resource_views').delete().neq('id', fakeId);
+    toast('Analytics reseteados correctamente.');
+});
+
+// ────────────────────────────────────────────────────────────
+// INIT
+// ────────────────────────────────────────────────────────────
+checkAdminAuth().then(ok => { if (ok) switchView('dashboard'); });
