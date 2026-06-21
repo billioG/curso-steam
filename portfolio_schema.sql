@@ -1,6 +1,8 @@
 -- =============================================
 -- Tabla: portfolios
 -- Portafolio de práctica docente (evaluado por IA)
+-- Ejecutar en Supabase SQL Editor
+-- Seguro de re-ejecutar (usa IF NOT EXISTS / IF EXISTS)
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS portfolios (
@@ -35,8 +37,17 @@ CREATE TABLE IF NOT EXISTS portfolios (
   evaluated_at  timestamptz
 );
 
+-- Agregar columna si la tabla ya existía sin ella
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS file_urls jsonb;
+
 -- RLS
 ALTER TABLE portfolios ENABLE ROW LEVEL SECURITY;
+
+-- Eliminar políticas existentes antes de recrear (evita error 42710)
+DROP POLICY IF EXISTS "Docente ve su propio portafolio"   ON portfolios;
+DROP POLICY IF EXISTS "Docente inserta su portafolio"     ON portfolios;
+DROP POLICY IF EXISTS "Docente actualiza su portafolio"   ON portfolios;
+DROP POLICY IF EXISTS "Admin ve todos los portafolios"    ON portfolios;
 
 CREATE POLICY "Docente ve su propio portafolio"
   ON portfolios FOR SELECT
@@ -49,11 +60,6 @@ CREATE POLICY "Docente inserta su portafolio"
 CREATE POLICY "Docente actualiza su portafolio"
   ON portfolios FOR UPDATE
   USING (auth.uid() = user_id);
-
--- Admin puede ver todos (para panel admin)
-CREATE POLICY "Admin ve todos los portafolios"
-  ON portfolios FOR SELECT
-  USING (public.is_admin());
 
 -- =============================================
 -- Tabla: app_config
@@ -68,6 +74,9 @@ CREATE TABLE IF NOT EXISTS app_config (
 
 ALTER TABLE app_config ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Lectura pública de config" ON app_config;
+DROP POLICY IF EXISTS "Solo admin escribe config"  ON app_config;
+
 -- Cualquier usuario autenticado puede leer la config (rutas, certs, etc.)
 CREATE POLICY "Lectura pública de config"
   ON app_config FOR SELECT
@@ -80,7 +89,7 @@ CREATE POLICY "Solo admin escribe config"
   USING (public.is_admin())
   WITH CHECK (public.is_admin());
 
--- Seed inicial: rutas por defecto
+-- Seed inicial: rutas por defecto (no sobreescribe si ya existe)
 INSERT INTO app_config (key, value) VALUES (
   'learning_paths',
   '[
