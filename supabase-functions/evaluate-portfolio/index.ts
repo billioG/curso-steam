@@ -110,7 +110,7 @@ Responde ÚNICAMENTE con este JSON (sin texto antes ni después):
       total,
       summary:  evaluation.summary || '',
       combined,
-      passed:   combined >= 75,
+      passed:   combined >= 85,
     }), {
       status: 200,
       headers: { ...CORS, 'Content-Type': 'application/json' },

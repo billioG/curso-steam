@@ -3,6 +3,16 @@
 // ==================== CONFIGURACIÓN DE SUPABASE ====================
 // ⚠️ IMPORTANTE: Reemplaza con tus credenciales de Supabase
 const SUPABASE_URL = "https://grkjhzkgcmackbafqudu.supabase.co";
+
+// Rutas de aprendizaje — el admin puede modificar masterCert desde el panel
+// Se sobreescribe con config de Supabase al cargar (ver loadAppConfig)
+let LEARNING_PATHS = [
+    { id:'steam20',  label:'Docente STEAM 2.0',  color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)' },
+    { id:'creativo', label:'Docente Creativo',    color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)' },
+];
+// IDs de cursos requeridos para el certificado maestro (ruta steam20)
+// Admin puede cambiarlos desde el panel → se guardan en Supabase tabla app_config
+let MASTER_CERT_COURSES = ['steam','abp','design-thinking','evaluacion','tipos-estudiantes'];
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
 // El SDK de Supabase ya registra `window.supabase`; se reasigna con el cliente configurado.
 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -267,7 +277,8 @@ async function loginWithEmail(email, password) {
         checkDailyStreak();
         loadDailyMissions();
         await syncWithSupabase();
-        loadPortfolio(); // cargar portafolio desde Supabase (sin bloquear)
+        loadPortfolio();    // cargar portafolio desde Supabase (sin bloquear)
+        loadAppConfig();    // cargar config de rutas/master cert desde Supabase (sin bloquear)
         return true;
     } catch (error) {
         showLoginError(_friendlyAuthError(error.message));
@@ -2591,7 +2602,7 @@ function showExamResults() {
                     <p style="font-size:.75rem;color:#64748B;margin-top:2px">Incorrectas ❌</p>
                 </div>
             </div>
-            ${passed ? `<button onclick="generateCertificateFromExam(${pct})" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">📜 Obtener mi certificado</button>` : ''}
+            ${passed ? `<button onclick="generateCertificateFromExam(${pct})" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">📜 Obtener mi diploma de participación</button>` : ''}
             <button onclick="retryExam()" class="w-full py-3 rounded-xl font-bold text-sm" style="border:2px solid #E2E8F0;color:#475569;background:white;margin-bottom:4px">
                 🔄 Reintentar examen
             </button>
@@ -2816,7 +2827,7 @@ async function generateCertificateFromExam(percentage) {
 <div class="cert">
   <div class="cert-top">
     <span class="cert-icon">${courseIcon}</span>
-    <h1 class="cert-title">Certificado de Finalización</h1>
+    <h1 class="cert-title">Diploma de Participación</h1>
     <p class="cert-subtitle">${courseTitle} · Formación Profesional Docente</p>
   </div>
   <div class="cert-body">
@@ -2980,8 +2991,8 @@ function _checkMasterCert() {
     const portfolioScore  = progress?.dailyMissions?.portfolioAiTotal ?? null;
     const available       = allCourses.filter(c => c.status === 'available');
 
-    // Storytelling es opcional para el certificado maestro (curso nuevo, no requerido)
-    const requiredForMaster = available.filter(c => c.id !== 'storytelling');
+    // Cursos requeridos para el certificado maestro (configurable desde admin)
+    const requiredForMaster = available.filter(c => MASTER_CERT_COURSES.includes(c.id));
     const allIndividualPassed = requiredForMaster.every(c => {
         const s = c.id === 'steam' ? steamScore : scores[c.id];
         return s !== undefined && s >= 70;
@@ -4348,6 +4359,19 @@ const PORTFOLIO_COURSES = [
 ];
 
 let _portfolioData = null; // Datos del portafolio cargado desde Supabase
+
+async function loadAppConfig() {
+    try {
+        const { data } = await supabase.from('app_config').select('key,value').in('key', ['master_cert_courses']);
+        if (!data) return;
+        data.forEach(row => {
+            if (row.key === 'master_cert_courses' && Array.isArray(row.value)) {
+                MASTER_CERT_COURSES = row.value;
+                _checkMasterCert(); // re-evaluar con la config actualizada
+            }
+        });
+    } catch(_) { /* tabla no existe aún, usa defaults */ }
+}
 
 async function loadPortfolio() {
     if (!currentUser) return;

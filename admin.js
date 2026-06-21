@@ -7,13 +7,19 @@ const SUPABASE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const ADMIN_EMAILS  = ['billy@1bot.org'];
 
 // Cursos estáticos del programa (datos reales de data.js)
+// Rutas de aprendizaje disponibles
+const LEARNING_PATHS = [
+    { id:'steam20',   label:'Docente STEAM 2.0',   color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)' },
+    { id:'creativo',  label:'Docente Creativo',     color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)' },
+];
+
 const STATIC_COURSES = [
-    { id:'steam',            title:'Metodología STEAM 2.0',               durationHours:5,  totalCards:73, modules:5 },
-    { id:'abp',              title:'Aprendizaje Basado en Proyectos',      durationHours:4,  totalCards:61, modules:5 },
-    { id:'design-thinking',  title:'Design Thinking para Docentes',        durationHours:3,  totalCards:45, modules:4 },
-    { id:'evaluacion',       title:'Evaluación Formativa',                 durationHours:3,  totalCards:38, modules:4 },
-    { id:'tipos-estudiantes',title:'Conoce a Quien Enseñas',               durationHours:5,  totalCards:60, modules:5 },
-    { id:'storytelling',     title:'Storytelling para Docentes',           durationHours:4,  totalCards:50, modules:5 },
+    { id:'steam',            title:'Metodología STEAM 2.0',               durationHours:5,  totalCards:73, modules:5, ruta:'steam20',  masterCert:true  },
+    { id:'abp',              title:'Aprendizaje Basado en Proyectos',      durationHours:4,  totalCards:61, modules:5, ruta:'steam20',  masterCert:true  },
+    { id:'design-thinking',  title:'Design Thinking para Docentes',        durationHours:3,  totalCards:45, modules:4, ruta:'steam20',  masterCert:true  },
+    { id:'evaluacion',       title:'Evaluación Formativa',                 durationHours:3,  totalCards:38, modules:4, ruta:'steam20',  masterCert:true  },
+    { id:'tipos-estudiantes',title:'Conoce a Quien Enseñas',               durationHours:5,  totalCards:60, modules:5, ruta:'steam20',  masterCert:true  },
+    { id:'storytelling',     title:'Storytelling para Docentes',           durationHours:4,  totalCards:50, modules:5, ruta:'steam20',  masterCert:false },
 ];
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1470,11 +1476,68 @@ function showReportPreview(html) {
 // ────────────────────────────────────────────────────────────
 function saveConfig() { toast('Configuración guardada (solo en esta sesión).'); }
 
+// ── Rutas de Aprendizaje / Certificado Maestro ───────────────
+let _masterConfig = null; // { master_cert_courses: [...] }
+
+async function loadLearningPaths() {
+    const container = document.getElementById('learningPathsPanel');
+    if (!container) return;
+
+    // Cargar config actual desde Supabase
+    const { data } = await sb.from('app_config').select('key,value').eq('key','master_cert_courses');
+    const savedCourses = data?.[0]?.value;
+    const currentMasterIds = savedCourses || ['steam','abp','design-thinking','evaluacion','tipos-estudiantes'];
+
+    container.innerHTML = `
+        <div style="margin-bottom:16px">
+            <h3 style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:4px">Ruta: Docente STEAM 2.0</h3>
+            <p style="font-size:12px;color:#64748b;margin-bottom:12px">Selecciona los cursos requeridos para obtener el Certificado Maestro de esta ruta. Los cursos desmarcados siguen disponibles pero no son obligatorios.</p>
+            <div style="display:flex;flex-direction:column;gap:8px" id="masterCourseToggles">
+                ${STATIC_COURSES.map(c => `
+                <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${currentMasterIds.includes(c.id)?'#f0fdf4':'#f8fafc'};border:1.5px solid ${currentMasterIds.includes(c.id)?'#86efac':'#e2e8f0'};border-radius:10px;cursor:pointer;transition:all .15s">
+                    <input type="checkbox" value="${c.id}" ${currentMasterIds.includes(c.id)?'checked':''} style="width:16px;height:16px;accent-color:#16a34a"
+                        onchange="this.closest('label').style.background=this.checked?'#f0fdf4':'#f8fafc';this.closest('label').style.borderColor=this.checked?'#86efac':'#e2e8f0'">
+                    <div>
+                        <p style="font-size:13px;font-weight:600;color:#1e293b;margin:0">${c.title}</p>
+                        <p style="font-size:11px;color:#64748b;margin:0">${c.durationHours}h · ${c.totalCards} tarjetas</p>
+                    </div>
+                    ${currentMasterIds.includes(c.id)?'<span style="margin-left:auto;font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;padding:2px 8px;border-radius:20px">REQUERIDO</span>':'<span style="margin-left:auto;font-size:10px;color:#94a3b8">Opcional</span>'}
+                </label>`).join('')}
+            </div>
+            <button onclick="saveMasterCertCourses()" style="margin-top:12px;padding:10px 20px;background:linear-gradient(135deg,#15803d,#16a34a);color:white;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;width:100%">
+                Guardar configuración de ruta
+            </button>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px">
+            <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Próximas rutas</p>
+            ${LEARNING_PATHS.slice(1).map(r=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+                <div style="width:10px;height:10px;border-radius:50%;background:${r.color}"></div>
+                <span style="font-size:12px;color:#475569;font-weight:600">${r.label}</span>
+                <span style="margin-left:auto;font-size:10px;color:#94a3b8;background:#f1f5f9;padding:2px 8px;border-radius:20px">Próximamente</span>
+            </div>`).join('')}
+        </div>`;
+}
+
+async function saveMasterCertCourses() {
+    const checkboxes = document.querySelectorAll('#masterCourseToggles input[type=checkbox]');
+    const selected = Array.from(checkboxes).filter(c=>c.checked).map(c=>c.value);
+    if (selected.length === 0) { toast('Selecciona al menos un curso', false); return; }
+
+    const { error } = await sb.from('app_config')
+        .upsert({ key:'master_cert_courses', value: selected }, { onConflict:'key' });
+    if (error) { toast('Error al guardar: ' + error.message, false); return; }
+    toast(`Guardado: ${selected.length} cursos requeridos para Certificado Maestro`);
+
+    // Refrescar etiquetas en UI
+    await loadLearningPaths();
+}
+
 let _signatures = [];
 let _schools    = [];
 
 async function loadSettings() {
-    await Promise.all([loadSignatures(), loadSchools(), loadCoordinators()]);
+    await Promise.all([loadSignatures(), loadSchools(), loadCoordinators(), loadLearningPaths()]);
 }
 
 // ── Firmas ──────────────────────────────────────────────────
