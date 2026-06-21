@@ -54,3 +54,56 @@ CREATE POLICY "Docente actualiza su portafolio"
 CREATE POLICY "Admin ve todos los portafolios"
   ON portfolios FOR SELECT
   USING (public.is_admin());
+
+-- =============================================
+-- Tabla: app_config
+-- Configuración de la app editable desde el admin
+-- Clave learning_paths: array de rutas con sus cursos ordenados
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS app_config (
+  key   text PRIMARY KEY,
+  value jsonb NOT NULL
+);
+
+ALTER TABLE app_config ENABLE ROW LEVEL SECURITY;
+
+-- Cualquier usuario autenticado puede leer la config (rutas, certs, etc.)
+CREATE POLICY "Lectura pública de config"
+  ON app_config FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- Solo admins pueden escribir
+CREATE POLICY "Solo admin escribe config"
+  ON app_config FOR ALL
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- Seed inicial: rutas por defecto
+INSERT INTO app_config (key, value) VALUES (
+  'learning_paths',
+  '[
+    {
+      "id": "steam20",
+      "label": "Docente STEAM 2.0",
+      "color": "#07B0E4",
+      "gradient": "linear-gradient(135deg,#1A6B68,#07B0E4)",
+      "courses": ["steam","abp","design-thinking","evaluacion","tipos-estudiantes"]
+    },
+    {
+      "id": "creativo",
+      "label": "Docente Creativo",
+      "color": "#E83C8D",
+      "gradient": "linear-gradient(135deg,#7C3AED,#E83C8D)",
+      "courses": ["creatividad","herramientas-tec","abp"]
+    },
+    {
+      "id": "metodologias",
+      "label": "Metodologías Activas",
+      "color": "#10B981",
+      "gradient": "linear-gradient(135deg,#065F46,#10B981)",
+      "courses": ["abp","m-learning","flipped-classroom","abv","micro-learning"]
+    }
+  ]'::jsonb
+) ON CONFLICT (key) DO NOTHING;

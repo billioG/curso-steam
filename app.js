@@ -4395,12 +4395,17 @@ let _portfolioData = null; // Datos del portafolio cargado desde Supabase
 
 async function loadAppConfig() {
     try {
-        const { data } = await supabase.from('app_config').select('key,value').in('key', ['master_cert_courses']);
+        const { data } = await supabase.from('app_config').select('key,value').in('key', ['learning_paths','master_cert_courses']);
         if (!data) return;
         data.forEach(row => {
-            if (row.key === 'master_cert_courses' && Array.isArray(row.value)) {
+            if (row.key === 'learning_paths' && Array.isArray(row.value) && row.value.length > 0) {
+                LEARNING_PATHS = row.value;
+                // MASTER_CERT_COURSES se deriva ahora per-ruta; no se necesita como lista global
+                _checkMasterCert();
+            } else if (row.key === 'master_cert_courses' && Array.isArray(row.value)) {
+                // compatibilidad hacia atrás: si no existe la nueva clave learning_paths
                 MASTER_CERT_COURSES = row.value;
-                _checkMasterCert(); // re-evaluar con la config actualizada
+                _checkMasterCert();
             }
         });
     } catch(_) { /* tabla no existe aún, usa defaults */ }

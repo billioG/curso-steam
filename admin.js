@@ -1484,57 +1484,159 @@ function showReportPreview(html) {
 function saveConfig() { toast('Configuración guardada (solo en esta sesión).'); }
 
 // ── Rutas de Aprendizaje / Certificado Maestro ───────────────
-let _masterConfig = null; // { master_cert_courses: [...] }
+let _lpState = []; // estado vivo de rutas, se modifica sin guardar hasta "Guardar todo"
+
+const LP_COLORS = [
+    { color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)' },
+    { color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)' },
+    { color:'#F59E0B', gradient:'linear-gradient(135deg,#D97706,#F59E0B)' },
+    { color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)' },
+    { color:'#6366F1', gradient:'linear-gradient(135deg,#3730A3,#6366F1)' },
+    { color:'#EF4444', gradient:'linear-gradient(135deg,#991B1B,#EF4444)' },
+];
 
 async function loadLearningPaths() {
     const container = document.getElementById('learningPathsPanel');
     if (!container) return;
-
-    // Cargar config actual desde Supabase
-    const { data } = await sb.from('app_config').select('key,value').eq('key','master_cert_courses');
-    const savedCourses = data?.[0]?.value;
-    const currentMasterIds = savedCourses || ['steam','abp','design-thinking','evaluacion','tipos-estudiantes'];
-
-    container.innerHTML = LEARNING_PATHS.map((path, idx) => {
-        const pathCourses = STATIC_COURSES.filter(c => (path.courses || []).includes(c.id));
-        const togglesId = `masterCourseToggles_${path.id}`;
-        return `
-        <div style="margin-bottom:20px;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-                <div style="width:12px;height:12px;border-radius:50%;background:${path.color};flex-shrink:0"></div>
-                <h3 style="font-size:15px;font-weight:700;color:#1e293b;margin:0">Ruta: ${path.label}</h3>
-            </div>
-            <p style="font-size:12px;color:#64748b;margin-bottom:12px">Selecciona los cursos requeridos para obtener el Certificado Maestro de esta ruta.</p>
-            <div style="display:flex;flex-direction:column;gap:8px" id="${togglesId}">
-                ${pathCourses.map(c => `
-                <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${currentMasterIds.includes(c.id)?'#f0fdf4':'#f8fafc'};border:1.5px solid ${currentMasterIds.includes(c.id)?'#86efac':'#e2e8f0'};border-radius:10px;cursor:pointer;transition:all .15s">
-                    <input type="checkbox" value="${c.id}" ${currentMasterIds.includes(c.id)?'checked':''} style="width:16px;height:16px;accent-color:#16a34a"
-                        onchange="this.closest('label').style.background=this.checked?'#f0fdf4':'#f8fafc';this.closest('label').style.borderColor=this.checked?'#86efac':'#e2e8f0'">
-                    <div>
-                        <p style="font-size:13px;font-weight:600;color:#1e293b;margin:0">${c.title}</p>
-                        <p style="font-size:11px;color:#64748b;margin:0">${c.durationHours}h · ${c.totalCards} tarjetas</p>
-                    </div>
-                    ${currentMasterIds.includes(c.id)?'<span style="margin-left:auto;font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;padding:2px 8px;border-radius:20px">REQUERIDO</span>':'<span style="margin-left:auto;font-size:10px;color:#94a3b8">Opcional</span>'}
-                </label>`).join('')}
-            </div>
-            <button onclick="saveMasterCertCourses('${togglesId}')" style="margin-top:12px;padding:10px 20px;background:${path.gradient};color:white;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;width:100%">
-                Guardar configuración — ${path.label}
-            </button>
-        </div>`; }).join('');
+    const { data } = await sb.from('app_config').select('key,value').eq('key','learning_paths');
+    _lpState = data?.[0]?.value
+        ? JSON.parse(JSON.stringify(data[0].value))
+        : JSON.parse(JSON.stringify(LEARNING_PATHS));
+    _renderLearningPaths();
 }
 
-async function saveMasterCertCourses(togglesId) {
-    const selector = togglesId ? `#${togglesId} input[type=checkbox]` : '.masterCourseToggles input[type=checkbox]';
-    const checkboxes = document.querySelectorAll(selector);
-    const selected = Array.from(checkboxes).filter(c=>c.checked).map(c=>c.value);
-    if (selected.length === 0) { toast('Selecciona al menos un curso', false); return; }
+function _renderLearningPaths() {
+    const container = document.getElementById('learningPathsPanel');
+    if (!container) return;
+    container.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div>
+                <h3 style="font-size:16px;font-weight:700;color:#1e293b;margin:0">Rutas de aprendizaje</h3>
+                <p style="font-size:12px;color:#64748b;margin:4px 0 0">Cada ruta tiene su propio Certificado Maestro. El orden de los cursos aquí se refleja para los usuarios.</p>
+            </div>
+            <button onclick="_lp_addPath()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#0f172a;color:white;border:none;border-radius:10px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap">
+                <i class="fas fa-plus"></i> Nueva ruta
+            </button>
+        </div>
+        ${_lpState.map((path, pi) => _renderPathCard(path, pi)).join('')}
+        <button onclick="saveAllLearningPaths()" style="margin-top:8px;padding:12px 20px;background:linear-gradient(135deg,#0f172a,#334155);color:white;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%">
+            <i class="fas fa-save" style="margin-right:6px"></i>Guardar todas las rutas
+        </button>`;
+}
 
+function _renderPathCard(path, pi) {
+    const colorSet = LP_COLORS[pi % LP_COLORS.length];
+    const color = path.color || colorSet.color;
+    const gradient = path.gradient || colorSet.gradient;
+    const courses = (path.courses || []);
+    const courseObjs = courses.map(id => STATIC_COURSES.find(c => c.id === id)).filter(Boolean);
+    const available = STATIC_COURSES.filter(c => !courses.includes(c.id));
+
+    return `
+    <div style="margin-bottom:16px;border:1.5px solid #e2e8f0;border-radius:14px;overflow:hidden">
+        <div style="background:${gradient};padding:14px 16px;display:flex;align-items:center;gap:10px">
+            <div style="flex:1">
+                <input id="lp_label_${pi}" value="${path.label}" placeholder="Nombre de la ruta"
+                    style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:white;font-size:15px;font-weight:700;padding:6px 10px;border-radius:8px;width:100%;outline:none"
+                    oninput="_lpState[${pi}].label=this.value">
+            </div>
+            <select onchange="_lp_setColor(${pi},this.value)" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:white;padding:6px 8px;border-radius:8px;font-size:12px;outline:none;cursor:pointer">
+                ${LP_COLORS.map((c,ci) => `<option value="${ci}" ${(path.color===c.color)?'selected':''} style="background:#1e293b">${['Azul','Rosa','Ámbar','Verde','Índigo','Rojo'][ci]}</option>`).join('')}
+            </select>
+            <button onclick="_lp_deletePath(${pi})" title="Eliminar ruta" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:white;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:13px">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        <div style="padding:14px">
+            <p style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 10px">Cursos en orden (${courseObjs.length})</p>
+            <div style="display:flex;flex-direction:column;gap:6px" id="lp_courses_${pi}">
+                ${courseObjs.length === 0
+                    ? `<p style="font-size:13px;color:#94a3b8;text-align:center;padding:16px 0">Sin cursos aún. Agrega uno abajo.</p>`
+                    : courseObjs.map((c, ci) => `
+                    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px">
+                        <div style="display:flex;flex-direction:column;gap:2px">
+                            <button onclick="_lp_move(${pi},${ci},-1)" ${ci===0?'disabled':''} style="background:none;border:none;cursor:pointer;color:${ci===0?'#cbd5e1':'#64748b'};padding:0;line-height:1;font-size:11px"><i class="fas fa-chevron-up"></i></button>
+                            <button onclick="_lp_move(${pi},${ci},1)" ${ci===courseObjs.length-1?'disabled':''} style="background:none;border:none;cursor:pointer;color:${ci===courseObjs.length-1?'#cbd5e1':'#64748b'};padding:0;line-height:1;font-size:11px"><i class="fas fa-chevron-down"></i></button>
+                        </div>
+                        <div style="width:28px;height:28px;border-radius:8px;background:${c.color||'#07B0E4'};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">${c.icon||'📚'}</div>
+                        <div style="flex:1;min-width:0">
+                            <p style="font-size:13px;font-weight:600;color:#1e293b;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
+                            <p style="font-size:11px;color:#64748b;margin:0">${c.durationHours||0}h · ${c.totalCards||0} tarjetas</p>
+                        </div>
+                        <span style="font-size:10px;font-weight:700;color:#64748b;background:#f1f5f9;padding:2px 6px;border-radius:6px">#${ci+1}</span>
+                        <button onclick="_lp_removeCourse(${pi},'${c.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;padding:0 4px"><i class="fas fa-times"></i></button>
+                    </div>`).join('')}
+            </div>
+            ${available.length > 0 ? `
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+                <select id="lp_add_${pi}" style="flex:1;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;color:#1e293b;background:#fff;outline:none">
+                    <option value="">— Agregar curso —</option>
+                    ${available.map(c => `<option value="${c.id}">${c.title} (${c.durationHours||0}h)</option>`).join('')}
+                </select>
+                <button onclick="_lp_addCourse(${pi})" style="padding:8px 14px;background:#0f172a;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>` : `<p style="font-size:11px;color:#10b981;margin:10px 0 0;text-align:center"><i class="fas fa-check-circle"></i> Todos los cursos disponibles ya están en esta ruta</p>`}
+        </div>
+    </div>`;
+}
+
+function _lp_move(pi, ci, dir) {
+    const courses = _lpState[pi].courses;
+    const ni = ci + dir;
+    if (ni < 0 || ni >= courses.length) return;
+    [courses[ci], courses[ni]] = [courses[ni], courses[ci]];
+    _renderLearningPaths();
+}
+
+function _lp_removeCourse(pi, courseId) {
+    _lpState[pi].courses = _lpState[pi].courses.filter(id => id !== courseId);
+    _renderLearningPaths();
+}
+
+function _lp_addCourse(pi) {
+    const sel = document.getElementById(`lp_add_${pi}`);
+    if (!sel || !sel.value) return;
+    if (!_lpState[pi].courses.includes(sel.value)) {
+        _lpState[pi].courses.push(sel.value);
+    }
+    _renderLearningPaths();
+}
+
+function _lp_setColor(pi, colorIdx) {
+    const c = LP_COLORS[parseInt(colorIdx)];
+    _lpState[pi].color = c.color;
+    _lpState[pi].gradient = c.gradient;
+    _renderLearningPaths();
+}
+
+function _lp_deletePath(pi) {
+    if (!confirm(`¿Eliminar la ruta "${_lpState[pi].label}"? Esta acción no se guarda hasta presionar "Guardar todas las rutas".`)) return;
+    _lpState.splice(pi, 1);
+    _renderLearningPaths();
+}
+
+function _lp_addPath() {
+    const ci = _lpState.length % LP_COLORS.length;
+    _lpState.push({
+        id: 'ruta_' + Date.now(),
+        label: 'Nueva ruta',
+        color: LP_COLORS[ci].color,
+        gradient: LP_COLORS[ci].gradient,
+        courses: []
+    });
+    _renderLearningPaths();
+    // scroll al final
+    setTimeout(() => document.getElementById('learningPathsPanel')?.lastElementChild?.previousElementSibling?.scrollIntoView({behavior:'smooth'}), 50);
+}
+
+async function saveAllLearningPaths() {
+    if (_lpState.some(p => !p.label.trim())) { toast('Todas las rutas deben tener nombre', false); return; }
+    if (_lpState.some(p => p.courses.length === 0)) { toast('Cada ruta debe tener al menos un curso', false); return; }
     const { error } = await sb.from('app_config')
-        .upsert({ key:'master_cert_courses', value: selected }, { onConflict:'key' });
+        .upsert({ key: 'learning_paths', value: _lpState }, { onConflict: 'key' });
     if (error) { toast('Error al guardar: ' + error.message, false); return; }
-    toast(`Guardado: ${selected.length} cursos requeridos para Certificado Maestro`);
-
-    // Refrescar etiquetas en UI
+    toast(`✓ ${_lpState.length} rutas guardadas correctamente`);
     await loadLearningPaths();
 }
 
