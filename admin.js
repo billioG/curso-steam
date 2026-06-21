@@ -9,8 +9,9 @@ const ADMIN_EMAILS  = ['billy@1bot.org'];
 // Cursos estáticos del programa (datos reales de data.js)
 // Rutas de aprendizaje disponibles
 const LEARNING_PATHS = [
-    { id:'steam20',   label:'Docente STEAM 2.0',   color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)' },
-    { id:'creativo',  label:'Docente Creativo',     color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)' },
+    { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
+    { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp'] },
+    { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
 ];
 
 const STATIC_COURSES = [
@@ -19,7 +20,13 @@ const STATIC_COURSES = [
     { id:'design-thinking',  title:'Design Thinking para Docentes',        durationHours:3,  totalCards:45, modules:4, ruta:'steam20',  masterCert:true  },
     { id:'evaluacion',       title:'Evaluación Formativa',                 durationHours:3,  totalCards:38, modules:4, ruta:'steam20',  masterCert:true  },
     { id:'tipos-estudiantes',title:'Conoce a Quien Enseñas',               durationHours:5,  totalCards:60, modules:5, ruta:'steam20',  masterCert:true  },
-    { id:'storytelling',     title:'Storytelling para Docentes',           durationHours:4,  totalCards:50, modules:5, ruta:'steam20',  masterCert:false },
+    { id:'storytelling',     title:'Storytelling para Docentes',           durationHours:4,  totalCards:50, modules:5, ruta:'steam20',      masterCert:false },
+    { id:'creatividad',       title:'Despertando la Creatividad',              durationHours:4,  totalCards:50, modules:5, ruta:'creativo',     masterCert:true  },
+    { id:'herramientas-tec',  title:'Herramientas Tecnológicas para Docentes', durationHours:3,  totalCards:45, modules:4, ruta:'creativo',     masterCert:true  },
+    { id:'m-learning',        title:'Mobile Learning · Aprender con el Celular',durationHours:3, totalCards:40, modules:4, ruta:'metodologias', masterCert:true  },
+    { id:'flipped-classroom', title:'Flipped Classroom · El Aula Invertida',   durationHours:3,  totalCards:40, modules:4, ruta:'metodologias', masterCert:true  },
+    { id:'abv',               title:'Aprendizaje Basado en Videos',            durationHours:3,  totalCards:35, modules:4, ruta:'metodologias', masterCert:true  },
+    { id:'micro-learning',    title:'Micro-learning · Aprender en Pequeñas Dosis', durationHours:3, totalCards:35, modules:4, ruta:'metodologias', masterCert:true  },
 ];
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1488,12 +1495,18 @@ async function loadLearningPaths() {
     const savedCourses = data?.[0]?.value;
     const currentMasterIds = savedCourses || ['steam','abp','design-thinking','evaluacion','tipos-estudiantes'];
 
-    container.innerHTML = `
-        <div style="margin-bottom:16px">
-            <h3 style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:4px">Ruta: Docente STEAM 2.0</h3>
-            <p style="font-size:12px;color:#64748b;margin-bottom:12px">Selecciona los cursos requeridos para obtener el Certificado Maestro de esta ruta. Los cursos desmarcados siguen disponibles pero no son obligatorios.</p>
-            <div style="display:flex;flex-direction:column;gap:8px" id="masterCourseToggles">
-                ${STATIC_COURSES.map(c => `
+    container.innerHTML = LEARNING_PATHS.map((path, idx) => {
+        const pathCourses = STATIC_COURSES.filter(c => (path.courses || []).includes(c.id));
+        const togglesId = `masterCourseToggles_${path.id}`;
+        return `
+        <div style="margin-bottom:20px;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                <div style="width:12px;height:12px;border-radius:50%;background:${path.color};flex-shrink:0"></div>
+                <h3 style="font-size:15px;font-weight:700;color:#1e293b;margin:0">Ruta: ${path.label}</h3>
+            </div>
+            <p style="font-size:12px;color:#64748b;margin-bottom:12px">Selecciona los cursos requeridos para obtener el Certificado Maestro de esta ruta.</p>
+            <div style="display:flex;flex-direction:column;gap:8px" id="${togglesId}">
+                ${pathCourses.map(c => `
                 <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${currentMasterIds.includes(c.id)?'#f0fdf4':'#f8fafc'};border:1.5px solid ${currentMasterIds.includes(c.id)?'#86efac':'#e2e8f0'};border-radius:10px;cursor:pointer;transition:all .15s">
                     <input type="checkbox" value="${c.id}" ${currentMasterIds.includes(c.id)?'checked':''} style="width:16px;height:16px;accent-color:#16a34a"
                         onchange="this.closest('label').style.background=this.checked?'#f0fdf4':'#f8fafc';this.closest('label').style.borderColor=this.checked?'#86efac':'#e2e8f0'">
@@ -1504,23 +1517,15 @@ async function loadLearningPaths() {
                     ${currentMasterIds.includes(c.id)?'<span style="margin-left:auto;font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;padding:2px 8px;border-radius:20px">REQUERIDO</span>':'<span style="margin-left:auto;font-size:10px;color:#94a3b8">Opcional</span>'}
                 </label>`).join('')}
             </div>
-            <button onclick="saveMasterCertCourses()" style="margin-top:12px;padding:10px 20px;background:linear-gradient(135deg,#15803d,#16a34a);color:white;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;width:100%">
-                Guardar configuración de ruta
+            <button onclick="saveMasterCertCourses('${togglesId}')" style="margin-top:12px;padding:10px 20px;background:${path.gradient};color:white;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;width:100%">
+                Guardar configuración — ${path.label}
             </button>
-        </div>
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px">
-            <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Próximas rutas</p>
-            ${LEARNING_PATHS.slice(1).map(r=>`
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f1f5f9">
-                <div style="width:10px;height:10px;border-radius:50%;background:${r.color}"></div>
-                <span style="font-size:12px;color:#475569;font-weight:600">${r.label}</span>
-                <span style="margin-left:auto;font-size:10px;color:#94a3b8;background:#f1f5f9;padding:2px 8px;border-radius:20px">Próximamente</span>
-            </div>`).join('')}
-        </div>`;
+        </div>`; }).join('');
 }
 
-async function saveMasterCertCourses() {
-    const checkboxes = document.querySelectorAll('#masterCourseToggles input[type=checkbox]');
+async function saveMasterCertCourses(togglesId) {
+    const selector = togglesId ? `#${togglesId} input[type=checkbox]` : '.masterCourseToggles input[type=checkbox]';
+    const checkboxes = document.querySelectorAll(selector);
     const selected = Array.from(checkboxes).filter(c=>c.checked).map(c=>c.value);
     if (selected.length === 0) { toast('Selecciona al menos un curso', false); return; }
 

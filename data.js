@@ -941,6 +941,2492 @@ const allCourses = [
             ]
         }
     ]
+},
+// ══════════════════════════════════════════════════
+// RUTA: DOCENTE CREATIVO
+// ══════════════════════════════════════════════════
+// CURSO: creatividad
+{
+    id: 'creatividad',
+    title: 'Despertando la Creatividad',
+    subtitle: 'Herramientas para cultivar el pensamiento creativo en tu aula',
+    icon: '💡',
+    color: '#E83C8D',
+    prerequisite: [],
+    status: 'available',
+    durationHours: 4,
+    totalCards: 50,
+    modules: [
+        {
+            id: 1,
+            title: "💡 Módulo 1: ¿Qué es la creatividad y por qué importa?",
+            cards: [
+                {
+                    id: 1,
+                    type: "content",
+                    title: "¿Qué entendemos por creatividad?",
+                    content: "La creatividad es la capacidad de generar ideas nuevas y útiles. No es un don exclusivo de artistas o genios: es una habilidad que todos los seres humanos poseemos y que puede desarrollarse con práctica y condiciones adecuadas.",
+                    extra: "En Guatemala, muchos docentes subestiman su propia creatividad porque la asocian solo con el arte. En realidad, adaptar una clase con pocos recursos ya es un acto creativo."
+                },
+                {
+                    id: 2,
+                    type: "content",
+                    title: "Mitos sobre la creatividad",
+                    content: "Mito 1: 'La creatividad es innata, o la tienes o no.' Mito 2: 'Solo los artistas son creativos.' Mito 3: 'La creatividad no tiene lugar en matemáticas o ciencias.' Los tres son falsos. La investigación demuestra que la creatividad puede aprenderse y enseñarse en cualquier área.",
+                    extra: "Sir Ken Robinson afirma que los sistemas educativos tradicionales 'matan' la creatividad al priorizar la memorización sobre la exploración. ¿Reconoces algún patrón así en tu contexto?"
+                },
+                {
+                    id: 3,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál de las siguientes afirmaciones sobre la creatividad es CORRECTA?",
+                    options: [
+                        "La creatividad es un talento innato que no se puede desarrollar.",
+                        "Solo las personas que trabajan en artes son creativas.",
+                        "La creatividad es una habilidad que cualquier persona puede desarrollar con práctica.",
+                        "La creatividad no tiene aplicación en materias como matemáticas."
+                    ],
+                    correct: 2,
+                    explanation: "La creatividad es una habilidad humana universal que puede cultivarse. La investigación en neurociencia y educación confirma que todos podemos volvernos más creativos con las condiciones y prácticas adecuadas."
+                },
+                {
+                    id: 4,
+                    type: "content",
+                    title: "¿Por qué la creatividad importa hoy?",
+                    content: "El Foro Económico Mundial identifica la creatividad como una de las tres habilidades más importantes para el siglo XXI. En un mundo donde la inteligencia artificial puede realizar tareas rutinarias, la capacidad de generar ideas originales, resolver problemas nuevos y adaptarse se vuelve esencial.",
+                    extra: "Para tus estudiantes guatemaltecos, la creatividad no es un lujo: es una herramienta de resiliencia ante contextos cambiantes y recursos limitados."
+                },
+                {
+                    id: 5,
+                    type: "content",
+                    title: "Creatividad y educación STEAM",
+                    content: "STEAM integra Ciencias, Tecnología, Ingeniería, Arte y Matemáticas precisamente porque reconoce que el pensamiento creativo es el puente entre disciplinas. Un estudiante que aprende a crear no solo acumula conocimiento: aprende a transformarlo.",
+                    extra: "Ejemplo local: un estudiante que diseña un sistema de riego con materiales reciclados está aplicando ciencias, ingeniería Y creatividad al mismo tiempo."
+                },
+                {
+                    id: 6,
+                    type: "content",
+                    title: "Creatividad vs. originalidad",
+                    content: "Ser creativo no significa inventar algo desde cero. Significa combinar ideas existentes de maneras nuevas y útiles. Picasso decía: 'Los buenos artistas copian, los grandes artistas roban' —en el sentido de que transforman e integran influencias en algo propio.",
+                    extra: "En el aula: no necesitas inventar actividades completamente nuevas. Puedes tomar una estrategia conocida y adaptarla a tu contexto, tu grupo y tu objetivo."
+                },
+                {
+                    id: 7,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "Según el Foro Económico Mundial, ¿por qué la creatividad es tan importante para el siglo XXI?",
+                    options: [
+                        "Porque reemplaza la necesidad de conocimiento técnico.",
+                        "Porque permite a las personas generar ideas originales y adaptarse ante un mundo cambiante.",
+                        "Porque es la única habilidad que los robots no pueden aprender.",
+                        "Porque es más importante que la lectura y la escritura."
+                    ],
+                    correct: 1,
+                    explanation: "En un mundo donde la automatización realiza tareas rutinarias, la creatividad —la capacidad de generar ideas originales, resolver problemas nuevos y adaptarse— se convierte en una ventaja humana fundamental."
+                },
+                {
+                    id: 8,
+                    type: "content",
+                    title: "El ciclo creativo",
+                    content: "La creatividad rara vez es un destello repentino. Generalmente sigue un ciclo: 1) Preparación (absorber información y experiencias), 2) Incubación (dejar que las ideas 'reposent'), 3) Iluminación (el momento 'eureka'), 4) Verificación (evaluar y perfeccionar la idea).",
+                    extra: "Implicación para el aula: dar tiempo y espacio es parte de enseñar creatividad. No todo debe resolverse en 45 minutos."
+                },
+                {
+                    id: 9,
+                    type: "content",
+                    title: "Creatividad colectiva",
+                    content: "Aunque imaginamos la creatividad como algo individual, gran parte de la innovación ocurre en grupos. Pixar, por ejemplo, tiene procesos sistemáticos de retroalimentación colectiva. En el aula, crear condiciones para que los estudiantes piensen juntos es tan valioso como el trabajo individual.",
+                    extra: "Una dinámica sencilla: al terminar un proyecto, organiza una 'galería de ideas' donde los grupos presenten sus soluciones y los demás dejen comentarios positivos en notas adhesivas."
+                },
+                {
+                    id: 10,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es el orden correcto de las etapas del ciclo creativo?",
+                    options: [
+                        "Iluminación → Preparación → Incubación → Verificación",
+                        "Preparación → Incubación → Iluminación → Verificación",
+                        "Verificación → Preparación → Iluminación → Incubación",
+                        "Incubación → Iluminación → Preparación → Verificación"
+                    ],
+                    correct: 1,
+                    explanation: "El ciclo creativo comienza con la Preparación (acumular experiencias e información), sigue con la Incubación (procesamiento inconsciente), luego viene la Iluminación (la idea surge) y finalmente la Verificación (se evalúa y perfecciona la idea)."
+                }
+            ]
+        },
+        {
+            id: 2,
+            title: "🧠 Módulo 2: El cerebro creativo: cómo funciona",
+            cards: [
+                {
+                    id: 11,
+                    type: "content",
+                    title: "Neurociencia básica de la creatividad",
+                    content: "Durante décadas se creyó que la creatividad residía en el hemisferio derecho del cerebro. Hoy sabemos que es mucho más complejo: la creatividad involucra múltiples redes neuronales que trabajan en conjunto, especialmente la Red de Modo Predeterminado (asociada con la imaginación) y la Red de Control Ejecutivo (que evalúa ideas).",
+                    extra: "No necesitas ser neurocientífico para aplicar esto: lo importante es saber que la creatividad requiere tanto libertad para explorar COMO capacidad para evaluar y refinar ideas."
+                },
+                {
+                    id: 12,
+                    type: "content",
+                    title: "Pensamiento divergente",
+                    content: "El pensamiento divergente es la capacidad de generar MUCHAS ideas posibles ante un problema o estímulo. Es la fase 'abierta' de la creatividad: no juzgamos, no descartamos, solo generamos. El objetivo es la cantidad y variedad, no la calidad inmediata.",
+                    extra: "Ejemplo de actividad: 'Listemos 20 usos posibles para un clip.' No hay respuestas malas. Esta es la esencia del brainstorming."
+                },
+                {
+                    id: 13,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Qué caracteriza principalmente al pensamiento divergente?",
+                    options: [
+                        "Encontrar la única respuesta correcta a un problema.",
+                        "Evaluar críticamente cada idea antes de aceptarla.",
+                        "Generar la mayor cantidad posible de ideas sin juzgarlas.",
+                        "Seguir un proceso lógico paso a paso."
+                    ],
+                    correct: 2,
+                    explanation: "El pensamiento divergente se trata de generar múltiples ideas posibles sin juzgarlas de inmediato. Es la fase 'abierta' de la creatividad donde la cantidad y variedad de ideas importan más que su calidad inicial."
+                },
+                {
+                    id: 14,
+                    type: "content",
+                    title: "Pensamiento convergente",
+                    content: "El pensamiento convergente es el complemento del divergente: es la capacidad de EVALUAR y SELECCIONAR entre las ideas generadas para elegir la más adecuada. Es el pensamiento que analiza, compara, critica constructivamente y llega a soluciones.",
+                    extra: "La creatividad productiva necesita AMBOS tipos de pensamiento. Primero abrimos (divergente), luego cerramos (convergente). El error común es converger demasiado pronto, descartando ideas antes de explorarlas."
+                },
+                {
+                    id: 15,
+                    type: "content",
+                    title: "El papel de las emociones en la creatividad",
+                    content: "Las emociones positivas —curiosidad, alegría, sorpresa— amplían nuestra capacidad de generar ideas (lo que los psicólogos llaman 'broaden and build'). El estrés crónico y el miedo al error, por el contrario, bloquean la creatividad al activar respuestas defensivas en el cerebro.",
+                    extra: "Implicación directa para el aula: un ambiente emocionalmente seguro no es 'bonito tener', es condición necesaria para que emerja la creatividad de tus estudiantes."
+                },
+                {
+                    id: 16,
+                    type: "content",
+                    title: "La importancia del juego",
+                    content: "Estudios en neurociencia muestran que el juego activa las mismas redes cerebrales que la creatividad. Cuando jugamos, bajamos la guardia, exploramos sin miedo al fracaso y combinamos elementos de maneras inesperadas. El juego no es lo opuesto del trabajo serio: es su precursor.",
+                    extra: "En el aula guatemalteca: incorporar elementos lúdicos no significa perder el tiempo. Una actividad de 5 minutos de juego libre puede desbloquear 40 minutos de trabajo creativo profundo."
+                },
+                {
+                    id: 17,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Qué efecto tienen las emociones positivas como la curiosidad y la alegría sobre la creatividad?",
+                    options: [
+                        "La reducen porque distraen del pensamiento lógico.",
+                        "No tienen ningún efecto sobre la capacidad creativa.",
+                        "La amplifican al abrir la mente a más posibilidades.",
+                        "La bloquean porque generan demasiada energía."
+                    ],
+                    correct: 2,
+                    explanation: "Las emociones positivas amplían nuestra capacidad de generar ideas (teoría 'broaden and build'). Por eso un ambiente emocionalmente seguro y positivo en el aula es condición necesaria para que emerja la creatividad."
+                },
+                {
+                    id: 18,
+                    type: "content",
+                    title: "Incubación: el poder de descansar",
+                    content: "Cuando parece que 'no se nos ocurre nada', puede ser que nuestro cerebro necesita tiempo para procesar en segundo plano. La fase de incubación ocurre cuando dejamos de esforzarnos conscientemente —durante un paseo, al bañarnos, al dormir— y el inconsciente trabaja en las conexiones.",
+                    extra: "Estrategia práctica: si tus estudiantes están atascados en un problema creativo, anímalos a 'dejarlo reposar' y volver en 10 minutos. Con frecuencia, la solución aparece en ese intervalo."
+                },
+                {
+                    id: 19,
+                    type: "content",
+                    title: "Conexiones inesperadas: la clave de la creatividad",
+                    content: "Investigadores como Sarnoff Mednick propusieron que la creatividad es esencialmente la capacidad de hacer conexiones remotas entre conceptos que normalmente no se asocian. Las personas más creativas tienen una red mental más amplia y son más capaces de conectar ideas distantes.",
+                    extra: "Actividad para el aula: 'Analogías forzadas'. Pide a tus estudiantes que expliquen cómo la fotosíntesis se parece a una cocina, o cómo una célula es como una escuela. El ejercicio de conectar lo distante entrena la mente creativa."
+                },
+                {
+                    id: 20,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Qué es la 'incubación' en el proceso creativo?",
+                    options: [
+                        "Una técnica para generar ideas rápidamente bajo presión.",
+                        "El período en que el cerebro procesa ideas inconscientemente mientras descansamos.",
+                        "Una estrategia para evaluar críticamente las ideas generadas.",
+                        "El momento de presentar las ideas al grupo."
+                    ],
+                    correct: 1,
+                    explanation: "La incubación es la fase en que dejamos de esforzarnos conscientemente en un problema y el cerebro sigue procesando en segundo plano. Ocurre durante descansos, paseos o el sueño, y con frecuencia produce los 'momentos eureka'."
+                }
+            ]
+        },
+        {
+            id: 3,
+            title: "🛠️ Módulo 3: Técnicas para despertar la creatividad",
+            cards: [
+                {
+                    id: 21,
+                    type: "content",
+                    title: "Brainstorming: la tormenta de ideas",
+                    content: "El brainstorming, creado por Alex Osborn en los años 40, es la técnica más conocida para generar ideas. Sus reglas básicas son: 1) No criticar ninguna idea durante la generación, 2) Buscar cantidad antes que calidad, 3) Construir sobre las ideas de otros, 4) Permitir ideas inusuales o exageradas.",
+                    extra: "Variante para el aula: 'Brainwriting'. En lugar de decir las ideas en voz alta, cada estudiante las escribe en papel y los pasa al siguiente. Esto reduce la presión de hablar en público y produce más ideas en grupos tímidos."
+                },
+                {
+                    id: 22,
+                    type: "content",
+                    title: "SCAMPER: preguntas que transforman",
+                    content: "SCAMPER es un acrónimo de preguntas para modificar ideas existentes: Sustituir, Combinar, Adaptar, Modificar/Magnificar, Proponer otros usos, Eliminar, Reorganizar/Invertir. Se aplica tomando cualquier objeto, proceso o concepto y haciéndole cada una de estas preguntas.",
+                    extra: "Ejemplo: toma una silla de salón. ¿Qué podría sustituirse? (las patas por ruedas). ¿Qué se podría combinar? (con una mochila). ¿Cómo adaptarla para niños con discapacidad motora? SCAMPER genera docenas de ideas en minutos."
+                },
+                {
+                    id: 23,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "En la técnica SCAMPER, ¿qué representa la letra 'A'?",
+                    options: [
+                        "Ampliar",
+                        "Asociar",
+                        "Adaptar",
+                        "Agregar"
+                    ],
+                    correct: 2,
+                    explanation: "En SCAMPER, la 'A' representa Adaptar: preguntarte cómo podrías adaptar el objeto, proceso o idea a otro contexto, uso o grupo de personas. Es una de las preguntas más poderosas para generar variantes creativas."
+                },
+                {
+                    id: 24,
+                    type: "content",
+                    title: "Mapas mentales",
+                    content: "Los mapas mentales, popularizados por Tony Buzan, son diagramas que parten de una idea central y se ramifican hacia conceptos relacionados. Imitan la forma en que el cerebro asocia ideas y permiten visualizar conexiones que no son evidentes en listas lineales.",
+                    extra: "Para el aula: un mapa mental creado entre todos en el pizarrón antes de un proyecto es una excelente herramienta de activación. Empieza con la pregunta central en el medio y pide que cada quien agregue una rama con lo que sabe o quiere explorar."
+                },
+                {
+                    id: 25,
+                    type: "content",
+                    title: "Pensamiento lateral de De Bono",
+                    content: "Edward de Bono acuñó el término 'pensamiento lateral' para describir la capacidad de resolver problemas desde ángulos inesperados, en lugar de seguir el camino lógico obvio. Sus herramientas incluyen los '6 Sombreros para Pensar', que asignan roles de pensamiento diferentes a los miembros de un grupo.",
+                    extra: "Los 6 sombreros: Blanco (datos), Rojo (emociones), Negro (riesgos), Amarillo (optimismo), Verde (creatividad), Azul (proceso). Usarlos en una discusión de clase garantiza que se exploren todos los ángulos de un problema."
+                },
+                {
+                    id: 26,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "En la técnica de los '6 Sombreros para Pensar' de De Bono, ¿qué representa el sombrero VERDE?",
+                    options: [
+                        "Pensar en los riesgos y peligros de una idea.",
+                        "Analizar los datos y hechos disponibles.",
+                        "Expresar emociones e intuiciones sobre el tema.",
+                        "Generar ideas creativas y alternativas nuevas."
+                    ],
+                    correct: 3,
+                    explanation: "El sombrero verde representa el pensamiento creativo: generar nuevas ideas, alternativas y posibilidades sin juzgarlas. Es el sombrero de la creatividad y la innovación dentro de la dinámica de los 6 sombreros."
+                },
+                {
+                    id: 27,
+                    type: "content",
+                    title: "La técnica del 'Sí, y...'",
+                    content: "Tomada del teatro de improvisación, la regla 'Sí, y...' consiste en aceptar lo que dice tu compañero (sí) y añadir algo nuevo encima (y). Esto crea cadenas de ideas donde cada aportación construye sobre la anterior, sin bloqueos ni juicios.",
+                    extra: "Contrástala con la trampa del 'Sí, pero...': cada vez que decimos 'pero', estamos bloqueando la idea anterior. En el aula, practicar 'Sí, y...' entrena la escucha activa y la construcción colaborativa."
+                },
+                {
+                    id: 28,
+                    type: "content",
+                    title: "El método de la pregunta poderosa",
+                    content: "Las preguntas creativas transforman la forma en que vemos un problema. En lugar de '¿Cómo puedo enseñar fracciones?', pregunta '¿Cómo podrían MIS ESTUDIANTES descubrir las fracciones por sí mismos?' El simple cambio de perspectiva en la pregunta genera respuestas completamente distintas.",
+                    extra: "Técnica: el '¿Y si...?' creativo. ¿Y si no hubiera pizarrón? ¿Y si la clase fuera al revés (estudiantes enseñan)? ¿Y si tuviéramos que explicar este tema a niños de 5 años? Cada pregunta abre un universo de posibilidades."
+                },
+                {
+                    id: 29,
+                    type: "content",
+                    title: "Restricciones como motor creativo",
+                    content: "Paradójicamente, las restricciones pueden potenciar la creatividad. Cuando tenemos recursos ilimitados, la mente divaga; cuando hay restricciones claras, la mente se enfoca y busca soluciones ingeniosas dentro de esos límites. Esta es la lógica del haiku, del Twitter o del diseño con presupuesto limitado.",
+                    extra: "Para el aula guatemalteca: la falta de recursos no es un obstáculo para la creatividad, puede ser su mejor detonador. 'Con solo papel periódico y cinta adhesiva, construyan un puente que soporte 500 gramos.' El reto limitado activa la ingeniosidad."
+                },
+                {
+                    id: 30,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Por qué las RESTRICCIONES pueden potenciar la creatividad?",
+                    options: [
+                        "Porque reducen el número de ideas que se pueden generar.",
+                        "Porque obligan a la mente a encontrar soluciones ingeniosas dentro de límites definidos.",
+                        "Porque eliminan la necesidad de pensamiento divergente.",
+                        "Porque hacen que la actividad sea más fácil de completar."
+                    ],
+                    correct: 1,
+                    explanation: "Las restricciones enfocan la mente y la obligan a ser ingeniosa dentro de límites específicos. Paradójicamente, tener recursos o posibilidades ilimitadas puede inhibir la creatividad, mientras que las restricciones claras la activan."
+                }
+            ]
+        },
+        {
+            id: 4,
+            title: "🏫 Módulo 4: Ambientes creativos en el aula",
+            cards: [
+                {
+                    id: 31,
+                    type: "content",
+                    title: "¿Qué es un ambiente creativo?",
+                    content: "Un ambiente creativo es el conjunto de condiciones físicas, emocionales y relacionales que hacen posible que las personas generen y compartan ideas. No depende solo del espacio físico: una sala sin ventanas puede ser altamente creativa si hay confianza, apertura y propósito.",
+                    extra: "Las cuatro dimensiones de un ambiente creativo: 1) Seguridad emocional, 2) Estímulo sensorial adecuado, 3) Tiempo y espacio para explorar, 4) Recursos y materiales accesibles."
+                },
+                {
+                    id: 32,
+                    type: "content",
+                    title: "El error como parte del aprendizaje",
+                    content: "En ambientes creativos, el error no es un fracaso sino información. Thomas Edison probó más de 1,000 materiales antes de encontrar el filamento correcto para la bombilla. La pregunta no es '¿Lo hiciste bien?' sino '¿Qué aprendiste de lo que no funcionó?'",
+                    extra: "Herramienta práctica: el 'Muro de los Errores Gloriosos'. Dedica un espacio en tu aula donde los estudiantes peguen notas sobre un error que cometieron y qué les enseñó. Normaliza el error como parte del proceso."
+                },
+                {
+                    id: 33,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la actitud más adecuada hacia el error en un ambiente creativo de aprendizaje?",
+                    options: [
+                        "El error debe evitarse a toda costa porque genera malos hábitos.",
+                        "El error es aceptable solo si ocurre en actividades artísticas.",
+                        "El error es fuente de información y parte natural del proceso de aprendizaje.",
+                        "El error debe corregirse de inmediato para no reforzarlo."
+                    ],
+                    correct: 2,
+                    explanation: "En ambientes creativos, el error es visto como información valiosa, no como fracaso. Esta mentalidad ('growth mindset') permite que los estudiantes tomen riesgos intelectuales y exploren con mayor profundidad."
+                },
+                {
+                    id: 34,
+                    type: "content",
+                    title: "La organización del espacio físico",
+                    content: "Aunque no siempre podemos cambiar la arquitectura de nuestro salón, sí podemos modificar la disposición del mobiliario. Las mesas en isla favorecen la colaboración; las paredes con espacio para exhibir trabajos comunican que las ideas de los estudiantes son valiosas; los rincones de exploración invitan a la autonomía.",
+                    extra: "Pequeño cambio, gran impacto: si tu aula tiene mesas fijas, puedes girar tu posición y la de los estudiantes, crear zonas en el suelo con cojines para brainstorming, o designar una pared como 'pizarrón de ideas' con papel periódico."
+                },
+                {
+                    id: 35,
+                    type: "content",
+                    title: "Preguntas que abren vs. preguntas que cierran",
+                    content: "Las preguntas que hacemos determinan el tipo de pensamiento que invitamos. Preguntas cerradas ('¿Cuál es la capital de Guatemala?') tienen una sola respuesta correcta. Preguntas abiertas ('¿Cómo crees que el clima afecta la cultura de un país?') invitan a explorar, opinar y crear.",
+                    extra: "Reto para esta semana: cuenta cuántas preguntas cerradas y abiertas haces en una clase típica. Luego, intenta transformar tres preguntas cerradas en abiertas. Observa cómo cambia la dinámica."
+                },
+                {
+                    id: 36,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál de las siguientes es una pregunta ABIERTA que promueve el pensamiento creativo?",
+                    options: [
+                        "¿En qué año se firmó el acuerdo de paz en Guatemala?",
+                        "¿Cuántos lados tiene un triángulo?",
+                        "¿De qué color es el cielo?",
+                        "¿Cómo crees que cambiaría Guatemala si todos tuviéramos acceso a internet?"
+                    ],
+                    correct: 3,
+                    explanation: "La pregunta sobre cómo cambiaría Guatemala con acceso universal a internet es abierta: no tiene una sola respuesta correcta, invita a explorar, imaginar y argumentar. Ese tipo de preguntas activan el pensamiento creativo y crítico."
+                },
+                {
+                    id: 37,
+                    type: "content",
+                    title: "El tiempo como recurso creativo",
+                    content: "La creatividad necesita tiempo. Cuando los estudiantes (y los docentes) están permanentemente en modo de 'urgencia', el cerebro no puede hacer las conexiones lentas que producen ideas genuinamente creativas. Google tiene famosa su regla del 20%: los empleados pueden dedicar el 20% de su tiempo a proyectos propios.",
+                    extra: "Adaptación para el aula: reserva 10 minutos semanales de 'tiempo libre de exploración'. Pueden dibujar, construir, escribir o simplemente pensar. Ese tiempo aparentemente 'perdido' nutre la creatividad durante el resto de la semana."
+                },
+                {
+                    id: 38,
+                    type: "content",
+                    title: "Proyectos creativos interdisciplinares",
+                    content: "Los proyectos que cruzan fronteras entre materias estimulan conexiones creativas. Un proyecto de 'diseño de una ciudad del futuro' puede involucrar matemáticas (geometría, proporciones), ciencias (energía sostenible), lenguaje (argumentación), sociales (convivencia) y arte (representación visual).",
+                    extra: "Punto de partida sencillo: elige un problema real de tu comunidad (basura, agua, transporte) y diseña con tu grado un proyecto que lo aborde desde varias materias. El contexto real multiplica la motivación."
+                },
+                {
+                    id: 39,
+                    type: "content",
+                    title: "Evaluación en ambientes creativos",
+                    content: "La evaluación tradicional (examen, nota numérica) puede frenar la creatividad si los estudiantes sienten que ser diferentes o arriesgarse tiene costo. Los portafolios, las rúbricas que valoran el proceso (no solo el producto) y la autoevaluación son herramientas más compatibles con ambientes creativos.",
+                    extra: "Rúbrica creativa sencilla: evalúa 1) ¿El estudiante intentó algo nuevo?, 2) ¿Puede explicar su proceso?, 3) ¿Aprendió de lo que no funcionó? Estas preguntas valoran la mentalidad creativa, no solo el resultado final."
+                },
+                {
+                    id: 40,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Por qué los portafolios son más compatibles con ambientes creativos que los exámenes tradicionales?",
+                    options: [
+                        "Porque son más fáciles de calificar para el docente.",
+                        "Porque eliminan la necesidad de evaluar a los estudiantes.",
+                        "Porque permiten valorar el proceso creativo y la evolución del estudiante, no solo el producto final.",
+                        "Porque los estudiantes prefieren no hacer exámenes."
+                    ],
+                    correct: 2,
+                    explanation: "Los portafolios documentan el proceso creativo a lo largo del tiempo: muestran borradores, errores, revisiones y aprendizajes. Esto los hace mucho más ricos para evaluar la creatividad que un examen que solo captura un momento final."
+                }
+            ]
+        },
+        {
+            id: 5,
+            title: "🌟 Módulo 5: El docente como modelo creativo",
+            cards: [
+                {
+                    id: 41,
+                    type: "content",
+                    title: "El docente creativo: más que técnicas",
+                    content: "Enseñar creatividad no es solo aplicar técnicas: es encarnarla. Los estudiantes aprenden más de lo que VEN que de lo que escuchan. Un docente que admite no saber la respuesta, que experimenta frente a su clase, que celebra las ideas inusuales, está modelando una mentalidad creativa con más poder que cualquier manual.",
+                    extra: "Pregunta de reflexión: ¿Cuándo fue la última vez que intentaste algo nuevo en tu clase, aunque no estuvieras seguro del resultado? La respuesta dice mucho sobre qué modelo eres para tus estudiantes."
+                },
+                {
+                    id: 42,
+                    type: "content",
+                    title: "Autoliderazgo creativo docente",
+                    content: "El autoliderazgo creativo implica tomar responsabilidad de tu propio desarrollo como pensador y creador. Implica cultivar hábitos como: leer fuera de tu área, buscar experiencias nuevas, cuestionar tus rutinas pedagógicas, conectar con otros docentes para cruzar ideas y reflexionar regularmente sobre tu práctica.",
+                    extra: "Hábito de 5 minutos: al terminar cada semana, anota una cosa que hiciste igual que siempre y una cosa que intentaste diferente. Con el tiempo, este pequeño registro se convierte en un mapa de tu crecimiento creativo."
+                },
+                {
+                    id: 43,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Qué significa que un docente sea 'modelo creativo' para sus estudiantes?",
+                    options: [
+                        "Que domina todas las técnicas de creatividad y las aplica perfectamente.",
+                        "Que tiene un título en artes o diseño creativo.",
+                        "Que experimenta, admite sus dudas y celebra las ideas inusuales frente a sus estudiantes.",
+                        "Que prepara clases muy elaboradas y visualmente atractivas."
+                    ],
+                    correct: 2,
+                    explanation: "Ser modelo creativo significa encarnar la mentalidad creativa: atreverse a experimentar, admitir incertidumbre y celebrar las ideas diferentes. Los estudiantes aprenden más de los comportamientos que observan que de las instrucciones que reciben."
+                },
+                {
+                    id: 44,
+                    type: "content",
+                    title: "Superar el miedo al ridículo",
+                    content: "Uno de los mayores inhibidores de la creatividad docente es el miedo a verse poco profesional, a que las actividades 'no funcionen' o a perder autoridad. Pero la autoridad real no viene de parecer infalible: viene de la confianza que construimos cuando somos auténticos y cuando los estudiantes ven que nos atrevemos.",
+                    extra: "Ejercicio de coraje creativo: escoge una actividad que nunca hayas intentado (role play, sketch teatral, experimento casero) y hazla el próximo lunes. Sin importar cómo salga, procésala con tus estudiantes: '¿Qué salió bien? ¿Qué haríamos diferente?'"
+                },
+                {
+                    id: 45,
+                    type: "content",
+                    title: "Comunidades de práctica creativa",
+                    content: "El docente creativo no trabaja solo. Las comunidades de práctica —grupos de docentes que se reúnen regularmente para compartir estrategias, co-diseñar clases y darse retroalimentación— multiplican la capacidad creativa individual. Una buena idea compartida se vuelve cinco ideas mejores.",
+                    extra: "Primer paso: identifica a dos o tres colegas en tu escuela con quienes puedas reunirte 30 minutos al mes para compartir 'lo que funcionó'. No necesitas una estructura formal: basta con la conversación honesta y el compromiso de regresar."
+                },
+                {
+                    id: 46,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es un beneficio clave de las comunidades de práctica creativa entre docentes?",
+                    options: [
+                        "Permiten que los docentes deleguen su planificación a otros.",
+                        "Multiplican las ideas al compartir y construir sobre las experiencias de colegas.",
+                        "Eliminan la necesidad de formación individual continua.",
+                        "Garantizan que todas las clases sigan el mismo formato creativo."
+                    ],
+                    correct: 1,
+                    explanation: "Las comunidades de práctica multiplican la creatividad: cuando los docentes comparten estrategias y se dan retroalimentación, una idea se transforma y mejora colectivamente. La creatividad colaborativa supera a la individual."
+                },
+                {
+                    id: 47,
+                    type: "content",
+                    title: "Fuentes de inspiración para el docente",
+                    content: "Los docentes creativos nutren su imaginación constantemente: leen libros fuera de su área, visitan museos o mercados artesanales, escuchan podcasts, observan cómo aprenden los niños fuera de la escuela, experimentan con nuevas recetas, practican un hobby. La creatividad pedagógica se alimenta de una vida rica en experiencias.",
+                    extra: "Lista de inspiración práctica para contexto guatemalteco: explorar los textiles mayas y sus patrones geométricos, conocer la historia de inventores guatemaltecos, visitar comunidades con saberes ancestrales. La cultura local es una fuente inagotable."
+                },
+                {
+                    id: 48,
+                    type: "content",
+                    title: "El diario creativo docente",
+                    content: "Llevar un diario de práctica creativa es una herramienta poderosa de autoliderazgo. No tiene que ser literario: puede incluir bocetos, listas de ideas, preguntas sin respuesta, fragmentos de conversaciones con estudiantes que te sorprendieron, actividades que quieres probar.",
+                    extra: "Formato mínimo viable: un cuaderno simple. Cada semana, responde tres preguntas: ¿Qué probé de nuevo? ¿Qué aprendí de mis estudiantes esta semana? ¿Qué quiero intentar la próxima?"
+                },
+                {
+                    id: 49,
+                    type: "content",
+                    title: "Tu plan de creatividad para el aula",
+                    content: "Al completar este curso, es momento de comprometerte con acciones concretas. Un plan creativo no necesita ser perfecto: necesita ser tuyo. Elige una técnica que aplicarás esta semana, un cambio en el ambiente de tu aula que harás este mes, y una comunidad de práctica que buscarás construir este trimestre.",
+                    extra: "Recuerda: la creatividad no es un destino, es una práctica. Cada pequeña decisión de hacer algo diferente acumula una cultura de creatividad en tu aula que transforma vidas."
+                },
+                {
+                    id: 50,
+                    type: "quiz",
+                    title: "✅ Reflexión final del curso",
+                    question: "¿Cuál de las siguientes afirmaciones resume mejor el mensaje central de este curso?",
+                    options: [
+                        "La creatividad es un talento que algunos docentes tienen y otros no.",
+                        "Para ser creativo, un docente necesita muchos recursos materiales y tecnológicos.",
+                        "La creatividad es una habilidad que cualquier docente puede cultivar y que transforma el aprendizaje cuando se modela y se practica conscientemente.",
+                        "La creatividad en el aula consiste principalmente en hacer actividades artísticas."
+                    ],
+                    correct: 2,
+                    explanation: "Este curso sostiene que la creatividad es una habilidad universal, cultivable, que va mucho más allá del arte. Cuando un docente la práctica conscientemente —usando técnicas, creando ambientes seguros y modelándola con su propia actitud— transforma profundamente la experiencia de aprendizaje de sus estudiantes."
+                }
+            ]
+        }
+    ]
+},
+// CURSO: herramientas-tec
+{
+    id: 'herramientas-tec',
+    title: 'Herramientas Tecnológicas para Docentes',
+    subtitle: 'Integra la tecnología con sentido pedagógico en tu aula',
+    icon: '💻',
+    color: '#4A90D9',
+    prerequisite: [],
+    status: 'available',
+    durationHours: 4,
+    totalCards: 45,
+    modules: [
+        {
+            id: 1,
+            title: "🎯 Módulo 1: Tecnología con propósito pedagógico",
+            cards: [
+                {
+                    id: 1,
+                    type: "content",
+                    title: "Tecnología no es magia: es una herramienta",
+                    content: "Usar tecnología en el aula no garantiza aprendizaje. Un video proyectado sin reflexión o un Kahoot sin discusión posterior son tan poco efectivos como una clase magistral sin participación. La diferencia la hace el propósito pedagógico: ¿para qué usas esta herramienta? ¿Qué aprenderán tus estudiantes con ella?",
+                    extra: "Pregunta clave antes de usar cualquier herramienta tecnológica: '¿Podría lograr el mismo objetivo de aprendizaje sin esta tecnología?' Si la respuesta es sí, quizás la tecnología no está añadiendo valor real."
+                },
+                {
+                    id: 2,
+                    type: "content",
+                    title: "El modelo SAMR: cuatro niveles de integración",
+                    content: "El modelo SAMR (creado por Ruben Puentedura) describe cuatro niveles de uso de tecnología en educación: Sustitución (la tecnología reemplaza al cuaderno sin cambiar la tarea), Aumento (añade funciones útiles), Modificación (rediseña la tarea), Redefinición (permite tareas imposibles sin tecnología).",
+                    extra: "Ejemplo: Sustitución = escribir en Google Docs en lugar de cuaderno. Redefinición = colaborar en tiempo real con estudiantes de otra escuela en un mismo documento. El objetivo es moverse gradualmente hacia la Redefinición."
+                },
+                {
+                    id: 3,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "Según el modelo SAMR, ¿cuál de los siguientes usos representa el nivel más ALTO de integración tecnológica?",
+                    options: [
+                        "El estudiante escribe su tarea en Google Docs en lugar de cuaderno.",
+                        "El estudiante usa el corrector automático de Google Docs para revisar su texto.",
+                        "El estudiante crea un blog multilingüe en colaboración con estudiantes de otro país.",
+                        "El estudiante busca información en internet para hacer su tarea."
+                    ],
+                    correct: 2,
+                    explanation: "Crear un blog colaborativo con estudiantes de otro país es Redefinición: es una tarea completamente nueva que sería imposible sin tecnología. Los otros ejemplos representan Sustitución o Aumento, niveles más básicos del modelo SAMR."
+                },
+                {
+                    id: 4,
+                    type: "content",
+                    title: "Conectividad en Guatemala: realidad y soluciones",
+                    content: "No todos los contextos guatemaltecos tienen acceso estable a internet. Es esencial conocer la realidad de tu aula: ¿Cuántos estudiantes tienen smartphone en casa? ¿Hay WiFi en la escuela? Las estrategias tecnológicas deben adaptarse a estas condiciones, no ignorarlas.",
+                    extra: "Soluciones para conectividad limitada: muchas herramientas tienen modo offline (Google Docs, Canva). Se pueden preparar actividades en el aula con una sola computadora o tablet proyectada. Las apps ligeras consumen menos datos. El whatsapp grupal puede funcionar como plataforma básica de comunicación."
+                },
+                {
+                    id: 5,
+                    type: "content",
+                    title: "Taxonomía de Bloom y tecnología",
+                    content: "La Taxonomía de Bloom revisada describe niveles de pensamiento desde recordar (bajo) hasta crear (alto). La tecnología puede apoyar todos los niveles: videos para recordar, cuestionarios para comprender, simulaciones para aplicar, foros para analizar, rúbricas digitales para evaluar y herramientas maker para crear.",
+                    extra: "Trampa común: la mayoría de los usos tecnológicos en el aula se quedan en los niveles bajos (recordar, comprender). El reto es usar la tecnología para que los estudiantes lleguen a los niveles altos: analizar, evaluar y crear."
+                },
+                {
+                    id: 6,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "Un docente pide a sus estudiantes que graben un video explicando un concepto científico con sus propias palabras y analogías. ¿En qué nivel de la Taxonomía de Bloom se ubica esta actividad?",
+                    options: [
+                        "Recordar",
+                        "Comprender",
+                        "Aplicar",
+                        "Crear"
+                    ],
+                    correct: 3,
+                    explanation: "Crear un video explicativo con analogías propias es un nivel de Creación (el más alto de la Taxonomía de Bloom): el estudiante no solo recuerda o comprende, sino que produce algo nuevo que sintetiza y comunica el conocimiento de manera original."
+                },
+                {
+                    id: 7,
+                    type: "content",
+                    title: "Planificación tecnológica: el plan B siempre",
+                    content: "La tecnología falla. El proyector no enciende, el WiFi se cae, la plataforma está en mantenimiento. El docente tecnológicamente competente no es el que nunca tiene problemas técnicos: es el que siempre tiene un plan B y puede continuar la clase sin perder el objetivo de aprendizaje.",
+                    extra: "Lista de verificación pre-clase: 1) ¿Revisé el equipo con anticipación? 2) ¿Tengo los materiales descargados o en caché? 3) ¿Sé cómo continuar la clase si la tecnología falla? Si respondiste sí a las tres, estás listo."
+                },
+                {
+                    id: 8,
+                    type: "content",
+                    title: "Derechos digitales de los estudiantes",
+                    content: "Al integrar tecnología, los docentes debemos proteger los derechos digitales de los estudiantes: privacidad de sus datos, protección de su imagen, uso ético de sus producciones. Antes de publicar fotos o trabajos de estudiantes en internet, siempre se requiere consentimiento informado de padres y tutores.",
+                    extra: "Regla de oro: no compartas fotos, nombres completos ni información personal de menores en redes sociales o plataformas públicas. Usa iniciales o seudónimos cuando compartas trabajos de estudiantes en línea."
+                },
+                {
+                    id: 9,
+                    type: "content",
+                    title: "Inclusión digital: tecnología para todos",
+                    content: "La tecnología puede ampliar la brecha educativa si solo beneficia a quienes tienen acceso. Un docente inclusivo diseña actividades donde la tecnología es el medio, no el requisito. Siempre piensa: ¿qué pasa con el estudiante que no tiene dispositivo en casa? ¿Cómo participa plenamente?",
+                    extra: "Estrategia: el trabajo en equipos con roles rotativos (un equipo, una tablet) garantiza que todos participen. Las actividades tecnológicas en el aula durante el horario escolar son más equitativas que las tareas tecnológicas para casa."
+                },
+                {
+                    id: 10,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la práctica más adecuada para proteger los derechos digitales de los estudiantes?",
+                    options: [
+                        "Publicar fotos de actividades del aula en redes sociales para mostrar el trabajo de la clase.",
+                        "Solicitar consentimiento informado de padres antes de publicar imágenes o trabajos de estudiantes en línea.",
+                        "Usar los nombres completos de los estudiantes en todas las plataformas digitales.",
+                        "Compartir los correos electrónicos de los estudiantes con otras plataformas educativas."
+                    ],
+                    correct: 1,
+                    explanation: "Siempre se requiere consentimiento informado de padres o tutores antes de publicar fotos, nombres o trabajos de estudiantes menores de edad en línea. Esta es una obligación ética y legal del docente."
+                },
+                {
+                    id: 11,
+                    type: "content",
+                    title: "El docente como curador de tecnología",
+                    content: "Existen miles de herramientas educativas digitales. No es posible —ni necesario— usarlas todas. El docente efectivo actúa como curador: selecciona pocas herramientas, las domina bien y las usa con propósito claro. Mejor dominar tres herramientas que conocer superficialmente treinta.",
+                    extra: "Principio de economía tecnológica: elige herramientas que sean gratuitas, intuitivas, estables y que sirvan para múltiples propósitos. Canva, Google Classroom y Kahoot son buenos ejemplos: versátiles, gratuitos y con curvas de aprendizaje cortas."
+                },
+                {
+                    id: 12,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es el enfoque más efectivo para integrar herramientas tecnológicas en el aula?",
+                    options: [
+                        "Usar la mayor cantidad posible de herramientas diferentes para mantener el interés.",
+                        "Dominar pocas herramientas seleccionadas con criterio pedagógico y usarlas con propósito claro.",
+                        "Usar solo las herramientas más recientes y de última generación.",
+                        "Dejar que los estudiantes elijan qué herramientas usar sin guía del docente."
+                    ],
+                    correct: 1,
+                    explanation: "La efectividad no viene de usar muchas herramientas, sino de usar pocas bien. Dominar a fondo herramientas seleccionadas permite al docente usarlas con más confianza, creatividad y propósito pedagógico claro."
+                }
+            ]
+        },
+        {
+            id: 2,
+            title: "🎨 Módulo 2: Herramientas para crear y presentar",
+            cards: [
+                {
+                    id: 13,
+                    type: "content",
+                    title: "Canva para Educación: tu aliado visual",
+                    content: "Canva es una plataforma de diseño gráfico gratuita (con versión Education ampliada) que permite crear presentaciones, infografías, carteles, videos cortos y materiales didácticos sin conocimientos de diseño profesional. Tiene miles de plantillas y es muy intuitiva.",
+                    extra: "Canva for Education ofrece funciones premium gratuitas para docentes: puedes crear una clase, asignar proyectos de diseño a estudiantes, comentar sus trabajos y compartir plantillas. Regístrate con tu correo institucional en canva.com/education."
+                },
+                {
+                    id: 14,
+                    type: "content",
+                    title: "Canva en el aula: más allá del cartel",
+                    content: "Más allá de carteles, con Canva puedes crear: presentaciones interactivas, líneas de tiempo visuales, mapas conceptuales, newsletters para padres, rúbricas visuales, tarjetas de vocabulario, portadas de portafolios digitales y videos cortos con narración.",
+                    extra: "Actividad práctica: pide a tus estudiantes que creen una 'infografía de una página' sobre el tema que están estudiando. Deben incluir datos clave, ilustraciones y un dato sorprendente. Canva hace que esta tarea sea accesible para cualquier edad."
+                },
+                {
+                    id: 15,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál de las siguientes NO es una funcionalidad de Canva para Educación?",
+                    options: [
+                        "Crear presentaciones visuales con plantillas.",
+                        "Asignar proyectos de diseño a estudiantes y comentar sus trabajos.",
+                        "Realizar videoconferencias en tiempo real con toda la clase.",
+                        "Diseñar infografías y materiales didácticos visuales."
+                    ],
+                    correct: 2,
+                    explanation: "Canva no es una plataforma de videoconferencias. Su función principal es el diseño gráfico: crear presentaciones, infografías, videos cortos y materiales visuales. Para videoconferencias, se usan herramientas como Google Meet o Zoom."
+                },
+                {
+                    id: 16,
+                    type: "content",
+                    title: "Genially: presentaciones que cobran vida",
+                    content: "Genially es una plataforma para crear presentaciones interactivas, infografías animadas, escape rooms educativos, mapas interactivos y gamificaciones. A diferencia de una presentación estática, los contenidos en Genially pueden tener botones, videos incrustados, sonidos y rutas de navegación no lineales.",
+                    extra: "Caso de uso poderoso: crear un 'escape room virtual' sobre el tema de la clase donde los estudiantes resuelven enigmas para 'salir'. Es altamente motivador y trabaja comprensión, resolución de problemas y trabajo en equipo. Genially tiene plantillas de escape room listas para personalizar."
+                },
+                {
+                    id: 17,
+                    type: "content",
+                    title: "Google Slides: colaboración en tiempo real",
+                    content: "Google Slides permite que varios estudiantes trabajen simultáneamente en la misma presentación desde dispositivos diferentes. Cada persona edita en tiempo real, puede comentar el trabajo de otros y el docente puede ver el progreso desde su cuenta. Es parte de Google Workspace for Education, gratuito para escuelas.",
+                    extra: "Dinámica colaborativa: asigna a cada grupo de estudiantes una diapositiva de una presentación colectiva. El resultado final es un producto del grupo completo. Esta estrategia desarrolla responsabilidad individual y aprendizaje cooperativo al mismo tiempo."
+                },
+                {
+                    id: 18,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la ventaja principal de usar Google Slides frente a PowerPoint tradicional en el aula?",
+                    options: [
+                        "Tiene más plantillas de diseño disponibles.",
+                        "Permite la colaboración en tiempo real desde diferentes dispositivos sin necesidad de enviar archivos.",
+                        "Funciona sin conexión a internet en todos los dispositivos.",
+                        "Solo el docente puede editar la presentación, lo que evita errores."
+                    ],
+                    correct: 1,
+                    explanation: "La ventaja clave de Google Slides es la colaboración en tiempo real: múltiples usuarios pueden editar simultáneamente desde cualquier dispositivo, sin necesidad de enviar archivos por correo. Esto transforma las presentaciones en herramientas de trabajo colaborativo."
+                },
+                {
+                    id: 19,
+                    type: "content",
+                    title: "Videos educativos: crear con propósito",
+                    content: "Los docentes pueden crear sus propios videos educativos cortos (3-7 minutos) con herramientas sencillas como Loom (grabación de pantalla con webcam), CapCut (edición móvil) o incluso la cámara del smartphone. Un buen video educativo no necesita producción Hollywood: necesita claridad, brevedad y conexión con el aprendizaje.",
+                    extra: "Regla de los 3 minutos: los videos de menos de 3 minutos tienen tasas de visualización completa mucho más altas. Si tienes mucho que explicar, divide en partes. Un video de 3 minutos bien diseñado enseña más que uno de 20 minutos donde los estudiantes pierden el hilo."
+                },
+                {
+                    id: 20,
+                    type: "content",
+                    title: "Curación de contenido digital",
+                    content: "Curar contenido significa seleccionar, organizar y compartir recursos digitales de calidad (videos, artículos, imágenes) relacionados con los temas de clase. Herramientas como Wakelet o simplemente una carpeta de Google Drive compartida permiten crear 'colecciones de recursos' que los estudiantes pueden explorar con autonomía.",
+                    extra: "Antes de compartir cualquier recurso digital con estudiantes, verifica: 1) ¿El contenido es apropiado para la edad? 2) ¿La fuente es confiable? 3) ¿Tiene licencia Creative Commons o permiso de uso? 4) ¿Está en un idioma accesible para tus estudiantes?"
+                },
+                {
+                    id: 21,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la duración óptima recomendada para un video educativo que maximice la atención de los estudiantes?",
+                    options: [
+                        "Más de 30 minutos para cubrir el tema completo.",
+                        "Entre 15 y 20 minutos, como una clase magistral.",
+                        "Menos de 3 a 7 minutos, dividiendo temas largos en partes.",
+                        "No importa la duración si el contenido es interesante."
+                    ],
+                    correct: 2,
+                    explanation: "Los videos de 3 a 7 minutos tienen tasas de visualización completa mucho más altas. La atención decae significativamente después de ese tiempo. Para temas largos, es mejor crear series de videos cortos que un solo video extenso."
+                },
+                {
+                    id: 22,
+                    type: "content",
+                    title: "Mentimeter: audiencias que participan",
+                    content: "Mentimeter es una herramienta para crear presentaciones interactivas donde la audiencia responde en tiempo real desde sus dispositivos. Permite nubes de palabras, preguntas de opción múltiple, escalas de opinión y clasificaciones. Es ideal para activaciones, encuestas rápidas y cierre de clase.",
+                    extra: "Uso creativo: al inicio de clase, proyecta una nube de palabras con la pregunta '¿Qué palabra asocias con el tema de hoy?' Los estudiantes responden desde sus teléfonos y la nube aparece en tiempo real. Es un activador de conocimiento previo visualmente impactante."
+                },
+                {
+                    id: 23,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿En qué momento de la clase es más útil usar Mentimeter para crear una nube de palabras?",
+                    options: [
+                        "Al final del examen como actividad de celebración.",
+                        "Durante la clase magistral para ilustrar conceptos.",
+                        "Al inicio de clase para activar conocimiento previo de manera visual y participativa.",
+                        "Solo en clases virtuales, no en presencial."
+                    ],
+                    correct: 2,
+                    explanation: "La nube de palabras de Mentimeter es especialmente poderosa al inicio de clase: activa el conocimiento previo, hace visible lo que los estudiantes ya saben, genera curiosidad y permite al docente ajustar su clase según las respuestas en tiempo real."
+                }
+            ]
+        },
+        {
+            id: 3,
+            title: "📊 Módulo 3: Evaluación formativa digital",
+            cards: [
+                {
+                    id: 24,
+                    type: "content",
+                    title: "¿Qué es la evaluación formativa?",
+                    content: "La evaluación formativa es la que ocurre DURANTE el proceso de aprendizaje (no solo al final) con el objetivo de informar al docente y al estudiante sobre el progreso y ajustar la enseñanza. A diferencia de la evaluación sumativa (calificación final), la formativa sirve para mejorar, no para juzgar.",
+                    extra: "Pregunta clave de la evaluación formativa: '¿Qué ajuste en mi enseñanza necesito hacer HOY, basándome en lo que acabo de observar?' Las herramientas digitales hacen posible obtener esa información al instante, de todo el grupo."
+                },
+                {
+                    id: 25,
+                    type: "content",
+                    title: "Kahoot: gamificación de la evaluación",
+                    content: "Kahoot es una plataforma de cuestionarios en tiempo real donde los estudiantes compiten respondiendo preguntas en sus dispositivos. La competencia, el tiempo limitado y el marcador visible generan alta motivación. Es excelente para repasos, verificación de comprensión y activaciones.",
+                    extra: "Kahoot sin smartphone: si tus estudiantes no tienen dispositivos individuales, puedes jugar en equipos donde un representante por equipo responde en un solo dispositivo. También puedes exportar el Kahoot como hoja de trabajo impresa para uso sin internet."
+                },
+                {
+                    id: 26,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es el principal propósito pedagógico de usar Kahoot en el aula?",
+                    options: [
+                        "Reemplazar los exámenes escritos tradicionales.",
+                        "Verificar la comprensión de manera gamificada y obtener retroalimentación inmediata sobre el aprendizaje.",
+                        "Calificar a los estudiantes de manera objetiva y sin sesgo.",
+                        "Premiar a los estudiantes más inteligentes de la clase."
+                    ],
+                    correct: 1,
+                    explanation: "Kahoot es principalmente una herramienta de evaluación formativa gamificada: verifica comprensión de manera entretenida y proporciona retroalimentación inmediata tanto al docente como a los estudiantes. No es una herramienta de calificación sumativa."
+                },
+                {
+                    id: 27,
+                    type: "content",
+                    title: "Quizizz: evaluación a tu ritmo",
+                    content: "Quizizz es similar a Kahoot pero con una diferencia clave: los estudiantes responden a su propio ritmo, sin la presión del tiempo colectivo. Esto reduce la ansiedad y permite que cada estudiante complete el cuestionario cuando esté listo. El docente ve los resultados en tiempo real y puede identificar qué preguntas presentaron mayor dificultad.",
+                    extra: "Función 'Lección' de Quizizz: puedes intercalar diapositivas explicativas entre las preguntas. Si la mayoría de estudiantes falla una pregunta, aparece automáticamente una diapositiva de revisión. Es evaluación y enseñanza en el mismo instrumento."
+                },
+                {
+                    id: 28,
+                    type: "content",
+                    title: "Padlet: el muro colaborativo digital",
+                    content: "Padlet es un tablero digital donde los estudiantes pueden publicar notas, imágenes, videos, audios y enlaces. Funciona como un mural colaborativo virtual. Los docentes lo usan para lluvias de ideas colectivas, portafolios grupales, murales temáticos y reflexiones de cierre.",
+                    extra: "Actividad con Padlet: 'El mural de lo que aprendimos'. Al finalizar una unidad, cada estudiante publica en el Padlet una cosa que aprendió, una pregunta que aún tiene y una foto o dibujo relacionado con el tema. El resultado es una síntesis visual del aprendizaje del grupo."
+                },
+                {
+                    id: 29,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la diferencia principal entre Kahoot y Quizizz?",
+                    options: [
+                        "Kahoot es gratuito y Quizizz es de pago.",
+                        "Kahoot solo funciona en computadoras y Quizizz en teléfonos.",
+                        "En Quizizz los estudiantes responden a su propio ritmo, mientras en Kahoot todos responden al mismo tiempo bajo presión.",
+                        "Quizizz no muestra los resultados al docente en tiempo real."
+                    ],
+                    correct: 2,
+                    explanation: "La diferencia clave es el ritmo: Kahoot es sincrónico (todos al mismo tiempo, con presión de tiempo colectivo), mientras Quizizz es a ritmo propio (cada estudiante avanza cuando está listo). Esto hace a Quizizz más inclusivo para estudiantes que necesitan más tiempo."
+                },
+                {
+                    id: 30,
+                    type: "content",
+                    title: "Socrative: evaluación inteligente",
+                    content: "Socrative es una plataforma de evaluación formativa que permite cuestionarios, preguntas de salida (exit tickets) y la función 'Space Race' (competencia grupal visual). Su panel de docente muestra en tiempo real el porcentaje de respuestas correctas por pregunta, facilitando identificar conceptos que necesitan repaso.",
+                    extra: "Exit ticket digital con Socrative: en los últimos 5 minutos de clase, lanza una pregunta de cierre: '¿Qué fue lo más importante que aprendiste hoy?' o '¿Qué pregunta te quedó sin responder?' Las respuestas aparecen al instante y guían la planificación de la siguiente clase."
+                },
+                {
+                    id: 31,
+                    type: "content",
+                    title: "Google Forms: el instrumento más versátil",
+                    content: "Google Forms permite crear formularios de evaluación gratuitos con múltiples tipos de pregunta: opción múltiple, escala Likert, texto corto, texto largo, carga de archivos y secciones ramificadas (distintas preguntas según la respuesta anterior). Los resultados se organizan automáticamente en Google Sheets.",
+                    extra: "Uso avanzado: activa la corrección automática en Forms. Cuando los estudiantes envíen una autoevaluación o cuestionario de práctica, recibirán retroalimentación inmediata con la explicación de cada respuesta. Cero tiempo de corrección para el docente."
+                },
+                {
+                    id: 32,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Qué ventaja ofrece la corrección automática de Google Forms frente a la corrección manual?",
+                    options: [
+                        "La corrección automática es más justa porque elimina el sesgo del docente.",
+                        "Los estudiantes reciben retroalimentación inmediata y el docente ahorra tiempo de corrección.",
+                        "Google Forms solo permite preguntas de opción múltiple que son más objetivas.",
+                        "La corrección automática mejora la calificación de todos los estudiantes."
+                    ],
+                    correct: 1,
+                    explanation: "La corrección automática permite que los estudiantes reciban retroalimentación inmediata (saben qué acertaron y qué no, con explicaciones) y el docente no invierte tiempo en corregir manualmente. Esto libera tiempo para actividades de mayor impacto."
+                },
+                {
+                    id: 33,
+                    type: "content",
+                    title: "Rúbricas digitales con Google Forms",
+                    content: "Puedes usar Google Forms para crear rúbricas de evaluación digitales donde el docente registra el nivel de desempeño de cada estudiante en varios criterios. Las respuestas se consolidan automáticamente en una hoja de cálculo, facilitando el análisis del desempeño grupal.",
+                    extra: "Herramienta especializada: Doctopus y Goobric (extensiones de Google) permiten adjuntar rúbricas de Forms directamente a trabajos de Google Docs de los estudiantes. El docente califica directamente en el documento y el estudiante recibe la retroalimentación al instante."
+                },
+                {
+                    id: 34,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál herramienta es más apropiada para que un docente recoja reflexiones escritas y abiertas de sus estudiantes al finalizar una unidad?",
+                    options: [
+                        "Kahoot, porque permite preguntas abiertas.",
+                        "Google Forms con preguntas de texto largo o Padlet con publicaciones libres.",
+                        "Quizizz, porque los estudiantes responden a su propio ritmo.",
+                        "Socrative Space Race, porque genera competencia grupal."
+                    ],
+                    correct: 1,
+                    explanation: "Para recoger reflexiones escritas abiertas, Google Forms con preguntas de texto largo o Padlet son las opciones más adecuadas. Kahoot y Quizizz están diseñados principalmente para preguntas cerradas de opción múltiple, no para reflexiones elaboradas."
+                }
+            ]
+        },
+        {
+            id: 4,
+            title: "🤝 Módulo 4: Colaboración y seguridad digital",
+            cards: [
+                {
+                    id: 35,
+                    type: "content",
+                    title: "Google Classroom: el centro de operaciones",
+                    content: "Google Classroom es una plataforma de gestión del aprendizaje (LMS) gratuita que permite organizar clases, publicar materiales, asignar tareas, dar retroalimentación y comunicarse con estudiantes y padres. Funciona como un aula virtual que complementa el espacio físico.",
+                    extra: "Para empezar con Classroom: crea una clase, invita a tus estudiantes con el código de clase, y publica tu primera tarea. La curva de aprendizaje es muy corta (1-2 horas) y el impacto en la organización de materiales es inmediato. Disponible con cuenta Google institucional o personal."
+                },
+                {
+                    id: 36,
+                    type: "content",
+                    title: "Jamboard: la pizarra colaborativa digital",
+                    content: "Jamboard (de Google) es una pizarra digital colaborativa donde varios usuarios pueden escribir, pegar notas adhesivas, insertar imágenes y dibujar simultáneamente. Es ideal para lluvias de ideas grupales, organizadores gráficos colaborativos y síntesis visuales en tiempo real.",
+                    extra: "Actividad: 'La pizarra de los 4 cuadrantes'. Divide el Jamboard en 4 secciones: Lo que sé, Lo que quiero saber, Lo que aprendí, Preguntas que aún tengo. Cada estudiante pega sus notas adhesivas en los cuadrantes correspondientes. Es la versión digital del clásico KWL."
+                },
+                {
+                    id: 37,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la función principal de Google Classroom en el aula?",
+                    options: [
+                        "Crear presentaciones animadas e interactivas.",
+                        "Realizar videoconferencias con estudiantes.",
+                        "Gestionar materiales, tareas, retroalimentación y comunicación del aula en una plataforma integrada.",
+                        "Diseñar cuestionarios gamificados para evaluación."
+                    ],
+                    correct: 2,
+                    explanation: "Google Classroom es un LMS (Sistema de Gestión del Aprendizaje): su función es centralizar la gestión del aula —materiales, tareas, calificaciones, retroalimentación y comunicación— en una sola plataforma integrada y gratuita."
+                },
+                {
+                    id: 38,
+                    type: "content",
+                    title: "Miro básico: colaboración visual avanzada",
+                    content: "Miro es una pizarra colaborativa en línea con capacidades más avanzadas que Jamboard: permite crear mapas mentales, diagramas de flujo, tableros Kanban, líneas de tiempo y plantillas de design thinking. Su versión gratuita incluye 3 tableros ilimitados.",
+                    extra: "Uso en proyectos: si tus estudiantes están desarrollando un proyecto complejo, Miro les permite visualizar todas las etapas del proceso, asignar responsabilidades con tarjetas de color y mantener un registro visual del avance. Es especialmente útil para proyectos STEAM que cruzan varias disciplinas."
+                },
+                {
+                    id: 39,
+                    type: "content",
+                    title: "¿Qué es la seguridad digital?",
+                    content: "La seguridad digital abarca las prácticas para proteger la información, la privacidad y la identidad en entornos digitales. Para los docentes, implica proteger tanto su propia información como la de sus estudiantes, y enseñar a los jóvenes a navegar el mundo digital de manera segura y responsable.",
+                    extra: "Las tres amenazas más comunes en entornos educativos: 1) Phishing (correos falsos que roban contraseñas), 2) Contraseñas débiles o compartidas, 3) Publicación accidental de información personal de menores. Conocerlas es el primer paso para prevenirlas."
+                },
+                {
+                    id: 40,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Qué es el 'phishing' en el contexto de la seguridad digital?",
+                    options: [
+                        "Un virus que destruye los archivos del dispositivo.",
+                        "Una técnica para piratear software educativo.",
+                        "Un engaño mediante correos o mensajes falsos que buscan robar contraseñas o información personal.",
+                        "Una forma de spam publicitario en redes sociales."
+                    ],
+                    correct: 2,
+                    explanation: "El phishing consiste en correos, mensajes o sitios web falsos que imitan ser legítimos (un banco, una plataforma educativa, una institución) para engañar al usuario y robar sus contraseñas o información personal. Reconocer estas señales es esencial para la seguridad digital."
+                },
+                {
+                    id: 41,
+                    type: "content",
+                    title: "Contraseñas seguras: la primera línea de defensa",
+                    content: "Una contraseña segura tiene al menos 12 caracteres, combina letras mayúsculas y minúsculas, números y símbolos, y no usa información personal (nombre, fecha de nacimiento). Nunca se comparte —ni con colegas— y se cambia regularmente.",
+                    extra: "Técnica de la frase de contraseña: en lugar de una palabra difícil de recordar, usa una frase corta con modificaciones: 'MiClase2024!' es más segura y más fácil de recordar que 'xK9#pL2'. Activa la verificación en dos pasos en todas tus cuentas educativas."
+                },
+                {
+                    id: 42,
+                    type: "content",
+                    title: "Ciudadanía digital: más que seguridad",
+                    content: "La ciudadanía digital abarca el conjunto de derechos y responsabilidades que tenemos como usuarios del entorno digital: respetar los derechos de autor, verificar la información antes de compartirla, tratar a otros con respeto en línea, proteger la privacidad propia y ajena, y usar la tecnología de manera ética.",
+                    extra: "Los 9 elementos de la ciudadanía digital (Mike Ribble): acceso digital, comercio digital, comunicación digital, alfabetización digital, etiqueta digital, ley digital, derechos y responsabilidades digitales, salud y bienestar digital, y seguridad digital. ¿Cuál trabajas más con tus estudiantes?"
+                },
+                {
+                    id: 43,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "Un estudiante encuentra una imagen en internet y quiere usarla en su presentación escolar. ¿Cuál es la acción más correcta de ciudadanía digital?",
+                    options: [
+                        "Usarla sin problemas porque está en internet y es pública.",
+                        "Verificar si tiene licencia Creative Commons o permiso de uso libre, y si es así, usarla citando la fuente.",
+                        "Copiar la imagen y cambiarle los colores para que sea 'diferente'.",
+                        "Descargarla y usarla sin citar la fuente porque es para uso educativo."
+                    ],
+                    correct: 1,
+                    explanation: "El hecho de que una imagen esté en internet no significa que sea de libre uso. Lo correcto es verificar la licencia (buscar imágenes con licencia Creative Commons), y siempre citar la fuente. Esto enseña respeto a los derechos de autor desde edades tempranas."
+                },
+                {
+                    id: 44,
+                    type: "content",
+                    title: "Inteligencia Artificial en la educación: lo básico",
+                    content: "Las herramientas de Inteligencia Artificial (como ChatGPT, Gemini o Copilot) son una realidad en el mundo de tus estudiantes. Como docente, es importante entender qué pueden hacer (generar texto, resumir, explicar, traducir) y qué limitaciones tienen (pueden inventar datos, no tienen criterio ético propio, requieren supervisión).",
+                    extra: "Enfoque pedagógico: en lugar de prohibir la IA, enséñala con criterio. Actividad: compara la respuesta de una IA sobre un tema histórico guatemalteco con fuentes verificadas. ¿En qué coincide? ¿Qué errores o simplificaciones tiene? Esto desarrolla pensamiento crítico y alfabetización en IA."
+                },
+                {
+                    id: 45,
+                    type: "quiz",
+                    title: "✅ Reflexión final del curso",
+                    question: "¿Cuál es la afirmación que mejor resume el enfoque de integración tecnológica de este curso?",
+                    options: [
+                        "Usar la mayor cantidad de herramientas tecnológicas posibles garantiza mejor aprendizaje.",
+                        "La tecnología debe reemplazar completamente los métodos de enseñanza tradicionales.",
+                        "La tecnología es una herramienta poderosa cuando se selecciona con criterio, se usa con propósito pedagógico claro y se combina con buenas prácticas de seguridad y ciudadanía digital.",
+                        "Los docentes solo deben usar tecnología si tienen capacitación certificada en cada herramienta."
+                    ],
+                    correct: 2,
+                    explanation: "Este curso sostiene que la tecnología no es magia ni sustituto de la buena pedagogía: es una herramienta poderosa cuando se elige con criterio, se usa con propósito claro de aprendizaje y se acompaña de responsabilidad digital. El docente que integra tecnología con estos principios transforma su práctica de manera sostenible."
+                }
+            ]
+        }
+    ]
+}
+,
+// ══════════════════════════════════════════════════
+// RUTA: METODOLOGÍAS ACTIVAS
+// ══════════════════════════════════════════════════
+// CURSO: m-learning
+{
+    id: 'm-learning',
+    title: 'Mobile Learning · Aprender con el Celular',
+    subtitle: 'Convierte el smartphone en una herramienta poderosa de aprendizaje para tu aula',
+    icon: '📱',
+    color: '#F59E0B',
+    prerequisite: [],
+    status: 'available',
+    durationHours: 3,
+    totalCards: 40,
+    modules: [
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 1 — ¿Qué es el m-learning y por qué importa?
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 1,
+            title: "📱 Módulo 1: ¿Qué es el m-learning y por qué importa?",
+            cards: [
+                {
+                    id: 1,
+                    type: "content",
+                    title: "📱 ¿Qué es el m-learning?",
+                    content: "El m-learning (aprendizaje móvil) es cualquier proceso educativo que ocurre a través de dispositivos portátiles: celulares, tabletas o lectores electrónicos. No es solo usar el celular en clase, es integrar el dispositivo como una herramienta pedagógica con intención clara.",
+                    extra: "La UNESCO define el m-learning como 'el aprendizaje que aprovecha la movilidad del aprendiz y ocurre en cualquier lugar y momento'. En Guatemala, donde el celular llega antes que la computadora, esto es una gran oportunidad."
+                },
+                {
+                    id: 2,
+                    type: "content",
+                    title: "📊 Los números que no puedes ignorar",
+                    content: "En Guatemala, más del 70% de los hogares tienen acceso a un teléfono celular, frente a menos del 20% que tiene computadora. Tus estudiantes ya llevan en el bolsillo un dispositivo de aprendizaje: solo falta darte permiso de usarlo.",
+                    extra: "Dato clave: en áreas rurales guatemaltecas, el celular suele ser el único dispositivo con acceso a internet en el hogar. Ignorarlo como herramienta pedagógica es desperdiciar el recurso tecnológico más democratizado del país."
+                },
+                {
+                    id: 3,
+                    type: "content",
+                    title: "🔄 Del 'guarda el celular' al 'saca el celular'",
+                    content: "Durante años, el celular fue el enemigo del aula. El m-learning propone lo contrario: convertir ese dispositivo inevitable en un aliado pedagógico. El cambio no está en el tecnología, está en la actitud del docente y en las actividades que diseña.",
+                    extra: "Truco para recordarlo: si el celular es una distracción, es porque no le hemos dado una función. Una actividad bien diseñada hace que el estudiante use el celular para aprender, no para distraerse."
+                },
+                {
+                    id: 4,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la principal ventaja del m-learning en el contexto guatemalteco?",
+                    options: [
+                        "Los celulares son más baratos que los libros de texto",
+                        "El celular es el dispositivo tecnológico más accesible en hogares guatemaltecos",
+                        "Las apps educativas funcionan mejor en celular que en computadora",
+                        "El celular permite hacer exámenes en línea más fácilmente"
+                    ],
+                    correct: 1,
+                    explanation: "La clave es la accesibilidad: más del 70% de hogares guatemaltecos tienen celular frente al 20% con computadora. El m-learning aprovecha el dispositivo que los estudiantes ya tienen, reduciendo la brecha tecnológica."
+                },
+                {
+                    id: 5,
+                    type: "content",
+                    title: "🧠 Tipos de m-learning: formal e informal",
+                    content: "El m-learning puede ser formal (tareas asignadas por el docente, quizzes en app) o informal (buscar información en YouTube, leer un artículo). Los mejores docentes aprovechan ambos: diseñan actividades formales y también guían el aprendizaje informal que ya ocurre.",
+                    extra: "Ejemplo: cuando un estudiante busca en YouTube cómo se hace una fracción antes de dormir, eso es m-learning informal. Tu tarea es hacerlo más intencional sugiriendo qué buscar y cómo evaluar la fuente."
+                },
+                {
+                    id: 6,
+                    type: "content",
+                    title: "⏱️ Microaprendizaje: aprender en pequeñas dosis",
+                    content: "El m-learning funciona mejor en formato de microaprendizaje: sesiones cortas de 5 a 15 minutos. Los celulares invitan a consumir contenido en fragmentos. Como docente, puedes diseñar actividades breves pero poderosas: un video de 3 minutos, un quiz de 5 preguntas, un podcast de 8 minutos.",
+                    extra: "La memoria humana retiene mejor cuando el aprendizaje está distribuido en el tiempo. Tres sesiones de 10 minutos son más efectivas que una de 30 minutos seguidos. El celular es el vehículo perfecto para esto."
+                },
+                {
+                    id: 7,
+                    type: "content",
+                    title: "🌍 M-learning y aprendizaje ubicuo",
+                    content: "El aprendizaje ubicuo significa que ocurre en cualquier lugar: en el bus, esperando, en casa, bajo un árbol. El celular lo hace posible. Tus estudiantes pueden aprender camino a la escuela, durante el recreo o en la tarde. El aula se extiende más allá de sus cuatro paredes.",
+                    extra: "En comunidades rurales guatemaltecas donde los estudiantes caminan hasta dos horas para llegar a la escuela, el celular puede convertir ese tiempo en oportunidad de aprendizaje con contenido descargado sin conexión."
+                },
+                {
+                    id: 8,
+                    type: "quiz",
+                    title: "🎯 Pon a prueba tu comprensión",
+                    question: "¿Qué característica define mejor al microaprendizaje en el m-learning?",
+                    options: [
+                        "Usar aplicaciones con inteligencia artificial",
+                        "Sesiones de aprendizaje cortas e intencionadas de 5 a 15 minutos",
+                        "Aprender únicamente con videos animados",
+                        "Estudiar sin conexión a internet"
+                    ],
+                    correct: 1,
+                    explanation: "El microaprendizaje se caracteriza por sesiones breves e intencionadas. No depende del tipo de contenido ni de la conectividad, sino de la estructura en pequeñas dosis que el cerebro puede procesar y retener mejor."
+                },
+                {
+                    id: 9,
+                    type: "content",
+                    title: "🏫 M-learning vs. e-learning: ¿cuál es la diferencia?",
+                    content: "El e-learning requiere una computadora y, generalmente, una conexión estable. El m-learning es más flexible: funciona desde el celular, a veces sin internet (modo sin conexión), y en cualquier contexto. Para escuelas guatemaltecas con acceso limitado a computadoras, el m-learning es mucho más realista.",
+                    extra: "No son opuestos: muchas plataformas como Khan Academy o Duolingo funcionan bien en ambos. La diferencia está en la accesibilidad y la movilidad que ofrece el celular."
+                },
+                {
+                    id: 10,
+                    type: "content",
+                    title: "🚀 El rol del docente en el m-learning",
+                    content: "En el m-learning, el docente deja de ser el único transmisor del conocimiento y se convierte en curador y guía. Tu rol es elegir las mejores apps, diseñar las actividades, establecer normas de uso y acompañar el proceso. El celular es la herramienta; tú sigues siendo el corazón del aprendizaje.",
+                    extra: "Cita para reflexionar: 'La tecnología no reemplaza al maestro, pero el maestro que usa tecnología puede reemplazar al que no la usa.' — Adaptación del principio de Prensky."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 2 — Apps educativas para tu aula
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 2,
+            title: "🛠️ Módulo 2: Apps educativas para tu aula",
+            cards: [
+                {
+                    id: 11,
+                    type: "content",
+                    title: "🌐 Criterios para elegir una app educativa",
+                    content: "No todas las apps son iguales. Antes de recomendar una a tus estudiantes, revisa: ¿Es gratuita o tiene versión free suficiente? ¿Funciona sin internet? ¿Está disponible en español? ¿Es apropiada para la edad? ¿Requiere datos excesivos? Prioriza las que cumplen al menos 4 de estos criterios.",
+                    extra: "En Guatemala, el costo de datos móviles puede ser un obstáculo real. Apps que funcionan sin conexión o con poco uso de datos son mucho más equitativas."
+                },
+                {
+                    id: 12,
+                    type: "content",
+                    title: "🟣 Duolingo: el aprendizaje de idiomas en el bolsillo",
+                    content: "Duolingo es gratuito, gamificado y funciona con pocos datos. Perfecto para reforzar inglés o incluso lenguas mayas (tiene Kaqchikel en desarrollo). Sus lecciones de 5 minutos encajan perfectamente con el microaprendizaje. Puedes usarlo como tarea complementaria o como actividad de calentamiento.",
+                    extra: "Actividad concreta: pide a tus estudiantes completar una lección de Duolingo cada día durante una semana y compartir su racha (streak) el viernes. Es motivador y crea hábito de estudio."
+                },
+                {
+                    id: 13,
+                    type: "content",
+                    title: "🟢 Khan Academy: tu sala de clases extra",
+                    content: "Khan Academy ofrece miles de lecciones en español de matemáticas, ciencias, historia y más, totalmente gratis. Su app funciona con conexión moderada y permite descargar contenido para verlo sin internet. Ideal para refuerzo escolar fuera del aula.",
+                    extra: "Truco docente: crea una cuenta de clase en Khan Academy y asigna lecciones específicas. Puedes ver el progreso de cada estudiante desde tu teléfono, sin necesidad de computadora."
+                },
+                {
+                    id: 14,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál de estas apps es más adecuada para refuerzo de matemáticas sin conexión a internet?",
+                    options: [
+                        "Duolingo, porque tiene ejercicios offline de álgebra",
+                        "Khan Academy, porque permite descargar lecciones para ver sin internet",
+                        "WhatsApp, porque se pueden enviar ejercicios en PDF",
+                        "YouTube, porque los videos se guardan automáticamente"
+                    ],
+                    correct: 1,
+                    explanation: "Khan Academy permite descargar lecciones de matemáticas y otras materias para verlas sin internet. Duolingo es ideal para idiomas, no matemáticas; WhatsApp y YouTube requieren conexión activa."
+                },
+                {
+                    id: 15,
+                    type: "content",
+                    title: "📺 YouTube educativo: la clave es la curaduría",
+                    content: "YouTube tiene millones de videos educativos en español: Veritasium, Kurzgesagt en Español, academia Platzi, canales de matemáticas, ciencias y más. El problema no es la falta de contenido sino el exceso. Tu rol como docente es curar: seleccionar, recomendar y contextualizar.",
+                    extra: "Herramienta útil: crea una lista de reproducción de YouTube con los mejores videos de tu materia y comparte el enlace con tus estudiantes. Es gratis y toma 10 minutos hacerlo."
+                },
+                {
+                    id: 16,
+                    type: "content",
+                    title: "💬 WhatsApp como herramienta pedagógica",
+                    content: "WhatsApp ya está instalado en casi todos los celulares guatemaltecos. Puedes usarlo para: grupos de clase con anuncios y recursos, enviar audios explicativos cortos, compartir imágenes de problemas, recibir fotos de tareas y crear encuestas rápidas. Con normas claras, se convierte en un canal educativo eficaz.",
+                    extra: "Norma sugerida para grupos de WhatsApp escolar: solo el docente puede publicar en el grupo principal; los estudiantes preguntan en un grupo aparte. Esto evita el caos y mantiene la información organizada."
+                },
+                {
+                    id: 17,
+                    type: "content",
+                    title: "📝 Google Forms desde el celular",
+                    content: "Google Forms permite crear cuestionarios, evaluaciones y encuestas que los estudiantes responden desde su celular. Puedes hacer un quiz de comprensión lectora, una autoevaluación o una encuesta de opinión. Los resultados llegan a tu cuenta en tiempo real, sin papel.",
+                    extra: "Requiere que los estudiantes tengan cuenta de Google o compartes el formulario en modo 'sin iniciar sesión'. La segunda opción es más práctica en contextos escolares guatemaltecos."
+                },
+                {
+                    id: 18,
+                    type: "quiz",
+                    title: "🎯 Pon a prueba tu comprensión",
+                    question: "Un docente quiere recibir tareas fotográficas de sus estudiantes sin gastar dinero. ¿Cuál es la opción más práctica en Guatemala?",
+                    options: [
+                        "Crear una cuenta en Google Classroom para cada estudiante",
+                        "Pedir que compartan fotos por WhatsApp al grupo de clase",
+                        "Usar una plataforma de pago como Edmodo Premium",
+                        "Solicitar que impriman las tareas y las entreguen el lunes"
+                    ],
+                    correct: 1,
+                    explanation: "WhatsApp es la herramienta más instalada y con menor barrera de entrada en Guatemala. Recibir fotos de tareas por WhatsApp es inmediato, gratuito y no requiere que los estudiantes creen cuentas nuevas."
+                },
+                {
+                    id: 19,
+                    type: "content",
+                    title: "🎙️ Apps para crear contenido: no solo consumir",
+                    content: "El m-learning no es solo consumir: también puede ser crear. Apps como Anchor (podcasts), CapCut (videos cortos), o el mismo WhatsApp (notas de voz) permiten a los estudiantes producir su propio contenido de aprendizaje. Cuando enseñas a otros, aprendes el doble.",
+                    extra: "Proyecto rápido: pide a tus estudiantes que graben un audio de 2 minutos explicando un concepto de la clase. Al escucharlos entre compañeros, todos repasan y se detectan errores de comprensión de forma colaborativa."
+                },
+                {
+                    id: 20,
+                    type: "content",
+                    title: "🗺️ Google Maps y Earth: geografía viva",
+                    content: "Google Maps y Google Earth son apps gratuitas que transforman la geografía en una experiencia interactiva. Tus estudiantes pueden explorar departamentos de Guatemala, ver imágenes satelitales de volcanes, ríos y comunidades, o medir distancias reales. Sin salir del aula, viajan a cualquier lugar del mundo.",
+                    extra: "Actividad: pide a tus estudiantes que localicen su municipio en Google Earth y describan dos características geográficas que ven. Es una actividad concreta, visual y sin costo."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 3 — Diseñando actividades para dispositivos móviles
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 3,
+            title: "🎨 Módulo 3: Diseñando actividades para dispositivos móviles",
+            cards: [
+                {
+                    id: 21,
+                    type: "content",
+                    title: "🧩 El principio SAMR aplicado al celular",
+                    content: "El modelo SAMR describe cuatro niveles de integración tecnológica: Sustitución (el celular reemplaza papel), Aumento (agrega funciones nuevas), Modificación (cambia la tarea significativamente) y Redefinición (crea algo imposible sin tecnología). Apunta siempre a los niveles superiores.",
+                    extra: "Ejemplo: pedir a los estudiantes que fotografíen su tarea (Sustitución) es menos poderoso que pedirles que graben un video explicando su solución (Modificación) o que creen una infografía colaborativa (Redefinición)."
+                },
+                {
+                    id: 22,
+                    type: "content",
+                    title: "🎬 Cómo diseñar un microvideo educativo",
+                    content: "Un microvideo educativo tiene entre 2 y 6 minutos, una sola idea central, lenguaje sencillo y al menos una pregunta o reflexión al final. No necesitas equipo caro: el celular del docente, luz natural de una ventana y un cuaderno como fondo son suficientes para empezar.",
+                    extra: "Formula para el microvideo: 1) Engancha en los primeros 10 segundos con una pregunta o dato curioso. 2) Explica el concepto con un ejemplo local. 3) Resume en una oración. 4) Deja una pregunta para pensar. ¡Listo!"
+                },
+                {
+                    id: 23,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "Según el modelo SAMR, ¿cuál actividad representa el nivel más alto de integración del celular?",
+                    options: [
+                        "Fotografiar las respuestas escritas del cuaderno y enviarlas al docente",
+                        "Responder un cuestionario en Google Forms en lugar de en papel",
+                        "Crear un podcast colaborativo sobre un tema científico para la comunidad",
+                        "Buscar la definición de una palabra en un diccionario en línea"
+                    ],
+                    correct: 2,
+                    explanation: "Crear un podcast colaborativo para la comunidad es Redefinición: una tarea que no existiría sin la tecnología móvil. Las otras opciones son Sustitución (misma tarea, diferente formato) o Aumento (ligera mejora funcional)."
+                },
+                {
+                    id: 24,
+                    type: "content",
+                    title: "🎙️ Podcasts escolares: voz para aprender",
+                    content: "Un podcast escolar es una grabación de audio en la que los estudiantes explican, debaten o narran un tema. Solo necesitan el celular y la app de voz nativa. Los podcasts desarrollan habilidades de comunicación oral, investigación y síntesis. Son perfectos para idiomas, historia y ciencias sociales.",
+                    extra: "Paso a paso: 1) Asigna el tema. 2) Los estudiantes investigan y escriben un guion de 3-5 minutos. 3) Graban con el celular. 4) Comparten el audio por WhatsApp. 5) El grupo escucha y comenta. Todo el proceso cabe en dos períodos de clase."
+                },
+                {
+                    id: 25,
+                    type: "content",
+                    title: "📊 Formularios como herramienta de evaluación formativa",
+                    content: "Usar Google Forms o Microsoft Forms como salida de clase es una estrategia poderosa: al final de cada lección, los estudiantes responden 3 preguntas desde su celular. Tú ves los resultados en tiempo real y ajustas tu próxima clase según las dudas reales, no las que supones.",
+                    extra: "Las tres preguntas clave para una salida de clase: 1) ¿Qué aprendiste hoy? 2) ¿Qué no quedó claro? 3) ¿Cómo lo conectas con tu vida? En 5 minutos tienes información valiosísima sobre tu grupo."
+                },
+                {
+                    id: 26,
+                    type: "content",
+                    title: "🗺️ Cacerías de pistas con el celular",
+                    content: "Una cacería de pistas digital combina movimiento, investigación y tecnología. Los estudiantes reciben pistas por WhatsApp y deben buscar respuestas en internet, fotografiar elementos del entorno o resolver acertijos. Es colaborativa, activa y los estudiantes la recuerdan semanas después.",
+                    extra: "Ejemplo guatemalteco: 'Encuentra y fotografía 5 plantas medicinales de tu comunidad. Busca en internet su nombre científico. Graba un audio de 1 minuto explicando para qué se usa cada una.' Todo con el celular, sin costo."
+                },
+                {
+                    id: 27,
+                    type: "quiz",
+                    title: "🎯 Pon a prueba tu comprensión",
+                    question: "¿Cuál es el principal beneficio de usar un formulario de 'salida de clase' con el celular?",
+                    options: [
+                        "Permite calificar automáticamente a todos los estudiantes",
+                        "Reduce el tiempo que el docente dedica a preparar clases",
+                        "Proporciona información en tiempo real sobre las dudas reales del grupo",
+                        "Elimina la necesidad de hacer evaluaciones tradicionales"
+                    ],
+                    correct: 2,
+                    explanation: "El valor de la salida de clase con formulario es la retroalimentación inmediata: el docente ve en tiempo real qué entendieron y qué no, y puede ajustar la siguiente clase basándose en datos reales, no suposiciones."
+                },
+                {
+                    id: 28,
+                    type: "content",
+                    title: "📸 Fotografía y video como evidencia de aprendizaje",
+                    content: "La cámara del celular convierte cualquier actividad práctica en evidencia documentada. Los estudiantes pueden fotografiar experimentos, grabar presentaciones, capturar sus maquetas o hacer timelapse de un proceso. Estas evidencias digitales son un portafolio poderoso de su aprendizaje.",
+                    extra: "Consejo práctico: crea una carpeta compartida en Google Drive o un álbum de WhatsApp solo para evidencias del grupo. Al final del trimestre, tienes un portafolio visual completo del aprendizaje de la clase."
+                },
+                {
+                    id: 29,
+                    type: "content",
+                    title: "🤝 Aprendizaje colaborativo con celular",
+                    content: "El celular puede conectar a estudiantes de distintos grupos o comunidades. Dos aulas en diferentes departamentos de Guatemala pueden colaborar en un mismo proyecto: compartir datos de temperatura local, comparar costumbres de sus comunidades o co-crear un periódico digital. El celular derriba las paredes del aula.",
+                    extra: "Proyecto interescolar: coordina con un docente de otro municipio. Sus estudiantes y los tuyos investigan el mismo tema desde su contexto local y comparten los resultados por WhatsApp. En un día tienen perspectivas de dos realidades guatemaltecas diferentes."
+                },
+                {
+                    id: 30,
+                    type: "content",
+                    title: "📋 Plantilla de actividad móvil",
+                    content: "Toda actividad de m-learning bien diseñada responde estas preguntas: ¿Qué aprenderán? (objetivo), ¿Qué harán con el celular? (tarea), ¿Cuánto tiempo tienen? (duración), ¿Cómo sabrás que aprendieron? (evaluación), ¿Qué pasa si no tienen internet? (plan B). Siempre diseña pensando en el plan B.",
+                    extra: "El plan B es clave en Guatemala: si un estudiante no tiene datos ese día, ¿puede hacer la actividad de otra manera? Diseña actividades que tengan versión digital Y versión análoga, para no excluir a nadie."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 4 — Desafíos, equidad y ciudadanía digital
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 4,
+            title: "🇬🇹 Módulo 4: Desafíos, equidad y ciudadanía digital",
+            cards: [
+                {
+                    id: 31,
+                    type: "content",
+                    title: "⚡ El desafío de la conectividad en Guatemala",
+                    content: "No todas las comunidades guatemaltecas tienen buena señal o acceso a datos. Antes de implementar m-learning, mapea tu realidad: ¿cuántos estudiantes tienen celular propio? ¿Cuántos comparten con la familia? ¿Cuántos tienen datos? ¿Cuántos tienen wifi en casa? Los datos reales guían mejores decisiones.",
+                    extra: "Encuesta rápida de 5 preguntas al inicio del año te da el mapa tecnológico de tu grupo. Con esa información diseñas actividades realistas, no idealizadas. Puedes hacerla en papel y en 10 minutos."
+                },
+                {
+                    id: 32,
+                    type: "content",
+                    title: "📶 Estrategias para contextos con poca conectividad",
+                    content: "Cuando el internet es limitado: (1) usa apps que funcionan sin conexión como Khan Academy descargado, (2) crea grupos de WhatsApp donde el docente descarga el contenido y lo reenvía, (3) usa el modo de datos comprimidos del celular, (4) programa actividades online para cuando estén en la escuela, si hay wifi.",
+                    extra: "Técnica 'descarga el jueves': pide a los estudiantes que descarguen el material educativo de la semana cuando estén en la escuela (donde hay wifi) para consumirlo sin conexión durante el fin de semana."
+                },
+                {
+                    id: 33,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la primera acción que debe tomar un docente antes de implementar m-learning en su aula guatemalteca?",
+                    options: [
+                        "Comprar tabletas para todos los estudiantes",
+                        "Solicitar wifi de alta velocidad al Ministerio de Educación",
+                        "Hacer un diagnóstico de cuántos estudiantes tienen celular y con qué conectividad",
+                        "Elegir la plataforma educativa más popular del mercado"
+                    ],
+                    correct: 2,
+                    explanation: "Siempre parte de la realidad de tus estudiantes. Un diagnóstico previo te permite diseñar actividades que funcionen para TODOS, no solo para los que tienen mejor tecnología. Sin ese diagnóstico, corres el riesgo de excluir a quienes más necesitan apoyo."
+                },
+                {
+                    id: 34,
+                    type: "content",
+                    title: "⚖️ Equidad digital: no dejar a nadie atrás",
+                    content: "El m-learning puede ampliar brechas si no se diseña con equidad. Estrategias para incluir a todos: (1) actividades que pueden hacerse en celular compartido, (2) pares de trabajo donde un estudiante con celular trabaja con uno sin, (3) alternativas análogas para cada actividad digital, (4) tiempo en clase para actividades que requieren internet.",
+                    extra: "Reflexión importante: una actividad de m-learning que solo puede hacer el 60% de tus estudiantes no es una buena actividad de m-learning. El diseño inclusivo no es opcional, es responsabilidad pedagógica."
+                },
+                {
+                    id: 35,
+                    type: "content",
+                    title: "🛡️ Ciudadanía digital: enseñar a usar bien el celular",
+                    content: "Integrar el celular al aula es también la oportunidad de enseñar ciudadanía digital: verificar fuentes antes de compartir, proteger la privacidad, comunicarse con respeto en línea, entender el tiempo de pantalla saludable. Estos son contenidos transversales que todo docente guatemalteco puede abordar.",
+                    extra: "Actividad de ciudadanía digital: muestra a tus estudiantes una noticia falsa y una verdadera sobre el mismo tema. Guíalos para identificar las diferencias: ¿quién la publicó?, ¿tiene fecha?, ¿otras fuentes lo confirman? Es una lección de pensamiento crítico que también enseña periodismo."
+                },
+                {
+                    id: 36,
+                    type: "content",
+                    title: "⏰ Normas de uso del celular en el aula",
+                    content: "El éxito del m-learning depende de normas claras y consensuadas. Co-construye las reglas con tus estudiantes: ¿cuándo se usa el celular?, ¿para qué?, ¿qué pasa si alguien lo usa para otra cosa? Las normas co-creadas se respetan más que las impuestas. Ponlas en un cartel visible.",
+                    extra: "Norma de oro: el celular se guarda cuando el docente dice 'celulares en la mesa hacia abajo' y se usa cuando dice 'saquen el celular'. Esta señal simple evita ambigüedad y reduce el uso no autorizado."
+                },
+                {
+                    id: 37,
+                    type: "quiz",
+                    title: "🎯 Pon a prueba tu comprensión",
+                    question: "¿Qué estrategia de equidad digital es más efectiva cuando algunos estudiantes no tienen celular propio?",
+                    options: [
+                        "Excluirlos de las actividades de m-learning y darles trabajo extra en papel",
+                        "Pedir a los padres que compren un celular básico para sus hijos",
+                        "Diseñar actividades en pares donde un estudiante con celular colabora con uno sin",
+                        "Postponer el m-learning hasta que todos tengan dispositivo"
+                    ],
+                    correct: 2,
+                    explanation: "El trabajo en pares es la estrategia más inclusiva e inmediata: permite que todos participen, fomenta la colaboración y no requiere recursos adicionales. Excluir o postponer viola el principio de equidad educativa."
+                },
+                {
+                    id: 38,
+                    type: "content",
+                    title: "🏫 Casos reales: m-learning en aulas guatemaltecas",
+                    content: "Maestra Ana, de Sololá, usa grupos de WhatsApp para enviar audios de vocabulario en español y kaqchikel. Profesor Jorge, de Chiquimula, asigna videos de Khan Academy descargados como tarea. Maestra Rosa, de Quetzaltenango, pide a sus estudiantes grabar podcasts sobre historia local. Son ejemplos reales, con celulares básicos y creatividad.",
+                    extra: "Lo que tienen en común estos docentes: claridad en el objetivo pedagógico primero, tecnología después. No usan el celular por usarlo, lo usan para resolver un problema de aprendizaje concreto de sus estudiantes."
+                },
+                {
+                    id: 39,
+                    type: "content",
+                    title: "📈 Cómo evaluar el éxito de tu m-learning",
+                    content: "Indicadores para saber si tu m-learning funciona: ¿Los estudiantes completan más tareas que antes? ¿La comprensión mejoró en evaluaciones? ¿Participan más en clase? ¿Reportan aprender fuera del aula? ¿Las familias perciben cambios positivos? Evalúa después de 4 semanas de implementación consistente.",
+                    extra: "Tip de autoevaluación docente: lleva un diario de las actividades de m-learning que haces cada semana. Anota qué funcionó, qué no y por qué. Después de un mes, tendrás un mapa claro de lo que realmente funciona en TU contexto."
+                },
+                {
+                    id: 40,
+                    type: "quiz",
+                    title: "✅ Quiz final del módulo",
+                    question: "¿Cuál de los siguientes indicadores es el más valioso para evaluar si el m-learning está funcionando en tu aula?",
+                    options: [
+                        "El número de apps instaladas en los celulares de los estudiantes",
+                        "La velocidad de conexión a internet del aula",
+                        "La mejora en comprensión y participación de los estudiantes",
+                        "La cantidad de videos educativos disponibles en YouTube"
+                    ],
+                    correct: 2,
+                    explanation: "El éxito del m-learning se mide en aprendizaje, no en tecnología. La cantidad de apps o la velocidad de internet son medios, no fines. Lo que importa es si los estudiantes comprenden mejor y participan más activamente en su proceso educativo."
+                }
+            ]
+        }
+
+    ]
+},
+
+// CURSO: flipped-classroom
+{
+    id: 'flipped-classroom',
+    title: 'Flipped Classroom · El Aula Invertida',
+    subtitle: 'Los estudiantes aprenden la teoría en casa y practican en clase contigo',
+    icon: '🔄',
+    color: '#8B5CF6',
+    prerequisite: [],
+    status: 'available',
+    durationHours: 3,
+    totalCards: 40,
+    modules: [
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 1 — ¿Qué es el Flipped Classroom?
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 1,
+            title: "🔄 Módulo 1: ¿Qué es el Flipped Classroom?",
+            cards: [
+                {
+                    id: 1,
+                    type: "content",
+                    title: "🔄 La gran inversión: ¿qué significa 'invertir' el aula?",
+                    content: "En una clase tradicional, el docente explica en clase y los estudiantes practican en casa (la tarea). En el aula invertida es al revés: los estudiantes aprenden el contenido nuevo en casa (con un video, podcast o lectura) y el tiempo en clase se usa para practicar, debatir y resolver dudas juntos.",
+                    extra: "La lógica es poderosa: ¿para qué pasar 40 minutos explicando algo que los estudiantes pueden ver en video cuando el docente está disponible para resolver dudas en vivo? El tiempo presencial es el recurso más escaso y valioso."
+                },
+                {
+                    id: 2,
+                    type: "content",
+                    title: "📚 Historia del Flipped Classroom",
+                    content: "El método fue popularizado por Jonathan Bergmann y Aaron Sams, dos profesores de química de Colorado, en 2007. Comenzaron grabando sus lecciones para estudiantes que faltaban por enfermedad. Pronto descubrieron que TODOS los estudiantes preferían ver el video primero y luego practicar con el docente presente.",
+                    extra: "Dato curioso: el primer 'flip' fue por accidente. Bergmann y Sams grababan clases para un estudiante ausente y descubrieron que los compañeros también pedían el video. A veces las mejores innovaciones pedagógicas nacen de resolver un problema concreto."
+                },
+                {
+                    id: 3,
+                    type: "content",
+                    title: "🧠 La ciencia detrás del aula invertida",
+                    content: "El flipped classroom se apoya en la taxonomía de Bloom: los niveles cognitivos bajos (recordar, comprender) se logran en casa con el video. Los niveles altos (analizar, evaluar, crear) se trabajan en clase con la guía del docente. Así, el tiempo presencial se usa para lo que más necesita al maestro.",
+                    extra: "Metáfora que funciona: imagina que el video es el 'libro de texto multimedia'. El libro siempre fue para leer en casa; el aula era para resolver dudas. El flipped classroom simplemente actualiza esa lógica con tecnología."
+                },
+                {
+                    id: 4,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la característica principal que diferencia el aula invertida de la clase tradicional?",
+                    options: [
+                        "En el aula invertida no hay tareas para casa",
+                        "El docente explica los conceptos nuevos mediante videos que los estudiantes ven antes de clase",
+                        "Los estudiantes enseñan la clase en lugar del docente",
+                        "Se eliminan las evaluaciones escritas"
+                    ],
+                    correct: 1,
+                    explanation: "La inversión clave es dónde ocurre la instrucción directa: en el aula invertida, los estudiantes acceden al contenido nuevo (generalmente en video) ANTES de clase, y el tiempo presencial se dedica a práctica, discusión y proyectos con el docente disponible."
+                },
+                {
+                    id: 5,
+                    type: "content",
+                    title: "✅ Beneficios pedagógicos del aula invertida",
+                    content: "Beneficios comprobados: (1) los estudiantes pueden pausar y repetir la explicación las veces que necesiten, (2) el tiempo en clase es más activo y menos pasivo, (3) el docente puede atender individualmente mientras los demás trabajan, (4) los estudiantes llegan a clase con preguntas reales, no hipotéticas.",
+                    extra: "Beneficio para el docente: en el aula invertida, dejas de dar la misma explicación 5 veces (una por sección) y la das una vez en video. El tiempo que ganas lo inviertes en atención personalizada, que es donde realmente marcas diferencia."
+                },
+                {
+                    id: 6,
+                    type: "content",
+                    title: "⚖️ Clase tradicional vs. Aula invertida: comparación honesta",
+                    content: "Clase tradicional: docente explica (30-35 min), estudiantes practican en casa solos, sin apoyo. Aula invertida: estudiantes ven video en casa (10-15 min), clase se usa para practicar CON el docente presente. La diferencia es quién está disponible cuando el estudiante más necesita ayuda.",
+                    extra: "Crítica justa al aula invertida: requiere que los estudiantes sean disciplinados para ver el video antes de clase. Si no lo hacen, llegan sin base y la dinámica falla. Por eso, la motivación y el seguimiento son parte del diseño, no extras."
+                },
+                {
+                    id: 7,
+                    type: "content",
+                    title: "🎯 ¿Para qué materias funciona mejor?",
+                    content: "El flipped classroom funciona especialmente bien en materias con mucha instrucción directa: matemáticas, ciencias, gramática, historia. Funciona menos para habilidades que requieren práctica guiada simultánea (instrumentos musicales, educación física, artes manuales). En Guatemala, matemáticas y ciencias son los casos de uso más frecuentes.",
+                    extra: "No tienes que invertir TODA la clase. Puedes empezar con 1 tema por semana en formato flipped y el resto de la semana enseñar de forma tradicional. Empieza pequeño, ajusta y escala."
+                },
+                {
+                    id: 8,
+                    type: "quiz",
+                    title: "🎯 Pon a prueba tu comprensión",
+                    question: "Según la taxonomía de Bloom aplicada al flipped classroom, ¿qué tipos de actividades se diseñan para el tiempo presencial en clase?",
+                    options: [
+                        "Recordar y comprender: copiar definiciones y memorizar fórmulas",
+                        "Solo actividades de evaluación sumativa (exámenes)",
+                        "Analizar, evaluar y crear: debatir, resolver problemas complejos, crear proyectos",
+                        "Ver el video nuevamente en grupo para verificar que todos lo entendieron"
+                    ],
+                    correct: 2,
+                    explanation: "El tiempo presencial en el aula invertida se reserva para los niveles cognitivos altos de Bloom: analizar, evaluar y crear. Los niveles básicos (recordar y comprender) se trabajan con el video en casa. Así el docente guía cuando más se necesita."
+                },
+                {
+                    id: 9,
+                    type: "content",
+                    title: "👥 El rol del docente cambia, no desaparece",
+                    content: "En el aula invertida, el docente no es reemplazado por el video. Su rol se transforma: de expositor a facilitador. En clase, en lugar de hablar al frente, el docente circula, observa, pregunta, aclara, desafía y apoya a quien lo necesita. Es un rol más exigente y más gratificante.",
+                    extra: "Muchos docentes que prueban el aula invertida reportan que se sienten más conectados con sus estudiantes porque pasan el tiempo de clase interactuando uno a uno, en lugar de hablar a 30 estudiantes a la vez."
+                },
+                {
+                    id: 10,
+                    type: "content",
+                    title: "🚀 ¿Por dónde empezar? El primer flip",
+                    content: "Para tu primer flip: elige un tema que ya explicas bien (no uno nuevo para ti). Graba un video de 8 minutos con tu celular. Compártelo por WhatsApp el día anterior a la clase. Diseña una actividad de 30 minutos para hacer en clase. Evalúa qué pasó y ajusta. ¡Ya hiciste tu primer aula invertida!",
+                    extra: "El primer video no tiene que ser perfecto. Un video auténtico con el docente real, aunque sea informal, genera más conexión que una producción elaborada. Tus estudiantes quieren escucharte a TI explicar, no a un desconocido en alta definición."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 2 — Cómo crear tu contenido en video
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 2,
+            title: "🎬 Módulo 2: Cómo crear tu contenido en video",
+            cards: [
+                {
+                    id: 11,
+                    type: "content",
+                    title: "📱 El celular es suficiente para grabar tu clase",
+                    content: "No necesitas una cámara profesional, estudio de grabación ni software caro. El celular del docente, en modo horizontal, con buena luz natural y el docente hablando directamente a cámara, produce un video educativo de calidad suficiente. La pedagogía es más importante que la producción.",
+                    extra: "Configuración mínima para empezar: celular en modo horizontal, apoyado en una pila de libros o un vaso, frente a una ventana (la luz natural es la mejor), sin ruido ambiental, y tú en cuadro explicando. Costo: Q0."
+                },
+                {
+                    id: 12,
+                    type: "content",
+                    title: "⏱️ La regla de los 10 minutos",
+                    content: "Los videos educativos más efectivos duran entre 6 y 10 minutos. Estudios del MIT muestran que el engagement cae drásticamente después de los 6 minutos. Si tu tema necesita más tiempo, divide en dos videos. Un video de 8 minutos bien diseñado es mejor que uno de 20 minutos.",
+                    extra: "Truco de estructura: 1 min de introducción y gancho, 6-7 min de explicación del concepto con ejemplo, 1 min de resumen y pregunta para reflexionar. Esa estructura de 3 partes hace que el video fluya y sea memorable."
+                },
+                {
+                    id: 13,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la duración óptima recomendada para un video de aula invertida?",
+                    options: [
+                        "30 a 45 minutos, equivalente a un período de clase completo",
+                        "Menos de 2 minutos para mantener la atención",
+                        "Entre 6 y 10 minutos, con una sola idea central",
+                        "Más de 20 minutos para cubrir el tema con profundidad"
+                    ],
+                    correct: 2,
+                    explanation: "Los estudios muestran que el engagement baja drásticamente después de 6 minutos. Entre 6 y 10 minutos es el rango óptimo: suficiente para explicar con profundidad, corto para mantener la atención. Si el tema es largo, divídelo en varios videos cortos."
+                },
+                {
+                    id: 14,
+                    type: "content",
+                    title: "🎙️ El audio importa más que la imagen",
+                    content: "Los estudiantes toleran imagen imperfecta pero no toleran audio malo. Antes de preocuparte por la imagen, asegura que tu voz se escuche clara. Graba en un cuarto sin eco (las habitaciones con ropa amortiguan el sonido), habla cerca del celular y evita grabar cerca de ventiladores o carreteras.",
+                    extra: "Prueba de audio: graba 30 segundos y escúchalo con audífonos. Si tu voz se escucha clara y no hay eco fuerte, estás listo. Si suena como cueva, muévete a una habitación más pequeña con más objetos (libros, ropa)."
+                },
+                {
+                    id: 15,
+                    type: "content",
+                    title: "✍️ Guion vs. improvisación: encuentra tu estilo",
+                    content: "Algunos docentes prefieren un guion completo (más preciso, menos natural), otros hablan con bullet points (más fluido) y otros improvisan (más auténtico pero puede irse por las ramas). Para empezar, escribe los 3-5 puntos clave que quieres cubrir y habla a cámara con esos puntos de referencia. Es el balance perfecto.",
+                    extra: "Los errores pequeños son humanos y aceptables. No tienes que repetir el video entero si dices 'ehh' o te equivocas en algo menor. Tus estudiantes valoran la autenticidad más que la perfección técnica."
+                },
+                {
+                    id: 16,
+                    type: "content",
+                    title: "📊 Videos con presentación: pantalla compartida",
+                    content: "Otra opción es grabar tu pantalla mientras explicas una presentación de diapositivas. En Android puedes usar DU Recorder (gratis); en iPhone usa la función nativa de grabación de pantalla. Así tus estudiantes ven las diapositivas Y te escuchan explicar. Ideal para matemáticas con fórmulas o ciencias con diagramas.",
+                    extra: "Para matemáticas, hay una opción aún más simple: graba tu mano escribiendo en papel mientras explicas. Muchos docentes exitosos de YouTube usan exactamente eso. Un cuaderno, un marcador y tu voz: pedagogía pura."
+                },
+                {
+                    id: 17,
+                    type: "quiz",
+                    title: "🎯 Pon a prueba tu comprensión",
+                    question: "¿Qué aspecto técnico tiene mayor impacto en la calidad de un video educativo según los expertos?",
+                    options: [
+                        "La resolución de imagen (Full HD vs. 4K)",
+                        "Los efectos de transición y animaciones en las diapositivas",
+                        "La claridad del audio: que la voz se escuche limpia y sin eco",
+                        "El fondo del video (debe ser un fondo liso y profesional)"
+                    ],
+                    correct: 2,
+                    explanation: "El audio es el elemento más crítico de un video educativo. Los estudiantes pueden aprender con imagen de menor calidad, pero un audio malo (eco, ruido, voz baja) hace que abandonen el video inmediatamente. Prioriza el sonido sobre cualquier otro aspecto técnico."
+                },
+                {
+                    id: 18,
+                    type: "content",
+                    title: "📤 Cómo compartir el video con tus estudiantes",
+                    content: "Opciones para compartir tu video: (1) YouTube no listado (solo quienes tienen el enlace lo ven), (2) WhatsApp directo al grupo de clase, (3) Google Drive con enlace compartido, (4) Telegram (permite archivos grandes). Para Guatemala, WhatsApp es el canal más eficiente porque todos lo tienen instalado.",
+                    extra: "YouTube no listado es la mejor opción si el video es largo (+50 MB) porque no ocupa espacio en el celular del estudiante y lo puede ver sin descargarlo. Crea tu canal de YouTube docente y empieza a subir tus lecciones."
+                },
+                {
+                    id: 19,
+                    type: "content",
+                    title: "❓ Preguntas integradas en el video",
+                    content: "El video más poderoso no es solo explicativo: incluye preguntas que obligan al estudiante a pausar y pensar. Di en el video: 'Pausa aquí y escribe tu respuesta antes de continuar'. Esta técnica de pausa activa convierte el video pasivo en una experiencia de aprendizaje activa.",
+                    extra: "Puedes ir más lejos con EdPuzzle: una herramienta gratuita que te permite insertar preguntas directamente en el timeline del video de YouTube. El estudiante no puede avanzar sin responder. Los docentes ven qué respondió cada estudiante."
+                },
+                {
+                    id: 20,
+                    type: "content",
+                    title: "🗂️ Organiza tu biblioteca de videos",
+                    content: "Con el tiempo, acumularás videos de tus mejores explicaciones. Organízalos en playlists de YouTube por unidad o tema. Ese banco de videos es invaluable: lo puedes reutilizar año tras año, compartir con colegas, y los estudiantes lo usan para repasar antes de exámenes. Es una inversión que crece con el tiempo.",
+                    extra: "Tip de productividad: graba dos o tres videos el mismo día que te sientes inspirado. Así construyes tu biblioteca más rápido. Muchos docentes dedican los sábados en la mañana a grabar los videos de la semana siguiente."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 3 — Diseñando las actividades presenciales
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 3,
+            title: "🧠 Módulo 3: Diseñando las actividades presenciales",
+            cards: [
+                {
+                    id: 21,
+                    type: "content",
+                    title: "🎯 El tiempo de clase es oro: úsalo bien",
+                    content: "Si los estudiantes ya vieron el video, el tiempo de clase NO debe usarse para repetir la explicación. Úsalo para: resolver dudas específicas (no generales), trabajar en problemas difíciles en equipo, debatir ideas, crear productos o presentar proyectos. El docente facilita, no repite.",
+                    extra: "Regla práctica: si puedes hacer una actividad sin el docente presente, probablemente no pertenece al tiempo de clase. El tiempo presencial es el recurso más escaso; úsalo para lo que NO puede hacerse solo."
+                },
+                {
+                    id: 22,
+                    type: "content",
+                    title: "📋 La 'entrada de clase': verificar que vieron el video",
+                    content: "Empieza cada clase flipped con una entrada de 5 minutos: 2 o 3 preguntas rápidas sobre el video que vieron. Sirve para saber quién lo vio, identificar las dudas más comunes y activar el conocimiento previo. Puede ser en papel, en un formulario de Google o de forma oral.",
+                    extra: "La entrada de clase también tiene un efecto motivador: los estudiantes saben que al llegar a clase se verificará si vieron el video, lo cual aumenta el cumplimiento. No es para calificar, es para diagnosticar."
+                },
+                {
+                    id: 23,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Para qué sirve la 'entrada de clase' en el aula invertida?",
+                    options: [
+                        "Para calificar a los estudiantes que no vieron el video",
+                        "Para repetir la explicación del video a quienes no lo vieron",
+                        "Para verificar la comprensión del video e identificar dudas comunes antes de la actividad",
+                        "Para que los estudiantes copien notas del video en su cuaderno"
+                    ],
+                    correct: 2,
+                    explanation: "La entrada de clase es diagnóstica, no punitiva. Su función es que el docente sepa qué entendieron, qué no, y cuáles son las dudas más frecuentes, para organizar mejor el tiempo de clase. No se usa para castigar a quienes no vieron el video."
+                },
+                {
+                    id: 24,
+                    type: "content",
+                    title: "🤝 Aprendizaje colaborativo en el tiempo presencial",
+                    content: "El aula invertida libera tiempo para trabajo en equipo: grupos de 3-4 estudiantes resuelven problemas juntos, crean productos, investigan o debaten. El docente circula, observa y facilita. Los estudiantes aprenden de sus pares tanto como del docente. Este es el verdadero valor del tiempo presencial.",
+                    extra: "Estructura de trabajo en equipo que funciona: (1) cada estudiante intenta el problema solo por 3 minutos, (2) el equipo compara respuestas y resuelve discrepancias, (3) presentan su solución al grupo. Esta secuencia garantiza que todos piensen antes de copiar."
+                },
+                {
+                    id: 25,
+                    type: "content",
+                    title: "💬 El debate socrático: pensar en voz alta",
+                    content: "El debate socrático es una conversación estructurada donde el docente solo hace preguntas (nunca da respuestas directas) y los estudiantes defienden sus ideas con argumentos del video y sus propias reflexiones. Desarrolla pensamiento crítico, comunicación oral y comprensión profunda. Perfecto para historia, ciencias sociales y ética.",
+                    extra: "Pregunta inicial típica: '¿Están de acuerdo con lo que dice el video? ¿Alguien tiene una perspectiva diferente?' Luego el docente solo guía con preguntas: '¿Por qué dices eso? ¿Qué evidencia tienes? ¿Cómo responde el grupo?' El docente habla menos del 20% del tiempo."
+                },
+                {
+                    id: 26,
+                    type: "content",
+                    title: "🔬 Estaciones de aprendizaje en el aula invertida",
+                    content: "Divide el aula en 3-4 estaciones con diferentes actividades: una para práctica individual, otra para trabajo en equipo, una de lectura complementaria y una donde el docente atiende a quienes tienen más dudas. Los grupos rotan cada 10-12 minutos. El docente atiende profundamente al grupo más pequeño.",
+                    extra: "Las estaciones transforman una clase de 30 estudiantes en grupos de 7-8 con atención casi personalizada. El docente en la estación de 'clínica de dudas' puede atender de forma profunda a los estudiantes que más lo necesitan."
+                },
+                {
+                    id: 27,
+                    type: "quiz",
+                    title: "🎯 Pon a prueba tu comprensión",
+                    question: "¿Cuál de estas actividades es la más adecuada para el tiempo presencial en el aula invertida?",
+                    options: [
+                        "El docente explica el tema desde el inicio sin mencionar el video",
+                        "Los estudiantes ven el video en clase porque no tienen internet en casa",
+                        "Equipos de estudiantes resuelven problemas complejos mientras el docente circula y apoya",
+                        "Los estudiantes copian en su cuaderno los puntos clave del video"
+                    ],
+                    correct: 2,
+                    explanation: "El tiempo presencial debe usarse para actividades que requieren la presencia del docente y la colaboración entre pares: resolver problemas, debatir, crear. Repetir la explicación o copiar notas desperdicia el tiempo más valioso del día de clase."
+                },
+                {
+                    id: 28,
+                    type: "content",
+                    title: "🛠️ Proyectos como actividad presencial estrella",
+                    content: "Los proyectos breves en clase (de 1 a 3 períodos) son la actividad presencial ideal del aula invertida: los estudiantes aplican lo que aprendieron en el video para crear algo concreto. Un cartel, una maqueta, una infografía, una presentación, un experimento. El video da el marco teórico; la clase es el taller.",
+                    extra: "Proyecto de una clase: después del video sobre ecosistemas, cada equipo crea una infografía de 1 página sobre el ecosistema de su comunidad. En 35 minutos investigan, diseñan y presentan. El docente evalúa en tiempo real mientras circula."
+                },
+                {
+                    id: 29,
+                    type: "content",
+                    title: "📊 Diferenciación instruccional en el aula invertida",
+                    content: "El aula invertida facilita la atención a la diversidad: mientras la mayoría trabaja en la actividad principal, el docente puede sentarse 10 minutos con el grupo que más necesita apoyo para reexplicar el concepto con otra estrategia. O puede asignar actividades de extensión más complejas a estudiantes avanzados. Cada quien avanza a su ritmo.",
+                    extra: "Truco para diferenciación: diseña la actividad presencial en 3 niveles de dificultad (básico, estándar, extendido). Los estudiantes eligen el nivel según su comprensión. Esta autonomía es en sí misma un aprendizaje metacognitivo valioso."
+                },
+                {
+                    id: 30,
+                    type: "content",
+                    title: "⏰ Planificación del tiempo en clase invertida",
+                    content: "Estructura sugerida para un período de 45 minutos: 5 min de entrada de clase (verificar video), 5 min de aclaración de dudas comunes, 30 min de actividad principal (individual o en equipo), 5 min de cierre y reflexión. Esta distribución maximiza el tiempo activo de los estudiantes.",
+                    extra: "El cierre de clase es tan importante como la entrada. En los últimos 5 minutos pregunta: '¿Qué aprendiste hoy? ¿Qué sigues sin entender? ¿Dónde usarías esto?' Este metacognición mejora la transferencia del aprendizaje a largo plazo."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 4 — Desafíos reales y soluciones prácticas
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 4,
+            title: "🇬🇹 Módulo 4: Desafíos reales y soluciones prácticas",
+            cards: [
+                {
+                    id: 31,
+                    type: "content",
+                    title: "🏠 El gran desafío: ¿qué pasa si no tienen internet en casa?",
+                    content: "Este es el desafío número uno del aula invertida en Guatemala. Soluciones prácticas: (1) enviar el video por WhatsApp para verlo descargado sin wifi, (2) usar el recreo o tiempo libre en la escuela para ver el video si hay wifi, (3) prestar una tarjeta de datos recargada para los estudiantes sin acceso, (4) crear grupos de estudio donde un estudiante con acceso comparte el video con quienes no tienen.",
+                    extra: "Estrategia comprobada: el video enviado por WhatsApp se descarga con wifi escolar el viernes y se ve el fin de semana sin internet. Un video de 8 minutos en calidad media ocupa entre 30 y 80 MB: perfectamente manejable."
+                },
+                {
+                    id: 32,
+                    type: "content",
+                    title: "📵 Estudiantes que no vieron el video: ¿qué hago?",
+                    content: "Inevitablemente, algunos estudiantes llegarán a clase sin ver el video. Estrategias: (1) inicio de clase: 10 minutos en el rincón de 'ponerse al día' con auriculares mientras el resto trabaja, (2) compañero tutor: un estudiante que sí vio explica brevemente al que no, (3) actividad alternativa diferente que se conecta al tema sin el video previo.",
+                    extra: "Clave pedagógica: no repitas el video completo para 2 o 3 estudiantes en detrimento del 90% que sí lo vio. El sistema no puede ajustarse siempre al mínimo. Diseña soluciones para el individuo sin sacrificar al grupo."
+                },
+                {
+                    id: 33,
+                    type: "quiz",
+                    title: "✅ Comprobemos lo aprendido",
+                    question: "¿Cuál es la estrategia más efectiva para un estudiante guatemalteco sin internet en casa que necesita ver el video del aula invertida?",
+                    options: [
+                        "Pedirle que no participe en la actividad de clase hasta que vea el video",
+                        "Repetir la explicación del video en clase para que no se pierda nada",
+                        "Enviar el video por WhatsApp para que se descargue en la escuela y lo vea sin internet",
+                        "Eliminar el aula invertida y volver al modelo tradicional"
+                    ],
+                    correct: 2,
+                    explanation: "Enviar el video por WhatsApp permite descargarlo con wifi escolar y verlo sin internet en casa. Esta solución es simple, gratuita y respeta la dignidad del estudiante sin excluirlo ni penalizarlo por su situación de conectividad."
+                },
+                {
+                    id: 34,
+                    type: "content",
+                    title: "👪 Resistencia de padres y directores: cómo comunicarlo",
+                    content: "Algunos padres y directores pueden ver el aula invertida con desconfianza: '¿el maestro ya no da clase?' Comunica el método con claridad: 'El video es la tarea nueva: ver una explicación en lugar de copiar ejercicios. La clase la usamos para practicar juntos con mi acompañamiento directo.' Invita a los padres a ver un video para que entiendan.",
+                    extra: "Carta corta para padres de familia: 'En esta clase probaremos el aula invertida: los estudiantes verán un video corto antes de cada clase para aprender el tema nuevo. En clase practicarán con mi apoyo. Si tienen preguntas, con gusto les explico.' Simple, claro, sin tecnicismos."
+                },
+                {
+                    id: 35,
+                    type: "content",
+                    title: "😰 'No tengo tiempo para grabar videos': solución realista",
+                    content: "Grabar todos los videos desde cero es agotador. Alternativas: (1) usa videos de Khan Academy o YouTube que ya explican el tema, (2) comparte videos con colegas de tu misma materia (2 docentes graban 2 videos cada uno y se los intercambian), (3) graba solo los temas más difíciles y usa recursos existentes para los básicos.",
+                    extra: "Modelo sostenible: si eres docente de matemáticas, tal vez ya existe en YouTube el video perfecto para tu clase. Usarlo no es trampa, es curaduría. Tu valor agregado está en la actividad presencial que diseñas, no en ser el actor del video."
+                },
+                {
+                    id: 36,
+                    type: "content",
+                    title: "📊 Evaluación en el aula invertida: ¿cómo hacerlo?",
+                    content: "En el aula invertida, la evaluación es continua y diversa: la entrada de clase (diagnóstica), la observación durante las actividades (formativa), los productos de los proyectos (sumativa). El docente evalúa mientras circula, no solo en el examen del viernes. Esto da una imagen más completa del aprendizaje real.",
+                    extra: "Herramienta práctica: usa una rúbrica sencilla de 3 criterios para evaluar la actividad presencial: participación, comprensión del concepto y calidad del producto. En 2 minutos calificas a un equipo de 4 mientras circula. Al final de clase tienes notas de todos."
+                },
+                {
+                    id: 37,
+                    type: "quiz",
+                    title: "🎯 Pon a prueba tu comprensión",
+                    question: "Un docente nuevo en aula invertida no tiene tiempo de grabar todos sus videos. ¿Cuál es la recomendación más práctica?",
+                    options: [
+                        "Abandonar el método hasta tener tiempo de grabar todos los videos",
+                        "Curar videos de YouTube o Khan Academy para los temas básicos y grabar solo los más difíciles",
+                        "Grabar un video de 45 minutos que cubra todo el tema de una vez",
+                        "Pedir a los estudiantes que busquen sus propios videos sin orientación"
+                    ],
+                    correct: 1,
+                    explanation: "La curaduría de videos existentes (YouTube, Khan Academy) es perfectamente válida y sostenible. El valor del docente no está en ser actor de video sino en seleccionar el mejor contenido y diseñar las actividades presenciales. Grabar solo donde se agrega valor único es la estrategia más eficiente."
+                },
+                {
+                    id: 38,
+                    type: "content",
+                    title: "🏆 Casos de éxito en Guatemala: docentes que lo aplican",
+                    content: "Profesor Carlos, de Huehuetenango: graba videos de matemáticas con su celular y los manda por WhatsApp. Sus estudiantes llegaron a resolver el doble de problemas en clase. Maestra Lucía, de Escuintla: usa videos de Khan Academy para ciencias. Ahora tiene 30 minutos libres en clase para experimentos que antes no podía hacer.",
+                    extra: "El patrón en todos los casos exitosos guatemaltecos: empezaron con 1 tema en formato flipped, lo probaron por 3 semanas, ajustaron y luego expandieron. Ninguno comenzó con todo el currículo invertido. La paciencia y la iteración son parte del método."
+                },
+                {
+                    id: 39,
+                    type: "content",
+                    title: "🌱 Cómo escalar el aula invertida gradualmente",
+                    content: "Plan de implementación gradual: Semana 1-2: prueba con 1 lección (un video + una actividad). Semana 3-4: aplica en una unidad completa. Mes 2: incorpora a toda la materia de manera flexible. Mes 3: comparte tu experiencia con colegas. La escalada gradual reduce el riesgo y permite aprender del proceso.",
+                    extra: "Indicador clave de éxito a las 4 semanas: ¿los estudiantes llegan a clase con preguntas específicas del video? Si es así, lo están viendo y pensando. Eso es exactamente lo que busca el aula invertida. Celebra ese logro antes de seguir escalando."
+                },
+                {
+                    id: 40,
+                    type: "quiz",
+                    title: "✅ Quiz final del módulo",
+                    question: "¿Cuál es la señal más clara de que el aula invertida está funcionando en tu grupo?",
+                    options: [
+                        "Los estudiantes memorizan perfectamente el contenido del video",
+                        "No hay ningún estudiante que deje de ver los videos",
+                        "Los estudiantes llegan a clase con preguntas específicas y el tiempo presencial es más activo",
+                        "El docente ya no tiene que preparar clases porque el video lo explica todo"
+                    ],
+                    correct: 2,
+                    explanation: "La señal más valiosa del aula invertida exitosa es que los estudiantes llegan con preguntas específicas (indicio de que vieron y procesaron el video) y que el tiempo de clase es activo y colaborativo. Eso significa que la inversión está funcionando: el conocimiento entra antes y la clase se usa para profundizar."
+                }
+            ]
+        }
+
+    ]
+}
+,
+// ═══════════════════════════════════════════════════════════════════════════════
+//  CURSOS: ABV — Aprendizaje Basado en Videos
+//          MICRO-LEARNING — Aprender en Pequeñas Dosis
+//  Programa de Formación Docente — Guatemala
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// CURSO: abv
+{
+    id: 'abv',
+    title: 'Aprendizaje Basado en Videos',
+    subtitle: 'Usa el video como herramienta pedagógica poderosa en tu aula',
+    icon: '🎬',
+    color: '#10B981',
+    prerequisite: [],
+    status: 'available',
+    durationHours: 3,
+    totalCards: 35,
+    modules: [
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 1 — El video en el aprendizaje: ciencia y pedagogía (9 tarjetas)
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 1,
+            title: "🧠 Módulo 1: El video en el aprendizaje: ciencia y pedagogía",
+            cards: [
+                {
+                    id: 1,
+                    type: "content",
+                    title: "🎬 El video no es solo entretenimiento",
+                    content: "Durante décadas se pensó que los videos en clase eran un 'descanso' del aprendizaje real. La investigación actual demuestra lo contrario: el video activa simultáneamente los canales visual y auditivo del cerebro, lo que duplica la retención de información respecto a leer un texto solo.",
+                    extra: "Un estudio del MIT encontró que los estudiantes retienen hasta el 65% de la información vista en video, frente al 10% de la lectura pasiva. En Guatemala, donde muchos estudiantes son aprendices visuales y kinestésicos, esto es especialmente relevante."
+                },
+                {
+                    id: 2,
+                    type: "content",
+                    title: "🧩 Cómo aprende el cerebro con videos",
+                    content: "La Teoría de la Codificación Dual de Richard Mayer explica que el cerebro humano procesa la información por dos canales: el verbal (palabras) y el no verbal (imágenes y movimiento). Cuando ambos canales trabajan juntos —como en un video bien diseñado— el aprendizaje es más profundo y duradero.",
+                    extra: "Esto se llama 'efecto multimedia'. No todos los videos aprovechan este principio: un video con texto que se lee en voz alta mientras aparece en pantalla satura los canales y reduce el aprendizaje."
+                },
+                {
+                    id: 3,
+                    type: "content",
+                    title: "⏱️ La duración importa mucho",
+                    content: "La investigación de Philip Guo (MIT, 2014) analizó 6.9 millones de visualizaciones en cursos en línea y encontró que la atención cae drásticamente después de los 6 minutos. Los videos de 0-3 minutos tienen el mayor nivel de atención. Los mejores videos educativos son breves y enfocados en un solo concepto.",
+                    extra: "Regla práctica: si un video dura más de 8 minutos, busca si hay uno más corto sobre el mismo tema. Si no existe, planifica pausas activas cada 5-6 minutos durante la reproducción."
+                },
+                {
+                    id: 4,
+                    type: "quiz",
+                    title: "✅ Quiz: Teoría de la Codificación Dual",
+                    question: "Según la Teoría de la Codificación Dual, ¿por qué los videos bien diseñados favorecen el aprendizaje?",
+                    options: [
+                        "Porque entretienen a los estudiantes y los mantienen atentos",
+                        "Porque activan simultáneamente el canal verbal y el no verbal del cerebro",
+                        "Porque reducen el trabajo del docente en clase",
+                        "Porque son más fáciles de evaluar que los textos"
+                    ],
+                    correct: 1,
+                    explanation: "La Teoría de la Codificación Dual de Mayer establece que el aprendizaje es más efectivo cuando se activan a la vez el canal verbal (palabras) y el no verbal (imágenes/movimiento). Los videos bien diseñados logran exactamente eso."
+                },
+                {
+                    id: 5,
+                    type: "content",
+                    title: "📺 Tipos de videos educativos",
+                    content: "Existen varios formatos de video educativo, cada uno con propósitos distintos: (1) Tutoriales: muestran un proceso paso a paso. (2) Documentales: exploran un tema con profundidad y contexto. (3) Videos de proceso: muestran cómo se hace algo en tiempo real. (4) Screencasts: grabaciones de pantalla para explicar software o pasos digitales. (5) Animaciones: ideales para conceptos abstractos o invisibles.",
+                    extra: "En el aula guatemalteca, los tutoriales y videos de proceso son especialmente útiles en ciencias y matemáticas, donde ver el 'cómo se hace' paso a paso refuerza la comprensión."
+                },
+                {
+                    id: 6,
+                    type: "content",
+                    title: "🎭 Animaciones para conceptos abstractos",
+                    content: "Las animaciones permiten visualizar lo que no se puede ver: el movimiento de los átomos, el ciclo del agua, cómo funciona el corazón o el recorrido de una ley en el Congreso. Para estudiantes guatemaltecos que tienen acceso limitado a laboratorios o museos, las animaciones compensan esa brecha experiencial.",
+                    extra: "Canales como 'Kurzgesagt' (en inglés) y 'Smile and Learn' (en español) producen animaciones educativas de alta calidad. Muchos videos de Smile and Learn están disponibles gratuitamente en YouTube."
+                },
+                {
+                    id: 7,
+                    type: "content",
+                    title: "🖥️ Screencasts: explica lo que haces en pantalla",
+                    content: "Un screencast es la grabación de lo que ocurre en tu pantalla mientras explicas con tu voz. Es ideal para enseñar a usar aplicaciones, plataformas educativas o herramientas digitales. No requiere edición sofisticada: bastan herramientas como Loom, OBS Studio o incluso la función de grabación de pantalla del celular.",
+                    extra: "Como docente, puedes grabar screencasts para que tus estudiantes revisen los pasos de una tarea o el uso de una aplicación cuantas veces necesiten, sin depender de que tú repitas la explicación."
+                },
+                {
+                    id: 8,
+                    type: "quiz",
+                    title: "✅ Quiz: Tipos de video",
+                    question: "Un docente quiere mostrar a sus estudiantes cómo realizar una operación matemática paso a paso. ¿Qué tipo de video sería más apropiado?",
+                    options: [
+                        "Un documental sobre la historia de las matemáticas",
+                        "Una animación sobre conceptos abstractos",
+                        "Un tutorial que muestre el proceso paso a paso",
+                        "Un screencast de una página web de ejercicios"
+                    ],
+                    correct: 2,
+                    explanation: "Los tutoriales son el formato ideal para mostrar procesos paso a paso, como la resolución de operaciones matemáticas. Su estructura secuencial guía al estudiante desde el inicio hasta el resultado."
+                },
+                {
+                    id: 9,
+                    type: "content",
+                    title: "🇬🇹 El video en el contexto guatemalteco",
+                    content: "En Guatemala, el video tiene un impacto especial: muchos estudiantes tienen acceso a YouTube desde sus celulares, incluso sin internet fijo en casa. Además, el aprendizaje visual es culturalmente significativo en comunidades donde la tradición oral e iconográfica (arte, tejidos, murales) es central. El video conecta con esa forma de aprender.",
+                    extra: "Dato: según la ENCOVI 2021, más del 60% de los hogares guatemaltecos tienen acceso a smartphones. Esto significa que YouTube puede ser un canal educativo accesible para la mayoría de tus estudiantes fuera del aula."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 2 — Seleccionar y usar videos en clase (9 tarjetas)
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 2,
+            title: "🔍 Módulo 2: Seleccionar y usar videos en clase",
+            cards: [
+                {
+                    id: 10,
+                    type: "content",
+                    title: "✅ Criterios para seleccionar un buen video",
+                    content: "No todos los videos de YouTube son confiables o pedagógicamente adecuados. Antes de usar un video en clase, evalúa: (1) Fuente: ¿quién lo produjo? ¿Es una institución educativa, científica o un creador reconocido? (2) Fecha: ¿es información actualizada? (3) Rigor: ¿cita fuentes o presenta datos verificables? (4) Lenguaje: ¿es adecuado para la edad de tus estudiantes?",
+                    extra: "Prefiere videos producidos por universidades, museos, organismos internacionales (como la OPS, UNESCO, UNICEF) o canales con historial verificable. Evita videos sin autoría clara o con afirmaciones sensacionalistas."
+                },
+                {
+                    id: 11,
+                    type: "content",
+                    title: "⏳ La duración ideal según el nivel educativo",
+                    content: "La duración adecuada de un video varía según la edad: Primaria (6-11 años): videos de 2-4 minutos. Básicos (12-15 años): videos de 4-7 minutos. Diversificado y adultos: videos de 6-10 minutos, con pausas. Superar estos tiempos sin planificar pausas activas reduce significativamente la atención y el aprendizaje.",
+                    extra: "Truco guatemalteco: si el video está en inglés y tus estudiantes no lo manejan, busca si tiene subtítulos en español automáticos o si existe una versión doblada. YouTube ofrece subtítulos automáticos traducidos que, aunque imperfectos, funcionan para videos claros."
+                },
+                {
+                    id: 12,
+                    type: "quiz",
+                    title: "✅ Quiz: Criterios de selección",
+                    question: "¿Cuál de los siguientes criterios es MENOS relevante al seleccionar un video educativo para clase?",
+                    options: [
+                        "La fuente o institución que produjo el video",
+                        "Que el video tenga muchas vistas y 'me gusta'",
+                        "Que la información esté actualizada y sea verificable",
+                        "Que el lenguaje sea adecuado para la edad de los estudiantes"
+                    ],
+                    correct: 1,
+                    explanation: "El número de vistas o 'me gusta' no garantiza la calidad educativa de un video. Un video puede ser viral por razones de entretenimiento sin ofrecer información correcta o pedagógicamente adecuada. Siempre prioriza la fuente, el rigor y la pertinencia."
+                },
+                {
+                    id: 13,
+                    type: "content",
+                    title: "🔮 Antes del video: activar predicciones",
+                    content: "Una técnica poderosa es pedir a los estudiantes que predigan el contenido del video antes de verlo. Por ejemplo: 'Este video trata sobre la fotosíntesis. ¿Qué creen que necesita una planta para fabricar su alimento?' Las predicciones activan el conocimiento previo y crean una 'pregunta mental' que el video responde.",
+                    extra: "Puedes hacer esto oralmente, en tarjetas de papel o en un chat de grupo de WhatsApp. Cuando el video confirma o corrige una predicción, el cerebro registra esa información con más fuerza que si la hubiera recibido pasivamente."
+                },
+                {
+                    id: 14,
+                    type: "content",
+                    title: "⏸️ Durante el video: pausas reflexivas",
+                    content: "Las pausas planificadas durante el video transforman la experiencia pasiva en activa. Detén el video en momentos clave y pregunta: '¿Qué acaba de pasar?' '¿Por qué creen que ocurre esto?' '¿Esto les recuerda algo que vieron antes?' Estas micro-reflexiones consolidan el aprendizaje en tiempo real.",
+                    extra: "Planifica pausas cada 3-5 minutos. Antes de reproducir el video, avisa a los estudiantes que habrá paradas para pensar juntos. Esto los mantiene en estado de alerta activa durante toda la reproducción."
+                },
+                {
+                    id: 15,
+                    type: "content",
+                    title: "💬 Después del video: preguntas que profundizan",
+                    content: "Las mejores preguntas post-video no preguntan '¿qué dijo el video?' sino que invitan a pensar: '¿Están de acuerdo con lo que presentó el video? ¿Por qué?' '¿Qué preguntas les surgieron?' '¿Cómo se conecta esto con lo que vivimos en Guatemala?' Estas preguntas desarrollan pensamiento crítico.",
+                    extra: "Técnica '3-2-1': pide a cada estudiante que anote 3 cosas que aprendió, 2 que le sorprendieron y 1 pregunta que le quedó. Es rápido, efectivo y funciona desde tercero primaria hasta diversificado."
+                },
+                {
+                    id: 16,
+                    type: "quiz",
+                    title: "✅ Quiz: Pausas reflexivas",
+                    question: "¿Cuál es el principal beneficio pedagógico de hacer pausas durante la reproducción de un video?",
+                    options: [
+                        "Permite que los estudiantes descansen y recarguen energía",
+                        "Transforma la experiencia pasiva de ver en aprendizaje activo",
+                        "Reduce el tiempo total que el docente necesita para cubrir el tema",
+                        "Evita que los estudiantes se distraigan con el celular"
+                    ],
+                    correct: 1,
+                    explanation: "Las pausas reflexivas transforman la experiencia pasiva (solo ver) en aprendizaje activo. Al detenerse y preguntar, los estudiantes procesan, conectan y consolidan la información en lugar de simplemente recibirla."
+                },
+                {
+                    id: 17,
+                    type: "content",
+                    title: "📋 La guía de visualización: estructura tu clase con video",
+                    content: "Una guía de visualización es una hoja sencilla que el estudiante completa mientras ve el video. Puede incluir: espacio para anotar 3 ideas principales, una pregunta abierta para responder al final, o un organizador gráfico que completan con pausas. Este instrumento sencillo aumenta dramáticamente la retención.",
+                    extra: "No necesita ser elaborada. Puede ser media hoja de cuaderno con el título del video, tres renglones para ideas y una pregunta final. Lo importante es que el estudiante sepa que debe estar atento y tiene una tarea mientras ve."
+                },
+                {
+                    id: 18,
+                    type: "content",
+                    title: "🔁 El video como recurso para repasar",
+                    content: "Una ventaja única del video sobre la clase magistral: se puede repetir. Comparte el enlace del video con tus estudiantes para que lo revean en casa, lo muestren a sus familias o lo usen para estudiar antes de una evaluación. En contextos guatemaltecos con datos móviles limitados, descarga el video con anticipación usando herramientas como 'yt-dlp' o compártelo por WhatsApp.",
+                    extra: "Puedes crear una lista de reproducción privada en YouTube con todos los videos de tu curso y compartir el enlace con tus estudiantes. Así tienen un 'banco de recursos' organizado y gratuito disponible en todo momento."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 3 — Crear tus propios videos educativos (9 tarjetas)
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 3,
+            title: "📱 Módulo 3: Crear tus propios videos educativos",
+            cards: [
+                {
+                    id: 19,
+                    type: "content",
+                    title: "🎙️ Por qué crear tus propios videos",
+                    content: "Cuando un docente crea su propio video, conecta el contenido con la realidad local de sus estudiantes: usa ejemplos de la comunidad, habla en el idioma familiar (incluso puede usar palabras en idiomas mayas), y adapta el ritmo a lo que sus estudiantes necesitan. Un video tuyo, aunque sencillo, supera en pertinencia a cualquier producción internacional.",
+                    extra: "No necesitas equipo profesional. Miles de docentes en Latinoamérica crean contenido educativo valioso solo con su celular, buena iluminación natural y un guión de 5 oraciones."
+                },
+                {
+                    id: 20,
+                    type: "content",
+                    title: "📝 El guión: tu mejor aliado",
+                    content: "Antes de grabar, escribe un guión breve. No necesita ser palabra por palabra; puede ser una lista de puntos: (1) Saludo y tema, (2) ¿Por qué importa esto?, (3) Explicación del concepto con un ejemplo, (4) Resumen de 2-3 ideas clave, (5) Pregunta o tarea para el estudiante. Un guión de este tipo puede escribirse en 10 minutos y salvará tu grabación.",
+                    extra: "Guión de bolsillo: escribe tus 5 puntos en un papel y pégalo detrás del celular mientras grabas. Puedes mirarlo discretamente sin que se note demasiado. Es una técnica sencilla usada por muchos youtubers educativos."
+                },
+                {
+                    id: 21,
+                    type: "quiz",
+                    title: "✅ Quiz: Ventajas del video docente",
+                    question: "¿Cuál es la principal ventaja de que un docente guatemalteco cree su propio video educativo frente a usar uno de YouTube?",
+                    options: [
+                        "Los videos propios siempre tienen mejor calidad de imagen",
+                        "El docente puede adaptar el contenido al contexto local y la realidad de sus estudiantes",
+                        "Los videos propios se pueden subir a YouTube y ganar suscriptores",
+                        "El Ministerio de Educación exige que los docentes produzcan su propio material"
+                    ],
+                    correct: 1,
+                    explanation: "La principal ventaja es la pertinencia contextual: un video propio puede usar ejemplos locales, hablar en el idioma o dialecto familiar, y adaptarse exactamente a lo que los estudiantes de esa comunidad necesitan. Eso no lo puede hacer ningún video internacional."
+                },
+                {
+                    id: 22,
+                    type: "content",
+                    title: "💡 Iluminación y audio: los dos factores clave",
+                    content: "La calidad de un video educativo depende principalmente del audio y la iluminación, no de la resolución de la cámara. Para audio: graba en un espacio tranquilo, sin ruido de tráfico o viento. Para iluminación: usa luz natural de frente (frente a una ventana), nunca con la ventana detrás de ti. Estas dos mejoras hacen que cualquier video sea profesional.",
+                    extra: "Prueba de audio antes de grabar: graba 30 segundos y escúchalos con audífonos. Si escuchas tu voz clara y sin eco fuerte, estás listo. Si hay mucho eco, coloca ropa, cortinas o cojines alrededor para absorber el sonido."
+                },
+                {
+                    id: 23,
+                    type: "content",
+                    title: "📐 Encuadre y posición de la cámara",
+                    content: "Para videos donde apareces tú explicando: coloca el celular a la altura de los ojos (nunca desde abajo). Usa la regla de tercios: no te posiciones exactamente al centro, sino ligeramente a un lado. Deja espacio entre tu cabeza y el borde superior del encuadre. Esto hace que el video se vea más profesional sin ningún esfuerzo adicional.",
+                    extra: "Si hablas frente a una pizarra o material físico: asegúrate de que el material sea visible y legible. Prueba filmando, revisando el video y ajustando la posición antes de grabar la versión final."
+                },
+                {
+                    id: 24,
+                    type: "content",
+                    title: "🛠️ Herramientas para grabar y editar",
+                    content: "Para grabar: la cámara de tu celular es suficiente. Para editar de forma sencilla, estas apps son gratuitas y fáciles de usar: (1) CapCut: edición intuitiva, subtítulos automáticos, ideal para principiantes. (2) InShot: recorta, une clips y agrega música. (3) Canva Video: plantillas para videos explicativos. Para screencasts: Loom (desde computadora) o la grabación de pantalla nativa del celular.",
+                    extra: "Si nunca has editado video, empieza con CapCut. Tiene tutoriales en español dentro de la misma app y una curva de aprendizaje muy amigable. En 2 horas puedes producir tu primer video educativo editado."
+                },
+                {
+                    id: 25,
+                    type: "quiz",
+                    title: "✅ Quiz: Calidad de video",
+                    question: "Si tienes que elegir entre mejorar la cámara de tu celular o mejorar el audio de tus videos educativos, ¿qué recomienda la buena práctica?",
+                    options: [
+                        "Mejorar la cámara, porque la imagen es lo primero que nota el espectador",
+                        "Ambos son igualmente importantes y deben mejorarse al mismo tiempo",
+                        "Mejorar el audio, porque un video con imagen regular pero audio claro funciona bien",
+                        "Ninguno: los estudiantes aceptan cualquier calidad si el docente es bueno"
+                    ],
+                    correct: 2,
+                    explanation: "El audio es el factor más crítico en un video educativo. Los espectadores toleran imágenes de menor calidad, pero abandonan un video con audio malo o inaudible. Invierte primero en mejorar el ambiente de grabación para un buen sonido."
+                },
+                {
+                    id: 26,
+                    type: "content",
+                    title: "🔒 Privacidad y uso responsable al publicar",
+                    content: "Antes de publicar un video donde aparecen estudiantes, obtén el consentimiento escrito de sus padres o encargados. Si publicas en YouTube, puedes configurar el video como 'no listado' (solo accesible con el enlace) para compartirlo con tus estudiantes sin exponerlo al público general. Nunca publiques videos de menores sin autorización expresa.",
+                    extra: "Alternativa segura: graba solo materiales donde apareces tú explicando, sin incluir el rostro o voz de estudiantes. Así puedes compartir libremente sin preocupaciones de privacidad."
+                },
+                {
+                    id: 27,
+                    type: "content",
+                    title: "🚀 Tu primer video en 5 pasos",
+                    content: "Sigue este proceso para tu primera producción: (1) Elige un concepto pequeño que puedas explicar en 3 minutos. (2) Escribe 5 puntos clave en un papel. (3) Graba en un lugar tranquilo con luz natural de frente. (4) Revisa el audio y la imagen. Si está aceptable, no perfecciones más: publícalo. (5) Comparte con un colega de confianza para recibir retroalimentación antes de usarlo con estudiantes.",
+                    extra: "El perfeccionismo es el mayor obstáculo para crear contenido. Tu primer video no tiene que ser perfecto, tiene que existir. Con cada video mejorarás naturalmente."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 4 — Evaluación y canales recomendados (8 tarjetas)
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 4,
+            title: "📊 Módulo 4: Evaluación y canales recomendados",
+            cards: [
+                {
+                    id: 28,
+                    type: "content",
+                    title: "📏 ¿Cómo evaluar el aprendizaje a través de videos?",
+                    content: "La evaluación del aprendizaje basado en video debe ir más allá de 'vieron el video'. Estrategias efectivas: (1) Cuestionarios post-video con preguntas de comprensión y análisis. (2) Mapas conceptuales construidos después de ver. (3) Ensayos breves de opinión. (4) Debates o discusiones estructuradas basadas en el contenido. (5) Proyectos donde los estudiantes crean su propio video respondiendo a lo aprendido.",
+                    extra: "La evaluación más poderosa es pedir a los estudiantes que enseñen el concepto: 'Explica con tus propias palabras lo que aprendiste del video'. Si pueden explicarlo, lo aprendieron."
+                },
+                {
+                    id: 29,
+                    type: "content",
+                    title: "🎯 Rúbricas para evaluar videos creados por estudiantes",
+                    content: "Cuando los estudiantes crean videos como evidencia de aprendizaje, necesitas una rúbrica clara. Evalúa: (1) Precisión del contenido: ¿es correcto lo que explican? (2) Claridad: ¿se entiende la explicación? (3) Uso de ejemplos: ¿ilustran con ejemplos concretos? (4) Organización: ¿tiene inicio, desarrollo y cierre? La producción técnica es secundaria.",
+                    extra: "Comparte la rúbrica ANTES de que empiecen a grabar. Cuando los estudiantes conocen los criterios, su producción mejora significativamente y el proceso se convierte en un aprendizaje en sí mismo."
+                },
+                {
+                    id: 30,
+                    type: "quiz",
+                    title: "✅ Quiz: Evaluación con video",
+                    question: "Un docente pide a sus estudiantes que graben un video explicando el proceso de la fotosíntesis. ¿Qué criterio debería tener más peso en la evaluación?",
+                    options: [
+                        "La calidad visual y de audio del video",
+                        "La duración del video (que cumpla con el tiempo asignado)",
+                        "La precisión y claridad del contenido explicado",
+                        "El número de efectos visuales y música de fondo"
+                    ],
+                    correct: 2,
+                    explanation: "En la evaluación de videos educativos creados por estudiantes, la precisión y claridad del contenido siempre tiene mayor peso que la producción técnica. El objetivo es evaluar el aprendizaje del tema, no las habilidades de edición."
+                },
+                {
+                    id: 31,
+                    type: "content",
+                    title: "📺 YouTube como canal educativo: organízalo",
+                    content: "YouTube puede ser un caos o una biblioteca organizada: depende de ti. Crea una cuenta de YouTube exclusivamente para tus recursos docentes. Organiza tus videos favoritos en listas de reproducción por grado, materia o unidad. Comparte solo el enlace de la lista con tus estudiantes. Así tendrán acceso a recursos curados, no al algoritmo general de YouTube.",
+                    extra: "Activa el 'Modo restringido' de YouTube para filtrar contenido inapropiado. En la cuenta del colegio o en los dispositivos del aula, este ajuste se puede configurar para que siempre esté activo."
+                },
+                {
+                    id: 32,
+                    type: "content",
+                    title: "🌟 Canales en español recomendados: ciencias",
+                    content: "Para ciencias naturales y exactas: (1) Veritasium en Español: fenómenos científicos con experimentos. (2) Ciencia y Más: biología, química y física de forma visual. (3) Khan Academy en Español: matemáticas y ciencias con explicaciones graduadas. (4) Cosmos: Carl Sagan y Neil deGrasse Tyson con subtítulos en español. (5) TED-Ed en Español: ideas científicas en menos de 10 minutos.",
+                    extra: "Khan Academy en Español es especialmente valiosa: es gratuita, sin anuncios, cubre todos los niveles desde primaria hasta bachillerato y tiene ejercicios interactivos que complementan los videos."
+                },
+                {
+                    id: 33,
+                    type: "content",
+                    title: "📚 Canales en español recomendados: humanidades",
+                    content: "Para historia, lengua, arte y ciencias sociales: (1) Crash Course en Español: historia universal con animaciones. (2) Academia Play: historia y cultura en videos cortos. (3) El Orden Mundial: geopolítica y actualidad. (4) Date un Vlog: historia de forma entretenida. (5) Yulay: exploración cultural y geográfica. Para Guatemala específicamente: el canal del INGUAT y el Archivo General de Centroamérica tienen material valioso.",
+                    extra: "Busca también documentales de la BBC en español disponibles en YouTube. Son rigurosos, bien producidos y abordan temas de historia universal con perspectiva latinoamericana en muchos casos."
+                },
+                {
+                    id: 34,
+                    type: "quiz",
+                    title: "✅ Quiz: Organización de YouTube",
+                    question: "¿Cuál es la mejor práctica para compartir videos de YouTube con estudiantes de primaria?",
+                    options: [
+                        "Dar acceso libre a YouTube para que cada estudiante busque lo que necesita",
+                        "Crear listas de reproducción curadas con los videos seleccionados y compartir solo ese enlace",
+                        "Descargar todos los videos y copiarlos en memorias USB para cada estudiante",
+                        "Proyectar los videos en clase sin que los estudiantes tengan acceso al enlace"
+                    ],
+                    correct: 1,
+                    explanation: "Las listas de reproducción curadas permiten compartir recursos seleccionados sin exponer a los estudiantes al algoritmo general de YouTube, que puede recomendar contenido inapropiado. Es la práctica más segura y pedagógicamente organizada."
+                },
+                {
+                    id: 35,
+                    type: "content",
+                    title: "🏁 Tu plan de acción: primeros pasos",
+                    content: "Para empezar a usar videos educativos de forma efectiva esta semana: (1) Identifica un tema de tu próxima clase y busca un video de menos de 6 minutos en YouTube. (2) Evalúalo con los criterios aprendidos en este curso. (3) Prepara 3 preguntas para discutir después del video. (4) Úsalo en clase con al menos una pausa reflexiva. (5) Reflexiona: ¿qué funcionó? ¿qué cambiarías? Así empieza la mejora continua.",
+                    extra: "No esperes tener todo perfecto para empezar. Un video bien seleccionado con tres buenas preguntas al final ya transforma una clase. La práctica constante y la reflexión son lo que convierte a un docente en experto en ABV."
+                }
+            ]
+        }
+    ]
+},
+
+// CURSO: micro-learning
+{
+    id: 'micro-learning',
+    title: 'Micro-learning: Aprender en Pequeñas Dosis',
+    subtitle: 'Diseña cápsulas de aprendizaje de 2 a 10 minutos que realmente funcionan',
+    icon: '⚡',
+    color: '#6366F1',
+    prerequisite: [],
+    status: 'available',
+    durationHours: 3,
+    totalCards: 35,
+    modules: [
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 1 — ¿Qué es el micro-learning y por qué funciona? (9 tarjetas)
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 1,
+            title: "⚡ Módulo 1: ¿Qué es el micro-learning y por qué funciona?",
+            cards: [
+                {
+                    id: 1,
+                    type: "content",
+                    title: "⚡ ¿Qué es el micro-learning?",
+                    content: "El micro-learning es una estrategia educativa que organiza el aprendizaje en cápsulas breves y enfocadas de 2 a 10 minutos, cada una dedicada a un solo concepto o habilidad. A diferencia de las clases largas, cada cápsula tiene un objetivo claro, un formato específico y termina con una acción concreta que el estudiante puede realizar de inmediato.",
+                    extra: "El término viene del inglés 'microlearning', pero el concepto es tan antiguo como los refranes y los proverbios: pequeñas dosis de sabiduría diseñadas para ser recordadas fácilmente. Lo nuevo es aplicarlo con intención pedagógica y herramientas digitales."
+                },
+                {
+                    id: 2,
+                    type: "content",
+                    title: "🧠 La curva del olvido de Ebbinghaus",
+                    content: "En 1885, el psicólogo alemán Hermann Ebbinghaus demostró que olvidamos el 50% de lo aprendido en la primera hora, el 70% en 24 horas y hasta el 90% en una semana, si no repasamos. Este fenómeno se llama la 'curva del olvido' y explica por qué las clases largas sin repetición son poco efectivas.",
+                    extra: "El micro-learning combate la curva del olvido de dos formas: (1) Reparte el aprendizaje en pequeñas dosis que se pueden revisar frecuentemente. (2) Cada cápsula termina con una acción o reflexión que consolida la memoria antes de que ocurra el olvido."
+                },
+                {
+                    id: 3,
+                    type: "content",
+                    title: "🔋 Memoria de trabajo: por qué menos es más",
+                    content: "La memoria de trabajo es la 'pantalla mental' donde procesamos información consciente. Su capacidad es limitada: el psicólogo George Miller demostró que solo podemos manejar 7 (±2) elementos a la vez. Una clase densa de 45 minutos con 15 conceptos nuevos satura esta capacidad. Una cápsula de 5 minutos con 1-2 conceptos la respeta.",
+                    extra: "Cuando la memoria de trabajo se satura, el cerebro empieza a 'botar' información para hacer espacio. Por eso, al final de una clase larga y densa, los estudiantes recuerdan el principio y el final, pero poco del medio. El micro-learning diseña para esta limitación."
+                },
+                {
+                    id: 4,
+                    type: "quiz",
+                    title: "✅ Quiz: Curva del olvido",
+                    question: "Según la curva del olvido de Ebbinghaus, ¿qué porcentaje aproximado de lo aprendido olvidamos en las primeras 24 horas sin repasar?",
+                    options: [
+                        "Aproximadamente el 20%",
+                        "Aproximadamente el 40%",
+                        "Aproximadamente el 70%",
+                        "Aproximadamente el 90%"
+                    ],
+                    correct: 2,
+                    explanation: "Ebbinghaus demostró que olvidamos aproximadamente el 70% de la información nueva en las primeras 24 horas si no ocurre ningún repaso. Este dato fundamenta la necesidad de estrategias como el micro-learning, que distribuyen y repiten el aprendizaje en el tiempo."
+                },
+                {
+                    id: 5,
+                    type: "content",
+                    title: "🎯 Atención sostenida: el límite real",
+                    content: "Estudios de neurociencia muestran que la atención sostenida de alta calidad dura entre 10 y 20 minutos en adultos, y menos en niños y adolescentes. Después, la atención 'colapsa' aunque la persona siga físicamente presente. El micro-learning trabaja dentro de esta ventana natural de atención en lugar de luchar contra ella.",
+                    extra: "En el contexto escolar guatemalteco, donde muchos estudiantes llegan a clase con fatiga, hambre o preocupaciones familiares, la ventana de atención real puede ser incluso más corta. El micro-learning es una respuesta pedagógica realista a este contexto."
+                },
+                {
+                    id: 6,
+                    type: "content",
+                    title: "📱 Por qué el micro-learning encaja con la vida digital",
+                    content: "Los estudiantes actuales consumen contenido en TikTok, YouTube Shorts, Instagram Reels: todos formatos de 15 segundos a 3 minutos. No es que tengan 'menos atención'; es que están habituados a formatos densos y breves. El micro-learning no lucha contra esto: lo aprovecha para la educación.",
+                    extra: "Un estudio de Software Advice encontró que el 58% de empleados y estudiantes prefieren aprender en módulos de menos de 10 minutos. Diseñar para esta preferencia no es 'bajar el nivel', es ser pedagógicamente inteligente."
+                },
+                {
+                    id: 7,
+                    type: "content",
+                    title: "🇬🇹 Micro-learning en el aula guatemalteca",
+                    content: "En Guatemala, el micro-learning tiene sentido práctico adicional: muchos docentes tienen períodos de 45 minutos compartidos entre contenido, disciplina y logística. Una secuencia de 3 cápsulas de 8 minutos con 5 minutos de actividad cada una cubre exactamente ese período. Además, las cápsulas pueden compartirse por WhatsApp para estudiantes que faltaron.",
+                    extra: "El micro-learning también funciona para la formación continua de docentes: una cápsula de 5 minutos por semana sobre una estrategia pedagógica es más sostenible que un taller de 8 horas cada semestre."
+                },
+                {
+                    id: 8,
+                    type: "quiz",
+                    title: "✅ Quiz: Memoria de trabajo",
+                    question: "¿Cuántos elementos puede manejar la memoria de trabajo humana de forma simultánea, según George Miller?",
+                    options: [
+                        "Entre 3 y 5 elementos",
+                        "Entre 7 y 9 elementos (7 ± 2)",
+                        "Entre 12 y 15 elementos",
+                        "Depende completamente de la persona y no hay un límite general"
+                    ],
+                    correct: 1,
+                    explanation: "George Miller estableció en su influyente artículo de 1956 que la memoria de trabajo puede manejar 7 (±2) elementos a la vez, es decir entre 5 y 9 piezas de información. Superar este límite satura la capacidad de procesamiento y reduce el aprendizaje."
+                },
+                {
+                    id: 9,
+                    type: "content",
+                    title: "✨ El principio clave: un concepto, una cápsula",
+                    content: "La regla de oro del micro-learning es: una cápsula, un objetivo, una acción. Cada unidad de aprendizaje responde a una sola pregunta o enseña una sola habilidad. Este principio parece sencillo, pero rompe con la tradición educativa que mezcla varios conceptos en una misma clase.",
+                    extra: "Ejercicio de reflexión: piensa en tu próxima clase. ¿Cuántos conceptos distintos planeas enseñar? Si son más de 3, es candidata perfecta para convertirse en una secuencia de micro-cápsulas en lugar de una clase tradicional."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 2 — Diseñando micro-cápsulas efectivas (9 tarjetas)
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 2,
+            title: "🎨 Módulo 2: Diseñando micro-cápsulas efectivas",
+            cards: [
+                {
+                    id: 10,
+                    type: "content",
+                    title: "🏗️ La anatomía de una micro-cápsula",
+                    content: "Toda micro-cápsula efectiva tiene tres partes: (1) Gancho (0-30 segundos): una pregunta, dato sorprendente o problema que activa la curiosidad. (2) Núcleo (el 80% del tiempo): la explicación del único concepto, con un ejemplo concreto. (3) Cierre-acción (últimos 30 segundos): qué puede hacer el estudiante ahora mismo con lo aprendido.",
+                    extra: "El cierre-acción es lo que diferencia el micro-learning del simple 'contenido breve'. La acción puede ser: responder una pregunta, probar algo, reflexionar sobre su práctica, o buscar un ejemplo en su entorno."
+                },
+                {
+                    id: 11,
+                    type: "content",
+                    title: "🎯 Cómo redactar un objetivo específico para tu cápsula",
+                    content: "Un buen objetivo de micro-cápsula empieza con un verbo de acción observable y se puede lograr en el tiempo de la cápsula. Ejemplos malos: 'Entender la fotosíntesis' (demasiado amplio). Ejemplos buenos: 'Identificar los tres ingredientes que necesita la fotosíntesis' o 'Distinguir entre respiración celular y fotosíntesis usando un ejemplo'.",
+                    extra: "Pregunta de verificación: ¿Puedes saber si el estudiante logró el objetivo en 30 segundos de conversación o con una pregunta directa? Si la respuesta es sí, el objetivo es suficientemente específico para una micro-cápsula."
+                },
+                {
+                    id: 12,
+                    type: "quiz",
+                    title: "✅ Quiz: Anatomía de la micro-cápsula",
+                    question: "¿Qué elemento de la micro-cápsula la diferencia del simple contenido breve y asegura que el aprendizaje sea activo?",
+                    options: [
+                        "El gancho inicial que activa la curiosidad",
+                        "La calidad visual del material utilizado",
+                        "El cierre con una acción concreta que el estudiante puede realizar",
+                        "La duración exacta de la cápsula (ni más ni menos de 5 minutos)"
+                    ],
+                    correct: 2,
+                    explanation: "El cierre-acción es el elemento que transforma una cápsula de información en una cápsula de aprendizaje. Pedir al estudiante que haga algo con lo aprendido (responder, probar, reflexionar) consolida el conocimiento y lo hace aplicable."
+                },
+                {
+                    id: 13,
+                    type: "content",
+                    title: "🖼️ Formatos de micro-cápsulas",
+                    content: "El micro-learning no tiene un solo formato. Puedes usar: (1) Video corto de 2-5 minutos. (2) Infografía de una sola página con 5-7 datos clave. (3) Audio o podcast de 3-8 minutos (ideal para desplazamientos). (4) Tarjeta didáctica digital (como las de esta plataforma). (5) Texto con imagen: una pantalla de contenido más una pregunta. Elige el formato según el concepto y los recursos disponibles.",
+                    extra: "Regla de oro del formato: el formato debe servir al concepto, no al revés. Un concepto que requiere ver movimiento (como una célula dividiéndose) pide video. Un concepto que requiere comparar datos pide infografía. Un concepto que requiere escuchar un modelo de pronunciación pide audio."
+                },
+                {
+                    id: 14,
+                    type: "content",
+                    title: "✍️ Escribir para micro-learning: el arte de la brevedad",
+                    content: "Escribir micro-contenido es más difícil que escribir largo: requiere eliminar todo lo que no es esencial. Técnica de los tres pasos: (1) Escribe lo que quieres decir sin limitación. (2) Subraya solo las ideas que el estudiante NECESITA para el objetivo. (3) Elimina todo lo demás. Lo que queda es el núcleo de tu micro-cápsula.",
+                    extra: "Si una idea importante no cabe en la cápsula, no la comprimas: crea otra cápsula para ella. Comprimir demasiado produce textos densos e ilegibles. La solución siempre es dividir, no comprimir."
+                },
+                {
+                    id: 15,
+                    type: "content",
+                    title: "🔑 El ejemplo concreto: el corazón de cada cápsula",
+                    content: "Todo concepto abstracto necesita al menos un ejemplo concreto y local. En Guatemala: cuando expliques fracciones, usa ejemplos de comida típica (mitad de un tamal, un cuarto de tortilla). Cuando expliques ecosistemas, usa ejemplos del altiplano, la costa o el Petén. El ejemplo concreto es lo que ancla el concepto en la memoria.",
+                    extra: "Investigación sobre pedagogía culturalmente pertinente muestra que los estudiantes guatemaltecos retienen hasta 40% más cuando los ejemplos se conectan con su contexto familiar inmediato: comida, mercado, naturaleza local, vida comunitaria."
+                },
+                {
+                    id: 16,
+                    type: "quiz",
+                    title: "✅ Quiz: Objetivos de micro-cápsula",
+                    question: "¿Cuál de los siguientes es un objetivo ADECUADO para una micro-cápsula de aprendizaje?",
+                    options: [
+                        "Comprender la historia completa de la Revolución de Octubre de 1944 en Guatemala",
+                        "Identificar dos causas principales que motivaron la Revolución de Octubre",
+                        "Valorar la importancia de los movimientos sociales para la democracia",
+                        "Estudiar el contexto político, económico y social de Guatemala en la primera mitad del siglo XX"
+                    ],
+                    correct: 1,
+                    explanation: "Identificar dos causas específicas es un objetivo acotado, verificable y alcanzable en el tiempo de una micro-cápsula. Los otros objetivos son demasiado amplios o abstractos para una sola cápsula de 2-10 minutos."
+                },
+                {
+                    id: 17,
+                    type: "content",
+                    title: "🔁 La repetición espaciada: refuerza sin aburrir",
+                    content: "La repetición espaciada es la práctica de revisar la misma información en intervalos crecientes: hoy, mañana, en 3 días, en una semana, en un mes. El micro-learning es ideal para implementarla: una cápsula de 2 minutos de repaso el día siguiente consolida el aprendizaje mejor que estudiar el mismo tema por 20 minutos una sola vez.",
+                    extra: "Puedes implementar repetición espaciada de forma sencilla: al inicio de cada clase, dedica 3 minutos a revisar lo de ayer. Una pregunta oral o una tarjeta de repaso es suficiente. Este 'micro-repaso' al inicio de cada sesión transforma la retención de tus estudiantes."
+                },
+                {
+                    id: 18,
+                    type: "content",
+                    title: "🧩 De la cápsula al concepto complejo: planificación en capas",
+                    content: "Un concepto complejo se puede enseñar en micro-capas: Día 1: ¿Qué es? (definición y ejemplo). Día 2: ¿Cómo funciona? (proceso o mecanismo). Día 3: ¿Por qué importa? (aplicación y relevancia). Día 4: ¿Cómo lo uso yo? (práctica guiada). Día 5: Repaso integrador. Así, en 5 cápsulas de 5-8 minutos, has cubierto un concepto complejo con profundidad real.",
+                    extra: "Este enfoque en capas es especialmente útil para conceptos científicos abstractos, gramática compleja o procesos matemáticos de varios pasos. Cada capa debe ser comprensible por sí sola, pero también conectar con las capas anteriores."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 3 — Herramientas y canales para micro-learning (9 tarjetas)
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 3,
+            title: "🛠️ Módulo 3: Herramientas y canales para micro-learning",
+            cards: [
+                {
+                    id: 19,
+                    type: "content",
+                    title: "📊 Infografías como micro-cápsulas visuales",
+                    content: "Una infografía bien diseñada puede transmitir en 30 segundos lo que un texto tarda 5 minutos. Para crear infografías educativas: (1) Un solo tema por infografía. (2) Máximo 7 datos o puntos. (3) Jerarquía visual clara: el dato más importante, más grande. (4) Herramientas gratuitas: Canva (con plantillas educativas), Piktochart o Adobe Express.",
+                    extra: "Para docentes guatemaltecos sin mucho tiempo: Canva tiene plantillas educativas en español que se pueden adaptar en 15 minutos. Descarga la app en tu celular y puedes crear infografías en cualquier momento libre."
+                },
+                {
+                    id: 20,
+                    type: "content",
+                    title: "🎵 Audios educativos: el micro-learning para el oído",
+                    content: "Los audios son cápsulas perfectas para temas que requieren escuchar: pronunciación de idiomas, lectura en voz alta de textos literarios, explicaciones para estudiantes con dificultades de lectura, o contenido para escuchar durante el desplazamiento. Herramientas gratuitas: Anchor (ahora Spotify for Podcasters), grabaciones de voz en WhatsApp, o la grabadora nativa del celular.",
+                    extra: "Los audios son especialmente valiosos para comunidades guatemaltecas con alta diversidad lingüística: puedes crear versiones de tus micro-cápsulas en español y en el idioma maya de tu comunidad, haciendo el contenido realmente accesible para todos."
+                },
+                {
+                    id: 21,
+                    type: "quiz",
+                    title: "✅ Quiz: Selección de formato",
+                    question: "Un docente quiere enseñar la diferencia entre 'b' y 'v' en español a estudiantes de segundo primaria. ¿Qué formato de micro-cápsula sería más efectivo?",
+                    options: [
+                        "Una infografía con la diferencia visual entre las dos letras",
+                        "Un texto escrito con las reglas ortográficas de uso",
+                        "Un audio con ejemplos de palabras con 'b' y 'v' para escuchar y repetir",
+                        "Un video de dibujos animados sobre el abecedario"
+                    ],
+                    correct: 2,
+                    explanation: "Aprender a distinguir sonidos requiere escucharlos, no solo verlos. Un audio con ejemplos claros de palabras con 'b' y 'v' activa el canal auditivo de aprendizaje, que es el más adecuado para este objetivo. El video podría funcionar si combina audio con visuales del movimiento de la boca."
+                },
+                {
+                    id: 22,
+                    type: "content",
+                    title: "💬 WhatsApp como canal de micro-learning",
+                    content: "WhatsApp es la plataforma más usada en Guatemala, presente en prácticamente todos los hogares con smartphone. Úsalo para micro-learning: (1) Notas de voz de 2-3 minutos con una explicación. (2) Imágenes de infografías con una pregunta reflexiva. (3) Videos cortos del docente explicando un concepto. (4) Preguntas del día para reflexionar. Todo esto puede enviarse al grupo de clase.",
+                    extra: "Protocolo de uso responsable: establece desde el inicio las normas del grupo (solo contenido educativo, respeto mutuo, sin reenvíos externos). Informa a los padres sobre el propósito del grupo. Usa listas de difusión en lugar de grupos si prefieren que los estudiantes no se comuniquen entre sí."
+                },
+                {
+                    id: 23,
+                    type: "content",
+                    title: "🌟 Stickers educativos en WhatsApp",
+                    content: "Los stickers personalizados son un recurso micro-learning poco explorado. Puedes crear packs de stickers con: reglas gramaticales ilustradas, fórmulas matemáticas, vocabulario con imagen, líneas de tiempo en miniatura. Herramientas: WhatsApp Sticker Maker (app gratuita) o Canva (que exporta en formato de sticker).",
+                    extra: "Los stickers educativos funcionan como 'recordatorios visuales' que los estudiantes ven en su vida cotidiana de WhatsApp. Un estudiante que usa stickers de gramática cuando chatea está reforzando reglas de forma completamente natural."
+                },
+                {
+                    id: 24,
+                    type: "content",
+                    title: "🃏 Tarjetas didácticas digitales",
+                    content: "Las tarjetas didácticas (flashcards) digitales son la forma más clásica de micro-learning. Plataformas como Quizlet, Anki y Brainscape permiten crear colecciones de tarjetas con pregunta y respuesta que el estudiante repasa con repetición espaciada automática. Son ideales para vocabulario, fórmulas, fechas históricas y conceptos de definición.",
+                    extra: "Anki es completamente gratuita (app móvil y web) y usa un algoritmo de repetición espaciada muy sofisticado. Quizlet tiene una versión gratuita con funciones suficientes para uso escolar. Ambas tienen colecciones de tarjetas ya creadas en español que puedes usar directamente."
+                },
+                {
+                    id: 25,
+                    type: "quiz",
+                    title: "✅ Quiz: WhatsApp educativo",
+                    question: "¿Cuál de las siguientes es una práctica recomendada al usar WhatsApp para micro-learning con estudiantes?",
+                    options: [
+                        "Agregar a todos los contactos del colegio al mismo grupo para mayor alcance",
+                        "Enviar mensajes a cualquier hora del día para aprovechar todos los momentos",
+                        "Establecer normas claras del grupo e informar a los padres sobre su propósito",
+                        "Reenviar contenido de otros grupos para diversificar los recursos"
+                    ],
+                    correct: 2,
+                    explanation: "Las normas claras y la comunicación con las familias son fundamentales para el uso responsable de WhatsApp en educación. Sin estas bases, el grupo puede perder su propósito educativo o generar problemas de privacidad y convivencia digital."
+                },
+                {
+                    id: 26,
+                    type: "content",
+                    title: "🎬 Videos cortos como micro-cápsulas",
+                    content: "TikTok, YouTube Shorts y los Reels de Instagram han popularizado el video de menos de 3 minutos. Como docente puedes usar estos formatos: graba explicaciones de 60-90 segundos de un concepto clave, con un ejemplo visual y una pregunta al final. No necesitas publicarlos en redes: puedes enviarlos directamente por WhatsApp o almacenarlos en Google Drive.",
+                    extra: "Técnica del 'video reels pedagógico': graba de pie, en vertical (como una foto de celular), con texto sobreimpreso mostrando los puntos clave mientras hablas. CapCut y InShot permiten agregar estos textos de forma muy sencilla."
+                },
+                {
+                    id: 27,
+                    type: "content",
+                    title: "🗂️ Organiza tu banco de micro-cápsulas",
+                    content: "Conforme crees micro-cápsulas, necesitas organizarlas para reutilizarlas. Estrategia sencilla: crea una carpeta en Google Drive con subcarpetas por grado y materia. Usa nombres descriptivos: '5to_primaria_fracciones_que_es.mp4'. Comparte la carpeta con colegas del mismo grado para construir un banco colectivo de recursos.",
+                    extra: "Un banco colectivo de micro-cápsulas entre docentes del mismo colegio puede ahorrarte horas de trabajo: si tu colega ya creó una cápsula excelente sobre el sistema respiratorio, puedes usarla directamente o adaptarla, en lugar de crearla desde cero."
+                }
+            ]
+        },
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  MÓDULO 4 — Secuencias y evaluación del micro-aprendizaje (8 tarjetas)
+        // ══════════════════════════════════════════════════════════════════════
+        {
+            id: 4,
+            title: "📈 Módulo 4: Secuencias y evaluación del micro-aprendizaje",
+            cards: [
+                {
+                    id: 28,
+                    type: "content",
+                    title: "🔗 Cómo encadenar cápsulas: la secuencia de aprendizaje",
+                    content: "Las micro-cápsulas son más poderosas cuando se encadenan en una secuencia con lógica pedagógica. Tipos de secuencias: (1) Lo simple a lo complejo: empieza con el concepto básico y avanza gradualmente. (2) Lo concreto a lo abstracto: empieza con un ejemplo tangible y llega al principio general. (3) Problema-solución: presenta el problema primero, luego las cápsulas que lo resuelven.",
+                    extra: "Analogía guatemalteca: una secuencia de micro-cápsulas es como un tejido maya. Cada hilo (cápsula) es completo por sí solo, pero el patrón completo (la secuencia) revela el diseño total. Cada cápsula debe tener sentido sola Y contribuir al conjunto."
+                },
+                {
+                    id: 29,
+                    type: "content",
+                    title: "🗓️ Planificando una secuencia semanal",
+                    content: "Ejemplo de secuencia semanal para un concepto complejo como 'La célula': Lunes: ¿Qué es la célula? (definición + ejemplo cotidiano). Martes: Las partes de la célula (membrana, núcleo, citoplasma). Miércoles: Diferencias entre célula animal y vegetal. Jueves: ¿Cómo se reproduce la célula? Viernes: Mini-evaluación + repaso. Cinco cápsulas de 5-7 minutos equivalen a 25-35 minutos de aprendizaje concentrado y efectivo.",
+                    extra: "Esta secuencia puede funcionar como actividad de inicio de clase (7 minutos) o como tarea diaria enviada por WhatsApp. En ambos casos, el aprendizaje se distribuye en el tiempo respetando la curva del olvido de Ebbinghaus."
+                },
+                {
+                    id: 30,
+                    type: "quiz",
+                    title: "✅ Quiz: Secuencias de micro-learning",
+                    question: "¿Cuál es la principal ventaja de organizar las micro-cápsulas en una secuencia pedagógica en lugar de usarlas de forma aislada?",
+                    options: [
+                        "Las secuencias son más fáciles de crear que las cápsulas individuales",
+                        "Permiten construir conceptos complejos distribuyendo el aprendizaje en el tiempo",
+                        "Evitan que los estudiantes tengan que interactuar con el contenido fuera del aula",
+                        "Reducen la necesidad de evaluar cada cápsula por separado"
+                    ],
+                    correct: 1,
+                    explanation: "La secuencia pedagógica permite construir conceptos complejos de forma gradual, distribuyendo el aprendizaje en el tiempo y aprovechando la curva del olvido para reforzar en los momentos óptimos. Esto es imposible con cápsulas aisladas sin conexión entre sí."
+                },
+                {
+                    id: 31,
+                    type: "content",
+                    title: "📊 Cómo evaluar el micro-learning: estrategias rápidas",
+                    content: "La evaluación del micro-learning debe ser tan ágil como el contenido. Estrategias de evaluación breve: (1) Una pregunta de verificación al final de cada cápsula (oral o escrita, 1 minuto). (2) 'Ticket de salida': en una tarjeta, el estudiante escribe una cosa que aprendió y una pregunta que le quedó. (3) Mini-quiz de 3 preguntas al final de la semana. (4) Autoevaluación: '¿Puedo explicar esto a un compañero? Sí / No / Más o menos'.",
+                    extra: "El 'ticket de salida' es una de las estrategias de evaluación formativa más investigadas y efectivas. Tarda menos de 2 minutos, da información valiosa al docente sobre lo que se comprendió y lo que no, y activa la metacognición del estudiante."
+                },
+                {
+                    id: 32,
+                    type: "content",
+                    title: "📱 Seguimiento digital del aprendizaje",
+                    content: "Herramientas gratuitas para hacer seguimiento del micro-learning: (1) Google Forms: envía el mini-quiz como formulario y las respuestas se organizan automáticamente en una hoja de cálculo. (2) Kahoot o Quizizz: evaluación gamificada de 5-10 preguntas en 5 minutos. (3) Mentimeter: preguntas en tiempo real con visualización de respuestas. (4) Poll Everywhere: encuestas y preguntas rápidas para grupos grandes.",
+                    extra: "Google Forms es la herramienta más accesible en Guatemala: es completamente gratuita, funciona bien con datos móviles limitados, y los resultados permiten identificar rápidamente qué conceptos necesitan más atención antes de avanzar."
+                },
+                {
+                    id: 33,
+                    type: "quiz",
+                    title: "✅ Quiz: Evaluación formativa",
+                    question: "¿Qué es un 'ticket de salida' en el contexto del micro-learning?",
+                    options: [
+                        "Un certificado que el estudiante recibe al completar todas las cápsulas de una secuencia",
+                        "Una tarjeta o nota breve donde el estudiante escribe qué aprendió y qué pregunta le quedó",
+                        "Un código QR que permite al docente registrar la asistencia digital de los estudiantes",
+                        "Una evaluación sumativa de 20 preguntas al finalizar la unidad"
+                    ],
+                    correct: 1,
+                    explanation: "El ticket de salida es una estrategia de evaluación formativa rápida: el estudiante escribe en 2 minutos qué aprendió y qué duda le quedó. Informa al docente sobre la comprensión real del grupo y activa la metacognición del estudiante."
+                },
+                {
+                    id: 34,
+                    type: "content",
+                    title: "🏆 Indicadores de éxito del micro-learning",
+                    content: "¿Cómo saber si tu secuencia de micro-learning está funcionando? Indicadores cualitativos: los estudiantes hacen preguntas más profundas, los estudiantes pueden explicar el concepto a otros, los errores en las evaluaciones disminuyen. Indicadores cuantitativos: participación en los quizzes, resultados de los tickets de salida, calificaciones en evaluaciones formales.",
+                    extra: "El indicador más honesto: pregúntate si un estudiante que faltó una semana puede ponerse al día usando solo las micro-cápsulas. Si la respuesta es sí, tu secuencia tiene suficiente claridad y autoexplicación."
+                },
+                {
+                    id: 35,
+                    type: "content",
+                    title: "🚀 Tu plan de micro-learning: empieza esta semana",
+                    content: "Para implementar micro-learning esta semana: (1) Identifica un concepto que tus estudiantes encuentran difícil. (2) Diseña 3 cápsulas de 5-7 minutos: qué es, cómo funciona, para qué sirve. (3) Elige un formato para cada una (video, audio o infografía). (4) Crea la primera cápsula hoy. (5) Compártela mañana. Evalúa con un ticket de salida. (6) Mejora la siguiente cápsula con lo que aprendiste. El micro-learning también es iterativo.",
+                    extra: "Recuerda: el objetivo no es la perfección técnica, sino el aprendizaje de tus estudiantes. Una nota de voz de 5 minutos enviada por WhatsApp esta noche puede ser tu primera micro-cápsula. ¡El momento para empezar es ahora!"
+                }
+            ]
+        }
+    ]
 }
 ]; // end allCourses
 

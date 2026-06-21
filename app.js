@@ -7,8 +7,9 @@ const SUPABASE_URL = "https://grkjhzkgcmackbafqudu.supabase.co";
 // Rutas de aprendizaje — el admin puede modificar masterCert desde el panel
 // Se sobreescribe con config de Supabase al cargar (ver loadAppConfig)
 let LEARNING_PATHS = [
-    { id:'steam20',  label:'Docente STEAM 2.0',  color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)' },
-    { id:'creativo', label:'Docente Creativo',    color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)' },
+    { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
+    { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp'] },
+    { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
 ];
 // IDs de cursos requeridos para el certificado maestro (ruta steam20)
 // Admin puede cambiarlos desde el panel → se guardan en Supabase tabla app_config
@@ -2991,21 +2992,30 @@ function _checkMasterCert() {
     const portfolioScore  = progress?.dailyMissions?.portfolioAiTotal ?? null;
     const available       = allCourses.filter(c => c.status === 'available');
 
-    // Cursos requeridos para el certificado maestro (configurable desde admin)
-    const requiredForMaster = available.filter(c => MASTER_CERT_COURSES.includes(c.id));
-    const allIndividualPassed = requiredForMaster.every(c => {
-        const s = c.id === 'steam' ? steamScore : scores[c.id];
-        return s !== undefined && s >= 70;
+    // Evaluar cada ruta de aprendizaje — el usuario puede obtener un cert maestro por cada ruta
+    const pathResults = LEARNING_PATHS.map(path => {
+        const requiredIds = path.courses || [];
+        const requiredCourses = available.filter(c => requiredIds.includes(c.id));
+        const allPassed = requiredCourses.length > 0 && requiredCourses.every(c => {
+            const s = c.id === 'steam' ? steamScore : scores[c.id];
+            return s !== undefined && s >= 70;
+        });
+        return { path, allPassed };
     });
 
-    // Sistema 50/50: examen vale 50pts, portafolio vale 50pts
+    // Para los botones de acción usamos la primera ruta donde todos los cursos están aprobados
+    // (o la primera ruta en general como fallback para compatibilidad)
+    const activePathResult = pathResults.find(r => r.allPassed) || pathResults[0];
+    const allIndividualPassed = activePathResult?.allPassed || false;
+
+    // Sistema 50/50: examen vale 50pts, portafolio vale 50pts (compartido entre todas las rutas por ahora)
     const examScore50    = masterExamScore !== undefined ? Math.round(masterExamScore * 0.5) : null;
     const combinedScore  = (examScore50 !== null && portfolioScore !== null) ? examScore50 + portfolioScore : null;
     const masterPassed   = combinedScore !== null && combinedScore >= 85;
     const examTaken      = masterExamScore !== undefined;
     const portfolioDone  = portfolioScore !== null;
 
-    // Botón examen maestro: visible cuando todos individuales aprobados y examen aún no tomado
+    // Botón examen maestro: visible cuando al menos una ruta completada y examen aún no tomado
     const examBtn = document.getElementById('masterExamBtn');
     if (examBtn) examBtn.classList.toggle('hidden', !allIndividualPassed || examTaken);
 
@@ -3054,51 +3064,74 @@ function _checkMasterCert() {
     const _ph = document.getElementById('certPlaceholder');
     if (_ph) _ph.classList.toggle('hidden', allIndividualPassed || masterPassed || _certVisible);
 
-    // Estado por curso — mostrar checklist visual en certCourseStatus
+    // Estado por curso — mostrar rutas como secciones con sus cursos dentro
     const statusEl = document.getElementById('certCourseStatus');
     if (statusEl) {
-        const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', 'storytelling':'#F59E0B' };
-        statusEl.innerHTML = available.map(c => {
-            const s       = c.id === 'steam' ? steamScore : scores[c.id];
-            const passed  = s !== undefined && s >= 70;
-            const started = (progress?.completedCards || []).some(id => {
-                const str = String(id);
-                if (c.id === 'steam') return /^\d/.test(str) && !str.includes('-m');
-                const px  = {abp:'abp-','design-thinking':'dt-',evaluacion:'ev-','tipos-estudiantes':'te-'}[c.id] || '';
-                return px && str.startsWith(px);
+        const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', storytelling:'#F59E0B', creatividad:'#E83C8D', 'herramientas-tec':'#7C3AED', 'm-learning':'#F59E0B', 'flipped-classroom':'#10B981', abv:'#6366F1', 'micro-learning':'#F97316' };
+        const prefixMap = { abp:'abp-', 'design-thinking':'dt-', evaluacion:'ev-', 'tipos-estudiantes':'te-', creatividad:'crea-', 'herramientas-tec':'htec-', 'm-learning':'ml-', 'flipped-classroom':'fc-', abv:'abv-', 'micro-learning':'mlearn-' };
+
+        statusEl.innerHTML = LEARNING_PATHS.map(path => {
+            const pathCourses = (path.courses || [])
+                .map(id => available.find(c => c.id === id))
+                .filter(Boolean);
+            if (pathCourses.length === 0) return '';
+
+            const pathAllPassed = pathCourses.every(c => {
+                const s = c.id === 'steam' ? steamScore : scores[c.id];
+                return s !== undefined && s >= 70;
             });
-            const col = courseColors[c.id] || '#4f46e5';
-            if (passed) {
-                return `<div style="display:flex;align-items:center;gap:10px;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:12px;padding:8px 12px">
-                    <div style="width:28px;height:28px;border-radius:50%;background:#22C55E;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </div>
-                    <div style="flex:1;min-width:0">
-                        <p style="font-size:12px;font-weight:700;color:#15803D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
-                        <p style="font-size:10px;color:#16A34A">Certificado · ${s}%</p>
-                    </div>
-                </div>`;
-            } else if (started) {
-                return `<div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:12px;padding:8px 12px">
-                    <div style="width:28px;height:28px;border-radius:50%;background:${col}20;border:2px solid ${col};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <div style="width:8px;height:8px;border-radius:50%;background:${col}"></div>
-                    </div>
-                    <div style="flex:1;min-width:0">
-                        <p style="font-size:12px;font-weight:700;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
-                        <p style="font-size:10px;color:#94A3B8">En progreso${s !== undefined ? ` · Examen: ${s}%` : ''}</p>
-                    </div>
-                </div>`;
-            } else {
-                return `<div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border:1.5px solid #F1F5F9;border-radius:12px;padding:8px 12px;opacity:.6">
-                    <div style="width:28px;height:28px;border-radius:50%;background:#F1F5F9;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <div style="width:8px;height:8px;border-radius:50%;background:#CBD5E1"></div>
-                    </div>
-                    <div style="flex:1;min-width:0">
-                        <p style="font-size:12px;font-weight:700;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
-                        <p style="font-size:10px;color:#CBD5E1">No iniciado</p>
-                    </div>
-                </div>`;
-            }
+
+            const coursesHTML = pathCourses.map(c => {
+                const s      = c.id === 'steam' ? steamScore : scores[c.id];
+                const passed = s !== undefined && s >= 70;
+                const started = (progress?.completedCards || []).some(id => {
+                    const str = String(id);
+                    if (c.id === 'steam') return /^\d/.test(str) && !str.includes('-m');
+                    const px = prefixMap[c.id] || '';
+                    return px && str.startsWith(px);
+                });
+                const col = courseColors[c.id] || '#4f46e5';
+                if (passed) {
+                    return `<div style="display:flex;align-items:center;gap:10px;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:12px;padding:8px 12px">
+                        <div style="width:28px;height:28px;border-radius:50%;background:#22C55E;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                        <div style="flex:1;min-width:0">
+                            <p style="font-size:12px;font-weight:700;color:#15803D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
+                            <p style="font-size:10px;color:#16A34A">Certificado · ${s}%</p>
+                        </div>
+                    </div>`;
+                } else if (started) {
+                    return `<div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:12px;padding:8px 12px">
+                        <div style="width:28px;height:28px;border-radius:50%;background:${col}20;border:2px solid ${col};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <div style="width:8px;height:8px;border-radius:50%;background:${col}"></div>
+                        </div>
+                        <div style="flex:1;min-width:0">
+                            <p style="font-size:12px;font-weight:700;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
+                            <p style="font-size:10px;color:#94A3B8">En progreso${s !== undefined ? ` · Examen: ${s}%` : ''}</p>
+                        </div>
+                    </div>`;
+                } else {
+                    return `<div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border:1.5px solid #F1F5F9;border-radius:12px;padding:8px 12px;opacity:.6">
+                        <div style="width:28px;height:28px;border-radius:50%;background:#F1F5F9;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#CBD5E1"></div>
+                        </div>
+                        <div style="flex:1;min-width:0">
+                            <p style="font-size:12px;font-weight:700;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
+                            <p style="font-size:10px;color:#CBD5E1">No iniciado</p>
+                        </div>
+                    </div>`;
+                }
+            }).join('');
+
+            return `<div style="margin-bottom:16px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <div style="width:10px;height:10px;border-radius:50%;background:${path.color};flex-shrink:0"></div>
+                    <p style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin:0">${path.label}</p>
+                    ${pathAllPassed ? '<span style="margin-left:auto;font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;padding:2px 8px;border-radius:20px">COMPLETADA</span>' : ''}
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">${coursesHTML}</div>
+            </div>`;
         }).join('');
     }
 }
