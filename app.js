@@ -4046,65 +4046,121 @@ if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
 
 // ==================== SELECTOR DE CURSOS (Multi-curso) ====================
 let currentCourseId = 'steam';
+let _selectedPathId  = null; // ruta activa en el selector
 
 function showCourseSelector() {
     const el = document.getElementById('courseSelector');
     if (!el) return;
-    const list = document.getElementById('coursesList');
-    if (!list || typeof allCourses === 'undefined') return;
-
-    // SVG illustrations per course — contextual and content-related
-    const _courseIllus = {
-        'steam': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="10" stroke="white" stroke-width="2.5"/><line x1="24" y1="6" x2="24" y2="14" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="34" x2="24" y2="42" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="6" y1="24" x2="14" y2="24" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="24" x2="42" y2="24" stroke="white" stroke-width="2.5" stroke-linecap="round"/><circle cx="24" cy="24" r="4" fill="white"/><path d="M30 18 C32 20 32 28 30 30" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/><path d="M18 18 C16 20 16 28 18 30" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-        'abp': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="10" width="32" height="28" rx="4" stroke="white" stroke-width="2.2"/><line x1="14" y1="20" x2="34" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="27" x2="28" y2="27" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/><circle cx="36" cy="35" r="7" fill="white" fill-opacity="0.15" stroke="white" stroke-width="1.8"/><path d="M33 35 L35.5 37.5 L39 32" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-        'design-thinking': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="24" cy="20" rx="13" ry="14" stroke="white" stroke-width="2.2"/><path d="M18 30 C18 34 20 36 24 36 C28 36 30 34 30 30" stroke="white" stroke-width="2.2" stroke-linecap="round"/><line x1="24" y1="36" x2="24" y2="40" stroke="white" stroke-width="2.2" stroke-linecap="round"/><line x1="20" y1="40" x2="28" y2="40" stroke="white" stroke-width="2.2" stroke-linecap="round"/><circle cx="20" cy="18" r="2" fill="white"/><circle cx="28" cy="18" r="2" fill="white"/><path d="M21 23 C22 25 26 25 27 23" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-        'evaluacion': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="6" width="28" height="36" rx="4" stroke="white" stroke-width="2.2"/><line x1="16" y1="16" x2="32" y2="16" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="22" x2="32" y2="22" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" stroke-linecap="round"/><path d="M16 29 L19 32 L24 26" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="27" y1="29" x2="32" y2="29" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-        'tipos-estudiantes': `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="18" r="6" stroke="white" stroke-width="2.2"/><circle cx="32" cy="18" r="6" stroke="white" stroke-width="2.2"/><path d="M6 38 C6 32 10 28 16 28" stroke="white" stroke-width="2.2" stroke-linecap="round"/><path d="M42 38 C42 32 38 28 32 28" stroke="white" stroke-width="2.2" stroke-linecap="round"/><path d="M16 28 C18 26 22 25 24 25 C26 25 30 26 32 28" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" stroke-linecap="round"/><circle cx="24" cy="34" r="5" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/></svg>`
-    };
-
-    list.innerHTML = allCourses.map(c => {
-        const isOpen = c.status === 'available';
-        const prereqMet = isCoursePrereqMet(c);
-        const available = isOpen && prereqMet;
-        const illus = _courseIllus[c.id] || `<svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="14" stroke="white" stroke-width="2.2"/></svg>`;
-        const scores = progress?.dailyMissions?.examScores || {};
-        const passed = scores[c.id] >= 70;
-        const prereqNames = (c.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
-
-        let statusBadge;
-        if (!isOpen) statusBadge = '○ Próximamente';
-        else if (!prereqMet) statusBadge = `🔒 Requiere: ${prereqNames}`;
-        else statusBadge = '● Disponible';
-
-        return `
-        <div onclick="${available ? `selectCourse('${c.id}')` : (isOpen && !prereqMet ? `showToast('🔒 Primero completa: ${prereqNames}', 'info')` : '')}"
-             class="backdrop-blur border rounded-2xl p-4 ${available ? 'cursor-pointer active:scale-95' : 'opacity-55'} transition-all"
-             style="background:${available ? c.color + '33' : 'rgba(255,255,255,0.06)'};border-color:${available ? c.color + '66' : 'rgba(255,255,255,0.12)'}">
-            <div class="flex items-center gap-4">
-                <div style="width:48px;height:48px;background:${available ? c.color : 'rgba(255,255,255,0.1)'};border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                    ${isOpen && !prereqMet ? `<span style="font-size:20px">🔒</span>` : illus}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                        <h3 class="font-bold text-white text-sm leading-tight">${c.title}</h3>
-                        ${passed ? `<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;background:rgba(255,255,255,0.2);color:white;flex-shrink:0">✓ Aprobado</span>` : ''}
-                    </div>
-                    <p class="text-white/65 text-xs mt-0.5 leading-snug">${c.subtitle}</p>
-                    <div class="flex gap-2 mt-1.5 flex-wrap">
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="${available ? 'background:rgba(255,255,255,0.18);color:white' : 'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45)'}">
-                            ${statusBadge}
-                        </span>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:rgba(0,0,0,0.2);color:rgba(255,255,255,0.7)">${c.durationHours}h · ${c.totalCards} tarjetas</span>
-                    </div>
-                </div>
-                ${available ? `<span style="display:inline-flex;width:16px;height:16px;color:rgba(255,255,255,0.5);flex-shrink:0">${ICONS?.chevronRight||'›'}</span>` : ''}
-            </div>
-        </div>`;
-    }).join('');
-
+    _selectedPathId = null;
+    _renderCourseSelector();
     document.getElementById('loginScreen')?.classList.add('hidden');
     document.getElementById('mainApp')?.classList.add('hidden');
     el.classList.remove('hidden');
+}
+
+function _renderCourseSelector() {
+    const list = document.getElementById('coursesList');
+    if (!list || typeof allCourses === 'undefined') return;
+
+    if (!_selectedPathId) {
+        // ── Vista 1: Rutas ──────────────────────────────────────────
+        const scores = progress?.dailyMissions?.examScores || {};
+        list.innerHTML = `
+            <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.5);margin:0 0 14px">Elige tu ruta de formación</p>
+            ${LEARNING_PATHS.map(path => {
+                const pathCourses = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(Boolean);
+                const available   = pathCourses.filter(c => c.status === 'available');
+                const passed      = available.filter(c => (scores[c.id] || 0) >= 70).length;
+                const pct         = available.length ? Math.round(passed / available.length * 100) : 0;
+                const totalHours  = pathCourses.reduce((a, c) => a + (c.durationHours || 0), 0);
+                const allDone     = available.length > 0 && passed === available.length;
+                return `
+                <div onclick="_selectPath('${path.id}')"
+                     class="cursor-pointer active:scale-95 transition-all backdrop-blur border rounded-2xl p-4 mb-3"
+                     style="background:${path.color}22;border-color:${path.color}55">
+                    <div class="flex items-center gap-3">
+                        <div style="width:44px;height:44px;border-radius:14px;background:${path.gradient};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">
+                            🎓
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <h3 style="font-size:14px;font-weight:700;color:white;margin:0">${path.label}</h3>
+                                ${allDone ? `<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;background:rgba(255,255,255,0.2);color:white;flex-shrink:0">✓ Completada</span>` : ''}
+                            </div>
+                            <p style="font-size:11px;color:rgba(255,255,255,.6);margin:2px 0 6px">${pathCourses.length} cursos · ${totalHours}h de formación</p>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <div style="flex:1;height:4px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden">
+                                    <div style="width:${pct}%;height:100%;background:${path.color};border-radius:99px;transition:width .4s"></div>
+                                </div>
+                                <span style="font-size:10px;font-weight:700;color:${path.color};flex-shrink:0">${passed}/${available.length} aprobados</span>
+                            </div>
+                        </div>
+                        <span style="color:rgba(255,255,255,.4);font-size:18px">›</span>
+                    </div>
+                </div>`;
+            }).join('')}`;
+    } else {
+        // ── Vista 2: Cursos de la ruta seleccionada ─────────────────
+        const path = LEARNING_PATHS.find(p => p.id === _selectedPathId);
+        if (!path) { _selectedPathId = null; _renderCourseSelector(); return; }
+
+        const pathCourses = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(Boolean);
+        const scores = progress?.dailyMissions?.examScores || {};
+
+        list.innerHTML = `
+            <button onclick="_selectedPathId=null;_renderCourseSelector()"
+                    style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:none;color:white;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;margin-bottom:14px">
+                ‹ Todas las rutas
+            </button>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                <div style="width:36px;height:36px;border-radius:10px;background:${path.gradient};flex-shrink:0"></div>
+                <div>
+                    <h2 style="font-size:15px;font-weight:800;color:white;margin:0">${path.label}</h2>
+                    <p style="font-size:11px;color:rgba(255,255,255,.5);margin:0">${pathCourses.length} cursos en esta ruta</p>
+                </div>
+            </div>
+            ${pathCourses.map((c, idx) => {
+                const isOpen    = c.status === 'available';
+                const prereqMet = isCoursePrereqMet(c);
+                const clickable = isOpen && prereqMet;
+                const passed    = (scores[c.id] || 0) >= 70;
+                const prereqNames = (c.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
+                let statusBadge;
+                if (!isOpen)       statusBadge = '○ Próximamente';
+                else if (!prereqMet) statusBadge = `🔒 Requiere: ${prereqNames}`;
+                else               statusBadge = '● Disponible';
+                return `
+                <div onclick="${clickable ? `selectCourse('${c.id}')` : (isOpen && !prereqMet ? `showToast('🔒 Primero completa: ${prereqNames}','info')` : '')}"
+                     class="backdrop-blur border rounded-2xl p-4 mb-3 ${clickable ? 'cursor-pointer active:scale-95' : 'opacity-55'} transition-all"
+                     style="background:${clickable ? c.color+'33' : 'rgba(255,255,255,.06)'};border-color:${clickable ? c.color+'66' : 'rgba(255,255,255,.12)'}">
+                    <div class="flex items-center gap-3">
+                        <div style="position:relative;flex-shrink:0">
+                            <div style="width:44px;height:44px;background:${clickable ? c.color : 'rgba(255,255,255,0.1)'};border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px">
+                                ${!isOpen || !prereqMet ? '🔒' : (c.icon || '📚')}
+                            </div>
+                            <span style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;background:rgba(0,0,0,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:white">${idx+1}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <h3 style="font-size:13px;font-weight:700;color:white;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</h3>
+                                ${passed ? `<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;background:rgba(255,255,255,0.2);color:white;flex-shrink:0">✓</span>` : ''}
+                            </div>
+                            <p style="font-size:11px;color:rgba(255,255,255,.6);margin:2px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.subtitle}</p>
+                            <div class="flex gap-2 flex-wrap">
+                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;${clickable ? 'background:rgba(255,255,255,.18);color:white' : 'background:rgba(255,255,255,.08);color:rgba(255,255,255,.45)'}">${statusBadge}</span>
+                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(0,0,0,.2);color:rgba(255,255,255,.7)">${c.durationHours}h · ${c.totalCards} tarjetas</span>
+                            </div>
+                        </div>
+                        ${clickable ? `<span style="color:rgba(255,255,255,.4);font-size:18px">›</span>` : ''}
+                    </div>
+                </div>`;
+            }).join('')}`;
+    }
+}
+
+function _selectPath(pathId) {
+    _selectedPathId = pathId;
+    _renderCourseSelector();
 }
 
 // ── Prerrequisitos entre cursos ─────────────────────────────────────────
