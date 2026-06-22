@@ -314,12 +314,24 @@ async function loginWithEmail(email, password) {
             }
         } catch(e) {}
 
+        // Restaurar diagDone desde Supabase → localStorage para que no vuelva a aparecer
+        // aunque el usuario limpie caché o cambie de navegador
+        if (progress.dailyMissions?.diagDone) {
+            localStorage.setItem('diagDone', '1');
+            if (progress.dailyMissions.diagResult && !localStorage.getItem('diagResult')) {
+                localStorage.setItem('diagResult', JSON.stringify(progress.dailyMissions.diagResult));
+            }
+        }
+        if (progress.dailyMissions?.onboardingDone) {
+            localStorage.setItem('onboardingDone', '1');
+        }
+
         initExistingModuleDates();
         checkDailyStreak();
         loadDailyMissions();
         await syncWithSupabase();
-        loadPortfolio();    // cargar portafolio desde Supabase (sin bloquear)
-        loadAppConfig();    // cargar config de rutas/master cert desde Supabase (sin bloquear)
+        loadPortfolio();
+        loadAppConfig();
         return true;
     } catch (error) {
         showLoginError(_friendlyAuthError(error.message));
@@ -4017,12 +4029,17 @@ function startOnboarding() {
 function closeOnboarding() {
     document.getElementById('onboardingOverlay').classList.add('hidden');
     localStorage.setItem('onboardingDone', '1');
-    // Diagnóstico OBLIGATORIO tras el onboarding (no se puede saltar)
-    const diagDone = localStorage.getItem('diagDone');
+    // Persistir en Supabase para que no vuelva a aparecer en otros dispositivos/navegadores
+    if (typeof progress !== 'undefined' && progress) {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        progress.dailyMissions.onboardingDone = '1';
+        if (typeof saveProgress === 'function') saveProgress();
+    }
+    // Diagnóstico OBLIGATORIO tras el onboarding (solo si no lo ha hecho antes)
+    const diagDone = localStorage.getItem('diagDone') || progress?.dailyMissions?.diagDone;
     if (!diagDone && typeof startDiagnostic === 'function') {
         setTimeout(startDiagnostic, 350);
-    } else if (diagDone && typeof showCourseSelector === 'function') {
-        // Si ya hizo el diagnóstico antes, ir directo a elegir ruta
+    } else {
         showCourseSelector();
     }
 }
