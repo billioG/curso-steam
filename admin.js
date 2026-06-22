@@ -285,15 +285,13 @@ async function loadDashboard() {
     const totalSeconds = rv?.reduce((a,b) => a + (b.time_spent_seconds||0), 0) || 0;
     const avgS = rv?.length ? Math.round(totalSeconds / rv.length) : 0;
 
-    // Horas de formación:
-    // Si tenemos tiempo promedio real por tarjeta → avgS × totalCards ÷ 3600
-    // Fallback: 3 min/tarjeta (estimado conservador)
-    const horasFormacion = avgS > 0
-        ? Math.round(totalCards * avgS / 3600)
-        : Math.round(totalCards * 180 / 3600);
-    const metodoLabel = avgS > 0
-        ? `≈${avgS}s promedio/tarjeta × ${fmt(totalCards)} tarjetas`
-        : `estimado 3 min/tarjeta`;
+    // Horas de formación — estimado basado en tarjetas (3 min/tarjeta)
+    const horasFormacion = Math.round(totalCards * 3 / 60);
+    // Tiempo real calculado: avgS × totalCards (si hay datos)
+    const horasRealesCalc = avgS > 0 ? Math.round(totalCards * avgS / 3600) : null;
+    const metodoLabel = horasRealesCalc !== null
+        ? `≈${horasRealesCalc}h reales (${avgS}s × ${fmt(totalCards)} tarjetas)`
+        : '';
 
     // Banner de impacto
     const now = new Date();
