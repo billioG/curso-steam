@@ -280,13 +280,20 @@ async function loadDashboard() {
         }).length;
     }, 0);
 
-    // Horas de formación — estimado basado en tarjetas completadas (3 min/tarjeta)
-    const horasFormacion = Math.round(totalCards * 3 / 60);
-
     // Tiempo real acumulado de TODOS los docentes desde resource_views
     const { data: rv } = await sb.from('resource_views').select('time_spent_seconds').not('time_spent_seconds','is',null);
     const totalSeconds = rv?.reduce((a,b) => a + (b.time_spent_seconds||0), 0) || 0;
-    const horasReales = totalSeconds > 0 ? Math.round(totalSeconds / 3600) : null;
+    const avgS = rv?.length ? Math.round(totalSeconds / rv.length) : 0;
+
+    // Horas de formación:
+    // Si tenemos tiempo promedio real por tarjeta → avgS × totalCards ÷ 3600
+    // Fallback: 3 min/tarjeta (estimado conservador)
+    const horasFormacion = avgS > 0
+        ? Math.round(totalCards * avgS / 3600)
+        : Math.round(totalCards * 180 / 3600);
+    const metodoLabel = avgS > 0
+        ? `≈${avgS}s promedio/tarjeta × ${fmt(totalCards)} tarjetas`
+        : `estimado 3 min/tarjeta`;
 
     // Banner de impacto
     const now = new Date();
@@ -295,16 +302,13 @@ async function loadDashboard() {
     document.getElementById('impactDocentes').textContent = fmt(total);
     document.getElementById('impactHoras').textContent = fmt(horasFormacion)+'h';
     const horasRealEl = document.getElementById('impactHorasReal');
-    if (horasRealEl) horasRealEl.textContent = horasReales !== null ? `+${fmt(horasReales)}h tiempo real registrado` : '';
+    if (horasRealEl) horasRealEl.textContent = metodoLabel;
     document.getElementById('impactFinalizacion').textContent = tasaFinalizacion+'%';
     document.getElementById('impactCertificados').textContent = fmt(totalCertificados);
 
     // KPIs
     document.getElementById('kpiActive').textContent = fmt(active30);
     document.getElementById('kpiCards').textContent = fmt(totalCards);
-
-    // Tiempo promedio por sesión
-    const avgS = rv?.length ? Math.round(totalSeconds / rv.length) : 0;
 
     document.getElementById('kpiAvgTime').textContent = avgS ? fmtTime(avgS) : 'N/A';
 

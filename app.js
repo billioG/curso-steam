@@ -1973,50 +1973,84 @@ async function showRanking() {
         leagueGroups[league.name].members.push(user);
     });
 
-    const medals = ['🥇', '🥈', '🥉'];
-    let html = '';
+    // Lista plana ordenada por XP/nivel para el podio y la lista
+    const flat = [...data].sort((a,b) => (b.level||1) - (a.level||1) || (b.xp||0) - (a.xp||0));
 
-    // Mostrar ligas de mayor a menor
-    LEAGUES.forEach(leagueDef => {
-        const group = leagueGroups[leagueDef.name];
-        if (!group) return;
+    const _avatar = (user, size=44) => user.profile_photo
+        ? `<img src="${user.profile_photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
+        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:${size*0.4}px;flex-shrink:0">👨‍🏫</div>`;
 
-        html += `
-        <div class="mb-5">
-            <div class="flex items-center gap-2 mb-2 px-1">
-                <span class="text-lg">${group.emoji}</span>
-                <span class="font-black text-sm" style="color:${group.color}">${group.name}</span>
-                <span class="text-xs text-slate-400 ml-auto">Nv. ${leagueDef.min}${leagueDef.min < 11 ? '–' + (LEAGUES[LEAGUES.indexOf(leagueDef) - 1]?.min - 1 || '+') : '+'}</span>
-            </div>`;
+    // ── PODIO top 3 ─────────────────────────────────────────────────
+    const podiumEl = document.getElementById('rankingPodium');
+    const top3 = flat.slice(0, 3);
+    // Orden visual: 2° izquierda, 1° centro, 3° derecha
+    const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
+    const podiumPos   = top3[1] ? [2, 1, 3] : [1];
+    const podiumH     = ['64px', '88px', '52px'];
+    const podiumColors= ['rgba(255,255,255,.18)', 'rgba(255,255,255,.28)', 'rgba(255,255,255,.14)'];
+    const crownIdx    = top3[1] ? 1 : 0; // índice del 1° en podiumOrder
 
-        group.members.forEach((user, idx) => {
-            const isMe = user.user_id === currentUser.id;
-            const displayName = user.full_name || user.nombre_usuario || `Docente ${idx + 1}`;
-            const medal = medals[idx] || `<span class="text-xs font-bold text-slate-400">${idx + 1}</span>`;
-            const lvl = user.level || 1;
-            const avatar = user.profile_photo
-                ? `<img src="${user.profile_photo}" class="w-9 h-9 rounded-full object-cover flex-shrink-0" />`
-                : `<div class="w-9 h-9 rounded-full flex items-center justify-center text-lg flex-shrink-0" style="background:${group.bg}">👨‍🏫</div>`;
+    if (podiumEl) {
+        podiumEl.innerHTML = `
+        <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;padding:0 8px">
+            ${podiumOrder.map((u, vi) => {
+                const rank = podiumPos[vi];
+                const isMe = u.user_id === currentUser?.id;
+                const name = (u.full_name || u.nombre_usuario || 'Docente').split(' ')[0];
+                const isCrown = rank === 1;
+                const pedH = podiumH[vi];
+                return `
+                <div style="display:flex;flex-direction:column;align-items:center;flex:1;max-width:120px">
+                    ${isCrown ? '<div style="font-size:20px;margin-bottom:2px">👑</div>' : '<div style="height:28px"></div>'}
+                    <div style="position:relative">
+                        <div style="border:3px solid ${isCrown?'#fbbf24':'rgba(255,255,255,.4)'};border-radius:50%;padding:2px;${isMe?'box-shadow:0 0 0 3px rgba(251,191,36,.5)':''}">
+                            ${_avatar(u, isCrown?52:44)}
+                        </div>
+                        ${isMe ? '<div style="position:absolute;bottom:-4px;right:-4px;background:#fbbf24;color:#1e1b4b;font-size:9px;font-weight:900;padding:1px 5px;border-radius:99px">TÚ</div>' : ''}
+                    </div>
+                    <p style="color:white;font-weight:800;font-size:11px;margin:6px 0 4px;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</p>
+                    <div style="background:rgba(255,255,255,.18);border-radius:99px;padding:2px 10px;margin-bottom:6px">
+                        <span style="color:white;font-size:10px;font-weight:700">⭐ ${(u.xp||0).toLocaleString()} XP</span>
+                    </div>
+                    <div style="background:${podiumColors[vi]};border-radius:12px 12px 0 0;height:${pedH};width:100%;display:flex;align-items:center;justify-content:center">
+                        <span style="color:white;font-size:${isCrown?'28px':'22px'};font-weight:900;opacity:.8">${rank}</span>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>`;
+    }
 
-            html += `
-            <div class="flex items-center gap-3 p-3 rounded-2xl mb-2 ${isMe ? 'border-2' : 'border border-slate-100'}" style="${isMe ? `border-color:${group.color};background:${group.bg}` : 'background:#f9fafb'}">
-                <span class="text-base w-6 text-center flex-shrink-0">${medal}</span>
-                ${avatar}
-                <div class="flex-1 min-w-0">
-                    <p class="font-bold text-slate-800 text-sm truncate">${displayName}${isMe ? ' <span style="color:' + group.color + '">(Tú)</span>' : ''}</p>
-                    <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full" style="color:${group.color};background:${group.bg}">Nv. ${lvl}</span>
+    // ── LISTA 4+ ─────────────────────────────────────────────────────
+    const getLeague = lvl => LEAGUES.find(l => lvl >= l.min) || LEAGUES[LEAGUES.length - 1];
+    let listHtml = '';
+
+    if (flat.length <= 3) {
+        listHtml = `<p style="text-align:center;color:#94a3b8;font-size:12px;padding:16px 0">¡Solo los docentes del podio hasta ahora!</p>`;
+    } else {
+        flat.slice(3).forEach((user, i) => {
+            const rank = i + 4;
+            const isMe = user.user_id === currentUser?.id;
+            const name = user.full_name || user.nombre_usuario || `Docente ${rank}`;
+            const lvl  = user.level || 1;
+            const league = getLeague(lvl);
+            listHtml += `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;
+                background:${isMe?'linear-gradient(135deg,#ede9fe,#ddd6fe)':'#f8fafc'};
+                border:${isMe?'2px solid #a78bfa':'1.5px solid #e2e8f0'}">
+                <span style="font-size:12px;font-weight:900;color:${isMe?'#6d28d9':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>
+                ${_avatar(user, 38)}
+                <div style="flex:1;min-width:0">
+                    <p style="font-weight:700;font-size:13px;color:${isMe?'#4c1d95':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#7c3aed">(Tú)</span>':''}</p>
+                    <span style="font-size:10px;font-weight:600;color:${league.color}">${league.emoji} ${league.name}</span>
                 </div>
-                <div class="text-right flex-shrink-0">
-                    <p class="font-bold text-sm" style="color:${group.color}">⭐ ${(user.xp || 0).toLocaleString()}</p>
-                    <p class="text-xs text-slate-400">XP</p>
+                <div style="text-align:right;flex-shrink:0">
+                    <p style="font-weight:800;font-size:13px;color:#6d28d9">⭐ ${(user.xp||0).toLocaleString()}</p>
+                    <p style="font-size:10px;color:#94a3b8">Nv. ${lvl}</p>
                 </div>
             </div>`;
         });
-
-        html += `</div>`;
-    });
-
-    listEl.innerHTML = html;
+    }
+    listEl.innerHTML = listHtml;
 }
 
 // ==================== SOLICITUD Y VOTACIÓN DE CURSOS ====================
