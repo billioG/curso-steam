@@ -441,7 +441,7 @@ async function checkExistingSession() {
 
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
-        _postLoginFlow(); // onboarding → diagnóstico → selector (según estado de cada paso)
+        showCourseSelector();
         return true;
     }
     return false;
@@ -3641,26 +3641,13 @@ document.getElementById("showLoginBtn")?.addEventListener("click", () => {
     document.getElementById("registerForm").classList.add("hidden");
     document.getElementById("emailLoginForm").classList.remove("hidden");
 });
-// Flujo post-login unificado: onboarding → diagnóstico → selector
-function _postLoginFlow() {
-    const needOnboarding = !localStorage.getItem('onboardingDone');
-    const needDiag       = !localStorage.getItem('diagDone');
-    if (needOnboarding && typeof startOnboarding === 'function') {
-        startOnboarding();
-    } else if (needDiag && typeof startDiagnostic === 'function') {
-        startDiagnostic();
-    } else {
-        showCourseSelector();
-    }
-}
-
 document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
     const success = await loginWithEmail(email, password);
     if (success) {
         loadSavedProgress(true);
-        _postLoginFlow();
+        showCourseSelector();
     }
 });
 document.getElementById("doRegister")?.addEventListener("click", async () => {
@@ -3671,7 +3658,7 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
     if (success) {
         loadSavedProgress(true);
         await checkReferralBonus();
-        _postLoginFlow();
+        showCourseSelector();
     }
 });
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
