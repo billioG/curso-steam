@@ -592,27 +592,75 @@ function updateUI() {
     renderBadgesCarousel();
 }
 
+// ── Acordeón móvil ───────────────────────────────────────────────────
+function togglePerfilSection(btn) {
+    if (window.innerWidth >= 642) return;
+    const body = btn.nextElementSibling;
+    if (!body) return;
+    const collapsed = body.classList.toggle('collapsed');
+    btn.classList.toggle('collapsed', collapsed);
+}
+
+// ── Carrusel infinito de logros ───────────────────────────────────────
+let _bcIndex = 0;
+let _bcItemW  = 96;
+const _bcN    = () => Object.keys(badges).length;
+
 function renderBadgesCarousel() {
-    const wrap = document.getElementById('badgesCarousel');
-    if (!wrap) return;
-    const earned = new Set((progress?.badges || []));
+    const track = document.getElementById('badgesCarousel');
+    if (!track) return;
+    const earned = new Set(progress?.badges || []);
     const list = Object.values(badges);
     const earnedCount = list.filter(b => earned.has(b.id)).length;
     const countEl = document.getElementById('badgesEarnedCount');
     if (countEl) countEl.textContent = earnedCount;
 
-    wrap.innerHTML = list.map(b => {
+    // Triplicar para bucle infinito
+    const tripled = [...list, ...list, ...list];
+    _bcIndex = list.length; // empezar en copia central
+
+    const itemHTML = (b) => {
         const done = earned.has(b.id);
         const svg = BADGE_SVG[b.id] || '';
-        return `<button onclick="showBadgeDetail('${b.id}')" title="${b.name}" style="display:flex;flex-direction:column;align-items:center;gap:8px;background:${done?'white':'#f8fafc'};border-radius:20px;padding:14px 8px 12px;border:2px solid ${done?'#ddd6fe':'#e2e8f0'};box-shadow:${done?'0 4px 16px rgba(139,92,246,.15)':'none'};cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;${done?'':''}">
-            <div style="width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${done?'linear-gradient(135deg,#f3e8ff,#ede9fe)':'#f1f5f9'};position:relative;${done?'':'filter:grayscale(1);opacity:.5'}">
+        return `<button class="badge-carousel-item${done?' earned':''}" onclick="showBadgeDetail('${b.id}')" style="width:86px">
+            <div style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+                background:${done?'linear-gradient(135deg,#f3e8ff,#ede9fe)':'#f1f5f9'};
+                ${done?'':'filter:grayscale(1);opacity:.45'}">
                 ${svg}
-                ${done?`<div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid #a78bfa;opacity:.5;pointer-events:none"></div>`:''}
             </div>
-            <span style="font-size:10px;font-weight:800;color:${done?'#5b21b6':'#94a3b8'};text-align:center;line-height:1.25;max-width:72px">${b.name}</span>
-            <span style="font-size:9px;font-weight:700;color:${done?'#7c3aed':'#cbd5e1'};background:${done?'#f3e8ff':'#f1f5f9'};padding:2px 8px;border-radius:99px">${done?`+${b.xpReward} XP`:'🔒'}</span>
+            <span style="font-size:9px;font-weight:800;color:${done?'#5b21b6':'#94a3b8'};text-align:center;line-height:1.2">${b.name}</span>
+            <span style="font-size:8px;font-weight:700;padding:1px 7px;border-radius:99px;
+                color:${done?'#7c3aed':'#cbd5e1'};background:${done?'#f3e8ff':'#f1f5f9'}">
+                ${done?`+${b.xpReward} XP`:'🔒'}</span>
         </button>`;
-    }).join('');
+    };
+    track.innerHTML = tripled.map(itemHTML).join('');
+
+    requestAnimationFrame(() => {
+        const first = track.querySelector('.badge-carousel-item');
+        if (first) _bcItemW = first.offsetWidth + 10;
+        _bcApply(false);
+    });
+}
+
+function badgesCarouselMove(dir) {
+    _bcIndex += dir;
+    _bcApply(true);
+    const track = document.getElementById('badgesCarousel');
+    if (!track) return;
+    track.addEventListener('transitionend', function once() {
+        track.removeEventListener('transitionend', once);
+        const n = _bcN();
+        if (_bcIndex <= 0)       { _bcIndex = n;     _bcApply(false); }
+        else if (_bcIndex >= n*2){ _bcIndex = n;     _bcApply(false); }
+    }, { once: true });
+}
+
+function _bcApply(animate) {
+    const track = document.getElementById('badgesCarousel');
+    if (!track) return;
+    track.style.transition = animate ? 'transform .4s cubic-bezier(.4,0,.2,1)' : 'none';
+    track.style.transform  = `translateX(-${_bcIndex * _bcItemW}px)`;
 }
 
 function showBadgeDetail(badgeId) {

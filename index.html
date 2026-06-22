@@ -868,12 +868,18 @@
                 gap: 10px;
                 align-items: start;
             }
-            #tabPerfil .perfil-badges-grid {
-                display: grid;
-                grid-template-columns: repeat(6, 1fr);
-                gap: 12px;
+            /* Desktop: secciones siempre abiertas, sin toggle */
+            #tabPerfil .perfil-section-body {
+                max-height: none !important;
+                opacity: 1 !important;
             }
+            #tabPerfil .perfil-section-toggle-icon { display: none !important; }
+            #tabPerfil .perfil-section-toggle { cursor: default; }
         }
+
+        /* ── Perfil: márgenes móvil ────────────────────────────────── */
+        .perfil-badges-wrap { padding: 16px 16px 0; }
+        .perfil-grid        { padding: 0 16px 40px; }
 
         /* ── Perfil items: 1 col en móvil ──────────────────────────── */
         .perfil-items-grid {
@@ -882,11 +888,71 @@
             gap: 8px;
             align-items: start;
         }
-        .perfil-badges-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+
+        /* ── Secciones acordeón en móvil ───────────────────────────── */
+        .perfil-section-toggle {
+            width:100%; display:flex; align-items:center; justify-content:space-between;
+            background:none; border:none; padding:0; cursor:pointer; text-align:left;
+            margin-bottom:10px;
         }
+        .perfil-section-toggle-icon {
+            width:18px; height:18px; flex-shrink:0; transition:transform .25s ease;
+            color:#94a3b8;
+        }
+        .perfil-section-body {
+            overflow:hidden;
+            transition: max-height .35s cubic-bezier(.4,0,.2,1), opacity .25s ease;
+            max-height: 2000px;
+            opacity: 1;
+        }
+        .perfil-section-body.collapsed {
+            max-height: 0 !important;
+            opacity: 0;
+        }
+        .perfil-section-toggle.collapsed .perfil-section-toggle-icon {
+            transform: rotate(-90deg);
+        }
+
+        /* ── Carrusel de logros ─────────────────────────────────────── */
+        .badges-carousel-wrap {
+            position:relative;
+            overflow:hidden;
+        }
+        .badges-carousel-track {
+            display:flex;
+            transition: transform .4s cubic-bezier(.4,0,.2,1);
+            will-change: transform;
+        }
+        .badge-carousel-item {
+            flex-shrink:0;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            gap:7px;
+            padding:12px 6px 10px;
+            background:white;
+            border-radius:18px;
+            border:2px solid #e2e8f0;
+            cursor:pointer;
+            transition:border-color .15s, box-shadow .15s;
+            margin:0 5px;
+        }
+        .badge-carousel-item.earned {
+            border-color:#ddd6fe;
+            box-shadow:0 4px 14px rgba(139,92,246,.12);
+        }
+        .badge-carousel-arrow {
+            position:absolute; top:50%; transform:translateY(-50%);
+            width:32px; height:32px; border-radius:50%;
+            background:white; border:1.5px solid #e2e8f0;
+            box-shadow:0 2px 8px rgba(0,0,0,.1);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; z-index:2; transition:background .15s, border-color .15s;
+            color:#475569;
+        }
+        .badge-carousel-arrow:hover { background:#f8fafc; border-color:#a78bfa; color:#7c3aed; }
+        .badge-carousel-arrow.prev { left:0; }
+        .badge-carousel-arrow.next { right:0; }
 
         /* ── Animación desbloqueo de logro ─────────────────────────── */
         @keyframes badgeBackdropIn { from { opacity:0 } to { opacity:1 } }
@@ -1720,8 +1786,18 @@
                     </button>
                 </div>
             </div>
-            <!-- Grid de insignias estilo Duolingo -->
-            <div id="badgesCarousel" class="perfil-badges-grid"></div>
+            <!-- Carrusel de insignias (fila única + flechas) -->
+            <div class="badges-carousel-wrap">
+                <button class="badge-carousel-arrow prev" onclick="badgesCarouselMove(-1)" aria-label="Anterior">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div style="overflow:hidden;margin:0 38px">
+                    <div id="badgesCarousel" class="badges-carousel-track"></div>
+                </div>
+                <button class="badge-carousel-arrow next" onclick="badgesCarouselMove(1)" aria-label="Siguiente">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
         </div>
 
         <!-- ── CONTENIDO PRINCIPAL ───────────────────────────────────── -->
@@ -1729,7 +1805,11 @@
 
             <!-- ── Sección: Aprendizaje ── -->
             <div class="perfil-section">
-                <p class="perfil-section-label">Aprendizaje</p>
+                <button class="perfil-section-toggle" onclick="togglePerfilSection(this)">
+                    <span class="perfil-section-label" style="margin-bottom:0">Aprendizaje</span>
+                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="perfil-section-body">
                 <div class="perfil-items-grid">
                     <button id="examBtn"
                         class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:bg-cyan-50 hover:border-cyan-300 transition shadow-sm">
@@ -1830,12 +1910,17 @@
                         </div>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </a>
-                </div>
+                </div><!-- /perfil-items-grid aprendizaje -->
+                </div><!-- /perfil-section-body aprendizaje -->
             </div>
 
             <!-- ── Sección: Certificados ── -->
             <div id="certSection" class="perfil-section">
-                <p class="perfil-section-label">Certificados</p>
+                <button class="perfil-section-toggle" onclick="togglePerfilSection(this)">
+                    <span class="perfil-section-label" style="margin-bottom:0">Certificados</span>
+                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="perfil-section-body">
                 <div id="certCourseStatus" class="mb-3 space-y-1.5"></div>
                 <p id="certPlaceholder" class="text-xs text-slate-400 px-1 mb-2">Aprueba el examen de cualquier curso para obtener tu certificado.</p>
                 <div class="perfil-items-grid">
@@ -1871,18 +1956,28 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
                         <span>Obtener Certificado Maestro</span>
                     </button>
-                </div>
+                </div><!-- /perfil-items-grid cert -->
+                </div><!-- /perfil-section-body cert -->
             </div>
 
             <!-- ── Recursos descargables ── -->
             <div id="resourcesSection" class="perfil-section hidden">
-                <p class="perfil-section-label">Recursos descargables</p>
+                <button class="perfil-section-toggle" onclick="togglePerfilSection(this)">
+                    <span class="perfil-section-label" style="margin-bottom:0">Recursos descargables</span>
+                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="perfil-section-body">
                 <div id="courseResourcesSection"></div>
+                </div><!-- /perfil-section-body recursos -->
             </div>
 
             <!-- ── Gana más XP ── -->
             <div class="perfil-section">
-                <p class="perfil-section-label">Gana más XP</p>
+                <button class="perfil-section-toggle" onclick="togglePerfilSection(this)">
+                    <span class="perfil-section-label" style="margin-bottom:0">Gana más XP</span>
+                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="perfil-section-body">
                 <div class="perfil-items-grid">
                     <button onclick="showDailyChallenge()"
                         class="rounded-2xl p-4 flex items-center gap-3 text-left transition active:scale-95 shadow-md"
@@ -1947,7 +2042,8 @@
                         </div>
                         <p id="referralCountDisplay" class="text-xs text-slate-400 mt-1.5 text-center"></p>
                     </div>
-                </div>
+                </div><!-- /perfil-items-grid xp -->
+                </div><!-- /perfil-section-body xp -->
             </div>
 
             <!-- ── Sync + utilidades ── -->
