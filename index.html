@@ -840,7 +840,7 @@
                 padding-left: 48px !important;
                 padding-right: 48px !important;
             }
-            #tabPerfil .perfil-carousel-wrap {
+            #tabPerfil .perfil-badges-wrap {
                 max-width: 1100px;
                 margin: 20px auto 0;
                 padding: 0 48px;
@@ -868,6 +868,103 @@
                 gap: 10px;
                 align-items: start;
             }
+            #tabPerfil .perfil-badges-grid {
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
+                gap: 12px;
+            }
+        }
+
+        /* ── Perfil items: 1 col en móvil ──────────────────────────── */
+        .perfil-items-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            align-items: start;
+        }
+        .perfil-badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        /* ── Animación desbloqueo de logro ─────────────────────────── */
+        @keyframes badgeBackdropIn { from { opacity:0 } to { opacity:1 } }
+        @keyframes badgeBackdropOut { from { opacity:1 } to { opacity:0 } }
+        @keyframes chestShake {
+            0%,100% { transform: rotate(0deg) scale(1) }
+            15%      { transform: rotate(-8deg) scale(1.05) }
+            30%      { transform: rotate(8deg) scale(1.1) }
+            45%      { transform: rotate(-6deg) scale(1.08) }
+            60%      { transform: rotate(6deg) scale(1.05) }
+            75%      { transform: rotate(-3deg) scale(1.02) }
+        }
+        @keyframes badgeReveal {
+            0%   { transform: scale(0) rotate(-20deg); opacity:0 }
+            60%  { transform: scale(1.15) rotate(5deg); opacity:1 }
+            80%  { transform: scale(0.92) rotate(-2deg) }
+            100% { transform: scale(1) rotate(0deg) }
+        }
+        @keyframes badgeRaysSpin {
+            from { transform: rotate(0deg) }
+            to   { transform: rotate(360deg) }
+        }
+        @keyframes badgeTitleSlide {
+            from { transform: translateY(20px); opacity:0 }
+            to   { transform: translateY(0); opacity:1 }
+        }
+        @keyframes particleFly {
+            0%   { transform: translate(0,0) scale(1); opacity:1 }
+            100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity:0 }
+        }
+        .badge-unlock-overlay {
+            position: fixed; inset:0; z-index:9999;
+            display:flex; align-items:center; justify-content:center;
+            background: rgba(0,0,0,.7); backdrop-filter:blur(4px);
+            animation: badgeBackdropIn .3s ease forwards;
+        }
+        .badge-unlock-overlay.hiding { animation: badgeBackdropOut .5s ease forwards; }
+        .badge-unlock-card {
+            background: linear-gradient(160deg,#0f172a,#1e3a5f,#312e81);
+            border-radius: 28px; padding: 36px 32px 28px;
+            text-align: center; min-width: 260px;
+            box-shadow: 0 0 60px rgba(99,102,241,.5), 0 20px 60px rgba(0,0,0,.5);
+            position: relative; overflow: hidden;
+        }
+        .badge-unlock-rays {
+            position:absolute; inset:0; pointer-events:none;
+            background: conic-gradient(transparent 30deg, rgba(255,255,255,.06) 31deg, transparent 32deg, transparent 60deg, rgba(255,255,255,.06) 61deg, transparent 62deg, transparent 90deg, rgba(255,255,255,.06) 91deg, transparent 92deg, transparent 120deg, rgba(255,255,255,.06) 121deg, transparent 122deg, transparent 150deg, rgba(255,255,255,.06) 151deg, transparent 152deg, transparent 180deg, rgba(255,255,255,.06) 181deg, transparent 182deg, transparent 210deg, rgba(255,255,255,.06) 211deg, transparent 212deg, transparent 240deg, rgba(255,255,255,.06) 241deg, transparent 242deg, transparent 270deg, rgba(255,255,255,.06) 271deg, transparent 272deg, transparent 300deg, rgba(255,255,255,.06) 301deg, transparent 302deg, transparent 330deg, rgba(255,255,255,.06) 331deg, transparent 332deg);
+            transform-origin: center;
+            animation: badgeRaysSpin 8s linear infinite;
+        }
+        .badge-unlock-icon {
+            width: 100px; height: 100px; margin: 0 auto 16px;
+            animation: badgeReveal .7s cubic-bezier(.34,1.56,.64,1) .4s both;
+            filter: drop-shadow(0 0 20px rgba(167,139,250,.8));
+        }
+        .badge-unlock-new {
+            font-size:10px; font-weight:800; letter-spacing:.12em; color:#a78bfa;
+            text-transform:uppercase; margin-bottom:6px;
+            animation: badgeTitleSlide .4s ease .9s both;
+        }
+        .badge-unlock-name {
+            font-size:22px; font-weight:900; color:white; margin-bottom:4px;
+            animation: badgeTitleSlide .4s ease 1s both;
+        }
+        .badge-unlock-desc {
+            font-size:12px; color:rgba(255,255,255,.6); margin-bottom:16px;
+            animation: badgeTitleSlide .4s ease 1.05s both;
+        }
+        .badge-unlock-xp {
+            display:inline-flex; align-items:center; gap:6px;
+            background:rgba(167,139,250,.2); border:1px solid rgba(167,139,250,.4);
+            color:#c4b5fd; font-weight:800; font-size:14px;
+            padding:6px 18px; border-radius:99px;
+            animation: badgeTitleSlide .4s ease 1.1s both;
+        }
+        .badge-particle {
+            position:absolute; width:8px; height:8px; border-radius:50%;
+            animation: particleFly 1s ease .5s forwards;
         }
 
         .bnav-btn {
@@ -1604,10 +1701,13 @@
             </div><!-- /contenedor interno hero -->
         </div><!-- /hero -->
 
-        <!-- ── CARRUSEL DE LOGROS ────────────────────────────────────── -->
-        <div class="perfil-carousel-wrap">
-            <div class="flex items-center justify-between mb-3 px-1">
-                <p class="text-[11px] font-black uppercase tracking-widest" style="color:#1e3a5f">Logros y estadísticas</p>
+        <!-- ── SECCIÓN DE LOGROS ─────────────────────────────────────── -->
+        <div class="perfil-badges-wrap">
+            <div class="flex items-center justify-between mb-4 px-1">
+                <div>
+                    <p class="text-[11px] font-black uppercase tracking-widest" style="color:#1e3a5f">Logros y estadísticas</p>
+                    <p class="text-xs text-slate-400 mt-0.5"><span id="badgesEarnedCount">0</span> de 13 insignias desbloqueadas</p>
+                </div>
                 <div class="flex gap-2">
                     <button id="statsSecretBtn"
                         class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition">
@@ -1618,16 +1718,10 @@
                         <span id="devModeBtnLabel" style="color:#ea580c">🛠️ Dev</span>
                         <span id="devModeBtnSub" class="hidden"></span>
                     </button>
-                    <button id="badgesBtn"
-                        class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 transition">
-                        Ver todos
-                    </button>
                 </div>
             </div>
-            <!-- Carrusel horizontal de insignias -->
-            <div class="overflow-x-auto pb-3" style="scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch">
-                <div id="badgesCarousel" class="flex gap-3" style="min-width:max-content"></div>
-            </div>
+            <!-- Grid de insignias estilo Duolingo -->
+            <div id="badgesCarousel" class="perfil-badges-grid"></div>
         </div>
 
         <!-- ── CONTENIDO PRINCIPAL ───────────────────────────────────── -->
