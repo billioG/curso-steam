@@ -9,7 +9,7 @@ const ADMIN_EMAILS  = ['billy@1bot.org'];
 // Cursos estáticos del programa (datos reales de data.js)
 // Rutas de aprendizaje disponibles
 const LEARNING_PATHS = [
-    { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
+    { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4', gradient:'#07B0E4',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
     { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp'] },
     { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
 ];
@@ -1271,7 +1271,7 @@ async function generateExecutiveReport() {
     const now = new Date().toLocaleDateString('es-GT',{day:'2-digit',month:'long',year:'numeric'});
 
     const html = `<div style="font-family:Georgia,serif;max-width:800px;margin:0 auto;color:#1e293b">
-        <div style="background:linear-gradient(135deg,#1A6B68,#07B0E4);color:white;padding:40px;border-radius:16px;margin-bottom:32px">
+        <div style="background:#07B0E4;color:white;padding:40px;border-radius:16px;margin-bottom:32px">
             <p style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px">Informe Ejecutivo de Impacto</p>
             <h1 style="font-size:28px;font-weight:900;margin:0 0 8px">Formación Docente en Pedagogía Innovadora</h1>
             <p style="opacity:.8;margin:0">Guatemala — ${now}</p>
@@ -1487,7 +1487,7 @@ function saveConfig() { toast('Configuración guardada (solo en esta sesión).')
 let _lpState = []; // estado vivo de rutas, se modifica sin guardar hasta "Guardar todo"
 
 const LP_COLORS = [
-    { color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)' },
+    { color:'#07B0E4', gradient:'#07B0E4' },
     { color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)' },
     { color:'#F59E0B', gradient:'linear-gradient(135deg,#D97706,#F59E0B)' },
     { color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)' },
@@ -1519,7 +1519,7 @@ function _renderLearningPaths() {
             </button>
         </div>
         ${_lpState.map((path, pi) => _renderPathCard(path, pi)).join('')}
-        <button onclick="saveAllLearningPaths()" style="margin-top:8px;padding:12px 20px;background:linear-gradient(135deg,#0f172a,#334155);color:white;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%">
+        <button onclick="saveAllLearningPaths()" style="margin-top:8px;padding:12px 20px;background:#0f172a;color:white;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%">
             <i class="fas fa-save" style="margin-right:6px"></i>Guardar todas las rutas
         </button>`;
 }
@@ -1527,14 +1527,13 @@ function _renderLearningPaths() {
 function _renderPathCard(path, pi) {
     const colorSet = LP_COLORS[pi % LP_COLORS.length];
     const color = path.color || colorSet.color;
-    const gradient = path.gradient || colorSet.gradient;
     const courses = (path.courses || []);
     const courseObjs = courses.map(id => STATIC_COURSES.find(c => c.id === id)).filter(Boolean);
     const available = STATIC_COURSES.filter(c => !courses.includes(c.id));
 
     return `
     <div style="margin-bottom:16px;border:1.5px solid #e2e8f0;border-radius:14px;overflow:hidden">
-        <div style="background:${gradient};padding:14px 16px;display:flex;align-items:center;gap:10px">
+        <div style="background:${color};padding:14px 16px;display:flex;align-items:center;gap:10px">
             <div style="flex:1">
                 <input id="lp_label_${pi}" value="${path.label}" placeholder="Nombre de la ruta"
                     style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:white;font-size:15px;font-weight:700;padding:6px 10px;border-radius:8px;width:100%;outline:none"

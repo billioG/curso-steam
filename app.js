@@ -29,6 +29,46 @@ if (typeof allCourses !== 'undefined') {
         const bi = COURSE_PATH_ORDER.indexOf(b.id);
         return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
     });
+
+    // ── Normalizar IDs de tarjetas ──────────────────────────────────────────
+    // 'steam' es legado (IDs numéricos 1..73) y tiene progreso de usuarios → no se toca.
+    // Los cursos nuevos también usaban IDs numéricos 1..N, lo que colisionaba en
+    // progress.completedCards (la tarjeta "1" de creatividad == la "1" de steam).
+    // Prefijamos los IDs numéricos con el id del curso para hacerlos únicos.
+    // Seguro: estos cursos son nuevos, ningún usuario tiene progreso previo en ellos.
+    allCourses.forEach(course => {
+        if (course.id === 'steam') return;
+        (course.modules || []).forEach(mod => {
+            (mod.cards || []).forEach(card => {
+                if (card.id != null && /^[0-9]+$/.test(String(card.id))) {
+                    card.id = `${course.id}-${card.id}`;
+                }
+            });
+        });
+    });
+}
+
+// Devuelve el examen final de un curso. Si el curso no define `finalExam`
+// (cursos nuevos), lo construye automáticamente con sus tarjetas tipo quiz.
+function getCourseExam(course) {
+    if (course && course.finalExam && Array.isArray(course.finalExam.questions) && course.finalExam.questions.length) {
+        return course.finalExam;
+    }
+    const questions = [];
+    (course?.modules || []).forEach(mod => {
+        (mod.cards || []).forEach(card => {
+            if (card.type === 'quiz' && Array.isArray(card.options) && typeof card.correct === 'number') {
+                questions.push({
+                    id: questions.length + 1,
+                    text: card.question || card.title || `Pregunta ${questions.length + 1}`,
+                    options: card.options,
+                    correct: card.correct,
+                    explanation: card.explanation || ''
+                });
+            }
+        });
+    });
+    return { title: '📝 Examen Final', passingScore: 70, questions };
 }
 
 // ==================== VARIABLES GLOBALES ====================
@@ -482,15 +522,12 @@ function updateUI() {
 
     updateStreakDisplay();
 
-    // Botón Estadísticas: solo visible para el admin
+    // Botón Estadísticas y Compendio: solo visibles para el admin
+    const _isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.email === ADMIN_EMAIL);
     const _statsBtn = document.getElementById('statsSecretBtn');
-    if (_statsBtn) {
-        if (currentUser && (currentUser.role === 'admin' || currentUser.email === ADMIN_EMAIL)) {
-            _statsBtn.classList.remove('hidden');
-        } else {
-            _statsBtn.classList.add('hidden');
-        }
-    }
+    if (_statsBtn) _statsBtn.classList.toggle('hidden', !_isAdmin);
+    const _compendio = document.getElementById('compendioLink');
+    if (_compendio) _compendio.classList.toggle('hidden', !_isAdmin);
 
     // Botón de certificado en perfil — visible si aprobó el examen del curso activo
     const certBtn = document.getElementById('certDownloadBtn');
@@ -817,8 +854,8 @@ function renderCard() {
                 <h2>${card.title}</h2>
                 <p>${cardContent}</p>
                 ${cardExtra ? `
-                <div class="card-key-insight" style="background:${theme.soft};border-color:${theme.primary};color:${theme.primary}">
-                    <span style="font-weight:700">💡 Dato clave:</span> ${cardExtra}
+                <div class="card-key-insight" style="background:${theme.soft};border-color:${theme.primary};color:#1e293b">
+                    <span style="font-weight:800;color:#0f172a">💡 Dato clave:</span> ${cardExtra}
                 </div>` : ''}
             </div>
             ${card.project ? `
@@ -1485,7 +1522,7 @@ function _showExamPrompt() {
             ¿Listo para la evaluación final y obtener tu certificado?
         </p>
         <button onclick="document.getElementById('examPromptOverlay').remove();startExam();"
-            style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#4f46e5,#7C3AED);color:white;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:10px">
+            style="width:100%;padding:14px;border-radius:14px;border:none;background:#5C35C5;color:white;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:10px">
             📝 Ir a la evaluación
         </button>
         <button onclick="document.getElementById('examPromptOverlay').remove();"
@@ -2403,7 +2440,7 @@ function startExam() {
     examActive = true;
     examCurrentQ = 0;
     // Mezclar y tomar 20 preguntas del banco del curso ACTIVO (no siempre STEAM)
-    const allQ = _shuffleArray(getActiveCourseData().finalExam.questions);
+    const allQ = _shuffleArray(getCourseExam(getActiveCourseData()).questions);
     examQuestions = allQ.slice(0, 20);
     examAnswers = new Array(examQuestions.length).fill(null);
     switchTab('home');
@@ -2551,7 +2588,7 @@ function goToNextExamCard() {
 }
 
 function showExamResults() {
-    const exam = getActiveCourseData().finalExam;
+    const exam = getCourseExam(getActiveCourseData());
     let correct = 0;
     examQuestions.forEach((q, i) => { if (examAnswers[i] === q.correct) correct++; });
     const pct = Math.round((correct / examQuestions.length) * 100);
@@ -2617,7 +2654,7 @@ function showExamResults() {
 function retryExam() {
     examCurrentQ = 0;
     // Reintento: nuevo subconjunto aleatorio de 20 preguntas del curso ACTIVO
-    const allQ = _shuffleArray(getActiveCourseData().finalExam.questions);
+    const allQ = _shuffleArray(getCourseExam(getActiveCourseData()).questions);
     examQuestions = allQ.slice(0, 20);
     examAnswers = new Array(examQuestions.length).fill(null);
     renderExamCard();
@@ -2962,7 +2999,7 @@ function renderCourseResources() {
             }).join('');
 
             return `<div style="background:white;border:1.5px solid #bbf7d0;border-radius:16px;overflow:hidden;margin-bottom:10px">
-                <div style="background:linear-gradient(135deg,${col}15,${col}08);padding:12px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${col}20">
+                <div style="background:${col}12;padding:12px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid ${col}20">
                     <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
                     <p style="font-size:12px;font-weight:800;color:#1e293b;flex:1;margin:0">${c.title}</p>
                     <span style="font-size:10px;background:#dcfce7;color:#16a34a;font-weight:700;padding:2px 8px;border-radius:100px">✓ Desbloqueado</span>
@@ -2984,6 +3021,7 @@ function renderCourseResources() {
 }
 
 // ==================== CERTIFICADO MAESTRO ====================
+let _activeMasterPath = null; // ruta cuyo certificado maestro está disponible/activo
 function _checkMasterCert() {
     if (typeof allCourses === 'undefined') return;
     const scores      = progress?.dailyMissions?.examScores || {};
@@ -3007,6 +3045,8 @@ function _checkMasterCert() {
     // (o la primera ruta en general como fallback para compatibilidad)
     const activePathResult = pathResults.find(r => r.allPassed) || pathResults[0];
     const allIndividualPassed = activePathResult?.allPassed || false;
+    // Ruta activa para el certificado maestro — el cert solo lista los cursos de ESTA ruta
+    _activeMasterPath = activePathResult?.path || null;
 
     // Sistema 50/50: examen vale 50pts, portafolio vale 50pts (compartido entre todas las rutas por ahora)
     const examScore50    = masterExamScore !== undefined ? Math.round(masterExamScore * 0.5) : null;
@@ -3197,7 +3237,7 @@ function _renderMasterExamCard() {
                 <span style="font-size:11px;font-weight:700;color:#1e293b">🎓 Docente STEAM</span>
             </div>
             <div style="background:#F1F5F9;border-radius:8px;height:6px;margin-bottom:16px;overflow:hidden">
-                <div style="height:100%;border-radius:8px;background:linear-gradient(90deg,${courseColor},${courseColor}99);
+                <div style="height:100%;border-radius:8px;background:${courseColor};
                             width:${pct}%;transition:width .4s ease"></div>
             </div>
         </div>
@@ -3265,7 +3305,7 @@ function _showMasterExamResults() {
     const examScore50 = Math.round(pct * 0.5);
     document.getElementById('cardContainer').innerHTML = `
     <div id="activeCard" class="content-card">
-        <div class="card-banner" style="background:linear-gradient(135deg,#1e1b4b,#0369a1)">
+        <div class="card-banner" style="background:#1e3a8a">
             <div class="card-banner-svg">
                 <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="40" cy="32" r="18" stroke="rgba(255,255,255,0.9)" stroke-width="2.5"/>
@@ -3303,7 +3343,7 @@ function _showMasterExamResults() {
                 </div>
             </div>
 
-            <button onclick="updateUI();switchTab('profile')" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#15803d,#16a34a);color:white;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:8px">
+            <button onclick="updateUI();switchTab('profile')" style="width:100%;padding:14px;border-radius:14px;border:none;background:#16a34a;color:white;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:8px">
                 Ir a Portafolio →
             </button>
             <button onclick="startMasterExam()" style="width:100%;padding:10px;border-radius:14px;border:2px solid #E2E8F0;background:white;color:#475569;font-weight:600;font-size:12px;cursor:pointer;margin-bottom:6px">Repetir examen</button>
@@ -3333,14 +3373,18 @@ async function generateMasterCertificate() {
         ? `<img src="${logoSrc}" alt="Programa de Formación Docente" style="height:44px;object-fit:contain">`
         : `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:#7C3AED">Formación Docente</span>`;
 
-    const availableCourses = allCourses.filter(c => c.status === 'available');
+    // Solo los cursos de la RUTA activa (no todo el catálogo)
+    const _path = _activeMasterPath || LEARNING_PATHS[0];
+    const _pathLabel = _path?.label || 'Programa de Formación Docente';
+    const _pathCourseIds = _path?.courses || [];
+    const availableCourses = allCourses.filter(c => c.status === 'available' && _pathCourseIds.includes(c.id));
     const totalHours = availableCourses.reduce((a, c) => a + (c.durationHours || 0), 0);
-    const avgIndividual = Math.round(availableCourses.reduce((a, c) => {
+    const avgIndividual = availableCourses.length ? Math.round(availableCourses.reduce((a, c) => {
         const s = c.id === 'steam' ? steamScore : (scores[c.id] || 0);
         return a + s;
-    }, 0) / availableCourses.length);
+    }, 0) / availableCourses.length) : 0;
 
-    const colors = { 'steam':'#07B0E4','abp':'#2563EB','design-thinking':'#E83C8D','evaluacion':'#E9A037','tipos-estudiantes':'#7C3AED' };
+    const colors = { 'steam':'#07B0E4','abp':'#2563EB','design-thinking':'#E83C8D','evaluacion':'#E9A037','tipos-estudiantes':'#7C3AED','creatividad':'#E83C8D','herramientas-tec':'#7C3AED','m-learning':'#F59E0B','flipped-classroom':'#10B981','abv':'#6366F1','micro-learning':'#F97316' };
     const courseBadges = availableCourses.map(c => {
         const s   = c.id === 'steam' ? steamScore : (scores[c.id] || 0);
         const col = colors[c.id] || '#1A6B68';
@@ -3362,13 +3406,13 @@ async function generateMasterCertificate() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Docente STEAM — ${nombre}</title>
+<title>${esc(_pathLabel)} — ${nombre}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Inter',sans-serif; background:#F1F5F9; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
   .cert { background:white; width:800px; max-width:100%; border-radius:24px; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,.15); }
-  .cert-top { background:linear-gradient(135deg,#0F172A 0%,#1e1b4b 50%,#4c1d95 100%); padding:36px 48px 28px; position:relative; overflow:hidden; }
+  .cert-top { background:#1e1b4b; padding:36px 48px 28px; position:relative; overflow:hidden; }
   .cert-top::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,.06); }
   .cert-top::after  { content:''; position:absolute; bottom:-60px; left:20%; width:280px; height:280px; border-radius:50%; background:rgba(124,58,237,.15); }
   .cert-badge { display:inline-block; font-size:11px; font-weight:700; color:rgba(255,255,255,.85); text-transform:uppercase; letter-spacing:.12em; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); border-radius:100px; padding:5px 14px; margin-bottom:12px; position:relative; z-index:1; }
@@ -3401,7 +3445,7 @@ async function generateMasterCertificate() {
   .verify-block { display:flex; align-items:center; gap:10px; }
   .verify-text { font-size:9.5px; color:#94A3B8; line-height:1.5; max-width:140px; }
   .verify-text strong { color:#475569; font-family:monospace; }
-  .print-btn  { background:linear-gradient(135deg,#4c1d95,#7C3AED); color:white; border:none; padding:10px 22px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .print-btn  { background:#5C35C5; color:white; border:none; padding:10px 22px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
   .linkedin-btn { display:flex; align-items:center; gap:6px; background:#0A66C2; color:white; border:none; padding:9px 18px; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; text-decoration:none; }
   .linkedin-btn:hover { opacity:.88; }
   @media print { body{background:none;padding:0} .cert{box-shadow:none;border-radius:0;width:100%} .print-btn{display:none} .linkedin-btn{display:none} }
@@ -3411,14 +3455,14 @@ async function generateMasterCertificate() {
 <body>
 <div class="cert">
   <div class="cert-top">
-    <div class="cert-badge">★ Certificación de Excelencia — Programa Completo ★</div>
-    <h1 class="cert-title">Docente STEAM</h1>
-    <p class="cert-subtitle">Programa Completo de Formación Docente en Pedagogía Innovadora · Guatemala</p>
+    <div class="cert-badge">★ Certificación de Excelencia — ${esc(_pathLabel)} ★</div>
+    <h1 class="cert-title">${esc(_pathLabel)}</h1>
+    <p class="cert-subtitle">Ruta de Formación Docente en Pedagogía Innovadora · Guatemala</p>
   </div>
   <div class="cert-body">
     <p class="cert-otorga">Se otorga con distinción máxima a</p>
     <p class="cert-nombre">${nombre}</p>
-    <p class="cert-desc">Por haber completado satisfactoriamente el <strong>Programa Completo de Formación Docente en Pedagogía Innovadora</strong>, acreditando los <strong>${availableCourses.length} cursos</strong> del programa y aprobando el <strong>Examen Final Integrador</strong> con <strong>${masterScore}%</strong>, demostrando dominio integral de metodologías activas para el aula del siglo XXI.</p>
+    <p class="cert-desc">Por haber completado satisfactoriamente la ruta <strong>${esc(_pathLabel)}</strong>, acreditando los <strong>${availableCourses.length} cursos</strong> que la integran y aprobando el <strong>Examen Final Integrador</strong> con <strong>${masterScore}%</strong>, demostrando dominio integral de metodologías activas para el aula del siglo XXI.</p>
     <div class="cert-meta">
       <div class="meta-pill hi"><div class="label">Examen Final</div><div class="value">${masterScore}%</div></div>
       <div class="meta-pill"><div class="label">Promedio cursos</div><div class="value">${avgIndividual}%</div></div>
@@ -3437,7 +3481,7 @@ async function generateMasterCertificate() {
       <div class="brand-area">
         ${logoHtml}
         <button class="print-btn" onclick="window.print()">⬇ Guardar PDF</button>
-        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent('Docente STEAM · Programa Completo de Formación Docente')}&organizationName=${encodeURIComponent('1bot - edoo')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
+        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(_pathLabel + ' · Certificación Maestra de Formación Docente')}&organizationName=${encodeURIComponent('1bot - edoo')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
       </div>
     </div>
   </div>
@@ -4067,6 +4111,7 @@ function _renderCourseSelector() {
         const scores = progress?.dailyMissions?.examScores || {};
         list.innerHTML = `
             <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.5);margin:0 0 14px">Elige tu ruta de formación</p>
+            <div class="lp-grid">
             ${LEARNING_PATHS.map(path => {
                 const pathCourses = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(Boolean);
                 const available   = pathCourses.filter(c => c.status === 'available');
@@ -4079,7 +4124,7 @@ function _renderCourseSelector() {
                      class="cursor-pointer active:scale-95 transition-all backdrop-blur border rounded-2xl p-4 mb-3"
                      style="background:${path.color}22;border-color:${path.color}55">
                     <div class="flex items-center gap-3">
-                        <div style="width:44px;height:44px;border-radius:14px;background:${path.gradient};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">
+                        <div style="width:44px;height:44px;border-radius:14px;background:${path.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">
                             🎓
                         </div>
                         <div class="flex-1 min-w-0">
@@ -4098,7 +4143,8 @@ function _renderCourseSelector() {
                         <span style="color:rgba(255,255,255,.4);font-size:18px">›</span>
                     </div>
                 </div>`;
-            }).join('')}`;
+            }).join('')}
+            </div>`;
     } else {
         // ── Vista 2: Cursos de la ruta seleccionada ─────────────────
         const path = LEARNING_PATHS.find(p => p.id === _selectedPathId);
@@ -4113,12 +4159,13 @@ function _renderCourseSelector() {
                 ‹ Todas las rutas
             </button>
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-                <div style="width:36px;height:36px;border-radius:10px;background:${path.gradient};flex-shrink:0"></div>
+                <div style="width:36px;height:36px;border-radius:10px;background:${path.color};flex-shrink:0"></div>
                 <div>
                     <h2 style="font-size:15px;font-weight:800;color:white;margin:0">${path.label}</h2>
                     <p style="font-size:11px;color:rgba(255,255,255,.5);margin:0">${pathCourses.length} cursos en esta ruta</p>
                 </div>
             </div>
+            <div class="lp-grid">
             ${pathCourses.map((c, idx) => {
                 const isOpen    = c.status === 'available';
                 const prereqMet = isCoursePrereqMet(c);
@@ -4154,7 +4201,8 @@ function _renderCourseSelector() {
                         ${clickable ? `<span style="color:rgba(255,255,255,.4);font-size:18px">›</span>` : ''}
                     </div>
                 </div>`;
-            }).join('')}`;
+            }).join('')}
+            </div>`;
     }
 }
 
@@ -4551,7 +4599,7 @@ function _renderPortfolioForm(existing) {
             </div>`).join('')}
 
             <button onclick="submitPortfolio()" id="portSubmitBtn"
-                style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#15803d,#16a34a);color:white;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px">
+                style="width:100%;padding:14px;border-radius:14px;border:none;background:#16a34a;color:white;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px">
                 Enviar portafolio para evaluación IA
             </button>
             <p style="font-size:10px;color:#94a3b8;text-align:center;margin-top:8px">
@@ -4745,7 +4793,7 @@ function _renderPortfolioResults() {
         <div style="padding:16px 20px">
 
             <!-- Puntaje total -->
-            <div style="text-align:center;background:${passed?'linear-gradient(135deg,#14532d,#15803d)':'linear-gradient(135deg,#7f1d1d,#dc2626)'};border-radius:16px;padding:20px;margin-bottom:16px;color:white">
+            <div style="text-align:center;background:${passed?'#15803d':'#dc2626'};border-radius:16px;padding:20px;margin-bottom:16px;color:white">
                 <p style="font-size:11px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Puntaje final</p>
                 <p style="font-size:3.5rem;font-weight:900;line-height:1">${combined}<span style="font-size:1.5rem;font-weight:600;opacity:.7">/100</span></p>
                 <p style="font-size:13px;font-weight:600;opacity:.9;margin-top:6px">${passed ? '¡Aprobado! Certificado Maestro desbloqueado' : `Necesitas 85/100 · Te faltan ${85-combined} puntos`}</p>
@@ -4790,7 +4838,7 @@ function _renderPortfolioResults() {
             }).join('')}
 
             ${passed ? `
-            <button onclick="closePortfolioModal();generateMasterCertificate()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#4c1d95,#7C3AED);color:white;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px">
+            <button onclick="closePortfolioModal();generateMasterCertificate()" style="width:100%;padding:14px;border-radius:14px;border:none;background:#5C35C5;color:white;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px">
                 Obtener Certificado Maestro
             </button>` : `
             <button onclick="_renderPortfolioForm(_portfolioData)" style="width:100%;padding:12px;border-radius:14px;border:2px solid #e2e8f0;background:white;color:#475569;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px">
@@ -5002,7 +5050,7 @@ function _renderComment(comment, iLiked, likesCount) {
     return `
     <div class="flex gap-3 group" id="comment-${comment.id}">
         <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 mt-0.5"
-            style="background:linear-gradient(135deg,#07B0E4,#0369a1)">${initial}</div>
+            style="background:#0784C4">${initial}</div>
         <div class="flex-1 min-w-0">
             <div class="flex items-baseline gap-1.5 flex-wrap">
                 <span class="font-bold text-slate-800 text-sm">${_escHtml(name)}</span>
