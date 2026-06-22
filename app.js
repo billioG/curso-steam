@@ -85,7 +85,6 @@ function getActiveCourseData() {
     }
     return courseData; // fallback: STEAM
 }
-const ADMIN_EMAIL = "billy@1bot.org";
 let progress = null;
 let db = null;
 let currentAvatar = "👨‍🏫";
@@ -556,7 +555,7 @@ function updateUI() {
     updateStreakDisplay();
 
     // Botón Estadísticas, Compendio y Modo Dev: solo visibles para el admin
-    const _isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.email === ADMIN_EMAIL);
+    const _isAdmin = currentUser && (currentUser.role === 'admin');
     const _statsBtn = document.getElementById('statsSecretBtn');
     if (_statsBtn) _statsBtn.classList.toggle('hidden', !_isAdmin);
     const _compendio = document.getElementById('compendioLink');
@@ -3833,7 +3832,7 @@ function isDevMode() {
 }
 
 function enableProfeMode() {
-    if (!currentUser || (currentUser.role !== 'admin' && currentUser.email !== ADMIN_EMAIL)) {
+    if (!currentUser || (currentUser.role !== 'admin')) {
         alert("⛔ Solo el administrador puede activar este modo.");
         return;
     }
@@ -3973,7 +3972,7 @@ document.getElementById("missionsToggle")?.addEventListener("click", () => {
 if (progress?.profeMode) { document.getElementById("profeVideoBtn").classList.remove("hidden"); }
 
 document.getElementById("statsSecretBtn")?.addEventListener("click", () => {
-    if (!currentUser || (currentUser.role !== 'admin' && currentUser.email !== ADMIN_EMAIL)) {
+    if (!currentUser || (currentUser.role !== 'admin')) {
         alert("⛔ Solo el administrador puede ver las estadísticas.");
         return;
     }
@@ -5397,7 +5396,7 @@ async function _loadComments(cardId) {
 /** Genera el HTML de un comentario individual */
 function _renderComment(comment, iLiked, likesCount) {
     const isOwn = comment.user_id === currentUser?.id;
-    const isAdmin = currentUser?.role === 'admin' || currentUser?.email === ADMIN_EMAIL;
+    const isAdmin = currentUser?.role === 'admin';
     const canDelete = isOwn || isAdmin;
 
     const name = comment.user_name || (comment.user_id === currentUser?.id ? (progress?.dailyMissions?.fullName || currentUser?.email?.split('@')[0]) : null) || 'Docente';
