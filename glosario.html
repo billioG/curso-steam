@@ -259,6 +259,12 @@
   .chip.active[data-filter="eval"] { background: var(--eval); color: white; border-color: var(--eval); }
   .chip.active[data-filter="cts"] { background: var(--cts); color: white; border-color: var(--cts); }
   .chip.active[data-filter="story"] { background: var(--story); color: white; border-color: var(--story); }
+  .chip.active[data-filter="crea"] { background: #E83C8D; color: white; border-color: #E83C8D; }
+  .chip.active[data-filter="tec"] { background: #7C3AED; color: white; border-color: #7C3AED; }
+  .chip.active[data-filter="ml"] { background: #F59E0B; color: white; border-color: #F59E0B; }
+  .chip.active[data-filter="flip"] { background: #EF4444; color: white; border-color: #EF4444; }
+  .chip.active[data-filter="abv"] { background: #6366F1; color: white; border-color: #6366F1; }
+  .chip.active[data-filter="micro"] { background: #F97316; color: white; border-color: #F97316; }
 
   .chip-dot {
     width: 8px;
@@ -404,6 +410,12 @@
   .tag-eval { background: var(--eval-bg); color: var(--eval-text); }
   .tag-cts { background: var(--cts-bg); color: var(--cts-text); }
   .tag-story { background: var(--story-bg); color: var(--story-text); }
+  .tag-crea { background: #FCE7F3; color: #BE185D; }
+  .tag-tec { background: #EDE9FE; color: #6D28D9; }
+  .tag-ml { background: #FEF3C7; color: #B45309; }
+  .tag-flip { background: #FEE2E2; color: #B91C1C; }
+  .tag-abv { background: #E0E7FF; color: #4338CA; }
+  .tag-micro { background: #FFEDD5; color: #C2410C; }
 
   .term-definition {
     color: var(--gray-700);
@@ -548,6 +560,24 @@
     <button class="chip" data-filter="story">
       <span class="chip-dot" style="background:#F59E0B"></span>Storytelling
     </button>
+    <button class="chip" data-filter="crea">
+      <span class="chip-dot" style="background:#E83C8D"></span>Creatividad
+    </button>
+    <button class="chip" data-filter="tec">
+      <span class="chip-dot" style="background:#7C3AED"></span>Herramientas Tec.
+    </button>
+    <button class="chip" data-filter="ml">
+      <span class="chip-dot" style="background:#F59E0B"></span>Mobile Learning
+    </button>
+    <button class="chip" data-filter="flip">
+      <span class="chip-dot" style="background:#EF4444"></span>Aula Invertida
+    </button>
+    <button class="chip" data-filter="abv">
+      <span class="chip-dot" style="background:#6366F1"></span>Videos (ABV)
+    </button>
+    <button class="chip" data-filter="micro">
+      <span class="chip-dot" style="background:#F97316"></span>Micro-learning
+    </button>
   </div>
 
   <div class="alpha-index" id="alphaIndex"></div>
@@ -573,7 +603,13 @@ const COURSES = {
   dt:     { label: 'Design Thinking',          cls: 'tag-dt'   },
   eval:   { label: 'Evaluación',               cls: 'tag-eval' },
   cts:    { label: 'Conoce a tus Estudiantes', cls: 'tag-cts'  },
-  story:  { label: 'Storytelling',             cls: 'tag-story'}
+  story:  { label: 'Storytelling',             cls: 'tag-story'},
+  crea:   { label: 'Creatividad',              cls: 'tag-crea' },
+  tec:    { label: 'Herramientas Tec.',        cls: 'tag-tec'  },
+  ml:     { label: 'Mobile Learning',          cls: 'tag-ml'   },
+  flip:   { label: 'Aula Invertida',           cls: 'tag-flip' },
+  abv:    { label: 'Videos (ABV)',             cls: 'tag-abv'  },
+  micro:  { label: 'Micro-learning',           cls: 'tag-micro'}
 };
 
 const terms = [
@@ -772,7 +808,42 @@ const terms = [
   // Z
   { term: 'Zona de Desarrollo Próximo (ZDP)', courses: ['cts'], letter: 'Z',
     definition: 'Concepto de Vygotsky: la distancia entre lo que un estudiante puede hacer solo y lo que puede lograr con apoyo. El aprendizaje más efectivo ocurre en esta zona.',
-    classroom: 'Diseña actividades ligeramente más difíciles que lo que el estudiante ya domina, y ofrece apoyo exactamente donde lo necesita.' }
+    classroom: 'Diseña actividades ligeramente más difíciles que lo que el estudiante ya domina, y ofrece apoyo exactamente donde lo necesita.' },
+
+  // ── Términos de las rutas Docente Creativo y Metodologías Activas ──────────
+  { term: 'Aprendizaje Basado en Videos (ABV)', courses: ['abv'], letter: 'A',
+    definition: 'Metodología que usa el video como recurso central para presentar contenido, motivar la indagación y promover el análisis. Se apoya en la teoría de codificación dual (imagen + audio refuerzan la memoria).',
+    classroom: 'Acompaña cada video con una guía de tres momentos: predicción antes, pausas reflexivas durante, y preguntas de discusión después.' },
+  { term: 'Aula Invertida (Flipped Classroom)', courses: ['flip'], letter: 'A',
+    definition: 'Modelo en el que el primer contacto con el contenido ocurre fuera del aula (videos, lecturas) y el tiempo de clase se dedica a la práctica, la discusión y la resolución de dudas con acompañamiento del docente.',
+    classroom: 'Para estudiantes sin internet en casa, entrega el video en USB o prepara una versión impresa del material previo.' },
+  { term: 'Cápsula de Aprendizaje', courses: ['micro'], letter: 'C',
+    definition: 'Unidad breve y autocontenida de contenido (1-5 minutos) centrada en un solo objetivo. Es la pieza fundamental del micro-learning, con estructura gancho → núcleo → cierre con acción.',
+    classroom: 'Envía una cápsula por WhatsApp cada mañana: una idea clave, un ejemplo y una micro-tarea de un minuto.' },
+  { term: 'Ciudadanía Digital', courses: ['tec'], letter: 'C',
+    definition: 'Conjunto de competencias para usar la tecnología de forma segura, ética, crítica y responsable, incluyendo la protección de datos, la huella digital y el respeto en entornos en línea.',
+    classroom: 'Antes de cualquier proyecto digital, acuerden normas de respeto, privacidad y citación de fuentes con el grupo.' },
+  { term: 'Curva del Olvido', courses: ['micro'], letter: 'C',
+    definition: 'Fenómeno descrito por Hermann Ebbinghaus: la retención de información decae rápidamente con el tiempo si no se repasa. Justifica el uso de cápsulas breves y la repetición espaciada.',
+    classroom: 'Repasa lo clave a las 24 horas, a la semana y al mes con micro-cuestionarios rápidos para fijar el aprendizaje.' },
+  { term: 'Mobile Learning (m-learning)', courses: ['ml'], letter: 'M',
+    definition: 'Aprendizaje que aprovecha dispositivos móviles (principalmente el celular) para acceder a contenidos y actividades en cualquier momento y lugar. En contextos de baja conectividad, el celular suele ser el dispositivo más accesible.',
+    classroom: 'Diseña actividades "offline-first": que puedan descargarse o realizarse con datos mínimos y sin conexión constante.' },
+  { term: 'Modelo SAMR', courses: ['tec'], letter: 'M',
+    definition: 'Marco de Ruben Puentedura para evaluar la integración tecnológica en cuatro niveles: Sustitución, Aumento, Modificación y Redefinición. Los dos últimos transforman la tarea pedagógica.',
+    classroom: 'Pregúntate: ¿la tecnología solo reemplaza el cuaderno (Sustitución) o permite algo antes imposible (Redefinición)?' },
+  { term: 'Pensamiento Convergente', courses: ['crea'], letter: 'P',
+    definition: 'Capacidad de analizar, filtrar y seleccionar entre muchas ideas para llegar a la solución más adecuada. Es el complemento del pensamiento divergente en el proceso creativo.',
+    classroom: 'Tras una lluvia de ideas, usa criterios claros (impacto, viabilidad) para que el grupo elija las mejores propuestas.' },
+  { term: 'Pensamiento Divergente', courses: ['crea'], letter: 'P',
+    definition: 'Capacidad de generar muchas ideas distintas, variadas y originales a partir de un mismo punto de partida. Es el motor de la fase de generación creativa.',
+    classroom: 'Plantea retos abiertos sin una única respuesta correcta y premia la cantidad y variedad de ideas antes de juzgarlas.' },
+  { term: 'Repetición Espaciada', courses: ['micro'], letter: 'R',
+    definition: 'Técnica que distribuye los repasos en intervalos crecientes para combatir la curva del olvido y consolidar la memoria a largo plazo.',
+    classroom: 'Programa repasos breves del mismo contenido a intervalos cada vez más largos en lugar de una sola sesión intensiva.' },
+  { term: 'SCAMPER', courses: ['crea'], letter: 'S',
+    definition: 'Técnica de creatividad estructurada que estimula ideas mediante siete operaciones sobre algo existente: Sustituir, Combinar, Adaptar, Modificar, Poner otros usos, Eliminar y Reordenar.',
+    classroom: 'Toma un objeto o problema común del aula y aplícale cada letra de SCAMPER para generar soluciones nuevas.' }
 ];
 
 const ALL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -834,6 +905,8 @@ function renderTerms() {
     if (!byLetter[t.letter]) byLetter[t.letter] = [];
     byLetter[t.letter].push(t);
   });
+  // Orden alfabético dentro de cada letra
+  Object.keys(byLetter).forEach(l => byLetter[l].sort((a, b) => a.term.localeCompare(b.term, 'es')));
 
   const letters = Object.keys(byLetter).sort();
   updateAlphaIndex(letters);
