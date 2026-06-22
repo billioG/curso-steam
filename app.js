@@ -534,12 +534,15 @@ function updateUI() {
 
     updateStreakDisplay();
 
-    // Botón Estadísticas y Compendio: solo visibles para el admin
+    // Botón Estadísticas, Compendio y Modo Dev: solo visibles para el admin
     const _isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.email === ADMIN_EMAIL);
     const _statsBtn = document.getElementById('statsSecretBtn');
     if (_statsBtn) _statsBtn.classList.toggle('hidden', !_isAdmin);
     const _compendio = document.getElementById('compendioLink');
     if (_compendio) _compendio.classList.toggle('hidden', !_isAdmin);
+    const _devBtn = document.getElementById('devModeBtn');
+    if (_devBtn) _devBtn.classList.toggle('hidden', !_isAdmin);
+    _updateDevModeBtn();
 
     // Botón de certificado en perfil — visible si aprobó el examen del curso activo
     const certBtn = document.getElementById('certDownloadBtn');
@@ -551,10 +554,10 @@ function updateUI() {
         const _score = (_scores[_activeCid] !== undefined) ? _scores[_activeCid]
                      : (_activeCid === 'steam' && _dm.examScore !== undefined) ? _dm.examScore
                      : undefined;
-        const _passed = _score !== undefined && _score >= 70;
+        const _passed = (_score !== undefined && _score >= 70) || isDevMode();
         if (_passed) {
             certBtn.classList.remove('hidden');
-            window._lastExamScore = _score;
+            window._lastExamScore = _score || 100;
         } else {
             certBtn.classList.add('hidden');
         }
@@ -3132,11 +3135,12 @@ function _checkMasterCert() {
     const portfolioDone   = portfolioScore !== null;
     const allIndividualPassed = anyPassed;
 
-    // Botones de acción
+    // Botones de acción (devMode desbloquea todo)
+    const _dev = isDevMode();
     const examBtn = document.getElementById('masterExamBtn');
-    if (examBtn) examBtn.classList.toggle('hidden', !allIndividualPassed || examTaken);
+    if (examBtn) examBtn.classList.toggle('hidden', !_dev && (!allIndividualPassed || examTaken));
     const portBtn = document.getElementById('masterPortfolioBtn');
-    if (portBtn) portBtn.classList.toggle('hidden', !allIndividualPassed || !examTaken || portfolioDone || masterPassed);
+    if (portBtn) portBtn.classList.toggle('hidden', !_dev && (!allIndividualPassed || !examTaken || portfolioDone || masterPassed));
     const portResultsBtn = document.getElementById('masterPortfolioResultsBtn');
     if (portResultsBtn) portResultsBtn.classList.toggle('hidden', !portfolioDone || masterPassed);
 
@@ -3170,7 +3174,7 @@ function _checkMasterCert() {
     }
 
     const certBtn = document.getElementById('masterCertBtn');
-    if (certBtn) certBtn.classList.toggle('hidden', !masterPassed);
+    if (certBtn) certBtn.classList.toggle('hidden', !masterPassed && !isDevMode());
 
     // Placeholder: oculto si hay cualquier certificado visible o todos están en camino
     const _certVisible = !document.getElementById('certDownloadBtn')?.classList.contains('hidden');
@@ -3618,6 +3622,36 @@ function clearStats() { if (confirm("⚠️ ¿Eliminar TODOS los datos de feedba
 
 // ==================== MODO PROFE ====================
 const ADMIN_EMAIL = "profebillio@gmail.com";
+
+function toggleDevMode() {
+    const active = localStorage.getItem('devMode') === '1';
+    if (active) {
+        localStorage.removeItem('devMode');
+        showToast('Modo Dev desactivado', 'info');
+    } else {
+        localStorage.setItem('devMode', '1');
+        showToast('Modo Dev activado — todas las opciones desbloqueadas', 'success');
+    }
+    _updateDevModeBtn();
+    _checkMasterCert();
+    renderProfileTab();
+}
+
+function _updateDevModeBtn() {
+    const on = localStorage.getItem('devMode') === '1';
+    const btn = document.getElementById('devModeBtn');
+    const lbl = document.getElementById('devModeBtnLabel');
+    const sub = document.getElementById('devModeBtnSub');
+    if (!btn) return;
+    btn.style.borderColor   = on ? '#f97316' : '';
+    btn.style.background    = on ? '#fff7ed' : '';
+    if (lbl) lbl.style.color = on ? '#ea580c' : '';
+    if (sub) sub.textContent  = on ? 'Activado' : 'Desactivado';
+}
+
+function isDevMode() {
+    return localStorage.getItem('devMode') === '1';
+}
 
 function enableProfeMode() {
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.email !== ADMIN_EMAIL)) {
