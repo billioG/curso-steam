@@ -701,8 +701,10 @@ function loadDailyMissions() {
     if (savedMissions.date !== today) {
         const newMissions = dailyMissionsList.map(m => ({ ...m, current: 0, completed: false, claimed: false }));
         // Preservar campos de perfil y exámenes que también viven en dailyMissions
-        const { fullName, profilePhoto, examScores, examScore, masterExamScore, masterExamDate,
-                coursePositions, diagResult } = savedMissions;
+        const { fullName, profilePhoto, examScores, examScore, masterExamScore, masterExamScores,
+                masterExamDate, coursePositions, diagResult, portfolioByPath,
+                portfolioAiTotal, portfolioScores, portfolioFeedback, portfolioSummary,
+                portfolioAttempts, portfolioLastAttempt } = savedMissions;
         progress.dailyMissions = {
             date: today, missions: newMissions,
             ...(fullName        && { fullName }),
@@ -710,9 +712,17 @@ function loadDailyMissions() {
             ...(examScores      && { examScores }),
             ...(examScore !== undefined && { examScore }),
             ...(masterExamScore !== undefined && { masterExamScore }),
+            ...(masterExamScores && { masterExamScores }),
             ...(masterExamDate  && { masterExamDate }),
             ...(coursePositions && { coursePositions }),
             ...(diagResult      && { diagResult }),
+            ...(portfolioByPath && { portfolioByPath }),
+            ...(portfolioAiTotal !== undefined && { portfolioAiTotal }),
+            ...(portfolioScores && { portfolioScores }),
+            ...(portfolioFeedback && { portfolioFeedback }),
+            ...(portfolioSummary && { portfolioSummary }),
+            ...(portfolioAttempts !== undefined && { portfolioAttempts }),
+            ...(portfolioLastAttempt && { portfolioLastAttempt }),
         };
         saveProgress();
     }
@@ -3030,19 +3040,62 @@ function renderCourseResources() {
 }
 
 // ==================== CERTIFICADO MAESTRO ====================
-let _activeMasterPath = null; // ruta cuyo certificado maestro está disponible/activo
+let _activeMasterPath   = null; // ruta cuyo certificado maestro se generará
+let _selectedMasterPath = null; // ruta elegida por el usuario en la sección de certificados
+
+// Puntaje del examen maestro de una ruta concreta (con compatibilidad hacia atrás)
+function _getMasterExamScore(pathId) {
+    const dm = progress?.dailyMissions || {};
+    if (dm.masterExamScores && dm.masterExamScores[pathId] !== undefined) return dm.masterExamScores[pathId];
+    if (pathId === 'steam20' && dm.masterExamScore !== undefined) return dm.masterExamScore; // legado
+    return undefined;
+}
+
+// Datos del portafolio de una ruta concreta (con compatibilidad hacia atrás)
+function _getPortfolio(pathId) {
+    const dm = progress?.dailyMissions || {};
+    if (dm.portfolioByPath && dm.portfolioByPath[pathId]) return dm.portfolioByPath[pathId];
+    if (pathId === 'steam20' && dm.portfolioAiTotal !== undefined && dm.portfolioAiTotal !== null) {
+        return { aiTotal: dm.portfolioAiTotal, scores: dm.portfolioScores, feedback: dm.portfolioFeedback,
+                 summary: dm.portfolioSummary, attempts: dm.portfolioAttempts, lastAttempt: dm.portfolioLastAttempt }; // legado
+    }
+    return null;
+}
+
+function _setPortfolio(pathId, data) {
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    if (!progress.dailyMissions.portfolioByPath) progress.dailyMissions.portfolioByPath = {};
+    progress.dailyMissions.portfolioByPath[pathId] = { ...(progress.dailyMissions.portfolioByPath[pathId] || {}), ...data };
+}
+
+function _selectMasterPath(pathId) {
+    const p = LEARNING_PATHS.find(x => x.id === pathId);
+    if (p) { _selectedMasterPath = p; _checkMasterCert(); }
+}
+
+// Entregables del portafolio para una ruta = sus cursos
+function _portfolioCoursesForPath(path) {
+    if (!path) return [];
+    return (path.courses || [])
+        .map(id => allCourses.find(c => c.id === id))
+        .filter(Boolean)
+        .map(c => ({
+            key: c.id,
+            label: c.title,
+            color: c.color || '#1A6B68',
+            prompt: `Comparte una evidencia concreta de cómo aplicaste lo aprendido en "${c.title}" con tus estudiantes: describe la actividad, qué hiciste y qué resultado observaste.`
+        }));
+}
+
 function _checkMasterCert() {
     if (typeof allCourses === 'undefined') return;
     const scores      = progress?.dailyMissions?.examScores || {};
     const steamScore  = scores['steam'] ?? progress?.dailyMissions?.examScore;
-    const masterExamScore = progress?.dailyMissions?.masterExamScore;
-    const portfolioScore  = progress?.dailyMissions?.portfolioAiTotal ?? null;
     const available       = allCourses.filter(c => c.status === 'available');
 
-    // Evaluar cada ruta de aprendizaje — el usuario puede obtener un cert maestro por cada ruta
+    // Evaluar cada ruta — cada una tiene su propio examen, portafolio y certificado
     const pathResults = LEARNING_PATHS.map(path => {
-        const requiredIds = path.courses || [];
-        const requiredCourses = available.filter(c => requiredIds.includes(c.id));
+        const requiredCourses = available.filter(c => (path.courses || []).includes(c.id));
         const allPassed = requiredCourses.length > 0 && requiredCourses.every(c => {
             const s = c.id === 'steam' ? steamScore : scores[c.id];
             return s !== undefined && s >= 70;
@@ -3050,21 +3103,48 @@ function _checkMasterCert() {
         return { path, allPassed };
     });
 
-    // Para los botones de acción usamos la primera ruta donde todos los cursos están aprobados
-    // (o la primera ruta en general como fallback para compatibilidad)
-    const activePathResult = pathResults.find(r => r.allPassed) || pathResults[0];
-    const allIndividualPassed = activePathResult?.allPassed || false;
-    // Ruta activa para el certificado maestro — el cert solo lista los cursos de ESTA ruta
-    _activeMasterPath = activePathResult?.path || null;
+    const passedPaths = pathResults.filter(r => r.allPassed);
+    const anyPassed   = passedPaths.length > 0;
 
-    // Sistema 50/50: examen vale 50pts, portafolio vale 50pts (compartido entre todas las rutas por ahora)
+    // Ruta seleccionada para el proceso de certificado maestro (default: primera completada)
+    if (!_selectedMasterPath || !passedPaths.some(r => r.path.id === _selectedMasterPath.id)) {
+        _selectedMasterPath = passedPaths[0]?.path || null;
+    }
+    _activeMasterPath = _selectedMasterPath;
+    const sel = _selectedMasterPath;
+
+    // Selector de ruta (chips) — visible si hay ≥1 ruta completada
+    const selEl = document.getElementById('masterPathSelector');
+    if (selEl) {
+        if (anyPassed) {
+            selEl.innerHTML = `
+                <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px">Certificado maestro · elige la ruta</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    ${passedPaths.map(r => {
+                        const isSel = sel && r.path.id === sel.id;
+                        return `<button onclick="_selectMasterPath('${r.path.id}')"
+                            style="font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;cursor:pointer;border:1.5px solid ${isSel?r.path.color:'#e2e8f0'};background:${isSel?r.path.color:'#fff'};color:${isSel?'#fff':'#475569'}">${esc(r.path.label)}</button>`;
+                    }).join('')}
+                </div>`;
+            selEl.classList.remove('hidden');
+        } else {
+            selEl.classList.add('hidden');
+        }
+    }
+
+    // Puntajes de la ruta SELECCIONADA (cada ruta es independiente)
+    const masterExamScore = sel ? _getMasterExamScore(sel.id) : undefined;
+    const pf              = sel ? _getPortfolio(sel.id) : null;
+    const portfolioScore  = (pf && pf.aiTotal !== undefined && pf.aiTotal !== null) ? pf.aiTotal : null;
+    const allIndividualPassed = anyPassed;
+
     const examScore50    = masterExamScore !== undefined ? Math.round(masterExamScore * 0.5) : null;
     const combinedScore  = (examScore50 !== null && portfolioScore !== null) ? examScore50 + portfolioScore : null;
     const masterPassed   = combinedScore !== null && combinedScore >= 85;
     const examTaken      = masterExamScore !== undefined;
     const portfolioDone  = portfolioScore !== null;
 
-    // Botón examen maestro: visible cuando al menos una ruta completada y examen aún no tomado
+    // Botón examen maestro: visible cuando hay ruta seleccionada y su examen aún no tomado
     const examBtn = document.getElementById('masterExamBtn');
     if (examBtn) examBtn.classList.toggle('hidden', !allIndividualPassed || examTaken);
 
@@ -3079,10 +3159,11 @@ function _checkMasterCert() {
     // Resumen de puntaje combinado (si examen ya tomado)
     const scoreEl = document.getElementById('masterScoreSummary');
     if (scoreEl) {
-        if (examTaken) {
+        if (anyPassed && examTaken) {
             const portLabel = portfolioDone ? `${portfolioScore}/50` : '<span style="color:#94a3b8">Pendiente</span>';
             const combinedLabel = combinedScore !== null ? `<strong style="color:${combinedScore>=85?'#16a34a':'#dc2626'}">${combinedScore}/100</strong>` : '—';
             scoreEl.innerHTML = `
+                <p style="font-size:11px;font-weight:700;color:${sel?.color||'#475569'};margin:0 0 6px">Ruta: ${esc(sel?.label||'')}</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
                     <div style="background:#f0f9ff;border-radius:12px;padding:10px;text-align:center;border:1px solid #bae6fd">
                         <p style="font-size:18px;font-weight:800;color:#0369a1">${examScore50}/50</p>
@@ -3191,14 +3272,26 @@ let _masterExamQuestions = [];
 let _masterExamAnswers  = [];
 let _masterExamCurrentQ = 0;
 
+let _masterExamPathId = null; // ruta del examen maestro en curso
+
 function startMasterExam() {
-    if (typeof MASTER_EXAM === 'undefined') {
-        showToast('Error: banco de preguntas no disponible.', 'error'); return;
-    }
+    const path = _selectedMasterPath || _activeMasterPath;
+    if (!path) { showToast('Primero completa todos los cursos de una ruta.', 'warning'); return; }
+    _masterExamPathId = path.id;
+
+    // Construir el examen con preguntas de TODOS los cursos de esta ruta (examen propio por ruta)
+    let pool = [];
+    (path.courses || []).forEach(id => {
+        const course = allCourses.find(c => c.id === id);
+        if (!course) return;
+        const exam = getCourseExam(course);
+        (exam.questions || []).forEach(q => pool.push({ ...q, course: id }));
+    });
+    if (pool.length === 0) { showToast('Esta ruta no tiene preguntas disponibles.', 'error'); return; }
+
     _masterExamActive    = true;
     _masterExamCurrentQ  = 0;
-    const shuffled       = _shuffleArray([...MASTER_EXAM.questions]);
-    _masterExamQuestions = shuffled.slice(0, 30);
+    _masterExamQuestions = _shuffleArray(pool).slice(0, 30);
     _masterExamAnswers   = new Array(_masterExamQuestions.length).fill(null);
 
     switchTab('home');
@@ -3213,10 +3306,10 @@ function _renderMasterExamCard() {
     const qNum  = _masterExamCurrentQ + 1;
     const pct   = Math.round((qNum / total) * 100);
 
-    const courseLabels = { steam:'STEAM', abp:'ABP', 'design-thinking':'Design Thinking', evaluacion:'Evaluación', 'tipos-estudiantes':'Tipos de Estudiantes', maestro:'Síntesis' };
-    const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', maestro:'#1A6B68' };
-    const courseTag    = courseLabels[q.course] || 'General';
-    const courseColor  = courseColors[q.course] || '#1A6B68';
+    const _qCourse     = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === q.course) : null;
+    const _pathColor   = (_selectedMasterPath || _activeMasterPath)?.color || '#1A6B68';
+    const courseTag    = _qCourse?.title || 'General';
+    const courseColor  = _qCourse?.color || _pathColor;
     const selected     = _masterExamAnswers[_masterExamCurrentQ];
 
     const optionsHtml = q.options.map((opt, i) => {
@@ -3243,7 +3336,7 @@ function _renderMasterExamCard() {
                                  padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em">${courseTag}</span>
                     <span style="font-size:11px;color:#94A3B8;font-weight:600">Pregunta ${qNum} / ${total}</span>
                 </div>
-                <span style="font-size:11px;font-weight:700;color:#1e293b">🎓 Docente STEAM</span>
+                <span style="font-size:11px;font-weight:700;color:#1e293b">🎓 ${esc((_selectedMasterPath||_activeMasterPath)?.label||'Examen Maestro')}</span>
             </div>
             <div style="background:#F1F5F9;border-radius:8px;height:6px;margin-bottom:16px;overflow:hidden">
                 <div style="height:100%;border-radius:8px;background:${courseColor};
@@ -3292,11 +3385,14 @@ function _showMasterExamResults() {
     _masterExamQuestions.forEach((q, i) => { if (_masterExamAnswers[i] === q.correct) correct++; });
     const total  = _masterExamQuestions.length;
     const pct    = Math.round((correct / total) * 100);
-    const passed = pct >= MASTER_EXAM.passingScore;
+    const passed = pct >= 70;
 
-    // Siempre guardar el puntaje del examen (independiente de si aprueba o no)
+    // Guardar el puntaje del examen POR RUTA (cada ruta tiene su propio examen)
     if (!progress.dailyMissions) progress.dailyMissions = {};
-    progress.dailyMissions.masterExamScore = pct;
+    if (!progress.dailyMissions.masterExamScores) progress.dailyMissions.masterExamScores = {};
+    const _pid = _masterExamPathId || _selectedMasterPath?.id;
+    if (_pid) progress.dailyMissions.masterExamScores[_pid] = pct;
+    if (_pid === 'steam20') progress.dailyMissions.masterExamScore = pct; // legado
     progress.dailyMissions.masterExamDate  = localDateStr();
     window._lastMasterExamScore = pct;
     if (passed) {
@@ -3338,7 +3434,7 @@ function _showMasterExamResults() {
             <div style="background:#f0fdf4;border-radius:14px;padding:14px;margin-bottom:16px;border:1px solid #86efac">
                 <p style="font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Siguiente paso</p>
                 <p style="font-size:13px;color:#166534;font-weight:600;margin-bottom:2px">Parte 2 · Portafolio de práctica</p>
-                <p style="font-size:11px;color:#64748b">Comparte 5 evidencias de lo que aplicaste en tu aula. La IA evaluará tu portafolio y dará retroalimentación personalizada. Vale 50 puntos.</p>
+                <p style="font-size:11px;color:#64748b">Comparte una evidencia por cada curso de la ruta sobre lo que aplicaste en tu aula. La IA evaluará tu portafolio y dará retroalimentación personalizada. Vale 50 puntos.</p>
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
@@ -3360,7 +3456,8 @@ function _showMasterExamResults() {
         </div>
     </div>`;
 
-    if (passed) { _checkMasterCert(); renderCourseResources(); }
+    _checkMasterCert();
+    if (passed) { renderCourseResources(); }
 }
 
 async function generateMasterCertificate() {
@@ -3371,7 +3468,7 @@ async function generateMasterCertificate() {
     const _issueMonth = _now.getMonth() + 1;
     const scores      = progress?.dailyMissions?.examScores || {};
     const steamScore  = scores['steam'] ?? progress?.dailyMissions?.examScore ?? 0;
-    const masterScore = progress?.dailyMissions?.masterExamScore ?? window._lastMasterExamScore ?? 0;
+    const masterScore = (_activeMasterPath ? _getMasterExamScore(_activeMasterPath.id) : undefined) ?? window._lastMasterExamScore ?? 0;
 
     const [logoSrc, firmaSrc, masterSigs] = await Promise.all([
         _imgToBase64('logo-1bot-edoo.png'),
@@ -4526,28 +4623,46 @@ async function loadAppConfig() {
     } catch(_) { /* tabla no existe aún, usa defaults */ }
 }
 
+let _portfolioByPathRow = {}; // { pathId: row } — la fila de Supabase por ruta
+
 async function loadPortfolio() {
     if (!currentUser) return;
     try {
         const { data } = await supabase.from('portfolios')
             .select('*').eq('user_id', currentUser.id)
-            .order('submitted_at', { ascending: false }).limit(1);
-        _portfolioData = data?.[0] || null;
-        if (_portfolioData?.ai_total !== undefined && _portfolioData?.ai_total !== null) {
-            if (!progress.dailyMissions) progress.dailyMissions = {};
-            progress.dailyMissions.portfolioAiTotal = _portfolioData.ai_total;
-            progress.dailyMissions.portfolioScores   = _portfolioData.ai_scores;
-            progress.dailyMissions.portfolioFeedback = _portfolioData.ai_feedback;
-            progress.dailyMissions.portfolioSummary  = _portfolioData.ai_summary;
-        }
+            .order('submitted_at', { ascending: false });
+        _portfolioByPathRow = {};
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        if (!progress.dailyMissions.portfolioByPath) progress.dailyMissions.portfolioByPath = {};
+        (data || []).forEach(row => {
+            const pid = row.path_id || 'steam20'; // filas antiguas = ruta steam20
+            if (_portfolioByPathRow[pid]) return; // ya tenemos la más reciente (orden desc)
+            _portfolioByPathRow[pid] = row;
+            if (row.ai_total !== undefined && row.ai_total !== null) {
+                _setPortfolio(pid, {
+                    aiTotal: row.ai_total, scores: row.ai_scores, feedback: row.ai_feedback,
+                    summary: row.ai_summary, combined: row.combined_score,
+                });
+            }
+        });
+        // back-compat para la ruta steam20
+        _portfolioData = _portfolioByPathRow['steam20'] || null;
     } catch(e) { /* silent */ }
 }
+
+let _portfolioActiveCourses = []; // entregables (cursos) de la ruta activa del portafolio
+let _portfolioActivePathId  = null;
 
 function showPortfolioModal() {
     const modal = document.getElementById('portfolioModal');
     if (!modal) return;
 
-    const existing = _portfolioData;
+    const path = _selectedMasterPath || _activeMasterPath;
+    if (!path) { showToast('Primero completa una ruta y su examen.', 'warning'); return; }
+    _portfolioActivePathId  = path.id;
+    _portfolioActiveCourses = _portfolioCoursesForPath(path);
+
+    const existing = _portfolioByPathRow[path.id] || null;
     const alreadyEvaluated = existing?.ai_total !== undefined && existing?.ai_total !== null;
 
     if (alreadyEvaluated) {
@@ -4563,7 +4678,11 @@ function _renderPortfolioForm(existing) {
     const body = document.getElementById('portfolioBody');
     if (!body) return;
 
-    const examScore50 = Math.round((progress?.dailyMissions?.masterExamScore || 0) * 0.5);
+    const courses = _portfolioActiveCourses;
+    const pathLabel = (_selectedMasterPath || _activeMasterPath)?.label || '';
+    const examScore50 = Math.round(((_portfolioActivePathId ? _getMasterExamScore(_portfolioActivePathId) : 0) || 0) * 0.5);
+    const _pf = _portfolioActivePathId ? _getPortfolio(_portfolioActivePathId) : null;
+    const _attempts = _pf?.attempts || 0;
 
     body.innerHTML = `
         <div style="padding:16px 20px 8px">
@@ -4579,9 +4698,10 @@ function _renderPortfolioForm(existing) {
                 </div>
             </div>
 
-            <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">5 entregables · mínimo 100 palabras cada uno</p>
+            <p style="font-size:12px;font-weight:700;color:${(_selectedMasterPath||_activeMasterPath)?.color||'#475569'};margin:0 0 4px">Ruta: ${esc(pathLabel)}</p>
+            <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">${courses.length} entregables · mínimo 100 palabras cada uno</p>
 
-            ${PORTFOLIO_COURSES.map((c, i) => `
+            ${courses.map((c, i) => `
             <div style="margin-bottom:20px">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                     <div style="width:24px;height:24px;border-radius:6px;background:${c.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -4595,7 +4715,7 @@ function _renderPortfolioForm(existing) {
                     oninput="_portWordCount(this,'wc_${c.key}')"
                     onfocus="this.style.borderColor='${c.color}'"
                     onblur="this.style.borderColor='#e2e8f0'"
-                >${existing ? (existing['entregable_'+c.key]||'') : ''}</textarea>
+                >${(existing?.entregables?.[c.key]) || (existing ? (existing['entregable_'+c.key]||'') : '')}</textarea>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">
                     <label for="file_${c.key}" style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#64748b;cursor:pointer;padding:4px 8px;border:1.5px dashed #cbd5e1;border-radius:8px;transition:border-color .15s"
                         onmouseover="this.style.borderColor='${c.color}'" onmouseout="this.style.borderColor='#cbd5e1'">
@@ -4615,8 +4735,7 @@ function _renderPortfolioForm(existing) {
             </button>
             <p style="font-size:10px;color:#94a3b8;text-align:center;margin-top:8px">
                 ${(()=>{
-                    const att = progress?.dailyMissions?.portfolioAttempts || 0;
-                    const rem = Math.max(0, 3 - att);
+                    const rem = Math.max(0, 3 - _attempts);
                     return rem > 0
                         ? `Intentos restantes: <strong style="color:#15803d">${rem}/3</strong> · La IA evaluará tu portafolio al instante`
                         : `Sin intentos disponibles — espera 48 horas desde el último envío`;
@@ -4625,7 +4744,7 @@ function _renderPortfolioForm(existing) {
         </div>`;
 
     // Inicializar contadores
-    PORTFOLIO_COURSES.forEach(c => {
+    courses.forEach(c => {
         const ta = document.getElementById('port_'+c.key);
         const wc = document.getElementById('wc_'+c.key);
         if (ta && wc) {
@@ -4680,29 +4799,35 @@ function _portWordCount(ta, wcId) {
 }
 
 async function submitPortfolio() {
-    // Control de intentos: máximo 3, luego espera 48 horas
+    const pathId  = _portfolioActivePathId;
+    const courses = _portfolioActiveCourses;
+    if (!pathId || courses.length === 0) { showToast('Selecciona una ruta primero.', 'warning'); return; }
+
+    // Control de intentos POR RUTA: máximo 3, luego espera 48 horas
     const MAX_ATTEMPTS = 3;
     const COOLDOWN_MS  = 48 * 60 * 60 * 1000;
-    const attempts     = progress?.dailyMissions?.portfolioAttempts || 0;
-    const lastAttempt  = progress?.dailyMissions?.portfolioLastAttempt || null;
+    const pfPrev       = _getPortfolio(pathId) || {};
+    let   attempts     = pfPrev.attempts || 0;
+    const lastAttempt  = pfPrev.lastAttempt || null;
 
     if (attempts >= MAX_ATTEMPTS) {
         const elapsed = lastAttempt ? Date.now() - new Date(lastAttempt).getTime() : COOLDOWN_MS;
         if (elapsed < COOLDOWN_MS) {
             const hoursLeft = Math.ceil((COOLDOWN_MS - elapsed) / 3600000);
-            showToast(`Has usado los 3 intentos. Podrás intentarlo de nuevo en ${hoursLeft} hora${hoursLeft===1?'':'s'}.`, 'warning');
+            showToast(`Has usado los 3 intentos en esta ruta. Podrás intentarlo de nuevo en ${hoursLeft} hora${hoursLeft===1?'':'s'}.`, 'warning');
             return;
         } else {
-            // Reinicia el contador después de 48h
-            progress.dailyMissions.portfolioAttempts = 0;
+            attempts = 0; // reinicia tras 48h
         }
     }
 
-    const entregables = {};
+    const entregables = {};       // { courseId: texto }
+    const items = [];             // [{ label, text }] para la IA
     let allOk = true;
-    PORTFOLIO_COURSES.forEach(c => {
+    courses.forEach(c => {
         const val = document.getElementById('port_'+c.key)?.value?.trim() || '';
         entregables[c.key] = val;
+        items.push({ label: c.label, text: val });
         const words = val.split(/\s+/).filter(Boolean).length;
         if (words < 50) allOk = false;
     });
@@ -4721,7 +4846,7 @@ async function submitPortfolio() {
         </span>`;
     }
 
-    const examScore50 = Math.round((progress?.dailyMissions?.masterExamScore || 0) * 0.5);
+    const examScore50 = Math.round(((_getMasterExamScore(pathId) || 0)) * 0.5);
 
     // Subir archivos adjuntos (si los hay)
     let fileUrls = {};
@@ -4733,46 +4858,46 @@ async function submitPortfolio() {
         const res = await fetch(EVALUATE_PORTFOLIO_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
-            body: JSON.stringify({ entregables, examScore50 }),
+            // items: nuevo formato dinámico · entregables: compat. hacia atrás
+            body: JSON.stringify({ items, entregables, examScore50 }),
         });
 
         if (!res.ok) throw new Error('Error en evaluación: ' + res.status);
         const result = await res.json();
 
-        // Guardar en Supabase
+        // Guardar en Supabase (una fila por ruta)
         const record = {
-            user_id:          currentUser.id,
-            entregable_steam: entregables.steam,
-            entregable_abp:   entregables.abp,
-            entregable_dt:    entregables.dt,
-            entregable_eval:  entregables.eval,
-            entregable_tipos: entregables.tipos,
-            ai_scores:        result.scores,
-            ai_feedback:      result.feedback,
-            ai_total:         result.total,
-            ai_summary:       result.summary,
-            exam_score_50:    examScore50,
-            combined_score:   result.combined,
-            status:           result.passed ? 'passed' : 'evaluated',
-            evaluated_at:     new Date().toISOString(),
-            file_urls:        Object.keys(fileUrls).length > 0 ? fileUrls : undefined,
+            user_id:        currentUser.id,
+            path_id:        pathId,
+            entregables:    entregables,
+            ai_scores:      result.scores,
+            ai_feedback:    result.feedback,
+            ai_total:       result.total,
+            ai_summary:     result.summary,
+            exam_score_50:  examScore50,
+            combined_score: result.combined,
+            status:         result.passed ? 'passed' : 'evaluated',
+            evaluated_at:   new Date().toISOString(),
+            file_urls:      Object.keys(fileUrls).length > 0 ? fileUrls : undefined,
         };
 
-        if (_portfolioData?.id) {
-            await supabase.from('portfolios').update(record).eq('id', _portfolioData.id);
+        const existingRow = _portfolioByPathRow[pathId];
+        if (existingRow?.id) {
+            await supabase.from('portfolios').update(record).eq('id', existingRow.id);
+            _portfolioByPathRow[pathId] = { ...existingRow, ...record };
         } else {
             const { data } = await supabase.from('portfolios').insert(record).select().single();
-            _portfolioData = data;
+            if (data) _portfolioByPathRow[pathId] = data;
         }
 
-        // Guardar en progreso local
+        // Guardar en progreso local POR RUTA
         if (!progress.dailyMissions) progress.dailyMissions = {};
-        progress.dailyMissions.portfolioAttempts    = (progress.dailyMissions.portfolioAttempts || 0) + 1;
-        progress.dailyMissions.portfolioLastAttempt = new Date().toISOString();
-        progress.dailyMissions.portfolioAiTotal  = result.total;
-        progress.dailyMissions.portfolioScores   = result.scores;
-        progress.dailyMissions.portfolioFeedback = result.feedback;
-        progress.dailyMissions.portfolioSummary  = result.summary;
+        _setPortfolio(pathId, {
+            aiTotal: result.total, scores: result.scores, feedback: result.feedback,
+            summary: result.summary, combined: result.combined,
+            attempts: attempts + 1, lastAttempt: new Date().toISOString(),
+        });
+        if (pathId === 'steam20') { progress.dailyMissions.portfolioAiTotal = result.total; } // legado
         if (result.passed) {
             addXP(200, 'Portafolio aprobado · Certificado Maestro desbloqueado');
             if (!progress.badges.includes('masterDocente')) unlockBadge('masterDocente');
@@ -4792,13 +4917,15 @@ function _renderPortfolioResults() {
     const body = document.getElementById('portfolioBody');
     if (!body) return;
 
-    const scores   = progress?.dailyMissions?.portfolioScores   || [];
-    const feedback = progress?.dailyMissions?.portfolioFeedback || [];
-    const summary  = progress?.dailyMissions?.portfolioSummary  || '';
-    const aiTotal  = progress?.dailyMissions?.portfolioAiTotal  ?? 0;
-    const examScore50 = Math.round((progress?.dailyMissions?.masterExamScore || 0) * 0.5);
+    const pathId   = _portfolioActivePathId || _selectedMasterPath?.id;
+    const pf       = (pathId ? _getPortfolio(pathId) : null) || {};
+    const scores   = pf.scores   || [];
+    const feedback = pf.feedback || [];
+    const summary  = pf.summary  || '';
+    const aiTotal  = pf.aiTotal  ?? 0;
+    const examScore50 = Math.round(((pathId ? _getMasterExamScore(pathId) : 0) || 0) * 0.5);
     const combined = examScore50 + aiTotal;
-    const passed   = combined >= 75;
+    const passed   = combined >= 85;
 
     body.innerHTML = `
         <div style="padding:16px 20px">
@@ -4831,7 +4958,7 @@ function _renderPortfolioResults() {
 
             <!-- Desglose por entregable -->
             <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Por entregable</p>
-            ${PORTFOLIO_COURSES.map((c, i) => {
+            ${_portfolioActiveCourses.map((c, i) => {
                 const s = scores[i] ?? 0;
                 const f = feedback[i] || '';
                 const barW = Math.round((s / 10) * 100);
@@ -4852,7 +4979,7 @@ function _renderPortfolioResults() {
             <button onclick="closePortfolioModal();generateMasterCertificate()" style="width:100%;padding:14px;border-radius:14px;border:none;background:#5C35C5;color:white;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px">
                 Obtener Certificado Maestro
             </button>` : `
-            <button onclick="_renderPortfolioForm(_portfolioData)" style="width:100%;padding:12px;border-radius:14px;border:2px solid #e2e8f0;background:white;color:#475569;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px">
+            <button onclick="_renderPortfolioForm(_portfolioByPathRow[_portfolioActivePathId])" style="width:100%;padding:12px;border-radius:14px;border:2px solid #e2e8f0;background:white;color:#475569;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px">
                 Mejorar portafolio y reenviar
             </button>`}
         </div>`;

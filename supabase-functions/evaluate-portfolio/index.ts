@@ -1,7 +1,9 @@
 // Edge Function: evaluate-portfolio
 // Evalúa el portafolio de práctica docente usando Groq (Llama 3.3)
-// Recibe: { entregables: { steam, abp, dt, eval, tipos }, examScore50: number }
-// Devuelve: { scores: number[], feedback: string[], total: number, summary: string, combined: number }
+// Recibe: { items: [{label, text}], examScore50: number }   ← formato dinámico por ruta
+//   (compat. hacia atrás: { entregables: {steam,abp,dt,eval,tipos}, examScore50 })
+// Devuelve: { scores: number[], feedback: string[], total: number (0-50), summary, combined, passed }
+// El total se normaliza SIEMPRE a 50 puntos, sin importar cuántos entregables tenga la ruta.
 
 const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY')!;
 const GROQ_MODEL   = 'llama-3.3-70b-versatile';
@@ -12,36 +14,48 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const LABELS = ['STEAM', 'ABP', 'Design Thinking', 'Evaluación Formativa', 'Conoce a tus Estudiantes'];
+const LEGACY_LABELS = ['STEAM', 'ABP', 'Design Thinking', 'Evaluación Formativa', 'Conoce a tus Estudiantes'];
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
 
   try {
-    const { entregables, examScore50 } = await req.json();
+    const body = await req.json();
+    const { examScore50 } = body;
 
-    if (!entregables) {
+    // Normalizar a una lista [{label, text}]
+    let items: { label: string; text: string }[] = [];
+    if (Array.isArray(body.items) && body.items.length > 0) {
+      items = body.items.map((it: any) => ({ label: String(it.label || ''), text: String(it.text || '') }));
+    } else if (body.entregables) {
+      const e = body.entregables;
+      items = [
+        { label: 'STEAM', text: e.steam || '' },
+        { label: 'ABP', text: e.abp || '' },
+        { label: 'Design Thinking', text: e.dt || '' },
+        { label: 'Evaluación Formativa', text: e.eval || '' },
+        { label: 'Conoce a tus Estudiantes', text: e.tipos || '' },
+      ];
+    }
+
+    if (items.length === 0) {
       return new Response(JSON.stringify({ error: 'entregables requeridos' }),
         { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } });
     }
 
-    const items = [
-      entregables.steam || '',
-      entregables.abp   || '',
-      entregables.dt    || '',
-      entregables.eval  || '',
-      entregables.tipos || '',
-    ];
-
-    const entregablesText = items.map((text, i) =>
-      `${i + 1}. ${LABELS[i]}:\n"${text.substring(0, 800)}"`
+    const n = items.length;
+    const entregablesText = items.map((it, i) =>
+      `${i + 1}. ${it.label}:\n"${(it.text || '').substring(0, 800)}"`
     ).join('\n\n');
+
+    const exampleScores   = items.map(() => 8);
+    const exampleFeedback = items.map((it) => `Retroalimentación específica para ${it.label} (2-3 oraciones).`);
 
     const systemPrompt = `Eres un evaluador pedagógico experto en formación docente en Guatemala. Evalúas portafolios de práctica de docentes que completaron un programa de formación en pedagogía innovadora. Siempre respondes ÚNICAMENTE con JSON válido, sin texto adicional, sin bloques de código markdown.`;
 
-    const userPrompt = `Evalúa el portafolio de práctica de este/a docente usando la siguiente rúbrica (10 puntos por entregable = 50 puntos total):
+    const userPrompt = `Evalúa el portafolio de práctica de este/a docente. Hay ${n} entregable(s), uno por curso de la ruta. Asigna de 0 a 10 puntos a CADA entregable usando esta rúbrica:
 
-RÚBRICA:
+RÚBRICA (por entregable, 0-10):
 - Pertinencia (0-3 pts): ¿La evidencia corresponde claramente al enfoque del curso?
 - Profundidad (0-4 pts): ¿Demuestra comprensión genuina de los conceptos centrales?
 - Aplicación real (0-3 pts): ¿Hay evidencia de implementación con estudiantes reales o planificación concreta y detallada?
@@ -55,17 +69,10 @@ ENTREGABLES:
 
 ${entregablesText}
 
-Responde ÚNICAMENTE con este JSON (sin texto antes ni después):
+Responde ÚNICAMENTE con este JSON (sin texto antes ni después). El arreglo "scores" y "feedback" deben tener EXACTAMENTE ${n} elemento(s), en el mismo orden que los entregables:
 {
-  "scores": [8, 7, 9, 6, 8],
-  "feedback": [
-    "Retroalimentación específica para STEAM (2-3 oraciones).",
-    "Retroalimentación específica para ABP (2-3 oraciones).",
-    "Retroalimentación específica para Design Thinking (2-3 oraciones).",
-    "Retroalimentación específica para Evaluación Formativa (2-3 oraciones).",
-    "Retroalimentación específica para Conoce a tus Estudiantes (2-3 oraciones)."
-  ],
-  "total": 38,
+  "scores": ${JSON.stringify(exampleScores)},
+  "feedback": ${JSON.stringify(exampleFeedback)},
   "summary": "Retroalimentación global de 2-3 oraciones sobre el portafolio completo y el potencial del docente."
 }`;
 
@@ -99,9 +106,15 @@ Responde ÚNICAMENTE con este JSON (sin texto antes ni después):
         { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } });
     }
 
-    // Validate and clamp scores
-    const scores = (evaluation.scores || [0,0,0,0,0]).map((s: number) => Math.min(10, Math.max(0, Math.round(s))));
-    const total  = scores.reduce((a: number, b: number) => a + b, 0);
+    // Validar y normalizar puntajes — el portafolio SIEMPRE vale 50 pts sin importar nº de entregables
+    let scores = (Array.isArray(evaluation.scores) ? evaluation.scores : [])
+      .map((s: number) => Math.min(10, Math.max(0, Math.round(s))));
+    // Ajustar longitud a n (rellena con 0 o recorta)
+    while (scores.length < n) scores.push(0);
+    if (scores.length > n) scores = scores.slice(0, n);
+    const rawSum = scores.reduce((a: number, b: number) => a + b, 0); // 0..(n*10)
+    const maxSum = n * 10;
+    const total  = maxSum > 0 ? Math.round((rawSum / maxSum) * 50) : 0; // normalizado a /50
     const combined = Math.min(100, (examScore50 || 0) + total);
 
     return new Response(JSON.stringify({
