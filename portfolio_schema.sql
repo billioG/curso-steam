@@ -37,8 +37,14 @@ CREATE TABLE IF NOT EXISTS portfolios (
   evaluated_at  timestamptz
 );
 
--- Agregar columna si la tabla ya existía sin ella
+-- Agregar columnas si la tabla ya existía sin ellas
 ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS file_urls jsonb;
+-- Soporte multi-ruta: cada ruta tiene su propio portafolio independiente
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS path_id text;         -- ej. 'steam20', 'creativo', 'metodologias'
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS entregables jsonb;    -- { "<courseId>": "texto", ... }
+-- Una fila por (usuario, ruta)
+CREATE UNIQUE INDEX IF NOT EXISTS portfolios_user_path_uniq
+  ON portfolios (user_id, path_id);
 
 -- RLS
 ALTER TABLE portfolios ENABLE ROW LEVEL SECURITY;
