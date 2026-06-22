@@ -522,7 +522,11 @@ function updateUI() {
     const xpDisplay = document.getElementById("xpDisplay");
     if (xpDisplay) xpDisplay.innerText = progress.xp || 0;
     const levelDisplay = document.getElementById("levelDisplay");
-    if (levelDisplay) levelDisplay.innerText = `Nv.${progress.level || 1}`;
+    if (levelDisplay) levelDisplay.innerText = progress.level || 1;
+    const levelBadge = document.getElementById("levelBadge");
+    if (levelBadge) levelBadge.innerText = progress.level || 1;
+    const cardsCountDisplay = document.getElementById("cardsCountDisplay");
+    if (cardsCountDisplay) cardsCountDisplay.innerText = progress.completedCards?.length || 0;
 
     // Mostrar nombre/email y foto en perfil
     if (currentUser) {
