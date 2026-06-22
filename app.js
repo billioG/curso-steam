@@ -589,6 +589,23 @@ function updateUI() {
     // Master certificate — visible si todos los cursos están aprobados
     _checkMasterCert();
     renderCourseResources();
+    renderBadgesCarousel();
+}
+
+function renderBadgesCarousel() {
+    const wrap = document.getElementById('badgesCarousel');
+    if (!wrap) return;
+    const earned = new Set(getProgress().earnedBadges || []);
+    const list = Object.values(badges);
+    wrap.innerHTML = list.map(b => {
+        const done = earned.has(b.id);
+        const svg = BADGE_SVG[b.id] || '';
+        return `<div onclick="showBadgesModal()" title="${b.name}" style="scroll-snap-align:start;flex-shrink:0;width:90px;display:flex;flex-direction:column;align-items:center;gap:6px;background:white;border-radius:16px;padding:12px 8px 10px;border:1.5px solid ${done?'#e9d5ff':'#e2e8f0'};box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer;transition:box-shadow .15s;${done?'':'opacity:.45;filter:grayscale(1)'}">
+            <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:${done?'#f3e8ff':'#f1f5f9'}">${svg}</div>
+            <span style="font-size:10px;font-weight:700;color:${done?'#6b21a8':'#94a3b8'};text-align:center;line-height:1.2">${b.name}</span>
+            ${done?`<span style="font-size:9px;color:#a855f7;font-weight:600">+${b.xpReward} XP</span>`:`<span style="font-size:9px;color:#cbd5e1">Bloqueado</span>`}
+        </div>`;
+    }).join('');
 }
 
 function updateSyncStatus(status, message) {

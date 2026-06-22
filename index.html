@@ -840,15 +840,32 @@
                 padding-left: 48px !important;
                 padding-right: 48px !important;
             }
+            #tabPerfil .perfil-carousel-wrap {
+                max-width: 1100px;
+                margin: 20px auto 0;
+                padding: 0 48px;
+            }
             #tabPerfil .perfil-grid {
                 max-width: 1100px;
-                margin-left: auto;
-                margin-right: auto;
-                padding-left: 48px;
-                padding-right: 48px;
+                margin: 0 auto;
+                padding: 0 48px 40px;
+            }
+            #tabPerfil .perfil-section {
+                margin-bottom: 28px;
+            }
+            #tabPerfil .perfil-section-label {
+                font-size: 11px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: .08em;
+                color: #1e3a5f;
+                margin-bottom: 12px;
+                padding: 0 2px;
+            }
+            #tabPerfil .perfil-items-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 24px;
+                gap: 10px;
                 align-items: start;
             }
         }
@@ -1587,360 +1604,291 @@
             </div><!-- /contenedor interno hero -->
         </div><!-- /hero -->
 
-        <!-- ── CONTENIDO ─────────────────────────────────────────────── -->
-        <!-- Mobile: 1 col · Desktop: 2 col con columnas independientes -->
-        <div class="perfil-grid px-4 pt-5">
+        <!-- ── CARRUSEL DE LOGROS ────────────────────────────────────── -->
+        <div class="perfil-carousel-wrap">
+            <div class="flex items-center justify-between mb-3 px-1">
+                <p class="text-[11px] font-black uppercase tracking-widest" style="color:#1e3a5f">Logros y estadísticas</p>
+                <div class="flex gap-2">
+                    <button id="statsSecretBtn"
+                        class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition">
+                        Estadísticas
+                    </button>
+                    <button id="devModeBtn" onclick="toggleDevMode()"
+                        class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 transition">
+                        <span id="devModeBtnLabel" style="color:#ea580c">🛠️ Dev</span>
+                        <span id="devModeBtnSub" class="hidden"></span>
+                    </button>
+                    <button id="badgesBtn"
+                        class="text-xs font-semibold px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 transition">
+                        Ver todos
+                    </button>
+                </div>
+            </div>
+            <!-- Carrusel horizontal de insignias -->
+            <div class="overflow-x-auto pb-3" style="scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch">
+                <div id="badgesCarousel" class="flex gap-3" style="min-width:max-content"></div>
+            </div>
+        </div>
 
-        <!-- ╔══ COLUMNA DERECHA ══╗ -->
-        <div>
+        <!-- ── CONTENIDO PRINCIPAL ───────────────────────────────────── -->
+        <div class="perfil-grid">
 
             <!-- ── Sección: Aprendizaje ── -->
-            <p class="text-[11px] font-black uppercase tracking-widest mb-3 px-1" style="color:#1e3a5f">Aprendizaje</p>
-            <div class="flex flex-col gap-2 mb-5">
-                <button id="examBtn"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:bg-cyan-50 hover:border-cyan-300 transition shadow-sm">
-                    <div class="w-8 h-8 rounded-xl bg-cyan-50 flex items-center justify-center flex-shrink-0">
-                        <span data-icon="clipboard"
-                            style="display:inline-flex;width:16px;height:16px;color:#06b6d4"></span>
+            <div class="perfil-section">
+                <p class="perfil-section-label">Aprendizaje</p>
+                <div class="perfil-items-grid">
+                    <button id="examBtn"
+                        class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:bg-cyan-50 hover:border-cyan-300 transition shadow-sm">
+                        <div class="w-8 h-8 rounded-xl bg-cyan-50 flex items-center justify-center flex-shrink-0">
+                            <span data-icon="clipboard" style="display:inline-flex;width:16px;height:16px;color:#06b6d4"></span>
+                        </div>
+                        <div class="text-left flex-1">
+                            <div class="font-semibold text-slate-700 text-sm">Examen Final</div>
+                            <div class="text-xs text-slate-400">Pon a prueba lo aprendido</div>
+                        </div>
+                        <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
+                    </button>
+                    <button id="missionsToggle"
+                        class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm">
+                        <div class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                            <span data-icon="target" style="display:inline-flex;width:16px;height:16px;color:#f59e0b"></span>
+                        </div>
+                        <div class="text-left flex-1">
+                            <div class="font-semibold text-slate-700 text-sm">Misiones</div>
+                            <div class="text-xs text-slate-400">Retos diarios y objetivos</div>
+                        </div>
+                        <span data-icon="chevronDown" id="missionsChevron" style="display:inline-flex;width:14px;height:14px;transition:transform .2s;color:#cbd5e1;flex-shrink:0"></span>
+                    </button>
+                    <!-- Panel misiones: ocupa ambas columnas -->
+                    <div id="dailyMissions" class="hidden bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 md:col-span-2">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-amber-700">🎯 Misiones de hoy</span>
+                            <span id="missionsReset" class="text-[10px] text-slate-400"></span>
+                        </div>
+                        <div id="missionsList" class="space-y-2 text-xs"></div>
                     </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm">Examen Final</div>
-                        <div class="text-xs text-slate-400">Pon a prueba lo aprendido</div>
-                    </div>
-                    <span data-icon="chevronRight"
-                        style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
-                </button>
-                <button id="missionsToggle"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm">
-                    <div class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-                        <span data-icon="target"
-                            style="display:inline-flex;width:16px;height:16px;color:#f59e0b"></span>
-                    </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm">Misiones</div>
-                        <div class="text-xs text-slate-400">Retos diarios y objetivos</div>
-                    </div>
-                    <span data-icon="chevronDown" id="missionsChevron"
-                        style="display:inline-flex;width:14px;height:14px;transition:transform .2s;color:#cbd5e1;flex-shrink:0"></span>
-                </button>
-                <!-- Panel de misiones — se despliega aquí, justo debajo del botón -->
-                <div id="dailyMissions" class="hidden bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 -mt-1">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-amber-700">🎯 Misiones de hoy</span>
-                        <span id="missionsReset" class="text-[10px] text-slate-400"></span>
-                    </div>
-                    <div id="missionsList" class="space-y-2 text-xs"></div>
+                    <button id="courseRequestsBtn"
+                        class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-pink-300 hover:bg-pink-50 transition shadow-sm"
+                        onclick="showCourseRequests()">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FDF2F8">
+                            <span style="font-size:16px">💡</span>
+                        </div>
+                        <div class="text-left flex-1">
+                            <div class="font-semibold text-slate-700 text-sm">Sugiere un curso</div>
+                            <div class="text-xs text-slate-400">Pide y vota por nuevos cursos</div>
+                        </div>
+                        <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
+                    </button>
+                    <button id="diagProfileBtn"
+                        class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-violet-300 hover:bg-violet-50 transition shadow-sm"
+                        onclick="showDiagnosticResultFromProfile()">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#F5F3FF">
+                            <span data-icon="compass" style="display:inline-flex;width:16px;height:16px;color:#7c3aed"></span>
+                        </div>
+                        <div class="text-left flex-1">
+                            <div class="font-semibold text-slate-700 text-sm" id="diagProfileBtnLabel">Diagnóstico pedagógico</div>
+                            <div class="text-xs text-slate-400">Conoce tu nivel de partida</div>
+                        </div>
+                        <span id="diagProfileBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style="background:#F5F3FF;color:#7C3AED"></span>
+                    </button>
+                    <!-- Compendio PDF — solo admin -->
+                    <a id="compendioLink" href="recursos/contenido-completo.html" target="_blank"
+                        class="hidden bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-indigo-300 hover:bg-indigo-50 transition shadow-sm no-underline">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EEF2FF">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        </div>
+                        <div class="text-left flex-1">
+                            <div class="font-semibold text-slate-700 text-sm">Compendio completo</div>
+                            <div class="text-xs text-slate-400">Todos los cursos y evaluaciones · Imprimible</div>
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                    <a href="glosario.html" target="_blank"
+                        class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-teal-300 hover:bg-teal-50 transition shadow-sm no-underline">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#CCFBF1">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
+                        </div>
+                        <div class="text-left flex-1">
+                            <div class="font-semibold text-slate-700 text-sm">Glosario pedagógico</div>
+                            <div class="text-xs text-slate-400">Términos clave de todos los cursos</div>
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                    <a href="fuentes.html" target="_blank"
+                        class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-emerald-300 hover:bg-emerald-50 transition shadow-sm no-underline">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#D1FAE5">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h6M9 11h6"/></svg>
+                        </div>
+                        <div class="text-left flex-1">
+                            <div class="font-semibold text-slate-700 text-sm">Fuentes de información</div>
+                            <div class="text-xs text-slate-400">Bibliografía y marcos por curso</div>
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                    <a href="casos-estudio.html" target="_blank"
+                        class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm no-underline">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FEF3C7">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                        </div>
+                        <div class="text-left flex-1">
+                            <div class="font-semibold text-slate-700 text-sm">Casos de estudio</div>
+                            <div class="text-xs text-slate-400">Decisiones docentes con ramificaciones</div>
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
                 </div>
-                <button id="courseRequestsBtn"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-pink-300 hover:bg-pink-50 transition shadow-sm"
-                    onclick="showCourseRequests()">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style="background:#FDF2F8">
-                        <span style="font-size:16px">💡</span>
-                    </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm">Sugiere un curso</div>
-                        <div class="text-xs text-slate-400">Pide y vota por nuevos cursos</div>
-                    </div>
-                    <span data-icon="chevronRight"
-                        style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
-                </button>
-                <button id="diagProfileBtn"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-violet-300 hover:bg-violet-50 transition shadow-sm"
-                    onclick="showDiagnosticResultFromProfile()">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style="background:#F5F3FF">
-                        <span data-icon="compass"
-                            style="display:inline-flex;width:16px;height:16px;color:#7c3aed"></span>
-                    </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm" id="diagProfileBtnLabel">Diagnóstico
-                            pedagógico</div>
-                        <div class="text-xs text-slate-400">Conoce tu nivel de partida</div>
-                    </div>
-                    <span id="diagProfileBadge"
-                        class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-                        style="background:#F5F3FF;color:#7C3AED"></span>
-                </button>
-            </div>
-
-            <!-- Compendio PDF — solo admin -->
-            <a id="compendioLink" href="recursos/contenido-completo.html" target="_blank"
-                class="hidden bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-indigo-300 hover:bg-indigo-50 transition shadow-sm mb-2 no-underline">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style="background:#EEF2FF">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 6 2 18 2 18 9" />
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                        <rect x="6" y="14" width="12" height="8" />
-                    </svg>
-                </div>
-                <div class="text-left flex-1">
-                    <div class="font-semibold text-slate-700 text-sm">Compendio completo</div>
-                    <div class="text-xs text-slate-400">Todos los cursos y evaluaciones · Imprimible</div>
-                </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                </svg>
-            </a>
-
-            <!-- Glosario pedagógico -->
-            <a href="glosario.html" target="_blank"
-                class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-teal-300 hover:bg-teal-50 transition shadow-sm mb-2 no-underline block">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style="background:#CCFBF1">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                        <line x1="9" y1="9" x2="15" y2="9" />
-                        <line x1="9" y1="13" x2="13" y2="13" />
-                    </svg>
-                </div>
-                <div class="text-left flex-1">
-                    <div class="font-semibold text-slate-700 text-sm">Glosario pedagógico</div>
-                    <div class="text-xs text-slate-400">Términos clave de todos los cursos con ejemplos</div>
-                </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                </svg>
-            </a>
-
-            <!-- Fuentes de información -->
-            <a href="fuentes.html" target="_blank"
-                class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-emerald-300 hover:bg-emerald-50 transition shadow-sm mb-2 no-underline block">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style="background:#D1FAE5">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                        <path d="M9 7h6M9 11h6" />
-                    </svg>
-                </div>
-                <div class="text-left flex-1">
-                    <div class="font-semibold text-slate-700 text-sm">Fuentes de información</div>
-                    <div class="text-xs text-slate-400">Bibliografía y marcos que fundamentan cada curso</div>
-                </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                </svg>
-            </a>
-
-            <!-- Casos de estudio -->
-            <a href="casos-estudio.html" target="_blank"
-                class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm mb-2 no-underline block">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style="background:#FEF3C7">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                    </svg>
-                </div>
-                <div class="text-left flex-1">
-                    <div class="font-semibold text-slate-700 text-sm">Casos de estudio</div>
-                    <div class="text-xs text-slate-400">Decisiones docentes con ramificaciones</div>
-                </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                </svg>
-            </a>
-
-        </div><!-- end columna derecha -->
-
-        <!-- ╔══ COLUMNA IZQUIERDA ══╗ -->
-        <div class="mt-5 md:mt-0">
-
-            <!-- ── Sección: Logros ── -->
-            <p class="text-[11px] font-black uppercase tracking-widest mb-3 mt-1 px-1" style="color:#1e3a5f">Logros y estadísticas</p>
-            <div class="grid grid-cols-2 gap-3 mb-5">
-                <button id="badgesBtn"
-                    class="bg-white rounded-2xl py-4 px-4 flex flex-col items-center gap-2 shadow-sm border border-slate-100 hover:border-purple-200 hover:shadow-md transition active:scale-95">
-                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:#f3e8ff">
-                        <span data-icon="medal" style="display:inline-flex;width:20px;height:20px;color:#a855f7"></span>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-sm font-bold text-slate-700">Mis Logros</div>
-                        <div class="text-[10px] text-slate-400">Insignias ganadas</div>
-                    </div>
-                </button>
-                <button id="statsSecretBtn"
-                    class="hidden bg-white rounded-2xl py-4 px-4 flex flex-col items-center gap-2 shadow-sm border border-slate-100 hover:border-emerald-200 hover:shadow-md transition active:scale-95">
-                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:#d1fae5">
-                        <span data-icon="barChart" style="display:inline-flex;width:20px;height:20px;color:#10b981"></span>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-sm font-bold text-slate-700">Estadísticas</div>
-                        <div class="text-[10px] text-slate-400">Tu progreso</div>
-                    </div>
-                </button>
-                <button id="devModeBtn" onclick="toggleDevMode()"
-                    class="hidden bg-white rounded-2xl py-4 px-4 flex flex-col items-center gap-2 shadow-sm border border-slate-100 hover:border-orange-200 hover:shadow-md transition active:scale-95">
-                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:#fff7ed">
-                        <span style="font-size:20px">🛠️</span>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-sm font-bold" id="devModeBtnLabel" style="color:#ea580c">Modo Dev</div>
-                        <div class="text-[10px] text-slate-400" id="devModeBtnSub">Desactivado</div>
-                    </div>
-                </button>
             </div>
 
             <!-- ── Sección: Certificados ── -->
-            <div id="certSection" class="mb-5">
-                <p class="text-[11px] font-black uppercase tracking-widest mb-3 px-1" style="color:#1e3a5f">Certificados</p>
+            <div id="certSection" class="perfil-section">
+                <p class="perfil-section-label">Certificados</p>
                 <div id="certCourseStatus" class="mb-3 space-y-1.5"></div>
                 <p id="certPlaceholder" class="text-xs text-slate-400 px-1 mb-2">Aprueba el examen de cualquier curso para obtener tu certificado.</p>
-                <button id="certDownloadBtn"
-                    class="hidden w-full mb-2 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                    style="background:linear-gradient(135deg,#5C35C5,#7c3aed)" onclick="generateCertificateFromExam(window._lastExamScore||70)">
-                    <span data-icon="certificate" style="display:inline-flex;width:16px;height:16px;color:white;flex-shrink:0"></span>
-                    <span>Diploma de Participación · curso actual</span>
-                </button>
-                <div id="masterPathSelector" class="hidden mb-3"></div>
-                <div id="masterScoreSummary" class="hidden mb-3"></div>
-                <button id="masterExamBtn"
-                    class="hidden w-full mb-2 py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                    style="background:linear-gradient(135deg,#1e3a5f,#1e40af)" onclick="startMasterExam()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                    <span>Parte 1 · Examen de conocimiento (50 pts)</span>
-                </button>
-                <button id="masterPortfolioBtn"
-                    class="hidden w-full mb-2 py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                    style="background:linear-gradient(135deg,#065f46,#16a34a)" onclick="showPortfolioModal()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                    <span>Parte 2 · Portafolio de práctica (50 pts)</span>
-                </button>
-                <button id="masterPortfolioResultsBtn"
-                    class="hidden w-full mb-2 py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 border border-green-200"
-                    style="background:#f0fdf4;color:#15803d" onclick="showPortfolioModal()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                    Ver retroalimentación del portafolio
-                </button>
-                <button id="masterCertBtn"
-                    class="hidden w-full mb-2 py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                    style="background:linear-gradient(135deg,#4c1d95,#5C35C5)" onclick="generateMasterCertificate()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-                    <span>Obtener Certificado Maestro</span>
-                </button>
+                <div class="perfil-items-grid">
+                    <button id="certDownloadBtn"
+                        class="hidden md:col-span-2 w-full mb-2 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                        style="background:linear-gradient(135deg,#5C35C5,#7c3aed)" onclick="generateCertificateFromExam(window._lastExamScore||70)">
+                        <span data-icon="certificate" style="display:inline-flex;width:16px;height:16px;color:white;flex-shrink:0"></span>
+                        <span>Diploma de Participación · curso actual</span>
+                    </button>
+                    <div id="masterPathSelector" class="hidden md:col-span-2 mb-1"></div>
+                    <div id="masterScoreSummary" class="hidden md:col-span-2 mb-1"></div>
+                    <button id="masterExamBtn"
+                        class="hidden w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                        style="background:linear-gradient(135deg,#1e3a5f,#1e40af)" onclick="startMasterExam()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                        <span>Parte 1 · Examen de conocimiento (50 pts)</span>
+                    </button>
+                    <button id="masterPortfolioBtn"
+                        class="hidden w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                        style="background:linear-gradient(135deg,#065f46,#16a34a)" onclick="showPortfolioModal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <span>Parte 2 · Portafolio de práctica (50 pts)</span>
+                    </button>
+                    <button id="masterPortfolioResultsBtn"
+                        class="hidden w-full py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 border border-green-200"
+                        style="background:#f0fdf4;color:#15803d" onclick="showPortfolioModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        Ver retroalimentación del portafolio
+                    </button>
+                    <button id="masterCertBtn"
+                        class="hidden md:col-span-2 w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                        style="background:linear-gradient(135deg,#4c1d95,#5C35C5)" onclick="generateMasterCertificate()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                        <span>Obtener Certificado Maestro</span>
+                    </button>
+                </div>
             </div>
 
             <!-- ── Recursos descargables ── -->
-            <div id="resourcesSection" class="mb-5 hidden">
-                <p class="text-[11px] font-black uppercase tracking-widest mb-3 px-1" style="color:#1e3a5f">Recursos descargables</p>
+            <div id="resourcesSection" class="perfil-section hidden">
+                <p class="perfil-section-label">Recursos descargables</p>
                 <div id="courseResourcesSection"></div>
             </div>
 
             <!-- ── Gana más XP ── -->
-            <p class="text-[11px] font-black uppercase tracking-widest mb-3 px-1" style="color:#1e3a5f">Gana más XP</p>
-
-            <!-- Reto del día -->
-            <button onclick="showDailyChallenge()"
-                class="w-full mb-3 rounded-2xl p-4 flex items-center gap-3 text-left transition active:scale-95 shadow-md"
-                style="background:linear-gradient(135deg,#1e3a5f,#1e40af)">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
-                    <span style="font-size:20px">⚡</span>
-                </div>
-                <div class="flex-1">
-                    <p class="font-black text-white text-sm">Reto del día</p>
-                    <p class="text-white/70 text-xs mt-0.5">¿Qué tanto sabes? Gana XP</p>
-                </div>
-                <span class="text-xs font-bold bg-white/20 text-white px-2 py-1 rounded-xl shrink-0">+15 XP</span>
-            </button>
-
-            <button id="shareAppBtn"
-                class="w-full bg-white border border-slate-100 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:shadow-md hover:border-green-200 transition mb-3 active:scale-95">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
-                        <span data-icon="share" style="display:inline-flex;width:18px;height:18px;color:#22c55e"></span>
-                    </div>
-                    <div class="text-left">
-                        <p class="text-sm font-bold text-slate-700">Compartir el curso</p>
-                        <p class="text-xs text-slate-400">WhatsApp o redes</p>
-                    </div>
-                </div>
-                <span class="text-xs font-bold text-green-600 bg-green-50 border border-green-100 px-2 py-1 rounded-xl shrink-0">+50 XP</span>
-            </button>
-
-            <div class="bg-white border border-slate-100 rounded-2xl py-3 px-4 shadow-sm mb-3">
-                <div class="flex items-center justify-between mb-2.5">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                            <span data-icon="addUser" style="display:inline-flex;width:18px;height:18px;color:#3b82f6"></span>
+            <div class="perfil-section">
+                <p class="perfil-section-label">Gana más XP</p>
+                <div class="perfil-items-grid">
+                    <button onclick="showDailyChallenge()"
+                        class="rounded-2xl p-4 flex items-center gap-3 text-left transition active:scale-95 shadow-md"
+                        style="background:linear-gradient(135deg,#1e3a5f,#1e40af)">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
+                            <span style="font-size:20px">⚡</span>
                         </div>
-                        <div>
-                            <p class="text-sm font-bold text-slate-700">Referir a un colega</p>
-                            <p class="text-xs text-slate-400">Por cada docente inscrito</p>
+                        <div class="flex-1">
+                            <p class="font-black text-white text-sm">Reto del día</p>
+                            <p class="text-white/70 text-xs mt-0.5">¿Qué tanto sabes? Gana XP</p>
                         </div>
-                    </div>
-                    <span class="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-xl shrink-0">+100 XP</span>
-                </div>
-                <div class="flex gap-2">
-                    <input id="referralLinkDisplay" readonly
-                        class="flex-1 rounded-xl px-3 py-2 text-xs text-slate-500 truncate min-w-0 border border-slate-200"
-                        style="background:#f8fafc" placeholder="Cargando tu link…">
-                    <button id="copyReferralBtn"
-                        class="text-white rounded-xl px-3 py-2 text-xs font-bold transition shrink-0 flex items-center gap-1"
-                        style="background:#3b82f6">
-                        <span data-icon="copy" style="display:inline-flex;width:12px;height:12px;color:white"></span>Copiar
+                        <span class="text-xs font-bold bg-white/20 text-white px-2 py-1 rounded-xl shrink-0">+15 XP</span>
                     </button>
+                    <button id="shareAppBtn"
+                        class="bg-white border border-slate-100 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:shadow-md hover:border-green-200 transition active:scale-95">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+                                <span data-icon="share" style="display:inline-flex;width:18px;height:18px;color:#22c55e"></span>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-sm font-bold text-slate-700">Compartir el curso</p>
+                                <p class="text-xs text-slate-400">WhatsApp o redes</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-green-600 bg-green-50 border border-green-100 px-2 py-1 rounded-xl shrink-0">+50 XP</span>
+                    </button>
+                    <button id="uploadEvidenceBtn"
+                        class="bg-white border border-slate-100 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:shadow-md hover:border-purple-200 transition active:scale-95">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                                <span data-icon="camera" style="display:inline-flex;width:18px;height:18px;color:#a855f7"></span>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-sm font-bold text-slate-700">Evidencia de práctica</p>
+                                <p class="text-xs text-slate-400">Foto aplicando en tu aula</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-purple-600 bg-purple-50 border border-purple-100 px-2 py-1 rounded-xl shrink-0">+80 XP</span>
+                    </button>
+                    <div class="bg-white border border-slate-100 rounded-2xl py-3 px-4 shadow-sm md:col-span-2">
+                        <div class="flex items-center justify-between mb-2.5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                                    <span data-icon="addUser" style="display:inline-flex;width:18px;height:18px;color:#3b82f6"></span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">Referir a un colega</p>
+                                    <p class="text-xs text-slate-400">Por cada docente inscrito</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-xl shrink-0">+100 XP</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input id="referralLinkDisplay" readonly
+                                class="flex-1 rounded-xl px-3 py-2 text-xs text-slate-500 truncate min-w-0 border border-slate-200"
+                                style="background:#f8fafc" placeholder="Cargando tu link…">
+                            <button id="copyReferralBtn"
+                                class="text-white rounded-xl px-3 py-2 text-xs font-bold transition shrink-0 flex items-center gap-1"
+                                style="background:#3b82f6">
+                                <span data-icon="copy" style="display:inline-flex;width:12px;height:12px;color:white"></span>Copiar
+                            </button>
+                        </div>
+                        <p id="referralCountDisplay" class="text-xs text-slate-400 mt-1.5 text-center"></p>
+                    </div>
                 </div>
-                <p id="referralCountDisplay" class="text-xs text-slate-400 mt-1.5 text-center"></p>
             </div>
-
-            <button id="uploadEvidenceBtn"
-                class="w-full bg-white border border-slate-100 rounded-2xl py-3 px-4 flex items-center justify-between shadow-sm hover:shadow-md hover:border-purple-200 transition mb-3 active:scale-95">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
-                        <span data-icon="camera" style="display:inline-flex;width:18px;height:18px;color:#a855f7"></span>
-                    </div>
-                    <div class="text-left">
-                        <p class="text-sm font-bold text-slate-700">Evidencia de práctica</p>
-                        <p class="text-xs text-slate-400">Foto aplicando en tu aula</p>
-                    </div>
-                </div>
-                <span class="text-xs font-bold text-purple-600 bg-purple-50 border border-purple-100 px-2 py-1 rounded-xl shrink-0">+80 XP</span>
-            </button>
 
             <!-- ── Sync + utilidades ── -->
-            <div class="bg-white rounded-2xl px-4 py-3 flex items-center justify-between shadow-sm border border-slate-100 mb-3">
-                <div id="syncIndicator" class="flex items-center gap-1.5 text-xs text-slate-500">
-                    <span id="syncIcon" data-icon="cloudOk" style="display:inline-flex;width:15px;height:15px;color:#34d399"></span>
-                    <span id="syncStatus">Sincronizado</span>
+            <div class="perfil-section">
+                <div class="perfil-items-grid">
+                    <div class="bg-white rounded-2xl px-4 py-3 flex items-center justify-between shadow-sm border border-slate-100">
+                        <div id="syncIndicator" class="flex items-center gap-1.5 text-xs text-slate-500">
+                            <span id="syncIcon" data-icon="cloudOk" style="display:inline-flex;width:15px;height:15px;color:#34d399"></span>
+                            <span id="syncStatus">Sincronizado</span>
+                        </div>
+                        <button onclick="if(typeof currentUser!=='undefined'&&currentUser)syncWithSupabase()"
+                            class="text-xs font-semibold hover:opacity-70 transition flex items-center gap-1" style="color:#1e40af">
+                            <span data-icon="sync" style="display:inline-flex;width:13px;height:13px"></span>Sincronizar
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 md:hidden">
+                        <button onclick="showCourseSelector()"
+                            class="bg-white border border-slate-100 text-slate-600 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm active:scale-95">
+                            <span data-icon="switchCourse" style="display:inline-flex;width:16px;height:16px;color:#1e40af"></span>
+                            Cambiar curso
+                        </button>
+                        <button onclick="localStorage.removeItem('onboardingDone'); startOnboarding();"
+                            class="bg-white border border-slate-100 text-slate-500 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm active:scale-95">
+                            <span data-icon="compass" style="display:inline-flex;width:16px;height:16px;color:#22d3ee"></span>Tutorial
+                        </button>
+                    </div>
+                    <button id="logoutBtn"
+                        class="md:hidden w-full border border-red-100 text-red-500 font-bold py-3 rounded-2xl text-sm hover:bg-red-50 transition flex items-center justify-center gap-2 shadow-sm active:scale-95"
+                        style="background:white">
+                        <span data-icon="logout" style="display:inline-flex;width:16px;height:16px;color:#ef4444"></span>Cerrar sesión
+                    </button>
                 </div>
-                <button onclick="if(typeof currentUser!=='undefined'&&currentUser)syncWithSupabase()"
-                    class="text-xs font-semibold hover:opacity-70 transition flex items-center gap-1" style="color:#1e40af">
-                    <span data-icon="sync" style="display:inline-flex;width:13px;height:13px"></span>Sincronizar
-                </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 mb-3 md:hidden">
-                <button onclick="showCourseSelector()"
-                    class="bg-white border border-slate-100 text-slate-600 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm active:scale-95">
-                    <span data-icon="switchCourse" style="display:inline-flex;width:16px;height:16px;color:#1e40af"></span>
-                    Cambiar curso
-                </button>
-                <button onclick="localStorage.removeItem('onboardingDone'); startOnboarding();"
-                    class="bg-white border border-slate-100 text-slate-500 font-semibold py-3 rounded-2xl text-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm active:scale-95">
-                    <span data-icon="compass" style="display:inline-flex;width:16px;height:16px;color:#22d3ee"></span>Tutorial
-                </button>
-            </div>
-
-            <button id="logoutBtn"
-                class="md:hidden w-full border border-red-100 text-red-500 font-bold py-3 rounded-2xl text-sm hover:bg-red-50 transition flex items-center justify-center gap-2 shadow-sm mb-2 active:scale-95"
-                style="background:white">
-                <span data-icon="logout" style="display:inline-flex;width:16px;height:16px;color:#ef4444"></span>Cerrar sesión
-            </button>
-
-        </div><!-- end columna izquierda -->
-
-        </div><!-- end grid -->
+        </div><!-- end perfil-grid -->
         </div><!-- end tabPerfil -->
 
         <!-- ══════════════════════════════════════════ -->
