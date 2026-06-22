@@ -3681,6 +3681,7 @@ document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
     const password = document.getElementById("loginPassword").value;
     const success = await loginWithEmail(email, password);
     if (success) {
+        document.getElementById("loginScreen")?.classList.add("hidden");
         loadSavedProgress(true);
         _postAuthEntry();
     }
@@ -3691,6 +3692,7 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
     if (password.length < 6) { showLoginError("La contraseña debe tener al menos 6 caracteres"); return; }
     const success = await registerWithEmail(email, password);
     if (success) {
+        document.getElementById("loginScreen")?.classList.add("hidden");
         loadSavedProgress(true);
         await checkReferralBonus();
         _postAuthEntry();
@@ -3794,36 +3796,41 @@ checkExistingSession();
 
 // ==================== AUTO-ACTUALIZACIÓN (sin borrar caché manualmente) ====================
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(reg => {
-        // Revisa si hay una versión nueva del Service Worker cada 30 min mientras la app está abierta
-        setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
-        // También revisa al volver a la pestaña/app tras estar en segundo plano
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') reg.update().catch(() => {});
-        });
-    });
-
-    // Cuando el nuevo Service Worker toma control, NO recargamos de inmediato —
-    // una recarga forzada a mitad de un login o de cualquier acción se siente como un error.
-    // En vez de eso, esperamos un momento seguro: que la pestaña quede en segundo plano,
-    // o que el usuario decida actualizar tocando el aviso.
     let _swRefreshed = false;
-    let _updateReady = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (_swRefreshed) return;
-        _updateReady = true;
-        if (typeof showUpdateBanner === 'function') showUpdateBanner();
-    });
+    // Si ya hay un controller activo al cargar, es un update real → recargamos.
+    // Si no hay controller (primera instalación), no recargamos: no hay nada que reemplazar.
+    const _hadController = !!navigator.serviceWorker.controller;
 
-    function doSafeReload() {
+    // Cuando el nuevo SW toma control → recargar SOLO si era un update (no la primera instalación)
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!_hadController) return; // primera instalación — no recargar
         if (_swRefreshed) return;
         _swRefreshed = true;
         window.location.reload();
-    }
+    });
 
-    // Momento seguro #1: la pestaña pasa a segundo plano (el usuario ya no está mirando)
-    document.addEventListener('visibilitychange', () => {
-        if (_updateReady && document.visibilityState === 'hidden') doSafeReload();
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+        // Si ya hay un SW esperando al cargar la página, forzar activación ahora
+        if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+
+        // Cuando se instala uno nuevo, forzar activación inmediata
+        reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+            });
+        });
+
+        // Revisar actualizaciones periódicamente y al volver a la pestaña
+        setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') reg.update().catch(() => {});
+        });
     });
 
     window.showUpdateBanner = function () {
