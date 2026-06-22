@@ -7,13 +7,13 @@ const SUPABASE_URL = "https://grkjhzkgcmackbafqudu.supabase.co";
 // Rutas de aprendizaje — el admin puede modificar masterCert desde el panel
 // Se sobreescribe con config de Supabase al cargar (ver loadAppConfig)
 let LEARNING_PATHS = [
-    { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
-    { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp'] },
-    { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
+    { id: 'steam20', label: 'Docente STEAM 2.0', color: '#07B0E4', gradient: 'linear-gradient(135deg,#1A6B68,#07B0E4)', courses: ['steam', 'abp', 'design-thinking', 'evaluacion', 'tipos-estudiantes'] },
+    { id: 'creativo', label: 'Docente Creativo', color: '#E83C8D', gradient: 'linear-gradient(135deg,#7C3AED,#E83C8D)', courses: ['creatividad', 'herramientas-tec', 'abp'] },
+    { id: 'metodologias', label: 'Metodologías Activas', color: '#F59E0B', gradient: 'linear-gradient(135deg,#b45309,#F59E0B)', courses: ['abp', 'm-learning', 'flipped-classroom', 'abv', 'micro-learning'] },
 ];
 // IDs de cursos requeridos para el certificado maestro (ruta steam20)
 // Admin puede cambiarlos desde el panel → se guardan en Supabase tabla app_config
-let MASTER_CERT_COURSES = ['steam','abp','design-thinking','evaluacion','tipos-estudiantes'];
+let MASTER_CERT_COURSES = ['steam', 'abp', 'design-thinking', 'evaluacion', 'tipos-estudiantes'];
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
 // El SDK de Supabase ya registra `window.supabase`; se reasigna con el cliente configurado.
 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -260,11 +260,11 @@ function _friendlyAuthError(msg) {
     if (!msg) return 'Error desconocido. Intenta de nuevo.';
     const m = msg.toLowerCase();
     if (m.includes('invalid login') || m.includes('invalid credentials')) return 'Email o contraseña incorrectos.';
-    if (m.includes('email not confirmed'))  return 'Confirma tu email antes de ingresar.';
-    if (m.includes('rate limit'))           return 'Demasiados intentos. Espera unos minutos.';
+    if (m.includes('email not confirmed')) return 'Confirma tu email antes de ingresar.';
+    if (m.includes('rate limit')) return 'Demasiados intentos. Espera unos minutos.';
     if (m.includes('user already registered')) return 'Este email ya está registrado. Usa "Ingresar".';
-    if (m.includes('password'))             return 'La contraseña debe tener al menos 6 caracteres.';
-    if (m.includes('email'))               return 'Ingresa un email válido.';
+    if (m.includes('password')) return 'La contraseña debe tener al menos 6 caracteres.';
+    if (m.includes('email')) return 'Ingresa un email válido.';
     if (m.includes('network') || m.includes('fetch')) return 'Sin conexión. Verifica tu internet.';
     return msg;
 }
@@ -310,20 +310,20 @@ async function loginWithEmail(email, password) {
             if (!progress.dailyMissions) progress.dailyMissions = {};
             // Prioridad: localStorage > user_metadata (Supabase) > daily_missions (ya cargado)
             const _meta = currentUser.user_metadata || {};
-            if (_meta.fullName     && !progress.dailyMissions.fullName)     progress.dailyMissions.fullName     = _meta.fullName;
+            if (_meta.fullName && !progress.dailyMissions.fullName) progress.dailyMissions.fullName = _meta.fullName;
             if (_meta.profilePhoto && !progress.dailyMissions.profilePhoto) progress.dailyMissions.profilePhoto = _meta.profilePhoto;
-            if (_meta.school       && !progress.dailyMissions.school)       progress.dailyMissions.school       = _meta.school;
-            if (_meta.department   && !progress.dailyMissions.department)   progress.dailyMissions.department   = _meta.department;
+            if (_meta.school && !progress.dailyMissions.school) progress.dailyMissions.school = _meta.school;
+            if (_meta.department && !progress.dailyMissions.department) progress.dailyMissions.department = _meta.department;
             const _pk = `userProfile_${currentUser.id}`;
             const _saved = localStorage.getItem(_pk);
             if (_saved) {
                 const _p = JSON.parse(_saved);
-                if (_p.fullName)     progress.dailyMissions.fullName     = _p.fullName;
+                if (_p.fullName) progress.dailyMissions.fullName = _p.fullName;
                 if (_p.profilePhoto) progress.dailyMissions.profilePhoto = _p.profilePhoto;
-                if (_p.school)       progress.dailyMissions.school       = _p.school;
-                if (_p.department)   progress.dailyMissions.department   = _p.department;
+                if (_p.school) progress.dailyMissions.school = _p.school;
+                if (_p.department) progress.dailyMissions.department = _p.department;
             }
-        } catch(e) {}
+        } catch (e) { }
 
         initExistingModuleDates();
         checkDailyStreak();
@@ -431,20 +431,20 @@ async function checkExistingSession() {
         try {
             if (!progress.dailyMissions) progress.dailyMissions = {};
             const _meta = currentUser.user_metadata || {};
-            if (_meta.fullName     && !progress.dailyMissions.fullName)     progress.dailyMissions.fullName     = _meta.fullName;
+            if (_meta.fullName && !progress.dailyMissions.fullName) progress.dailyMissions.fullName = _meta.fullName;
             if (_meta.profilePhoto && !progress.dailyMissions.profilePhoto) progress.dailyMissions.profilePhoto = _meta.profilePhoto;
-            if (_meta.school       && !progress.dailyMissions.school)       progress.dailyMissions.school       = _meta.school;
-            if (_meta.department   && !progress.dailyMissions.department)   progress.dailyMissions.department   = _meta.department;
+            if (_meta.school && !progress.dailyMissions.school) progress.dailyMissions.school = _meta.school;
+            if (_meta.department && !progress.dailyMissions.department) progress.dailyMissions.department = _meta.department;
             const _pk = `userProfile_${currentUser.id}`;
             const _saved = localStorage.getItem(_pk);
             if (_saved) {
                 const _p = JSON.parse(_saved);
-                if (_p.fullName)     progress.dailyMissions.fullName     = _p.fullName;
+                if (_p.fullName) progress.dailyMissions.fullName = _p.fullName;
                 if (_p.profilePhoto) progress.dailyMissions.profilePhoto = _p.profilePhoto;
-                if (_p.school)       progress.dailyMissions.school       = _p.school;
-                if (_p.department)   progress.dailyMissions.department   = _p.department;
+                if (_p.school) progress.dailyMissions.school = _p.school;
+                if (_p.department) progress.dailyMissions.department = _p.department;
             }
-        } catch(e) {}
+        } catch (e) { }
 
         initExistingModuleDates();
         checkDailyStreak();
@@ -452,7 +452,9 @@ async function checkExistingSession() {
 
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
-        _postAuthEntry();
+        loadPortfolio();   // cargar portafolio desde Supabase (sin bloquear)
+        loadAppConfig();   // cargar config de rutas desde Supabase (sin bloquear)
+        try { _postAuthEntry(); } catch (e) { console.error('Error en _postAuthEntry:', e); showCourseSelector(); }
         return true;
     }
     return false;
@@ -538,8 +540,8 @@ function updateUI() {
         const _scores = _dm.examScores || {};
         // Buscar puntaje: por courseId primero, luego legacy single-score para STEAM
         const _score = (_scores[_activeCid] !== undefined) ? _scores[_activeCid]
-                     : (_activeCid === 'steam' && _dm.examScore !== undefined) ? _dm.examScore
-                     : undefined;
+            : (_activeCid === 'steam' && _dm.examScore !== undefined) ? _dm.examScore
+                : undefined;
         const _passed = _score !== undefined && _score >= 70;
         if (_passed) {
             certBtn.classList.remove('hidden');
@@ -695,20 +697,20 @@ function loadDailyMissions() {
         const newMissions = dailyMissionsList.map(m => ({ ...m, current: 0, completed: false, claimed: false }));
         // Preservar campos de perfil y exámenes que también viven en dailyMissions
         const { fullName, profilePhoto, examScores, examScore, masterExamScore, masterExamScores,
-                masterExamDate, coursePositions, diagResult, portfolioByPath,
-                portfolioAiTotal, portfolioScores, portfolioFeedback, portfolioSummary,
-                portfolioAttempts, portfolioLastAttempt } = savedMissions;
+            masterExamDate, coursePositions, diagResult, portfolioByPath,
+            portfolioAiTotal, portfolioScores, portfolioFeedback, portfolioSummary,
+            portfolioAttempts, portfolioLastAttempt } = savedMissions;
         progress.dailyMissions = {
             date: today, missions: newMissions,
-            ...(fullName        && { fullName }),
-            ...(profilePhoto    && { profilePhoto }),
-            ...(examScores      && { examScores }),
+            ...(fullName && { fullName }),
+            ...(profilePhoto && { profilePhoto }),
+            ...(examScores && { examScores }),
             ...(examScore !== undefined && { examScore }),
             ...(masterExamScore !== undefined && { masterExamScore }),
             ...(masterExamScores && { masterExamScores }),
-            ...(masterExamDate  && { masterExamDate }),
+            ...(masterExamDate && { masterExamDate }),
             ...(coursePositions && { coursePositions }),
-            ...(diagResult      && { diagResult }),
+            ...(diagResult && { diagResult }),
             ...(portfolioByPath && { portfolioByPath }),
             ...(portfolioAiTotal !== undefined && { portfolioAiTotal }),
             ...(portfolioScores && { portfolioScores }),
@@ -879,14 +881,14 @@ function renderCard() {
                 </button>
             </div>` : ''}
             <div class="card-swipe-hint" style="display:flex;align-items:center;justify-content:center;gap:6px">
-                <span style="display:inline-flex;width:13px;height:13px;opacity:.5">${ICONS?.arrowLeft||'←'}</span>
+                <span style="display:inline-flex;width:13px;height:13px;opacity:.5">${ICONS?.arrowLeft || '←'}</span>
                 <span style="font-size:10px;opacity:.5">desliza para navegar</span>
-                <span style="display:inline-flex;width:13px;height:13px;opacity:.5">${ICONS?.arrowRight||'→'}</span>
+                <span style="display:inline-flex;width:13px;height:13px;opacity:.5">${ICONS?.arrowRight || '→'}</span>
             </div>
             <div class="px-4 pb-3">
                 <button id="commentCountBtn" onclick="showCardComments('${currentModule}-${currentCardIndex}')"
                     class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-slate-200 text-slate-500 text-xs font-semibold hover:bg-slate-50 transition">
-                    <span style="display:inline-flex;width:15px;height:15px;color:#94a3b8;flex-shrink:0">${ICONS?.comments||''}</span><span>Comentarios y dudas</span><span style="background:#f1f5f9;color:#94a3b8;font-size:10px;font-weight:600;padding:1px 8px;border-radius:20px;margin-left:5px">...</span>
+                    <span style="display:inline-flex;width:15px;height:15px;color:#94a3b8;flex-shrink:0">${ICONS?.comments || ''}</span><span>Comentarios y dudas</span><span style="background:#f1f5f9;color:#94a3b8;font-size:10px;font-weight:600;padding:1px 8px;border-radius:20px;margin-left:5px">...</span>
                 </button>
             </div>
         </div>`;
@@ -931,7 +933,7 @@ function renderCard() {
                 <div id="quizOptions">${optionsHtml}</div>
                 <div id="quizFeedback" class="hidden mt-3 p-3 rounded-2xl text-sm font-medium"></div>
                 <p id="quizHint" class="text-center text-xs text-gray-400 mt-3" style="display:flex;align-items:center;justify-content:center;gap:5px">
-                    <span style="display:inline-flex;width:14px;height:14px">${ICONS?.pointer||'👆'}</span> Selecciona una respuesta para continuar
+                    <span style="display:inline-flex;width:14px;height:14px">${ICONS?.pointer || '👆'}</span> Selecciona una respuesta para continuar
                 </p>
             </div>
         </div>`;
@@ -960,7 +962,7 @@ function renderCard() {
                     feedbackDiv.classList.remove('hidden');
                     if (isCorrect) {
                         feedbackDiv.className = 'mt-3 p-3 rounded-2xl text-sm font-medium bg-green-50 text-green-700 border border-green-200';
-                        feedbackDiv.innerHTML = `<span style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:4px">${ICONS?.checkCircle||'✓'}</span> ¡Correcto! ${card.explanation}`;
+                        feedbackDiv.innerHTML = `<span style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:4px">${ICONS?.checkCircle || '✓'}</span> ¡Correcto! ${card.explanation}`;
                         const cardId = card.id ? String(card.id) : `${currentModule}-${currentCardIndex}`;
                         if (!progress.completedCards.includes(cardId)) {
                             progress.completedCards.push(cardId);
@@ -973,8 +975,8 @@ function renderCard() {
                         if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
                     } else {
                         feedbackDiv.className = 'mt-3 p-3 rounded-2xl text-sm font-medium bg-red-50 text-red-700 border border-red-200';
-                        feedbackDiv.innerHTML = `<span style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:4px">${ICONS?.xCircle||'✗'}</span> Incorrecto. ${card.explanation}
-                            <button onclick="goToRefCard()" class="mt-2 block w-full text-center text-xs font-bold text-indigo-600 hover:underline py-1" style="display:flex;align-items:center;justify-content:center;gap:4px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.arrowLeft||''}</span> Repasar tarjeta relacionada</button>`;
+                        feedbackDiv.innerHTML = `<span style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:4px">${ICONS?.xCircle || '✗'}</span> Incorrecto. ${card.explanation}
+                            <button onclick="goToRefCard()" class="mt-2 block w-full text-center text-xs font-bold text-indigo-600 hover:underline py-1" style="display:flex;align-items:center;justify-content:center;gap:4px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.arrowLeft || ''}</span> Repasar tarjeta relacionada</button>`;
                         if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
                     }
                 }
@@ -1004,10 +1006,10 @@ function renderCard() {
             </div>
             <div class="sim-actions" id="simActions">
                 <button id="simLeftBtn" onclick="handleSimulation('left')" class="sim-btn sim-btn-left">
-                    <span style="display:inline-flex;width:28px;height:28px;margin:0 auto 4px">${ICONS?.xMark||'✗'}</span><br><span>En desacuerdo</span><br><small>desliza ←</small>
+                    <span style="display:inline-flex;width:28px;height:28px;margin:0 auto 4px">${ICONS?.xMark || '✗'}</span><br><span>En desacuerdo</span><br><small>desliza ←</small>
                 </button>
                 <button id="simRightBtn" onclick="handleSimulation('right')" class="sim-btn sim-btn-right">
-                    <span style="display:inline-flex;width:28px;height:28px;margin:0 auto 4px">${ICONS?.check||'✓'}</span><br><span>De acuerdo</span><br><small>→ desliza</small>
+                    <span style="display:inline-flex;width:28px;height:28px;margin:0 auto 4px">${ICONS?.check || '✓'}</span><br><span>De acuerdo</span><br><small>→ desliza</small>
                 </button>
             </div>
         </div>`;
@@ -1095,7 +1097,7 @@ function handleSimulation(direction) {
     feedback.classList.remove('hidden');
     if (isCorrect) {
         feedback.className = 'mt-2 p-4 rounded-2xl text-sm font-medium bg-green-50 text-green-800 border border-green-200';
-        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#16a34a">${ICONS?.checkCircle||'✓'}</span> ¡Decisión acertada! (${swipeLabel})</div>${_mdToHtml(outcome)}`;
+        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#16a34a">${ICONS?.checkCircle || '✓'}</span> ¡Decisión acertada! (${swipeLabel})</div>${_mdToHtml(outcome)}`;
         const _modC = modulesData[currentModule - 1];
         const _cardC = _modC?.cards[currentCardIndex];
         const _cidC = _cardC?.id || `${currentModule}-${currentCardIndex}`;
@@ -1107,7 +1109,7 @@ function handleSimulation(direction) {
         }
     } else {
         feedback.className = 'mt-2 p-4 rounded-2xl text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200';
-        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#d97706">${ICONS?.lightbulb||'💡'}</span> Reflexiona... (${swipeLabel})</div>${_mdToHtml(outcome)}<div style="margin-top:10px;font-size:0.8rem;color:#92400e;display:flex;align-items:center;gap:4px"><span style="display:inline-flex;width:13px;height:13px">${ICONS?.refresh||''}</span> Puedes continuar — el aprendizaje está en la reflexión.</div>`;
+        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#d97706">${ICONS?.lightbulb || '💡'}</span> Reflexiona... (${swipeLabel})</div>${_mdToHtml(outcome)}<div style="margin-top:10px;font-size:0.8rem;color:#92400e;display:flex;align-items:center;gap:4px"><span style="display:inline-flex;width:13px;height:13px">${ICONS?.refresh || ''}</span> Puedes continuar — el aprendizaje está en la reflexión.</div>`;
         const _modW = modulesData[currentModule - 1];
         const _cardW = _modW?.cards[currentCardIndex];
         const _cidW = _cardW?.id || `${currentModule}-${currentCardIndex}`;
@@ -1349,7 +1351,7 @@ function formatCountdown(ms) {
     const h = Math.floor(totalSec / 3600);
     const m = Math.floor((totalSec % 3600) / 60);
     const s = totalSec % 60;
-    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 function isModuleLocked(moduleNum) {
@@ -1513,7 +1515,7 @@ function goToModule(modNum) {
 }
 
 function _showExamPrompt() {
-    const cid   = currentCourseId || 'steam';
+    const cid = currentCourseId || 'steam';
     const score = (progress?.dailyMissions?.examScores || {})[cid] ?? progress?.dailyMissions?.examScore;
     const alreadyPassed = score !== undefined && score >= 70;
     if (alreadyPassed) return; // ya tiene certificado, no molestar
@@ -1684,17 +1686,17 @@ function initSwipe() {
 
     // ── Touch (móvil) ───────────────────────────────────────
     card.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
-    card.addEventListener('touchmove',  e => onMove(e.touches[0].clientX, e.touches[0].clientY),  { passive: true });
-    card.addEventListener('touchend',   e => onEnd(e.changedTouches[0].clientX));
+    card.addEventListener('touchmove', e => onMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    card.addEventListener('touchend', e => onEnd(e.changedTouches[0].clientX));
 
     // ── Mouse (desktop) ─────────────────────────────────────
     card.addEventListener('mousedown', e => { if (e.button === 0) onStart(e.clientX, e.clientY); });
     // mousemove y mouseup en document para capturar cuando el cursor sale de la tarjeta
     const onMouseMove = e => onMove(e.clientX, e.clientY);
-    const onMouseUp   = e => { onEnd(e.clientX); document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
+    const onMouseUp = e => { onEnd(e.clientX); document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
     card.addEventListener('mousedown', () => {
         document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup',   onMouseUp);
+        document.addEventListener('mouseup', onMouseUp);
     });
 
     // Evitar que el drag arrastre texto/imágenes del navegador
@@ -1707,7 +1709,7 @@ function showBadgesModal() {
     let badgesHtml = "";
     Object.values(badges).forEach(badge => {
         const unlocked = progress.badges.includes(badge.id);
-        badgesHtml += `<div class="bg-gray-50 rounded-xl p-3 text-center ${unlocked ? 'border-2 border-yellow-400' : 'opacity-50'}"><div class="text-4xl mb-1">${badge.icon}</div><div class="font-bold text-sm">${badge.name}</div><div class="text-xs text-gray-500">${badge.desc}</div>${unlocked ? `<span class="text-green-500 text-xs" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.check||'✓'}</span> Desbloqueado</span>` : `<span class="text-gray-400 text-xs">+${badge.xpReward} XP</span>`}</div>`;
+        badgesHtml += `<div class="bg-gray-50 rounded-xl p-3 text-center ${unlocked ? 'border-2 border-yellow-400' : 'opacity-50'}"><div class="text-4xl mb-1">${badge.icon}</div><div class="font-bold text-sm">${badge.name}</div><div class="text-xs text-gray-500">${badge.desc}</div>${unlocked ? `<span class="text-green-500 text-xs" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.check || '✓'}</span> Desbloqueado</span>` : `<span class="text-gray-400 text-xs">+${badge.xpReward} XP</span>`}</div>`;
     });
     document.getElementById('badgesList').innerHTML = badgesHtml;
     document.getElementById('badgesModal').classList.remove('hidden');
@@ -1729,8 +1731,8 @@ function showRedeemModal() {
     prizes.forEach(prize => {
         const alreadyRedeemed = progress.redeemedPrizes?.includes(prize.id);
         prizesHtml += `<div class="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
-            <div><div class="text-2xl">${prize.icon}</div><div class="font-bold">${prize.name}</div><div class="text-xs text-gray-500">${prize.desc}</div><div class="text-xs text-yellow-600" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.star||'⭐'}</span> ${prize.xpCost} XP</div>${prize.sponsor ? `<div class="text-xs text-green-600">Patrocinado por: ${prize.sponsor}</div>` : ''}</div>
-            ${!alreadyRedeemed && progress.xp >= prize.xpCost ? `<button data-prize="${prize.id}" data-cost="${prize.xpCost}" class="redeem-prize-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-sm transition">Canjear</button>` : (alreadyRedeemed ? `<span class="text-gray-400 text-sm" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.check||'✓'}</span> Canjeado</span>` : '<span class="text-gray-400 text-sm">Sin XP</span>')}
+            <div><div class="text-2xl">${prize.icon}</div><div class="font-bold">${prize.name}</div><div class="text-xs text-gray-500">${prize.desc}</div><div class="text-xs text-yellow-600" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.star || '⭐'}</span> ${prize.xpCost} XP</div>${prize.sponsor ? `<div class="text-xs text-green-600">Patrocinado por: ${prize.sponsor}</div>` : ''}</div>
+            ${!alreadyRedeemed && progress.xp >= prize.xpCost ? `<button data-prize="${prize.id}" data-cost="${prize.xpCost}" class="redeem-prize-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-sm transition">Canjear</button>` : (alreadyRedeemed ? `<span class="text-gray-400 text-sm" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.check || '✓'}</span> Canjeado</span>` : '<span class="text-gray-400 text-sm">Sin XP</span>')}
         </div>`;
     });
     document.getElementById('prizesList').innerHTML = prizesHtml;
@@ -1759,14 +1761,14 @@ const showRankingModal = () => showRanking();
 
 async function showRanking() {
     const listEl = document.getElementById("rankingList");
-    listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:32px;height:32px;color:#94a3b8">${ICONS?.spinner||'...'}</span></div>`;
+    listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:32px;height:32px;color:#94a3b8">${ICONS?.spinner || '...'}</span></div>`;
     document.getElementById("rankingModal").classList.remove("hidden");
 
     let { data, error } = await supabase
         .from('ranking_view')
         .select('user_id, nombre_usuario, full_name, profile_photo, xp, level')
         .order('level', { ascending: false })
-        .order('xp',   { ascending: false })
+        .order('xp', { ascending: false })
         .limit(100);
 
     // Fallback: si la vista aún no tiene full_name/profile_photo, reintenta con columnas básicas
@@ -1776,7 +1778,7 @@ async function showRanking() {
             .from('ranking_view')
             .select('user_id, nombre_usuario, xp, level')
             .order('level', { ascending: false })
-            .order('xp',   { ascending: false })
+            .order('xp', { ascending: false })
             .limit(100);
         data = fallback.data;
         error = fallback.error;
@@ -1795,10 +1797,10 @@ async function showRanking() {
     // ── Definición de ligas por nivel ──────────────────────────────
     const LEAGUES = [
         { name: 'Liga Diamante', emoji: '💎', min: 11, color: '#06b6d4', bg: '#ecfeff' },
-        { name: 'Liga Platino',  emoji: '🪙', min: 8,  color: '#8b5cf6', bg: '#f5f3ff' },
-        { name: 'Liga Oro',      emoji: '🥇', min: 5,  color: '#f59e0b', bg: '#fffbeb' },
-        { name: 'Liga Plata',    emoji: '🥈', min: 3,  color: '#64748b', bg: '#f8fafc' },
-        { name: 'Liga Bronce',   emoji: '🥉', min: 1,  color: '#b45309', bg: '#fef3c7' },
+        { name: 'Liga Platino', emoji: '🪙', min: 8, color: '#8b5cf6', bg: '#f5f3ff' },
+        { name: 'Liga Oro', emoji: '🥇', min: 5, color: '#f59e0b', bg: '#fffbeb' },
+        { name: 'Liga Plata', emoji: '🥈', min: 3, color: '#64748b', bg: '#f8fafc' },
+        { name: 'Liga Bronce', emoji: '🥉', min: 1, color: '#b45309', bg: '#fef3c7' },
     ];
 
     const getLeague = lvl => LEAGUES.find(l => lvl >= l.min) || LEAGUES[LEAGUES.length - 1];
@@ -1871,7 +1873,7 @@ document.getElementById('closeCourseRequestsBtn')?.addEventListener('click', () 
 async function loadCourseRequests() {
     const listEl = document.getElementById('courseRequestsList');
     if (!listEl) return;
-    listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:28px;height:28px;color:#94a3b8">${ICONS?.spinner||'...'}</span></div>`;
+    listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:28px;height:28px;color:#94a3b8">${ICONS?.spinner || '...'}</span></div>`;
 
     const { data, error } = await supabase
         .from('course_requests')
@@ -1909,12 +1911,12 @@ async function loadCourseRequests() {
 }
 
 function esc(s) {
-    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 document.getElementById('submitCourseRequestBtn')?.addEventListener('click', async () => {
     const titleInput = document.getElementById('newCourseTitleInput');
-    const descInput  = document.getElementById('newCourseDescInput');
+    const descInput = document.getElementById('newCourseDescInput');
     const title = titleInput.value.trim();
     if (!title) { showToast('Escribe el nombre del curso que sugieres', 'error'); return; }
 
@@ -2160,9 +2162,9 @@ function showEditProfile() {
 
     nameInput.value = progress?.dailyMissions?.fullName || '';
     const schoolEl = document.getElementById('schoolInput');
-    const deptEl   = document.getElementById('departmentInput');
+    const deptEl = document.getElementById('departmentInput');
     if (schoolEl) schoolEl.value = progress?.dailyMissions?.school || '';
-    if (deptEl)   deptEl.value   = progress?.dailyMissions?.department || 'Individual';
+    if (deptEl) deptEl.value = progress?.dailyMissions?.department || 'Individual';
 
     const photo = progress?.dailyMissions?.profilePhoto;
     if (photo) {
@@ -2209,7 +2211,7 @@ document.getElementById('saveProfileBtn')?.addEventListener('click', () => {
     if (!progress.dailyMissions) progress.dailyMissions = {};
     if (name) progress.dailyMissions.fullName = name;
     if (hasPhoto && photoSrc) progress.dailyMissions.profilePhoto = photoSrc;
-    progress.dailyMissions.school     = school || 'Individual';
+    progress.dailyMissions.school = school || 'Individual';
     progress.dailyMissions.department = department || '';
 
     // Guardar perfil en localStorage Y en Supabase user_metadata para sincronizar entre dispositivos
@@ -2222,11 +2224,13 @@ document.getElementById('saveProfileBtn')?.addEventListener('click', () => {
     };
     localStorage.setItem(_profileKey, JSON.stringify(_savedProfile));
     if (currentUser) {
-        supabase.auth.updateUser({ data: {
-            fullName:   progress.dailyMissions.fullName || currentUser.user_metadata?.fullName,
-            school:     progress.dailyMissions.school,
-            department: progress.dailyMissions.department
-        }}).catch(() => {});
+        supabase.auth.updateUser({
+            data: {
+                fullName: progress.dailyMissions.fullName || currentUser.user_metadata?.fullName,
+                school: progress.dailyMissions.school,
+                department: progress.dailyMissions.department
+            }
+        }).catch(() => { });
     }
 
     // Actualizar display en perfil
@@ -2733,9 +2737,9 @@ async function _loadCertSignatures() {
     if (_cachedSignatures) return _cachedSignatures;
     try {
         const { data } = await supabase.from('cert_signatures').select('*').eq('active', true).order('slot');
-        _cachedSignatures = data?.length ? data : [{ slot:1, signer_name:'Billy Abraham Gómez Sac', signer_role:'Coordinación del Programa', signature_url: null }];
-    } catch(_) {
-        _cachedSignatures = [{ slot:1, signer_name:'Billy Abraham Gómez Sac', signer_role:'Coordinación del Programa', signature_url: null }];
+        _cachedSignatures = data?.length ? data : [{ slot: 1, signer_name: 'Billy Abraham Gómez Sac', signer_role: 'Coordinación del Programa', signature_url: null }];
+    } catch (_) {
+        _cachedSignatures = [{ slot: 1, signer_name: 'Billy Abraham Gómez Sac', signer_role: 'Coordinación del Programa', signature_url: null }];
     }
     return _cachedSignatures;
 }
@@ -2765,7 +2769,7 @@ async function _loadCertSignaturesForUser() {
             } else {
                 _cachedUserSchoolSig = null;
             }
-        } catch(_) { _cachedUserSchoolSig = null; }
+        } catch (_) { _cachedUserSchoolSig = null; }
     }
 
     const result = [];
@@ -2916,14 +2920,14 @@ async function generateCertificateFromExam(percentage) {
         if (!win) {
             const a = document.createElement('a');
             a.href = blobUrl;
-            a.download = `Certificado_${nombre.replace(/\s+/g,'_')}.html`;
+            a.download = `Certificado_${nombre.replace(/\s+/g, '_')}.html`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             showToast('Certificado descargado. Ábrelo en tu navegador.', 'success');
         }
         setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
-    } catch(e) {
+    } catch (e) {
         showToast('Error al generar el certificado.', 'error');
     }
 }
@@ -2932,35 +2936,35 @@ async function generateCertificateFromExam(percentage) {
 // URLs: reemplaza con los enlaces reales (Google Drive, Dropbox, etc.)
 const COURSE_RESOURCES = {
     'steam': [
-        { name: 'Guía de Proyectos STEAM',        desc: 'Plantillas y ejemplos de proyectos interdisciplinarios', icon: '📋', url: 'recursos/steam-guia-proyectos.html' },
-        { name: 'Rúbricas de Evaluación STEAM',    desc: 'Instrumentos de evaluación por competencias',           icon: '✅', url: 'recursos/steam-rubricas.html' },
-        { name: 'Banco de 30 Actividades STEAM',   desc: 'Actividades listas para aplicar en el aula',            icon: '🔬', url: 'recursos/steam-banco-actividades.html' },
-        { name: 'Infografía Think-Make-Improve',   desc: 'Resumen visual del ciclo de diseño',                    icon: '🖼️', url: 'recursos/steam-infografia-tmi.html' },
+        { name: 'Guía de Proyectos STEAM', desc: 'Plantillas y ejemplos de proyectos interdisciplinarios', icon: '📋', url: 'recursos/steam-guia-proyectos.html' },
+        { name: 'Rúbricas de Evaluación STEAM', desc: 'Instrumentos de evaluación por competencias', icon: '✅', url: 'recursos/steam-rubricas.html' },
+        { name: 'Banco de 30 Actividades STEAM', desc: 'Actividades listas para aplicar en el aula', icon: '🔬', url: 'recursos/steam-banco-actividades.html' },
+        { name: 'Infografía Think-Make-Improve', desc: 'Resumen visual del ciclo de diseño', icon: '🖼️', url: 'recursos/steam-infografia-tmi.html' },
     ],
     'abp': [
-        { name: 'Guía ABP Paso a Paso',            desc: 'Metodología completa con ejemplos guatemaltecos',       icon: '📖', url: 'recursos/abp-guia.html' },
-        { name: 'Formatos de Planificación ABP',   desc: 'Templates editables para planificar proyectos',         icon: '📝', url: 'recursos/abp-formatos.html' },
-        { name: 'Ejemplos de Proyectos ABP',       desc: '10 proyectos reales aplicados en Guatemala',            icon: '💡', url: 'recursos/abp-ejemplos.html' },
+        { name: 'Guía ABP Paso a Paso', desc: 'Metodología completa con ejemplos guatemaltecos', icon: '📖', url: 'recursos/abp-guia.html' },
+        { name: 'Formatos de Planificación ABP', desc: 'Templates editables para planificar proyectos', icon: '📝', url: 'recursos/abp-formatos.html' },
+        { name: 'Ejemplos de Proyectos ABP', desc: '10 proyectos reales aplicados en Guatemala', icon: '💡', url: 'recursos/abp-ejemplos.html' },
     ],
     'design-thinking': [
-        { name: 'Kit de Design Thinking',          desc: 'Tarjetas de actividades y dinámicas de empatía',        icon: '🎨', url: 'recursos/dt-kit.html' },
-        { name: 'Plantillas de Prototipado',       desc: 'Formatos para documentar prototipos con estudiantes',   icon: '✏️', url: 'recursos/dt-plantillas-prototipado.html' },
-        { name: 'Guía de Entrevistas de Empatía',  desc: 'Cómo entrevistar usuarios en el contexto educativo',   icon: '🗣️', url: 'recursos/dt-entrevistas-empatia.html' },
+        { name: 'Kit de Design Thinking', desc: 'Tarjetas de actividades y dinámicas de empatía', icon: '🎨', url: 'recursos/dt-kit.html' },
+        { name: 'Plantillas de Prototipado', desc: 'Formatos para documentar prototipos con estudiantes', icon: '✏️', url: 'recursos/dt-plantillas-prototipado.html' },
+        { name: 'Guía de Entrevistas de Empatía', desc: 'Cómo entrevistar usuarios en el contexto educativo', icon: '🗣️', url: 'recursos/dt-entrevistas-empatia.html' },
     ],
     'evaluacion': [
-        { name: 'Banco de Rúbricas',               desc: 'Rúbricas analíticas para diferentes competencias',      icon: '📊', url: 'recursos/ev-banco-rubricas.html' },
-        { name: 'Guía de Evaluación Formativa',    desc: 'Estrategias de retroalimentación efectiva',             icon: '📈', url: 'recursos/ev-guia-formativa.html' },
-        { name: 'Instrumentos de Autoevaluación',  desc: 'Formatos para coevaluación y autoevaluación',           icon: '🔄', url: 'recursos/ev-instrumentos-autoevaluacion.html' },
+        { name: 'Banco de Rúbricas', desc: 'Rúbricas analíticas para diferentes competencias', icon: '📊', url: 'recursos/ev-banco-rubricas.html' },
+        { name: 'Guía de Evaluación Formativa', desc: 'Estrategias de retroalimentación efectiva', icon: '📈', url: 'recursos/ev-guia-formativa.html' },
+        { name: 'Instrumentos de Autoevaluación', desc: 'Formatos para coevaluación y autoevaluación', icon: '🔄', url: 'recursos/ev-instrumentos-autoevaluacion.html' },
     ],
     'tipos-estudiantes': [
-        { name: 'Guía de Estilos de Aprendizaje',  desc: 'Cómo identificar y atender distintos perfiles',         icon: '🧠', url: 'recursos/te-guia-estilos.html' },
-        { name: 'Estrategias de Diferenciación',   desc: 'Actividades adaptadas a diferentes tipos de alumnos',   icon: '🌈', url: 'recursos/te-estrategias-diferenciacion.html' },
-        { name: 'Fichas de Observación Docente',   desc: 'Instrumentos para conocer mejor a tus estudiantes',    icon: '👁️', url: 'recursos/te-fichas-observacion.html' },
+        { name: 'Guía de Estilos de Aprendizaje', desc: 'Cómo identificar y atender distintos perfiles', icon: '🧠', url: 'recursos/te-guia-estilos.html' },
+        { name: 'Estrategias de Diferenciación', desc: 'Actividades adaptadas a diferentes tipos de alumnos', icon: '🌈', url: 'recursos/te-estrategias-diferenciacion.html' },
+        { name: 'Fichas de Observación Docente', desc: 'Instrumentos para conocer mejor a tus estudiantes', icon: '👁️', url: 'recursos/te-fichas-observacion.html' },
     ],
     'storytelling': [
-        { name: 'Guía de Storytelling Docente',    desc: 'Estructura narrativa y técnicas para enseñar con historias', icon: '📖', url: 'recursos/st-guia-storytelling.html' },
-        { name: 'Plantillas de Historia',          desc: 'Story spine, viaje del héroe y otros formatos listos para usar', icon: '📝', url: 'recursos/st-plantillas-historia.html' },
-        { name: 'Banco de Historias Guatemaltecas', desc: '20 historias y personajes locales para usar en clase',   icon: '🗺️', url: 'recursos/st-banco-historias.html' },
+        { name: 'Guía de Storytelling Docente', desc: 'Estructura narrativa y técnicas para enseñar con historias', icon: '📖', url: 'recursos/st-guia-storytelling.html' },
+        { name: 'Plantillas de Historia', desc: 'Story spine, viaje del héroe y otros formatos listos para usar', icon: '📝', url: 'recursos/st-plantillas-historia.html' },
+        { name: 'Banco de Historias Guatemaltecas', desc: '20 historias y personajes locales para usar en clase', icon: '🗺️', url: 'recursos/st-banco-historias.html' },
     ],
 };
 
@@ -2968,7 +2972,7 @@ function renderCourseResources() {
     const el = document.getElementById('courseResourcesSection');
     if (!el) return;
 
-    const scores     = progress?.dailyMissions?.examScores || {};
+    const scores = progress?.dailyMissions?.examScores || {};
     const steamScore = scores['steam'] ?? progress?.dailyMissions?.examScore;
     const courseColors = {
         steam: '#07B0E4', abp: '#2563EB', 'design-thinking': '#E83C8D',
@@ -2985,10 +2989,10 @@ function renderCourseResources() {
     });
 
     el.innerHTML = available.map(c => {
-        const s      = c.id === 'steam' ? steamScore : scores[c.id];
+        const s = c.id === 'steam' ? steamScore : scores[c.id];
         const passed = s !== undefined && s >= 70;
-        const col    = courseColors[c.id] || '#4f46e5';
-        const res    = COURSE_RESOURCES[c.id] || [];
+        const col = courseColors[c.id] || '#4f46e5';
+        const res = COURSE_RESOURCES[c.id] || [];
 
         if (passed) {
             const items = res.map(r => {
@@ -3033,7 +3037,7 @@ function renderCourseResources() {
 }
 
 // ==================== CERTIFICADO MAESTRO ====================
-let _activeMasterPath   = null; // ruta cuyo certificado maestro se generará
+let _activeMasterPath = null; // ruta cuyo certificado maestro se generará
 let _selectedMasterPath = null; // ruta elegida por el usuario en la sección de certificados
 
 // Puntaje del examen maestro de una ruta concreta (con compatibilidad hacia atrás)
@@ -3049,8 +3053,10 @@ function _getPortfolio(pathId) {
     const dm = progress?.dailyMissions || {};
     if (dm.portfolioByPath && dm.portfolioByPath[pathId]) return dm.portfolioByPath[pathId];
     if (pathId === 'steam20' && dm.portfolioAiTotal !== undefined && dm.portfolioAiTotal !== null) {
-        return { aiTotal: dm.portfolioAiTotal, scores: dm.portfolioScores, feedback: dm.portfolioFeedback,
-                 summary: dm.portfolioSummary, attempts: dm.portfolioAttempts, lastAttempt: dm.portfolioLastAttempt }; // legado
+        return {
+            aiTotal: dm.portfolioAiTotal, scores: dm.portfolioScores, feedback: dm.portfolioFeedback,
+            summary: dm.portfolioSummary, attempts: dm.portfolioAttempts, lastAttempt: dm.portfolioLastAttempt
+        }; // legado
     }
     return null;
 }
@@ -3082,9 +3088,9 @@ function _portfolioCoursesForPath(path) {
 
 function _checkMasterCert() {
     if (typeof allCourses === 'undefined') return;
-    const scores      = progress?.dailyMissions?.examScores || {};
-    const steamScore  = scores['steam'] ?? progress?.dailyMissions?.examScore;
-    const available       = allCourses.filter(c => c.status === 'available');
+    const scores = progress?.dailyMissions?.examScores || {};
+    const steamScore = scores['steam'] ?? progress?.dailyMissions?.examScore;
+    const available = allCourses.filter(c => c.status === 'available');
 
     // Evaluar cada ruta — cada una tiene su propio examen, portafolio y certificado
     const pathResults = LEARNING_PATHS.map(path => {
@@ -3097,7 +3103,7 @@ function _checkMasterCert() {
     });
 
     const passedPaths = pathResults.filter(r => r.allPassed);
-    const anyPassed   = passedPaths.length > 0;
+    const anyPassed = passedPaths.length > 0;
 
     // Ruta seleccionada para el proceso de certificado maestro (default: primera completada)
     if (!_selectedMasterPath || !passedPaths.some(r => r.path.id === _selectedMasterPath.id)) {
@@ -3114,10 +3120,10 @@ function _checkMasterCert() {
                 <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px">Certificado maestro · elige la ruta</p>
                 <div style="display:flex;flex-wrap:wrap;gap:6px">
                     ${passedPaths.map(r => {
-                        const isSel = sel && r.path.id === sel.id;
-                        return `<button onclick="_selectMasterPath('${r.path.id}')"
-                            style="font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;cursor:pointer;border:1.5px solid ${isSel?r.path.color:'#e2e8f0'};background:${isSel?r.path.color:'#fff'};color:${isSel?'#fff':'#475569'}">${esc(r.path.label)}</button>`;
-                    }).join('')}
+                const isSel = sel && r.path.id === sel.id;
+                return `<button onclick="_selectMasterPath('${r.path.id}')"
+                            style="font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;cursor:pointer;border:1.5px solid ${isSel ? r.path.color : '#e2e8f0'};background:${isSel ? r.path.color : '#fff'};color:${isSel ? '#fff' : '#475569'}">${esc(r.path.label)}</button>`;
+            }).join('')}
                 </div>`;
             selEl.classList.remove('hidden');
         } else {
@@ -3127,15 +3133,15 @@ function _checkMasterCert() {
 
     // Puntajes de la ruta SELECCIONADA (cada ruta es independiente)
     const masterExamScore = sel ? _getMasterExamScore(sel.id) : undefined;
-    const pf              = sel ? _getPortfolio(sel.id) : null;
-    const portfolioScore  = (pf && pf.aiTotal !== undefined && pf.aiTotal !== null) ? pf.aiTotal : null;
+    const pf = sel ? _getPortfolio(sel.id) : null;
+    const portfolioScore = (pf && pf.aiTotal !== undefined && pf.aiTotal !== null) ? pf.aiTotal : null;
     const allIndividualPassed = anyPassed;
 
-    const examScore50    = masterExamScore !== undefined ? Math.round(masterExamScore * 0.5) : null;
-    const combinedScore  = (examScore50 !== null && portfolioScore !== null) ? examScore50 + portfolioScore : null;
-    const masterPassed   = combinedScore !== null && combinedScore >= 85;
-    const examTaken      = masterExamScore !== undefined;
-    const portfolioDone  = portfolioScore !== null;
+    const examScore50 = masterExamScore !== undefined ? Math.round(masterExamScore * 0.5) : null;
+    const combinedScore = (examScore50 !== null && portfolioScore !== null) ? examScore50 + portfolioScore : null;
+    const masterPassed = combinedScore !== null && combinedScore >= 85;
+    const examTaken = masterExamScore !== undefined;
+    const portfolioDone = portfolioScore !== null;
 
     // Botón examen maestro: visible cuando hay ruta seleccionada y su examen aún no tomado
     const examBtn = document.getElementById('masterExamBtn');
@@ -3154,9 +3160,9 @@ function _checkMasterCert() {
     if (scoreEl) {
         if (anyPassed && examTaken) {
             const portLabel = portfolioDone ? `${portfolioScore}/50` : '<span style="color:#94a3b8">Pendiente</span>';
-            const combinedLabel = combinedScore !== null ? `<strong style="color:${combinedScore>=85?'#16a34a':'#dc2626'}">${combinedScore}/100</strong>` : '—';
+            const combinedLabel = combinedScore !== null ? `<strong style="color:${combinedScore >= 85 ? '#16a34a' : '#dc2626'}">${combinedScore}/100</strong>` : '—';
             scoreEl.innerHTML = `
-                <p style="font-size:11px;font-weight:700;color:${sel?.color||'#475569'};margin:0 0 6px">Ruta: ${esc(sel?.label||'')}</p>
+                <p style="font-size:11px;font-weight:700;color:${sel?.color || '#475569'};margin:0 0 6px">Ruta: ${esc(sel?.label || '')}</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
                     <div style="background:#f0f9ff;border-radius:12px;padding:10px;text-align:center;border:1px solid #bae6fd">
                         <p style="font-size:18px;font-weight:800;color:#0369a1">${examScore50}/50</p>
@@ -3166,7 +3172,7 @@ function _checkMasterCert() {
                         <p style="font-size:18px;font-weight:800;color:#15803d">${portLabel}</p>
                         <p style="font-size:10px;color:#64748b;margin-top:2px">Portafolio</p>
                     </div>
-                    <div style="background:${combinedScore===null?'#f8fafc':combinedScore>=85?'#f0fdf4':'#fef2f2'};border-radius:12px;padding:10px;text-align:center;border:1px solid ${combinedScore===null?'#e2e8f0':combinedScore>=85?'#86efac':'#fca5a5'}">
+                    <div style="background:${combinedScore === null ? '#f8fafc' : combinedScore >= 85 ? '#f0fdf4' : '#fef2f2'};border-radius:12px;padding:10px;text-align:center;border:1px solid ${combinedScore === null ? '#e2e8f0' : combinedScore >= 85 ? '#86efac' : '#fca5a5'}">
                         <p style="font-size:18px;font-weight:800">${combinedLabel}</p>
                         <p style="font-size:10px;color:#64748b;margin-top:2px">Total</p>
                     </div>
@@ -3190,7 +3196,7 @@ function _checkMasterCert() {
     // Estado por curso — mostrar rutas como secciones con sus cursos dentro
     const statusEl = document.getElementById('certCourseStatus');
     if (statusEl) {
-        const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', storytelling:'#F59E0B', creatividad:'#E83C8D', 'herramientas-tec':'#7C3AED', 'm-learning':'#F59E0B', 'flipped-classroom':'#10B981', abv:'#6366F1', 'micro-learning':'#F97316' };
+        const courseColors = { steam: '#07B0E4', abp: '#2563EB', 'design-thinking': '#E83C8D', evaluacion: '#E9A037', 'tipos-estudiantes': '#7C3AED', storytelling: '#F59E0B', creatividad: '#E83C8D', 'herramientas-tec': '#7C3AED', 'm-learning': '#F59E0B', 'flipped-classroom': '#10B981', abv: '#6366F1', 'micro-learning': '#F97316' };
         statusEl.innerHTML = LEARNING_PATHS.map(path => {
             const pathCourses = (path.courses || [])
                 .map(id => available.find(c => c.id === id))
@@ -3203,7 +3209,7 @@ function _checkMasterCert() {
             });
 
             const coursesHTML = pathCourses.map(c => {
-                const s      = c.id === 'steam' ? steamScore : scores[c.id];
+                const s = c.id === 'steam' ? steamScore : scores[c.id];
                 const passed = s !== undefined && s >= 70;
                 const started = (progress?.completedCards || []).some(id => {
                     const str = String(id);
@@ -3258,9 +3264,9 @@ function _checkMasterCert() {
 }
 
 // ==================== EXAMEN MAESTRO ====================
-let _masterExamActive   = false;
+let _masterExamActive = false;
 let _masterExamQuestions = [];
-let _masterExamAnswers  = [];
+let _masterExamAnswers = [];
 let _masterExamCurrentQ = 0;
 
 let _masterExamPathId = null; // ruta del examen maestro en curso
@@ -3280,10 +3286,10 @@ function startMasterExam() {
     });
     if (pool.length === 0) { showToast('Esta ruta no tiene preguntas disponibles.', 'error'); return; }
 
-    _masterExamActive    = true;
-    _masterExamCurrentQ  = 0;
+    _masterExamActive = true;
+    _masterExamCurrentQ = 0;
     _masterExamQuestions = _shuffleArray(pool).slice(0, 30);
-    _masterExamAnswers   = new Array(_masterExamQuestions.length).fill(null);
+    _masterExamAnswers = new Array(_masterExamQuestions.length).fill(null);
 
     switchTab('home');
     _hideNavBtns(true);
@@ -3292,16 +3298,16 @@ function startMasterExam() {
 }
 
 function _renderMasterExamCard() {
-    const q     = _masterExamQuestions[_masterExamCurrentQ];
+    const q = _masterExamQuestions[_masterExamCurrentQ];
     const total = _masterExamQuestions.length;
-    const qNum  = _masterExamCurrentQ + 1;
-    const pct   = Math.round((qNum / total) * 100);
+    const qNum = _masterExamCurrentQ + 1;
+    const pct = Math.round((qNum / total) * 100);
 
-    const _qCourse     = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === q.course) : null;
-    const _pathColor   = (_selectedMasterPath || _activeMasterPath)?.color || '#1A6B68';
-    const courseTag    = _qCourse?.title || 'General';
-    const courseColor  = _qCourse?.color || _pathColor;
-    const selected     = _masterExamAnswers[_masterExamCurrentQ];
+    const _qCourse = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === q.course) : null;
+    const _pathColor = (_selectedMasterPath || _activeMasterPath)?.color || '#1A6B68';
+    const courseTag = _qCourse?.title || 'General';
+    const courseColor = _qCourse?.color || _pathColor;
+    const selected = _masterExamAnswers[_masterExamCurrentQ];
 
     const optionsHtml = q.options.map((opt, i) => {
         const isSelected = selected === i;
@@ -3327,7 +3333,7 @@ function _renderMasterExamCard() {
                                  padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em">${courseTag}</span>
                     <span style="font-size:11px;color:#94A3B8;font-weight:600">Pregunta ${qNum} / ${total}</span>
                 </div>
-                <span style="font-size:11px;font-weight:700;color:#1e293b">🎓 ${esc((_selectedMasterPath||_activeMasterPath)?.label||'Examen Maestro')}</span>
+                <span style="font-size:11px;font-weight:700;color:#1e293b">🎓 ${esc((_selectedMasterPath || _activeMasterPath)?.label || 'Examen Maestro')}</span>
             </div>
             <div style="background:#F1F5F9;border-radius:8px;height:6px;margin-bottom:16px;overflow:hidden">
                 <div style="height:100%;border-radius:8px;background:${courseColor};
@@ -3374,8 +3380,8 @@ function _masterExamNext() {
 function _showMasterExamResults() {
     let correct = 0;
     _masterExamQuestions.forEach((q, i) => { if (_masterExamAnswers[i] === q.correct) correct++; });
-    const total  = _masterExamQuestions.length;
-    const pct    = Math.round((correct / total) * 100);
+    const total = _masterExamQuestions.length;
+    const pct = Math.round((correct / total) * 100);
     const passed = pct >= 70;
 
     // Guardar el puntaje del examen POR RUTA (cada ruta tiene su propio examen)
@@ -3384,7 +3390,7 @@ function _showMasterExamResults() {
     const _pid = _masterExamPathId || _selectedMasterPath?.id;
     if (_pid) progress.dailyMissions.masterExamScores[_pid] = pct;
     if (_pid === 'steam20') progress.dailyMissions.masterExamScore = pct; // legado
-    progress.dailyMissions.masterExamDate  = localDateStr();
+    progress.dailyMissions.masterExamDate = localDateStr();
     window._lastMasterExamScore = pct;
     if (passed) {
         addXP(100, 'Parte 1 del Examen Maestro completada');
@@ -3452,13 +3458,13 @@ function _showMasterExamResults() {
 }
 
 async function generateMasterCertificate() {
-    const nombre      = getDisplayName();
-    const _now        = new Date();
-    const fecha       = _now.toLocaleDateString('es-GT', { day:'numeric', month:'long', year:'numeric' });
-    const _issueYear  = _now.getFullYear();
+    const nombre = getDisplayName();
+    const _now = new Date();
+    const fecha = _now.toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' });
+    const _issueYear = _now.getFullYear();
     const _issueMonth = _now.getMonth() + 1;
-    const scores      = progress?.dailyMissions?.examScores || {};
-    const steamScore  = scores['steam'] ?? progress?.dailyMissions?.examScore ?? 0;
+    const scores = progress?.dailyMissions?.examScores || {};
+    const steamScore = scores['steam'] ?? progress?.dailyMissions?.examScore ?? 0;
     const masterScore = (_activeMasterPath ? _getMasterExamScore(_activeMasterPath.id) : undefined) ?? window._lastMasterExamScore ?? 0;
 
     const [logoSrc, firmaSrc, masterSigs] = await Promise.all([
@@ -3481,9 +3487,9 @@ async function generateMasterCertificate() {
         return a + s;
     }, 0) / availableCourses.length) : 0;
 
-    const colors = { 'steam':'#07B0E4','abp':'#2563EB','design-thinking':'#E83C8D','evaluacion':'#E9A037','tipos-estudiantes':'#7C3AED','creatividad':'#E83C8D','herramientas-tec':'#7C3AED','m-learning':'#F59E0B','flipped-classroom':'#10B981','abv':'#6366F1','micro-learning':'#F97316' };
+    const colors = { 'steam': '#07B0E4', 'abp': '#2563EB', 'design-thinking': '#E83C8D', 'evaluacion': '#E9A037', 'tipos-estudiantes': '#7C3AED', 'creatividad': '#E83C8D', 'herramientas-tec': '#7C3AED', 'm-learning': '#F59E0B', 'flipped-classroom': '#10B981', 'abv': '#6366F1', 'micro-learning': '#F97316' };
     const courseBadges = availableCourses.map(c => {
-        const s   = c.id === 'steam' ? steamScore : (scores[c.id] || 0);
+        const s = c.id === 'steam' ? steamScore : (scores[c.id] || 0);
         const col = colors[c.id] || '#1A6B68';
         return `<div style="background:${col}18;border:1.5px solid ${col}44;border-radius:12px;padding:8px 14px;display:flex;align-items:center;gap:8px">
             <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
@@ -3594,14 +3600,14 @@ async function generateMasterCertificate() {
             // Popup blocked — fallback: descarga directa
             const a = document.createElement('a');
             a.href = blobUrl;
-            a.download = `Certificado_Docente_del_Siglo_XXI_${nombre.replace(/\s+/g,'_')}.html`;
+            a.download = `Certificado_Docente_del_Siglo_XXI_${nombre.replace(/\s+/g, '_')}.html`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             showToast('Certificado descargado. Ábrelo en tu navegador.', 'success');
         }
         setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
-    } catch(e) {
+    } catch (e) {
         console.error('generateMasterCertificate:', e);
         showToast('Error al generar el certificado. Intenta de nuevo.', 'error');
     }
@@ -3713,7 +3719,7 @@ document.getElementById("backToLoginBtn")?.addEventListener("click", () => {
 document.getElementById("doForgotPassword")?.addEventListener("click", async () => {
     const email = document.getElementById("forgotEmail").value.trim();
     const msgEl = document.getElementById("forgotMsg");
-    if (!email) { if (msgEl) { msgEl.textContent = "Ingresa tu correo."; msgEl.classList.remove("hidden","bg-emerald-50","text-emerald-700","border-emerald-100"); msgEl.classList.add("bg-red-50","text-red-600","border-red-100"); } return; }
+    if (!email) { if (msgEl) { msgEl.textContent = "Ingresa tu correo."; msgEl.classList.remove("hidden", "bg-emerald-50", "text-emerald-700", "border-emerald-100"); msgEl.classList.add("bg-red-50", "text-red-600", "border-red-100"); } return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + window.location.pathname
     });
@@ -3796,10 +3802,10 @@ checkExistingSession();
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then(reg => {
         // Revisa si hay una versión nueva del Service Worker cada 30 min mientras la app está abierta
-        setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+        setInterval(() => reg.update().catch(() => { }), 30 * 60 * 1000);
         // También revisa al volver a la pestaña/app tras estar en segundo plano
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') reg.update().catch(() => {});
+            if (document.visibilityState === 'visible') reg.update().catch(() => { });
         });
     });
 
@@ -3942,7 +3948,7 @@ function stopConfetti() {
 }
 
 // ==================== ONBOARDING ====================
-const ONBOARDING_SVG_ICONS = ['wave','flashCards','puzzle','lightning','calendar','photoStar','personCheck','graduation','trophyLarge'];
+const ONBOARDING_SVG_ICONS = ['wave', 'flashCards', 'puzzle', 'lightning', 'calendar', 'photoStar', 'personCheck', 'graduation', 'trophyLarge'];
 const ONBOARDING_SLIDES = [
     {
         emoji: '👋', svgKey: 'wave',
@@ -4189,12 +4195,12 @@ if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
 
 // ==================== SELECTOR DE CURSOS (Multi-curso) ====================
 let currentCourseId = 'steam';
-let _selectedPathId  = null; // ruta activa en el selector
+let _selectedPathId = null; // ruta activa en el selector
 
 // Ícono SVG por ruta de aprendizaje (trazo blanco, va sobre fondo de color)
 const _PATH_ICONS = {
-    steam20:      `<svg viewBox="0 0 48 48" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="4"/><ellipse cx="24" cy="24" rx="20" ry="8"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)"/></svg>`,
-    creativo:     `<svg viewBox="0 0 48 48" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6c-7 0-12 5-12 12 0 5 3 8 5 11h14c2-3 5-6 5-11 0-7-5-12-12-12Z" fill="rgba(255,255,255,0.15)"/><line x1="19" y1="35" x2="29" y2="35"/><line x1="20" y1="40" x2="28" y2="40"/></svg>`,
+    steam20: `<svg viewBox="0 0 48 48" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="4"/><ellipse cx="24" cy="24" rx="20" ry="8"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)"/></svg>`,
+    creativo: `<svg viewBox="0 0 48 48" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6c-7 0-12 5-12 12 0 5 3 8 5 11h14c2-3 5-6 5-11 0-7-5-12-12-12Z" fill="rgba(255,255,255,0.15)"/><line x1="19" y1="35" x2="29" y2="35"/><line x1="20" y1="40" x2="28" y2="40"/></svg>`,
     metodologias: `<svg viewBox="0 0 48 48" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M26 4 L12 26 H22 L20 44 L36 20 H26 Z" fill="rgba(255,255,255,0.15)"/></svg>`,
 };
 function _pathIconSvg(pathId) {
@@ -4214,12 +4220,17 @@ function _courseIconSvg(courseId, fallbackEmoji) {
 // y closeDiagnostic abre el selector de rutas.
 function _postAuthEntry() {
     const needOnboarding = !localStorage.getItem('onboardingDone');
-    const needDiag       = !localStorage.getItem('diagDone');
-    if (needOnboarding && typeof startOnboarding === 'function') {
-        startOnboarding();
-    } else if (needDiag && typeof startDiagnostic === 'function') {
-        startDiagnostic();
-    } else {
+    const needDiag = !localStorage.getItem('diagDone');
+    try {
+        if (needOnboarding && typeof startOnboarding === 'function') {
+            startOnboarding();
+        } else if (needDiag && typeof startDiagnostic === 'function') {
+            startDiagnostic();
+        } else {
+            showCourseSelector();
+        }
+    } catch (e) {
+        console.error('Error en flujo de entrada:', e);
         showCourseSelector();
     }
 }
@@ -4228,10 +4239,11 @@ function showCourseSelector() {
     const el = document.getElementById('courseSelector');
     if (!el) return;
     _selectedPathId = null;
-    _renderCourseSelector();
+    // Mostrar el contenedor PRIMERO para evitar pantalla en blanco si el render falla
     document.getElementById('loginScreen')?.classList.add('hidden');
     document.getElementById('mainApp')?.classList.add('hidden');
     el.classList.remove('hidden');
+    try { _renderCourseSelector(); } catch (e) { console.error('Error al renderizar selector de cursos:', e); }
 }
 
 function _renderCourseSelector() {
@@ -4245,13 +4257,13 @@ function _renderCourseSelector() {
             <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.5);margin:0 0 14px">Elige tu ruta de formación</p>
             <div class="lp-grid">
             ${LEARNING_PATHS.map(path => {
-                const pathCourses = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(Boolean);
-                const available   = pathCourses.filter(c => c.status === 'available');
-                const passed      = available.filter(c => (scores[c.id] || 0) >= 70).length;
-                const pct         = available.length ? Math.round(passed / available.length * 100) : 0;
-                const totalHours  = pathCourses.reduce((a, c) => a + (c.durationHours || 0), 0);
-                const allDone     = available.length > 0 && passed === available.length;
-                return `
+            const pathCourses = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(Boolean);
+            const available = pathCourses.filter(c => c.status === 'available');
+            const passed = available.filter(c => (scores[c.id] || 0) >= 70).length;
+            const pct = available.length ? Math.round(passed / available.length * 100) : 0;
+            const totalHours = pathCourses.reduce((a, c) => a + (c.durationHours || 0), 0);
+            const allDone = available.length > 0 && passed === available.length;
+            return `
                 <div onclick="_selectPath('${path.id}')"
                      class="cursor-pointer active:scale-95 transition-all backdrop-blur border rounded-2xl p-4 mb-3"
                      style="background:${path.color}22;border-color:${path.color}55">
@@ -4275,7 +4287,7 @@ function _renderCourseSelector() {
                         <span style="color:rgba(255,255,255,.4);font-size:18px">›</span>
                     </div>
                 </div>`;
-            }).join('')}
+        }).join('')}
             </div>`;
     } else {
         // ── Vista 2: Cursos de la ruta seleccionada ─────────────────
@@ -4299,25 +4311,25 @@ function _renderCourseSelector() {
             </div>
             <div class="lp-grid">
             ${pathCourses.map((c, idx) => {
-                const isOpen    = c.status === 'available';
-                const prereqMet = isCoursePrereqMet(c);
-                const clickable = isOpen && prereqMet;
-                const passed    = (scores[c.id] || 0) >= 70;
-                const prereqNames = (c.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
-                let statusBadge;
-                if (!isOpen)       statusBadge = '○ Próximamente';
-                else if (!prereqMet) statusBadge = `🔒 Requiere: ${prereqNames}`;
-                else               statusBadge = '● Disponible';
-                return `
+            const isOpen = c.status === 'available';
+            const prereqMet = isCoursePrereqMet(c);
+            const clickable = isOpen && prereqMet;
+            const passed = (scores[c.id] || 0) >= 70;
+            const prereqNames = (c.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
+            let statusBadge;
+            if (!isOpen) statusBadge = '○ Próximamente';
+            else if (!prereqMet) statusBadge = `🔒 Requiere: ${prereqNames}`;
+            else statusBadge = '● Disponible';
+            return `
                 <div onclick="${clickable ? `selectCourse('${c.id}')` : (isOpen && !prereqMet ? `showToast('🔒 Primero completa: ${prereqNames}','info')` : '')}"
                      class="backdrop-blur border rounded-2xl p-4 mb-3 ${clickable ? 'cursor-pointer active:scale-95' : 'opacity-55'} transition-all"
-                     style="background:${clickable ? c.color+'33' : 'rgba(255,255,255,.06)'};border-color:${clickable ? c.color+'66' : 'rgba(255,255,255,.12)'}">
+                     style="background:${clickable ? c.color + '33' : 'rgba(255,255,255,.06)'};border-color:${clickable ? c.color + '66' : 'rgba(255,255,255,.12)'}">
                     <div class="flex items-center gap-3">
                         <div style="position:relative;flex-shrink:0">
                             <div style="width:44px;height:44px;background:${clickable ? c.color : 'rgba(255,255,255,0.1)'};border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px">
                                 ${!isOpen || !prereqMet ? '🔒' : `<div style="width:26px;height:26px">${_courseIconSvg(c.id, c.icon)}</div>`}
                             </div>
-                            <span style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;background:rgba(0,0,0,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:white">${idx+1}</span>
+                            <span style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;background:rgba(0,0,0,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:white">${idx + 1}</span>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
@@ -4333,7 +4345,7 @@ function _renderCourseSelector() {
                         ${clickable ? `<span style="color:rgba(255,255,255,.4);font-size:18px">›</span>` : ''}
                     </div>
                 </div>`;
-            }).join('')}
+        }).join('')}
             </div>`;
     }
 }
@@ -4453,7 +4465,7 @@ function showDailyChallenge() {
     } else {
         chIdx = available[Math.floor(Math.random() * available.length)];
         if (!progress.dailyMissions) progress.dailyMissions = {};
-        progress.dailyMissions.lastChallengeIdx  = chIdx;
+        progress.dailyMissions.lastChallengeIdx = chIdx;
         progress.dailyMissions.lastChallengeDate = today; // fijar fecha para que answerDailyChallenge use el índice correcto
         if (!progress.usedChallenges.includes(chIdx)) progress.usedChallenges.push(chIdx);
         saveProgress();
@@ -4546,7 +4558,7 @@ function _updateCommentCountBtn(cardId, count) {
     const badge = count > 0
         ? `<span style="background:#07B0E4;color:white;font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;margin-left:5px;min-width:18px;display:inline-block;text-align:center">${count}</span>`
         : `<span style="background:#f1f5f9;color:#94a3b8;font-size:10px;font-weight:600;padding:1px 8px;border-radius:20px;margin-left:5px">0</span>`;
-    btn.innerHTML = `<span style="display:inline-flex;width:15px;height:15px;color:#94a3b8;flex-shrink:0">${ICONS?.comments||''}</span><span>Comentarios y dudas</span>${badge}`;
+    btn.innerHTML = `<span style="display:inline-flex;width:15px;height:15px;color:#94a3b8;flex-shrink:0">${ICONS?.comments || ''}</span><span>Comentarios y dudas</span>${badge}`;
 }
 
 async function showCardComments(cardId) {
@@ -4621,9 +4633,9 @@ async function submitComment() {
 
 const PORTFOLIO_COURSES = [
     { key: 'steam', label: 'STEAM', color: '#07B0E4', prompt: 'Diseña un proyecto STEAM que hayas implementado o planificado para tu clase. Describe el reto, las disciplinas integradas, cómo participaron los estudiantes y qué aprendieron.' },
-    { key: 'abp',   label: 'ABP',   color: '#2BA848', prompt: 'Describe una pregunta motriz que diseñaste y el proyecto que generó. ¿Cuál fue el producto final? ¿Cómo se conectó con la vida real de tus estudiantes?' },
-    { key: 'dt',    label: 'Design Thinking', color: '#E83C8D', prompt: 'Describe una sesión de empatía, definición de problema o prototipado que realizaste con tus estudiantes. ¿Qué descubriste? ¿Qué solución propusieron?' },
-    { key: 'eval',  label: 'Evaluación Formativa', color: '#E9A037', prompt: 'Comparte un instrumento de evaluación auténtica que creaste (rúbrica, portafolio, exit ticket, etc.). ¿Cómo lo usaste? ¿Qué información te dio sobre el aprendizaje de tus estudiantes?' },
+    { key: 'abp', label: 'ABP', color: '#2BA848', prompt: 'Describe una pregunta motriz que diseñaste y el proyecto que generó. ¿Cuál fue el producto final? ¿Cómo se conectó con la vida real de tus estudiantes?' },
+    { key: 'dt', label: 'Design Thinking', color: '#E83C8D', prompt: 'Describe una sesión de empatía, definición de problema o prototipado que realizaste con tus estudiantes. ¿Qué descubriste? ¿Qué solución propusieron?' },
+    { key: 'eval', label: 'Evaluación Formativa', color: '#E9A037', prompt: 'Comparte un instrumento de evaluación auténtica que creaste (rúbrica, portafolio, exit ticket, etc.). ¿Cómo lo usaste? ¿Qué información te dio sobre el aprendizaje de tus estudiantes?' },
     { key: 'tipos', label: 'Conoce a tus Estudiantes', color: '#7C3AED', prompt: 'Describe el perfil de aprendizaje de al menos 2 estudiantes de tu clase. ¿Qué descubriste sobre cómo aprenden? ¿Qué adaptaste en tu enseñanza?' },
 ];
 
@@ -4631,7 +4643,7 @@ let _portfolioData = null; // Datos del portafolio cargado desde Supabase
 
 async function loadAppConfig() {
     try {
-        const { data } = await supabase.from('app_config').select('key,value').in('key', ['learning_paths','master_cert_courses']);
+        const { data } = await supabase.from('app_config').select('key,value').in('key', ['learning_paths', 'master_cert_courses']);
         if (!data) return;
         data.forEach(row => {
             if (row.key === 'learning_paths' && Array.isArray(row.value) && row.value.length > 0) {
@@ -4644,7 +4656,7 @@ async function loadAppConfig() {
                 _checkMasterCert();
             }
         });
-    } catch(_) { /* tabla no existe aún, usa defaults */ }
+    } catch (_) { /* tabla no existe aún, usa defaults */ }
 }
 
 let _portfolioByPathRow = {}; // { pathId: row } — la fila de Supabase por ruta
@@ -4671,11 +4683,11 @@ async function loadPortfolio() {
         });
         // back-compat para la ruta steam20
         _portfolioData = _portfolioByPathRow['steam20'] || null;
-    } catch(e) { /* silent */ }
+    } catch (e) { /* silent */ }
 }
 
 let _portfolioActiveCourses = []; // entregables (cursos) de la ruta activa del portafolio
-let _portfolioActivePathId  = null;
+let _portfolioActivePathId = null;
 
 function showPortfolioModal() {
     const modal = document.getElementById('portfolioModal');
@@ -4683,7 +4695,7 @@ function showPortfolioModal() {
 
     const path = _selectedMasterPath || _activeMasterPath;
     if (!path) { showToast('Primero completa una ruta y su examen.', 'warning'); return; }
-    _portfolioActivePathId  = path.id;
+    _portfolioActivePathId = path.id;
     _portfolioActiveCourses = _portfolioCoursesForPath(path);
 
     const existing = _portfolioByPathRow[path.id] || null;
@@ -4722,14 +4734,14 @@ function _renderPortfolioForm(existing) {
                 </div>
             </div>
 
-            <p style="font-size:12px;font-weight:700;color:${(_selectedMasterPath||_activeMasterPath)?.color||'#475569'};margin:0 0 4px">Ruta: ${esc(pathLabel)}</p>
+            <p style="font-size:12px;font-weight:700;color:${(_selectedMasterPath || _activeMasterPath)?.color || '#475569'};margin:0 0 4px">Ruta: ${esc(pathLabel)}</p>
             <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">${courses.length} entregables · mínimo 100 palabras cada uno</p>
 
             ${courses.map((c, i) => `
             <div style="margin-bottom:20px">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                     <div style="width:24px;height:24px;border-radius:6px;background:${c.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                        <span style="font-size:10px;font-weight:800;color:white">${i+1}</span>
+                        <span style="font-size:10px;font-weight:800;color:white">${i + 1}</span>
                     </div>
                     <p style="font-size:13px;font-weight:700;color:#1e293b">${c.label}</p>
                 </div>
@@ -4739,7 +4751,7 @@ function _renderPortfolioForm(existing) {
                     oninput="_portWordCount(this,'wc_${c.key}')"
                     onfocus="this.style.borderColor='${c.color}'"
                     onblur="this.style.borderColor='#e2e8f0'"
-                >${(existing?.entregables?.[c.key]) || (existing ? (existing['entregable_'+c.key]||'') : '')}</textarea>
+                >${(existing?.entregables?.[c.key]) || (existing ? (existing['entregable_' + c.key] || '') : '')}</textarea>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">
                     <label for="file_${c.key}" style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#64748b;cursor:pointer;padding:4px 8px;border:1.5px dashed #cbd5e1;border-radius:8px;transition:border-color .15s"
                         onmouseover="this.style.borderColor='${c.color}'" onmouseout="this.style.borderColor='#cbd5e1'">
@@ -4758,19 +4770,19 @@ function _renderPortfolioForm(existing) {
                 Enviar portafolio para evaluación IA
             </button>
             <p style="font-size:10px;color:#94a3b8;text-align:center;margin-top:8px">
-                ${(()=>{
-                    const rem = Math.max(0, 3 - _attempts);
-                    return rem > 0
-                        ? `Intentos restantes: <strong style="color:#15803d">${rem}/3</strong> · La IA evaluará tu portafolio al instante`
-                        : `Sin intentos disponibles — espera 48 horas desde el último envío`;
-                })()}
+                ${(() => {
+            const rem = Math.max(0, 3 - _attempts);
+            return rem > 0
+                ? `Intentos restantes: <strong style="color:#15803d">${rem}/3</strong> · La IA evaluará tu portafolio al instante`
+                : `Sin intentos disponibles — espera 48 horas desde el último envío`;
+        })()}
             </p>
         </div>`;
 
     // Inicializar contadores
     courses.forEach(c => {
-        const ta = document.getElementById('port_'+c.key);
-        const wc = document.getElementById('wc_'+c.key);
+        const ta = document.getElementById('port_' + c.key);
+        const wc = document.getElementById('wc_' + c.key);
         if (ta && wc) {
             const words = ta.value.trim().split(/\s+/).filter(Boolean).length;
             wc.textContent = words + ' palabras';
@@ -4823,22 +4835,22 @@ function _portWordCount(ta, wcId) {
 }
 
 async function submitPortfolio() {
-    const pathId  = _portfolioActivePathId;
+    const pathId = _portfolioActivePathId;
     const courses = _portfolioActiveCourses;
     if (!pathId || courses.length === 0) { showToast('Selecciona una ruta primero.', 'warning'); return; }
 
     // Control de intentos POR RUTA: máximo 3, luego espera 48 horas
     const MAX_ATTEMPTS = 3;
-    const COOLDOWN_MS  = 48 * 60 * 60 * 1000;
-    const pfPrev       = _getPortfolio(pathId) || {};
-    let   attempts     = pfPrev.attempts || 0;
-    const lastAttempt  = pfPrev.lastAttempt || null;
+    const COOLDOWN_MS = 48 * 60 * 60 * 1000;
+    const pfPrev = _getPortfolio(pathId) || {};
+    let attempts = pfPrev.attempts || 0;
+    const lastAttempt = pfPrev.lastAttempt || null;
 
     if (attempts >= MAX_ATTEMPTS) {
         const elapsed = lastAttempt ? Date.now() - new Date(lastAttempt).getTime() : COOLDOWN_MS;
         if (elapsed < COOLDOWN_MS) {
             const hoursLeft = Math.ceil((COOLDOWN_MS - elapsed) / 3600000);
-            showToast(`Has usado los 3 intentos en esta ruta. Podrás intentarlo de nuevo en ${hoursLeft} hora${hoursLeft===1?'':'s'}.`, 'warning');
+            showToast(`Has usado los 3 intentos en esta ruta. Podrás intentarlo de nuevo en ${hoursLeft} hora${hoursLeft === 1 ? '' : 's'}.`, 'warning');
             return;
         } else {
             attempts = 0; // reinicia tras 48h
@@ -4849,7 +4861,7 @@ async function submitPortfolio() {
     const items = [];             // [{ label, text }] para la IA
     let allOk = true;
     courses.forEach(c => {
-        const val = document.getElementById('port_'+c.key)?.value?.trim() || '';
+        const val = document.getElementById('port_' + c.key)?.value?.trim() || '';
         entregables[c.key] = val;
         items.push({ label: c.label, text: val });
         const words = val.split(/\s+/).filter(Boolean).length;
@@ -4875,7 +4887,7 @@ async function submitPortfolio() {
     // Subir archivos adjuntos (si los hay)
     let fileUrls = {};
     if (Object.keys(_portFiles).length > 0) {
-        try { fileUrls = await _uploadPortfolioFiles(); } catch(_) {}
+        try { fileUrls = await _uploadPortfolioFiles(); } catch (_) { }
     }
 
     try {
@@ -4891,18 +4903,18 @@ async function submitPortfolio() {
 
         // Guardar en Supabase (una fila por ruta)
         const record = {
-            user_id:        currentUser.id,
-            path_id:        pathId,
-            entregables:    entregables,
-            ai_scores:      result.scores,
-            ai_feedback:    result.feedback,
-            ai_total:       result.total,
-            ai_summary:     result.summary,
-            exam_score_50:  examScore50,
+            user_id: currentUser.id,
+            path_id: pathId,
+            entregables: entregables,
+            ai_scores: result.scores,
+            ai_feedback: result.feedback,
+            ai_total: result.total,
+            ai_summary: result.summary,
+            exam_score_50: examScore50,
             combined_score: result.combined,
-            status:         result.passed ? 'passed' : 'evaluated',
-            evaluated_at:   new Date().toISOString(),
-            file_urls:      Object.keys(fileUrls).length > 0 ? fileUrls : undefined,
+            status: result.passed ? 'passed' : 'evaluated',
+            evaluated_at: new Date().toISOString(),
+            file_urls: Object.keys(fileUrls).length > 0 ? fileUrls : undefined,
         };
 
         const existingRow = _portfolioByPathRow[pathId];
@@ -4931,7 +4943,7 @@ async function submitPortfolio() {
 
         _renderPortfolioResults();
 
-    } catch(e) {
+    } catch (e) {
         if (btn) { btn.disabled = false; btn.textContent = 'Reintentar envío'; }
         showToast('Error al evaluar. Intenta de nuevo.', 'error');
     }
@@ -4941,24 +4953,24 @@ function _renderPortfolioResults() {
     const body = document.getElementById('portfolioBody');
     if (!body) return;
 
-    const pathId   = _portfolioActivePathId || _selectedMasterPath?.id;
-    const pf       = (pathId ? _getPortfolio(pathId) : null) || {};
-    const scores   = pf.scores   || [];
+    const pathId = _portfolioActivePathId || _selectedMasterPath?.id;
+    const pf = (pathId ? _getPortfolio(pathId) : null) || {};
+    const scores = pf.scores || [];
     const feedback = pf.feedback || [];
-    const summary  = pf.summary  || '';
-    const aiTotal  = pf.aiTotal  ?? 0;
+    const summary = pf.summary || '';
+    const aiTotal = pf.aiTotal ?? 0;
     const examScore50 = Math.round(((pathId ? _getMasterExamScore(pathId) : 0) || 0) * 0.5);
     const combined = examScore50 + aiTotal;
-    const passed   = combined >= 85;
+    const passed = combined >= 85;
 
     body.innerHTML = `
         <div style="padding:16px 20px">
 
             <!-- Puntaje total -->
-            <div style="text-align:center;background:${passed?'#15803d':'#dc2626'};border-radius:16px;padding:20px;margin-bottom:16px;color:white">
+            <div style="text-align:center;background:${passed ? '#15803d' : '#dc2626'};border-radius:16px;padding:20px;margin-bottom:16px;color:white">
                 <p style="font-size:11px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Puntaje final</p>
                 <p style="font-size:3.5rem;font-weight:900;line-height:1">${combined}<span style="font-size:1.5rem;font-weight:600;opacity:.7">/100</span></p>
-                <p style="font-size:13px;font-weight:600;opacity:.9;margin-top:6px">${passed ? '¡Aprobado! Certificado Maestro desbloqueado' : `Necesitas 85/100 · Te faltan ${85-combined} puntos`}</p>
+                <p style="font-size:13px;font-weight:600;opacity:.9;margin-top:6px">${passed ? '¡Aprobado! Certificado Maestro desbloqueado' : `Necesitas 85/100 · Te faltan ${85 - combined} puntos`}</p>
             </div>
 
             <!-- Desglose -->
@@ -4983,21 +4995,21 @@ function _renderPortfolioResults() {
             <!-- Desglose por entregable -->
             <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Por entregable</p>
             ${_portfolioActiveCourses.map((c, i) => {
-                const s = scores[i] ?? 0;
-                const f = feedback[i] || '';
-                const barW = Math.round((s / 10) * 100);
-                return `
+        const s = scores[i] ?? 0;
+        const f = feedback[i] || '';
+        const barW = Math.round((s / 10) * 100);
+        return `
                 <div style="margin-bottom:12px;background:white;border:1px solid #e2e8f0;border-radius:12px;padding:12px;border-left:3px solid ${c.color}">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                         <p style="font-size:12px;font-weight:700;color:#1e293b">${c.label}</p>
-                        <span style="font-size:13px;font-weight:800;color:${s>=7?'#15803d':s>=5?'#d97706':'#dc2626'}">${s}/10</span>
+                        <span style="font-size:13px;font-weight:800;color:${s >= 7 ? '#15803d' : s >= 5 ? '#d97706' : '#dc2626'}">${s}/10</span>
                     </div>
                     <div style="height:5px;background:#f1f5f9;border-radius:99px;margin-bottom:8px;overflow:hidden">
                         <div style="height:100%;width:${barW}%;background:${c.color};border-radius:99px;transition:width .4s ease"></div>
                     </div>
                     ${f ? `<p style="font-size:12px;color:#475569;line-height:1.6">${f}</p>` : ''}
                 </div>`;
-            }).join('')}
+    }).join('')}
 
             ${passed ? `
             <button onclick="closePortfolioModal();generateMasterCertificate()" style="width:100%;padding:14px;border-radius:14px;border:none;background:#5C35C5;color:white;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px">
@@ -5016,7 +5028,7 @@ function closePortfolioModal() {
 
 // ==================== CHATBOT (Groq · Llama 3.3) ====================
 // La clave de Groq está en Supabase (privado) — nunca en este archivo público
-const GROQ_PROXY_URL        = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/groq-proxy';
+const GROQ_PROXY_URL = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/groq-proxy';
 const EVALUATE_PORTFOLIO_URL = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/evaluate-portfolio';
 
 const CHAT_SYSTEM = `Eres un asistente educativo altamente especializado en el enfoque STEAM y la propuesta curricular del Programa 1bot de la Universidad del Valle de Guatemala (UVG, 2020-2021).
@@ -5129,7 +5141,7 @@ async function showCardComments(cardId) {
     if (!currentUser) { showToast('Inicia sesión para ver los comentarios 💬', 'warning'); return; }
     _currentCommentsCardId = cardId;
     const modal = document.getElementById('commentsModal');
-    const list  = document.getElementById('commentsList');
+    const list = document.getElementById('commentsList');
     if (!modal || !list) return;
 
     modal.classList.remove('hidden');
@@ -5205,7 +5217,7 @@ function _renderComment(comment, iLiked, likesCount) {
     const timeAgo = _timeAgo(comment.created_at);
 
     const likeColor = iLiked ? '#07B0E4' : '#94a3b8';
-    const likeBg    = iLiked ? '#E0F7FA' : 'transparent';
+    const likeBg = iLiked ? '#E0F7FA' : 'transparent';
     const likeBorder = iLiked ? '#07B0E4' : '#e2e8f0';
     const likeWeight = iLiked ? '700' : '500';
 
@@ -5248,7 +5260,7 @@ function _renderComment(comment, iLiked, likesCount) {
 async function submitComment() {
     if (!currentUser) { showToast('Inicia sesión para comentar 💬', 'warning'); return; }
     const input = document.getElementById('commentInput');
-    const body  = (input?.value || '').trim();
+    const body = (input?.value || '').trim();
     if (!body) return;
     if (body.length > 1000) { showToast('El comentario es demasiado largo (máx 1000 caracteres)', 'warning'); return; }
     if (!_currentCommentsCardId) return;
@@ -5263,10 +5275,10 @@ async function submitComment() {
         const { error } = await supabase
             .from('card_comments')
             .insert({
-                user_id:   currentUser.id,
-                card_id:   _currentCommentsCardId,
+                user_id: currentUser.id,
+                card_id: _currentCommentsCardId,
                 module_id: currentModule || 1,
-                comment:   body
+                comment: body
             });
 
         if (error) throw error;
@@ -5296,7 +5308,7 @@ async function submitComment() {
 async function toggleCommentLike(commentId, currentlyLiked) {
     if (!currentUser) { showToast('Inicia sesión para dar like 👍', 'warning'); return; }
 
-    const btn       = document.getElementById(`like-btn-${commentId}`);
+    const btn = document.getElementById(`like-btn-${commentId}`);
     const countSpan = document.getElementById(`like-count-${commentId}`);
     if (!btn) return;
 
@@ -5304,8 +5316,8 @@ async function toggleCommentLike(commentId, currentlyLiked) {
     const newLiked = !currentlyLiked;
     btn.onclick = () => toggleCommentLike(commentId, newLiked); // actualizar el callback
 
-    const likeColor  = newLiked ? '#07B0E4' : '#94a3b8';
-    const likeBg     = newLiked ? '#E0F7FA' : 'transparent';
+    const likeColor = newLiked ? '#07B0E4' : '#94a3b8';
+    const likeBg = newLiked ? '#E0F7FA' : 'transparent';
     const likeBorder = newLiked ? '#07B0E4' : '#e2e8f0';
     btn.style.color = likeColor;
     btn.style.background = likeBg;
@@ -5376,14 +5388,14 @@ async function _deleteComment(commentId) {
 
 /** Tiempo relativo en español */
 function _timeAgo(isoDate) {
-    const now  = Date.now();
+    const now = Date.now();
     const then = new Date(isoDate).getTime();
     const diff = Math.floor((now - then) / 1000);
-    if (diff < 60)    return 'ahora';
-    if (diff < 3600)  return `hace ${Math.floor(diff / 60)} min`;
+    if (diff < 60) return 'ahora';
+    if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
     if (diff < 86400) return `hace ${Math.floor(diff / 3600)}h`;
     if (diff < 604800) return `hace ${Math.floor(diff / 86400)}d`;
-    return new Date(isoDate).toLocaleDateString('es-GT', { day:'numeric', month:'short' });
+    return new Date(isoDate).toLocaleDateString('es-GT', { day: 'numeric', month: 'short' });
 }
 
 /** Escapa HTML para evitar XSS en comentarios */
