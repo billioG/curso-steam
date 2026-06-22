@@ -595,7 +595,7 @@ function updateUI() {
 function renderBadgesCarousel() {
     const wrap = document.getElementById('badgesCarousel');
     if (!wrap) return;
-    const earned = new Set((getProgress().badges || []));
+    const earned = new Set((progress?.badges || []));
     const list = Object.values(badges);
     const earnedCount = list.filter(b => earned.has(b.id)).length;
     const countEl = document.getElementById('badgesEarnedCount');
@@ -618,7 +618,7 @@ function renderBadgesCarousel() {
 function showBadgeDetail(badgeId) {
     const b = badges[badgeId];
     if (!b) return;
-    const earned = new Set((getProgress().badges || []));
+    const earned = new Set((progress?.badges || []));
     if (!earned.has(badgeId)) { showBadgesModal(); return; }
     _showBadgeUnlockOverlay(b, false);
 }
