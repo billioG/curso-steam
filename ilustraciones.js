@@ -206,9 +206,109 @@ const TE_ILLUSTRATIONS = {
     </svg>`,
 };
 
+// ════════════════════════════════════════════════════════════════
+// CURSOS NUEVOS — temas e ilustraciones temáticas (trazo blanco)
+// ════════════════════════════════════════════════════════════════
+
+// ── Despertando la Creatividad (rosa/púrpura) ──
+const CREA_THEME = {
+    1: { primary: '#E83C8D', soft: '#FDE1F0' }, 2: { primary: '#C026D3', soft: '#FAE8FF' },
+    3: { primary: '#9333EA', soft: '#F3E8FF' }, 4: { primary: '#7C3AED', soft: '#EDE9FE' },
+    5: { primary: '#DB2777', soft: '#FCE7F3' },
+};
+const CREA_ILLUS = {
+    1: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M40 12 C28 12 20 21 20 32 C20 40 25 45 28 50 L52 50 C55 45 60 40 60 32 C60 21 52 12 40 12Z" stroke-width="2.5" fill="rgba(255,255,255,0.12)"/><line x1="32" y1="58" x2="48" y2="58" stroke-width="2.5"/><line x1="34" y1="64" x2="46" y2="64" stroke-width="2.5"/><line x1="40" y1="6" x2="40" y2="2" stroke-width="2"/><line x1="64" y1="14" x2="68" y2="10" stroke-width="2"/><line x1="16" y1="14" x2="12" y2="10" stroke-width="2"/></svg>`,
+    2: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M40 16 C30 16 24 22 24 30 C18 32 16 40 22 44 C20 52 28 58 36 54 C38 60 46 60 48 54 C56 58 64 52 62 44 C68 40 66 32 60 30 C60 22 50 16 40 16Z" stroke-width="2.3" fill="rgba(255,255,255,0.1)"/><line x1="40" y1="24" x2="40" y2="54" stroke-width="1.8" stroke="rgba(255,255,255,0.5)"/><path d="M40 32 L32 36 M40 40 L48 44" stroke-width="1.8" stroke="rgba(255,255,255,0.5)"/></svg>`,
+    3: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="14" width="24" height="24" rx="4" stroke-width="2.3"/><rect x="44" y="14" width="22" height="22" rx="11" stroke-width="2.3"/><path d="M14 50 L26 70 L38 50 Z" stroke-width="2.3"/><rect x="44" y="46" width="22" height="22" rx="4" stroke-width="2.3" transform="rotate(45 55 57)"/></svg>`,
+    4: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M40 10 L46 28 L64 28 L50 40 L56 58 L40 46 L24 58 L30 40 L16 28 L34 28 Z" stroke-width="2.3" fill="rgba(255,255,255,0.12)"/></svg>`,
+    5: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="40" cy="26" r="10" stroke-width="2.5"/><path d="M22 64 C22 52 30 46 40 46 C50 46 58 52 58 64" stroke-width="2.5"/><path d="M58 16 L60 22 L66 24 L60 26 L58 32 L56 26 L50 24 L56 22 Z" fill="white" stroke="none"/></svg>`,
+};
+
+// ── Herramientas Tecnológicas (púrpura) ──
+const TEC_THEME = {
+    1: { primary: '#7C3AED', soft: '#EDE9FE' }, 2: { primary: '#6D28D9', soft: '#EDE9FE' },
+    3: { primary: '#8B5CF6', soft: '#F5F3FF' }, 4: { primary: '#5B21B6', soft: '#EDE9FE' },
+    5: { primary: '#7C3AED', soft: '#EDE9FE' },
+};
+const TEC_ILLUS = {
+    1: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="18" width="48" height="32" rx="3" stroke-width="2.5"/><line x1="10" y1="60" x2="70" y2="60" stroke-width="2.5"/><line x1="34" y1="50" x2="46" y2="50" stroke-width="2.5"/><circle cx="40" cy="34" r="7" stroke-width="2.2" fill="rgba(255,255,255,0.15)"/></svg>`,
+    2: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="16" width="52" height="40" rx="4" stroke-width="2.5"/><circle cx="28" cy="30" r="5" stroke-width="2.2" fill="rgba(255,255,255,0.2)"/><path d="M18 52 L32 38 L42 48 L52 36 L62 50" stroke-width="2.3"/><line x1="30" y1="64" x2="50" y2="64" stroke-width="2.5"/></svg>`,
+    3: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="12" width="52" height="56" rx="6" stroke-width="2.5"/><path d="M24 28 L30 34 L42 22" stroke-width="2.5"/><path d="M24 46 L30 52 L42 40" stroke-width="2.5"/><line x1="48" y1="28" x2="58" y2="28" stroke-width="2" stroke="rgba(255,255,255,0.5)"/><line x1="48" y1="46" x2="58" y2="46" stroke-width="2" stroke="rgba(255,255,255,0.5)"/></svg>`,
+    4: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M40 10 L62 20 V38 C62 52 52 64 40 70 C28 64 18 52 18 38 V20 Z" stroke-width="2.5" fill="rgba(255,255,255,0.1)"/><path d="M31 40 L38 47 L51 32" stroke-width="2.5"/></svg>`,
+    5: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="18" width="48" height="32" rx="3" stroke-width="2.5"/><line x1="10" y1="60" x2="70" y2="60" stroke-width="2.5"/></svg>`,
+};
+
+// ── Mobile Learning (ámbar) ──
+const ML_THEME = {
+    1: { primary: '#F59E0B', soft: '#FEF3C7' }, 2: { primary: '#D97706', soft: '#FFEDD5' },
+    3: { primary: '#EA580C', soft: '#FFEDD5' }, 4: { primary: '#B45309', soft: '#FEF3C7' },
+    5: { primary: '#F59E0B', soft: '#FEF3C7' },
+};
+const ML_ILLUS = {
+    1: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="26" y="10" width="28" height="60" rx="6" stroke-width="2.5"/><line x1="36" y1="62" x2="44" y2="62" stroke-width="2.5"/><line x1="34" y1="18" x2="46" y2="18" stroke-width="2" stroke="rgba(255,255,255,0.5)"/></svg>`,
+    2: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="14" width="20" height="20" rx="4" stroke-width="2.3"/><rect x="46" y="14" width="20" height="20" rx="4" stroke-width="2.3"/><rect x="14" y="46" width="20" height="20" rx="4" stroke-width="2.3"/><rect x="46" y="46" width="20" height="20" rx="4" stroke-width="2.3"/></svg>`,
+    3: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M16 44 C30 28 50 28 64 44" stroke-width="2.5"/><path d="M24 52 C32 42 48 42 56 52" stroke-width="2.3" stroke="rgba(255,255,255,0.7)"/><circle cx="40" cy="60" r="4" fill="white" stroke="none"/></svg>`,
+    4: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="28" cy="24" r="8" stroke-width="2.3"/><circle cx="54" cy="28" r="7" stroke-width="2.3"/><path d="M14 56 C14 46 20 40 28 40 C34 40 38 43 40 47" stroke-width="2.3"/><rect x="44" y="44" width="18" height="26" rx="4" stroke-width="2.3"/></svg>`,
+    5: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="26" y="10" width="28" height="60" rx="6" stroke-width="2.5"/><line x1="36" y1="62" x2="44" y2="62" stroke-width="2.5"/></svg>`,
+};
+
+// ── Aula Invertida / Flipped (rojo) ──
+const FLIP_THEME = {
+    1: { primary: '#EF4444', soft: '#FEE2E2' }, 2: { primary: '#DC2626', soft: '#FEE2E2' },
+    3: { primary: '#B91C1C', soft: '#FEE2E2' }, 4: { primary: '#F87171', soft: '#FEF2F2' },
+    5: { primary: '#EF4444', soft: '#FEE2E2' },
+};
+const FLIP_ILLUS = {
+    1: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M20 30 A20 20 0 0 1 60 30" stroke-width="2.5"/><path d="M60 50 A20 20 0 0 1 20 50" stroke-width="2.5"/><path d="M60 22 L60 32 L50 32" stroke-width="2.5"/><path d="M20 58 L20 48 L30 48" stroke-width="2.5"/></svg>`,
+    2: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="16" width="52" height="36" rx="4" stroke-width="2.5"/><path d="M34 28 L48 34 L34 40 Z" fill="white" stroke="none"/><line x1="30" y1="64" x2="50" y2="64" stroke-width="2.5"/><line x1="40" y1="52" x2="40" y2="64" stroke-width="2.5"/></svg>`,
+    3: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="26" cy="26" r="7" stroke-width="2.3"/><circle cx="54" cy="26" r="7" stroke-width="2.3"/><circle cx="40" cy="50" r="7" stroke-width="2.3"/><path d="M30 32 L36 44 M50 32 L44 44" stroke-width="2.2" stroke="rgba(255,255,255,0.6)"/></svg>`,
+    4: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M16 38 L40 18 L64 38" stroke-width="2.5"/><rect x="24" y="38" width="32" height="28" rx="3" stroke-width="2.5"/><path d="M34 52 A6 6 0 0 1 46 52" stroke-width="2.2"/><circle cx="40" cy="50" r="1.5" fill="white" stroke="none"/></svg>`,
+    5: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M20 30 A20 20 0 0 1 60 30" stroke-width="2.5"/><path d="M60 50 A20 20 0 0 1 20 50" stroke-width="2.5"/></svg>`,
+};
+
+// ── Aprendizaje Basado en Videos / ABV (índigo) ──
+const ABV_THEME = {
+    1: { primary: '#6366F1', soft: '#E0E7FF' }, 2: { primary: '#4F46E5', soft: '#E0E7FF' },
+    3: { primary: '#4338CA', soft: '#E0E7FF' }, 4: { primary: '#818CF8', soft: '#EEF2FF' },
+    5: { primary: '#6366F1', soft: '#E0E7FF' },
+};
+const ABV_ILLUS = {
+    1: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="40" cy="40" r="26" stroke-width="2.5"/><path d="M34 30 L52 40 L34 50 Z" fill="white" stroke="none"/></svg>`,
+    2: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="18" width="52" height="44" rx="5" stroke-width="2.5"/><line x1="14" y1="30" x2="66" y2="30" stroke-width="2"/><line x1="14" y1="50" x2="66" y2="50" stroke-width="2"/><rect x="20" y="20" width="6" height="8" stroke-width="1.8"/><rect x="54" y="20" width="6" height="8" stroke-width="1.8"/><rect x="20" y="52" width="6" height="8" stroke-width="1.8"/><rect x="54" y="52" width="6" height="8" stroke-width="1.8"/></svg>`,
+    3: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="26" width="36" height="28" rx="4" stroke-width="2.5"/><path d="M52 36 L66 28 L66 52 L52 44 Z" stroke-width="2.5" fill="rgba(255,255,255,0.15)"/><circle cx="28" cy="40" r="4" fill="white" stroke="none"/></svg>`,
+    4: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="12" width="44" height="56" rx="5" stroke-width="2.5"/><path d="M26 26 L30 30 L38 22" stroke-width="2.3"/><path d="M26 42 L30 46 L38 38" stroke-width="2.3"/><line x1="44" y1="26" x2="54" y2="26" stroke-width="2" stroke="rgba(255,255,255,0.5)"/><line x1="44" y1="42" x2="54" y2="42" stroke-width="2" stroke="rgba(255,255,255,0.5)"/></svg>`,
+    5: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="40" cy="40" r="26" stroke-width="2.5"/><path d="M34 30 L52 40 L34 50 Z" fill="white" stroke="none"/></svg>`,
+};
+
+// ── Micro-learning (naranja) ──
+const MICRO_THEME = {
+    1: { primary: '#F97316', soft: '#FFEDD5' }, 2: { primary: '#EA580C', soft: '#FFEDD5' },
+    3: { primary: '#C2410C', soft: '#FFEDD5' }, 4: { primary: '#FB923C', soft: '#FFF7ED' },
+    5: { primary: '#F97316', soft: '#FFEDD5' },
+};
+const MICRO_ILLUS = {
+    1: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M44 8 L22 44 L38 44 L34 72 L58 34 L42 34 Z" stroke-width="2.5" fill="rgba(255,255,255,0.12)"/></svg>`,
+    2: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="30" width="44" height="20" rx="10" stroke-width="2.5" transform="rotate(-35 40 40)"/><line x1="40" y1="28" x2="52" y2="40" stroke-width="2.3" transform="rotate(-35 40 40)"/></svg>`,
+    3: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M16 22 H64 V52 H40 L28 62 V52 H16 Z" stroke-width="2.5" fill="rgba(255,255,255,0.1)"/><line x1="26" y1="34" x2="54" y2="34" stroke-width="2" stroke="rgba(255,255,255,0.6)"/><line x1="26" y1="42" x2="46" y2="42" stroke-width="2" stroke="rgba(255,255,255,0.6)"/></svg>`,
+    4: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="40" cy="42" r="24" stroke-width="2.5"/><path d="M40 28 L40 42 L50 48" stroke-width="2.5"/><line x1="32" y1="12" x2="48" y2="12" stroke-width="2.5"/><line x1="40" y1="12" x2="40" y2="18" stroke-width="2.5"/></svg>`,
+    5: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M44 8 L22 44 L38 44 L34 72 L58 34 L42 34 Z" stroke-width="2.5" fill="rgba(255,255,255,0.12)"/></svg>`,
+};
+
 // Función que retorna el theme e ilustración del módulo activo según el curso
 function getCourseThemeAndIllus(courseId, moduleIndex) {
     switch(courseId) {
+        case 'creatividad':
+            return { theme: CREA_THEME[moduleIndex] || { primary: '#E83C8D', soft: '#FDE1F0' }, illus: CREA_ILLUS[moduleIndex] || CREA_ILLUS[1] };
+        case 'herramientas-tec':
+            return { theme: TEC_THEME[moduleIndex] || { primary: '#7C3AED', soft: '#EDE9FE' }, illus: TEC_ILLUS[moduleIndex] || TEC_ILLUS[1] };
+        case 'm-learning':
+            return { theme: ML_THEME[moduleIndex] || { primary: '#F59E0B', soft: '#FEF3C7' }, illus: ML_ILLUS[moduleIndex] || ML_ILLUS[1] };
+        case 'flipped-classroom':
+            return { theme: FLIP_THEME[moduleIndex] || { primary: '#EF4444', soft: '#FEE2E2' }, illus: FLIP_ILLUS[moduleIndex] || FLIP_ILLUS[1] };
+        case 'abv':
+            return { theme: ABV_THEME[moduleIndex] || { primary: '#6366F1', soft: '#E0E7FF' }, illus: ABV_ILLUS[moduleIndex] || ABV_ILLUS[1] };
+        case 'micro-learning':
+            return { theme: MICRO_THEME[moduleIndex] || { primary: '#F97316', soft: '#FFEDD5' }, illus: MICRO_ILLUS[moduleIndex] || MICRO_ILLUS[1] };
         case 'abp':
             return {
                 theme: ABP_THEME[moduleIndex] || { primary: '#2BA848', soft: '#E6F1E6' },

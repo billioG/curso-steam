@@ -422,8 +422,8 @@ async function checkExistingSession() {
         } else {
             progress = {
                 completedCards: [], moduleFeedback: {}, npsHistory: [], xp: 0, level: 1,
-                badges: [], redeemedPrizes: [], quizCorrectCount: 0, streak: 0,
-                lastActivityDate: localDateStr(),
+                badges: [], redeemedPrizes: [], quizCorrectCount: 0, streak: 1,
+                lastActivityDate: localDateStr(), // primer día de racha = 1
                 dailyMissions: {}, raffleTickets: 0
             };
         }
@@ -656,6 +656,7 @@ function checkDailyStreak() {
         progress.streak = 1;
         progress.lastActivityDate = today;
         saveProgress();
+        updateStreakDisplay();
         return;
     }
 
@@ -663,7 +664,7 @@ function checkDailyStreak() {
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toLocaleDateString('en-CA');
 
-    if (lastActivity === today) return;
+    if (lastActivity === today) { updateStreakDisplay(); return; }
     else if (lastActivity === yesterdayStr) {
         progress.streak = (progress.streak || 0) + 1;
         progress.lastActivityDate = today;
@@ -4190,6 +4191,24 @@ if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
 let currentCourseId = 'steam';
 let _selectedPathId  = null; // ruta activa en el selector
 
+// Ícono SVG por ruta de aprendizaje (trazo blanco, va sobre fondo de color)
+const _PATH_ICONS = {
+    steam20:      `<svg viewBox="0 0 48 48" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="4"/><ellipse cx="24" cy="24" rx="20" ry="8"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)"/></svg>`,
+    creativo:     `<svg viewBox="0 0 48 48" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6c-7 0-12 5-12 12 0 5 3 8 5 11h14c2-3 5-6 5-11 0-7-5-12-12-12Z" fill="rgba(255,255,255,0.15)"/><line x1="19" y1="35" x2="29" y2="35"/><line x1="20" y1="40" x2="28" y2="40"/></svg>`,
+    metodologias: `<svg viewBox="0 0 48 48" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M26 4 L12 26 H22 L20 44 L36 20 H26 Z" fill="rgba(255,255,255,0.15)"/></svg>`,
+};
+function _pathIconSvg(pathId) {
+    return _PATH_ICONS[pathId] || `<svg viewBox="0 0 48 48" fill="none" stroke="white" stroke-width="2.2"><circle cx="24" cy="24" r="14"/></svg>`;
+}
+// Ícono del curso para el selector: usa la ilustración temática del módulo 1 (SVG blanco)
+function _courseIconSvg(courseId, fallbackEmoji) {
+    if (typeof getCourseThemeAndIllus === 'function') {
+        const il = getCourseThemeAndIllus(courseId, 1)?.illus;
+        if (il) return il;
+    }
+    return `<span style="font-size:22px">${fallbackEmoji || '📚'}</span>`;
+}
+
 // Flujo tras autenticarse: onboarding → diagnóstico (obligatorio) → elegir ruta.
 // Para usuarios nuevos muestra el onboarding; closeOnboarding lanza el diagnóstico,
 // y closeDiagnostic abre el selector de rutas.
@@ -4237,8 +4256,8 @@ function _renderCourseSelector() {
                      class="cursor-pointer active:scale-95 transition-all backdrop-blur border rounded-2xl p-4 mb-3"
                      style="background:${path.color}22;border-color:${path.color}55">
                     <div class="flex items-center gap-3">
-                        <div style="width:44px;height:44px;border-radius:14px;background:${path.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">
-                            🎓
+                        <div style="width:44px;height:44px;border-radius:14px;background:${path.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <div style="width:26px;height:26px">${_pathIconSvg(path.id)}</div>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
@@ -4296,7 +4315,7 @@ function _renderCourseSelector() {
                     <div class="flex items-center gap-3">
                         <div style="position:relative;flex-shrink:0">
                             <div style="width:44px;height:44px;background:${clickable ? c.color : 'rgba(255,255,255,0.1)'};border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px">
-                                ${!isOpen || !prereqMet ? '🔒' : (c.icon || '📚')}
+                                ${!isOpen || !prereqMet ? '🔒' : `<div style="width:26px;height:26px">${_courseIconSvg(c.id, c.icon)}</div>`}
                             </div>
                             <span style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;background:rgba(0,0,0,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:white">${idx+1}</span>
                         </div>
