@@ -1103,9 +1103,11 @@ function handleSimulation(direction) {
 
     const swipeLabel = direction === 'right' ? '→ De acuerdo' : '← En desacuerdo';
     feedback.classList.remove('hidden');
+    const _continueBtn = `<button onclick="goToNextCard()" style="margin-top:14px;width:100%;padding:10px 0;border-radius:14px;background:${primary};color:#fff;font-weight:700;font-size:0.9rem;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">Continuar <span style="display:inline-flex;width:14px;height:14px">${ICONS?.arrowRight||'→'}</span></button>`;
+
     if (isCorrect) {
         feedback.className = 'mt-2 p-4 rounded-2xl text-sm font-medium bg-green-50 text-green-800 border border-green-200';
-        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#16a34a">${ICONS?.checkCircle||'✓'}</span> ¡Decisión acertada! (${swipeLabel})</div>${_mdToHtml(outcome)}`;
+        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#16a34a">${ICONS?.checkCircle||'✓'}</span> ¡Decisión acertada! (${swipeLabel})</div>${_mdToHtml(outcome)}${_continueBtn}`;
         const _modC = modulesData[currentModule - 1];
         const _cardC = _modC?.cards[currentCardIndex];
         const _cidC = _cardC?.id || `${currentModule}-${currentCardIndex}`;
@@ -1117,7 +1119,7 @@ function handleSimulation(direction) {
         }
     } else {
         feedback.className = 'mt-2 p-4 rounded-2xl text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200';
-        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#d97706">${ICONS?.lightbulb||'💡'}</span> Reflexiona... (${swipeLabel})</div>${_mdToHtml(outcome)}<div style="margin-top:10px;font-size:0.8rem;color:#92400e;display:flex;align-items:center;gap:4px"><span style="display:inline-flex;width:13px;height:13px">${ICONS?.refresh||''}</span> Puedes continuar — el aprendizaje está en la reflexión.</div>`;
+        feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#d97706">${ICONS?.lightbulb||'💡'}</span> Reflexiona... (${swipeLabel})</div>${_mdToHtml(outcome)}${_continueBtn}`;
         const _modW = modulesData[currentModule - 1];
         const _cardW = _modW?.cards[currentCardIndex];
         const _cidW = _cardW?.id || `${currentModule}-${currentCardIndex}`;
