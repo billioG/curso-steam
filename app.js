@@ -8,7 +8,7 @@ const SUPABASE_URL = "https://grkjhzkgcmackbafqudu.supabase.co";
 // Se sobreescribe con config de Supabase al cargar (ver loadAppConfig)
 let LEARNING_PATHS = [
     { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
-    { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp'] },
+    { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp','storytelling'] },
     { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
 ];
 // IDs de cursos requeridos para el certificado maestro (ruta steam20)
@@ -4249,8 +4249,11 @@ function _renderCourseSelector() {
                      style="background:${clickable ? c.color+'33' : 'rgba(255,255,255,.06)'};border-color:${clickable ? c.color+'66' : 'rgba(255,255,255,.12)'}">
                     <div class="flex items-center gap-3">
                         <div style="position:relative;flex-shrink:0">
-                            <div style="width:44px;height:44px;background:${clickable ? c.color : 'rgba(255,255,255,0.1)'};border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px">
-                                ${!isOpen || !prereqMet ? '🔒' : (c.icon || '📚')}
+                            <div style="width:44px;height:44px;background:${clickable ? c.color : 'rgba(255,255,255,0.1)'};border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                                ${(!isOpen || !prereqMet)
+                                    ? '<span style="font-size:22px">🔒</span>'
+                                    : (() => { try { const t = getCourseThemeAndIllus(c.id, 1); return `<div style="width:34px;height:34px">${t.illus}</div>`; } catch(_){ return `<span style="font-size:22px">${c.icon||'📚'}</span>`; } })()
+                                }
                             </div>
                             <span style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;background:rgba(0,0,0,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:white">${idx+1}</span>
                         </div>
