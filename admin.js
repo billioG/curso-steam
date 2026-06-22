@@ -280,12 +280,13 @@ async function loadDashboard() {
         }).length;
     }, 0);
 
-    // Horas de formación — tiempo REAL desde resource_views
+    // Horas de formación — estimado basado en tarjetas completadas (3 min/tarjeta)
+    const horasFormacion = Math.round(totalCards * 3 / 60);
+
+    // Tiempo real acumulado de TODOS los docentes desde resource_views
     const { data: rv } = await sb.from('resource_views').select('time_spent_seconds').not('time_spent_seconds','is',null);
     const totalSeconds = rv?.reduce((a,b) => a + (b.time_spent_seconds||0), 0) || 0;
-    const horasFormacion = totalSeconds > 0
-        ? Math.round(totalSeconds / 3600)
-        : Math.round(totalCards * 3 / 60); // fallback estimado si no hay datos reales
+    const horasReales = totalSeconds > 0 ? Math.round(totalSeconds / 3600) : null;
 
     // Banner de impacto
     const now = new Date();
@@ -293,6 +294,8 @@ async function loadDashboard() {
         `Actualizado ${now.toLocaleDateString('es-GT',{day:'2-digit',month:'long',year:'numeric'})}`;
     document.getElementById('impactDocentes').textContent = fmt(total);
     document.getElementById('impactHoras').textContent = fmt(horasFormacion)+'h';
+    const horasRealEl = document.getElementById('impactHorasReal');
+    if (horasRealEl) horasRealEl.textContent = horasReales !== null ? `+${fmt(horasReales)}h tiempo real registrado` : '';
     document.getElementById('impactFinalizacion').textContent = tasaFinalizacion+'%';
     document.getElementById('impactCertificados').textContent = fmt(totalCertificados);
 
@@ -302,6 +305,7 @@ async function loadDashboard() {
 
     // Tiempo promedio por sesión
     const avgS = rv?.length ? Math.round(totalSeconds / rv.length) : 0;
+
     document.getElementById('kpiAvgTime').textContent = avgS ? fmtTime(avgS) : 'N/A';
 
     // NPS
