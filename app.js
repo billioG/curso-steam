@@ -2021,7 +2021,6 @@ async function showRanking() {
     }
 
     // ── LISTA 4+ ─────────────────────────────────────────────────────
-    const getLeague = lvl => LEAGUES.find(l => lvl >= l.min) || LEAGUES[LEAGUES.length - 1];
     let listHtml = '';
 
     if (flat.length <= 3) {
