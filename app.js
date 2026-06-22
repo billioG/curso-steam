@@ -85,7 +85,7 @@ function getActiveCourseData() {
     }
     return courseData; // fallback: STEAM
 }
-const ADMIN_EMAIL = "profebillio@gmail.com";
+const ADMIN_EMAIL = "billy@1bot.org";
 let progress = null;
 let db = null;
 let currentAvatar = "👨‍🏫";
