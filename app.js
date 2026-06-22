@@ -595,17 +595,70 @@ function updateUI() {
 function renderBadgesCarousel() {
     const wrap = document.getElementById('badgesCarousel');
     if (!wrap) return;
-    const earned = new Set(getProgress().earnedBadges || []);
+    const earned = new Set((getProgress().badges || []));
     const list = Object.values(badges);
+    const earnedCount = list.filter(b => earned.has(b.id)).length;
+    const countEl = document.getElementById('badgesEarnedCount');
+    if (countEl) countEl.textContent = earnedCount;
+
     wrap.innerHTML = list.map(b => {
         const done = earned.has(b.id);
         const svg = BADGE_SVG[b.id] || '';
-        return `<div onclick="showBadgesModal()" title="${b.name}" style="scroll-snap-align:start;flex-shrink:0;width:90px;display:flex;flex-direction:column;align-items:center;gap:6px;background:white;border-radius:16px;padding:12px 8px 10px;border:1.5px solid ${done?'#e9d5ff':'#e2e8f0'};box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer;transition:box-shadow .15s;${done?'':'opacity:.45;filter:grayscale(1)'}">
-            <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:${done?'#f3e8ff':'#f1f5f9'}">${svg}</div>
-            <span style="font-size:10px;font-weight:700;color:${done?'#6b21a8':'#94a3b8'};text-align:center;line-height:1.2">${b.name}</span>
-            ${done?`<span style="font-size:9px;color:#a855f7;font-weight:600">+${b.xpReward} XP</span>`:`<span style="font-size:9px;color:#cbd5e1">Bloqueado</span>`}
-        </div>`;
+        return `<button onclick="showBadgeDetail('${b.id}')" title="${b.name}" style="display:flex;flex-direction:column;align-items:center;gap:8px;background:${done?'white':'#f8fafc'};border-radius:20px;padding:14px 8px 12px;border:2px solid ${done?'#ddd6fe':'#e2e8f0'};box-shadow:${done?'0 4px 16px rgba(139,92,246,.15)':'none'};cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;${done?'':''}">
+            <div style="width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${done?'linear-gradient(135deg,#f3e8ff,#ede9fe)':'#f1f5f9'};position:relative;${done?'':'filter:grayscale(1);opacity:.5'}">
+                ${svg}
+                ${done?`<div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid #a78bfa;opacity:.5;pointer-events:none"></div>`:''}
+            </div>
+            <span style="font-size:10px;font-weight:800;color:${done?'#5b21b6':'#94a3b8'};text-align:center;line-height:1.25;max-width:72px">${b.name}</span>
+            <span style="font-size:9px;font-weight:700;color:${done?'#7c3aed':'#cbd5e1'};background:${done?'#f3e8ff':'#f1f5f9'};padding:2px 8px;border-radius:99px">${done?`+${b.xpReward} XP`:'🔒'}</span>
+        </button>`;
     }).join('');
+}
+
+function showBadgeDetail(badgeId) {
+    const b = badges[badgeId];
+    if (!b) return;
+    const earned = new Set((getProgress().badges || []));
+    if (!earned.has(badgeId)) { showBadgesModal(); return; }
+    _showBadgeUnlockOverlay(b, false);
+}
+
+function showBadgeUnlockAnimation(badge) {
+    setTimeout(() => _showBadgeUnlockOverlay(badge, true), 600);
+}
+
+function _showBadgeUnlockOverlay(badge, isNew) {
+    const svg = BADGE_SVG[badge.id] || '';
+    const colors = ['#a78bfa','#f59e0b','#34d399','#f472b6','#60a5fa'];
+    const particles = Array.from({length: 12}, (_,i) => {
+        const angle = (i / 12) * 360;
+        const dist = 80 + Math.random() * 60;
+        const tx = Math.round(Math.cos(angle * Math.PI/180) * dist);
+        const ty = Math.round(Math.sin(angle * Math.PI/180) * dist);
+        const color = colors[i % colors.length];
+        return `<div class="badge-particle" style="background:${color};left:calc(50% - 4px);top:calc(50% - 4px);--tx:${tx}px;--ty:${ty}px"></div>`;
+    }).join('');
+
+    const overlay = document.createElement('div');
+    overlay.className = 'badge-unlock-overlay';
+    overlay.innerHTML = `
+        <div class="badge-unlock-card" onclick="this.parentElement._close()">
+            <div class="badge-unlock-rays"></div>
+            ${particles}
+            <div class="badge-unlock-icon">${svg}</div>
+            <p class="badge-unlock-new">${isNew ? '¡Nuevo logro desbloqueado!' : 'Insignia obtenida'}</p>
+            <p class="badge-unlock-name">${badge.name}</p>
+            <p class="badge-unlock-desc">${badge.desc}</p>
+            <span class="badge-unlock-xp">⭐ +${badge.xpReward} XP</span>
+            <p style="font-size:11px;color:rgba(255,255,255,.3);margin-top:14px">Toca para cerrar</p>
+        </div>`;
+    overlay._close = () => {
+        overlay.classList.add('hiding');
+        setTimeout(() => overlay.remove(), 500);
+    };
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay._close(); });
+    document.body.appendChild(overlay);
+    if (isNew) setTimeout(() => overlay._close(), 5000);
 }
 
 function updateSyncStatus(status, message) {
@@ -666,8 +719,8 @@ function unlockBadge(badgeId) {
     if (!badge) return;
     progress.badges.push(badgeId);
     addXP(badge.xpReward, `Logro: ${badge.name}`);
-    showToast(`🏅 ¡NUEVO LOGRO! ${badge.name} (+${badge.xpReward} XP)`, "badge");
     saveProgress();
+    showBadgeUnlockAnimation(badge);
 }
 
 function checkBadges() {
