@@ -1222,8 +1222,66 @@
 <body>
 
     <!-- ==================== SELECTOR DE CURSOS ==================== -->
-    <div id="courseSelector" class="fixed inset-0 z-50 hidden overflow-y-auto" style="background:#1A6B68">
-        <div class="mx-auto px-4 py-10" style="max-width:64rem;padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))">
+    <div id="courseSelector" class="fixed inset-0 z-50 hidden overflow-y-auto"
+        style="background:linear-gradient(160deg,#0f4c47 0%,#1A6B68 40%,#1e5c5a 70%,#153f3d 100%)">
+
+        <!-- Decoración SVG de fondo — no interactiva -->
+        <div aria-hidden="true" style="position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0">
+            <!-- Círculo grande top-right -->
+            <div style="position:absolute;top:-80px;right:-80px;width:340px;height:340px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.07)"></div>
+            <div style="position:absolute;top:-20px;right:-20px;width:200px;height:200px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.05)"></div>
+            <!-- Círculo bottom-left -->
+            <div style="position:absolute;bottom:-60px;left:-60px;width:260px;height:260px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.06)"></div>
+
+            <!-- SVG cohete — top right -->
+            <svg viewBox="0 0 80 80" fill="none" stroke="rgba(255,255,255,0.08)" stroke-linecap="round" stroke-linejoin="round"
+                style="position:absolute;top:40px;right:30px;width:120px;height:120px">
+                <path d="M40 8 C40 8 58 14 58 32 L40 62 L22 32 C22 14 40 8 40 8Z" stroke-width="2" fill="rgba(255,255,255,0.03)"/>
+                <circle cx="40" cy="28" r="6" stroke-width="2"/>
+                <path d="M22 44 Q14 50 18 62 Q28 56 40 62 Q52 56 62 62 Q66 50 58 44" stroke-width="2" fill="rgba(255,255,255,0.03)"/>
+            </svg>
+
+            <!-- SVG estrella / diploma — bottom right -->
+            <svg viewBox="0 0 80 80" fill="none" stroke="rgba(255,255,255,0.07)" stroke-linecap="round" stroke-linejoin="round"
+                style="position:absolute;bottom:100px;right:20px;width:90px;height:90px">
+                <rect x="10" y="12" width="60" height="44" rx="5" stroke-width="2" fill="rgba(255,255,255,0.02)"/>
+                <line x1="20" y1="24" x2="46" y2="24" stroke-width="2"/>
+                <line x1="20" y1="32" x2="38" y2="32" stroke-width="2"/>
+                <circle cx="54" cy="46" r="10" stroke-width="2"/>
+                <path d="M50 60 L48 72 L54 68 L60 72 L58 60" stroke-width="2" fill="rgba(255,255,255,0.03)"/>
+            </svg>
+
+            <!-- SVG libro abierto — bottom left -->
+            <svg viewBox="0 0 80 80" fill="none" stroke="rgba(255,255,255,0.07)" stroke-linecap="round" stroke-linejoin="round"
+                style="position:absolute;bottom:80px;left:16px;width:100px;height:100px">
+                <path d="M40 18 C40 18 22 22 18 38 L18 66 C22 52 36 50 40 52 C44 50 58 52 62 66 L62 38 C58 22 40 18 40 18Z" stroke-width="2" fill="rgba(255,255,255,0.02)"/>
+                <line x1="40" y1="18" x2="40" y2="52" stroke-width="2"/>
+                <line x1="26" y1="36" x2="38" y2="36" stroke-width="1.5"/>
+                <line x1="26" y1="44" x2="38" y2="44" stroke-width="1.5"/>
+            </svg>
+
+            <!-- SVG engranaje — top left -->
+            <svg viewBox="0 0 80 80" fill="none" stroke="rgba(255,255,255,0.06)" stroke-linecap="round" stroke-linejoin="round"
+                style="position:absolute;top:60px;left:10px;width:80px;height:80px">
+                <circle cx="40" cy="40" r="16" stroke-width="2"/>
+                <circle cx="40" cy="40" r="6" stroke-width="2"/>
+                <path d="M40 18 L40 14 M40 66 L40 62 M18 40 L14 40 M66 40 L62 40 M25 25 L22 22 M58 56 L55 53 M55 25 L58 22 M25 55 L22 58" stroke-width="2.5"/>
+            </svg>
+
+            <!-- Puntos decorativos — scattered -->
+            <svg viewBox="0 0 200 200" fill="none" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:.4">
+                <circle cx="15%" cy="25%" r="2" fill="rgba(255,255,255,0.15)"/>
+                <circle cx="85%" cy="15%" r="1.5" fill="rgba(255,255,255,0.12)"/>
+                <circle cx="70%" cy="60%" r="2.5" fill="rgba(255,255,255,0.08)"/>
+                <circle cx="25%" cy="75%" r="1.8" fill="rgba(255,255,255,0.1)"/>
+                <circle cx="90%" cy="80%" r="2" fill="rgba(255,255,255,0.1)"/>
+                <circle cx="50%" cy="10%" r="1.5" fill="rgba(255,255,255,0.1)"/>
+                <circle cx="10%" cy="55%" r="1.2" fill="rgba(255,255,255,0.08)"/>
+            </svg>
+        </div>
+
+        <!-- Contenido -->
+        <div class="mx-auto px-4 py-10" style="position:relative;z-index:1;max-width:64rem;padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))">
             <div class="text-center mb-8">
                 <div class="mx-auto mb-3" style="width:80px;height:80px" id="courseSelectorIcon"></div>
                 <script>document.addEventListener('DOMContentLoaded', function () { var el = document.getElementById('courseSelectorIcon'); if (el && typeof ICONS !== 'undefined') el.innerHTML = ICONS.books; });</script>
