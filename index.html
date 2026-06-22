@@ -1176,17 +1176,22 @@
 
     <!-- ==================== SELECTOR DE CURSOS ==================== -->
     <div id="courseSelector" class="fixed inset-0 z-50 hidden overflow-y-auto" style="background:#1A6B68">
-        <div class="max-w-md mx-auto px-4 py-10">
+        <div class="mx-auto px-4 py-10" style="max-width:64rem">
             <div class="text-center mb-8">
                 <div class="mx-auto mb-3" style="width:80px;height:80px" id="courseSelectorIcon"></div>
                 <script>document.addEventListener('DOMContentLoaded', function () { var el = document.getElementById('courseSelectorIcon'); if (el && typeof ICONS !== 'undefined') el.innerHTML = ICONS.books; });</script>
                 <h1 class="text-2xl font-black text-white">¿Qué quieres aprender hoy?</h1>
-                <p class="text-white/75 text-sm mt-2">Selecciona un curso para continuar</p>
+                <p class="text-white/75 text-sm mt-2">Selecciona tu ruta de formación</p>
             </div>
-            <div id="coursesList" class="space-y-4"></div>
+            <div id="coursesList"></div>
             <p class="text-center text-white/40 text-xs mt-8">Más cursos llegando pronto 🚀</p>
         </div>
     </div>
+    <style>
+      /* Cuadrícula de rutas/cursos: 1 columna en móvil, 2 en desktop */
+      .lp-grid { display:flex; flex-direction:column; gap:12px; }
+      @media (min-width:768px) { .lp-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; } .lp-grid > div { margin-bottom:0 !important; } }
+    </style>
 
     <!-- ==================== PANTALLA DE LOGIN ==================== -->
     <div id="loginScreen" class="fixed inset-0 z-50 flex flex-col overflow-y-auto">
@@ -1481,9 +1486,9 @@
                 </button>
             </div>
 
-            <!-- Compendio PDF -->
-            <a href="recursos/contenido-completo.html" target="_blank"
-                class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-indigo-300 hover:bg-indigo-50 transition shadow-sm mb-2 no-underline block">
+            <!-- Compendio PDF — solo admin -->
+            <a id="compendioLink" href="recursos/contenido-completo.html" target="_blank"
+                class="hidden bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-indigo-300 hover:bg-indigo-50 transition shadow-sm mb-2 no-underline">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EEF2FF">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                 </div>
