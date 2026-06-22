@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v14';
+const CACHE_VERSION  = 'steam-v15';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -95,14 +95,33 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // 3. JS / PNG / imágenes / JSON locales → Cache-first, luego red y actualiza cache
+    // 3a. CÓDIGO local (JS / CSS / JSON) → Network-first, fallback a cache.
+    //     Debe ser network-first igual que el HTML para evitar servir app.js/data.js
+    //     viejos junto a un index.html nuevo (mismatch = pantalla en blanco).
     if (
         url.pathname.endsWith('.js') ||
         url.pathname.endsWith('.css') ||
+        url.pathname.endsWith('.json')
+    ) {
+        event.respondWith(
+            fetch(event.request)
+                .then(res => {
+                    if (res && res.status === 200 && res.type === 'basic') {
+                        const clone = res.clone();
+                        caches.open(CACHE_STATIC).then(c => c.put(event.request, clone));
+                    }
+                    return res;
+                })
+                .catch(() => caches.match(event.request))
+        );
+        return;
+    }
+
+    // 3b. Imágenes locales → Cache-first (rara vez cambian), actualiza en background
+    if (
         url.pathname.endsWith('.png') ||
         url.pathname.endsWith('.jpg') ||
         url.pathname.endsWith('.svg') ||
-        url.pathname.endsWith('.json') ||
         url.pathname.endsWith('.webp')
     ) {
         event.respondWith(
@@ -114,7 +133,6 @@ self.addEventListener('fetch', event => {
                     }
                     return res;
                 }).catch(() => null);
-                // Devolver cache inmediatamente si existe, actualizar en background
                 return cached || network;
             })
         );
