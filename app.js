@@ -3431,6 +3431,10 @@ function _showMasterExamResults() {
 }
 
 async function generateMasterCertificate() {
+    // Abrir ventana ANTES de los await para no perder el contexto del clic
+    const certWin = window.open('', '_blank');
+    if (certWin) certWin.document.write('<html><body style="background:#1e1b4b;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0"><p style="color:white;font-family:sans-serif;font-size:18px">Generando certificado…</p></body></html>');
+
     const nombre      = getDisplayName();
     const _now        = new Date();
     const fecha       = _now.toLocaleDateString('es-GT', { day:'numeric', month:'long', year:'numeric' });
@@ -3566,20 +3570,23 @@ async function generateMasterCertificate() {
 </html>`;
 
     try {
-        const blob = new Blob([masterHTML], { type: 'text/html;charset=utf-8' });
-        const blobUrl = URL.createObjectURL(blob);
-        const win = window.open(blobUrl, '_blank');
-        if (!win) {
-            // Popup blocked — fallback: descarga directa
+        if (certWin && !certWin.closed) {
+            certWin.document.open();
+            certWin.document.write(masterHTML);
+            certWin.document.close();
+        } else {
+            // Ventana bloqueada — fallback: descarga directa
+            const blob = new Blob([masterHTML], { type: 'text/html;charset=utf-8' });
+            const blobUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = blobUrl;
-            a.download = `Certificado_Docente_del_Siglo_XXI_${nombre.replace(/\s+/g,'_')}.html`;
+            a.download = `Certificado_Maestro_${nombre.replace(/\s+/g,'_')}.html`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
             showToast('Certificado descargado. Ábrelo en tu navegador.', 'success');
         }
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
     } catch(e) {
         console.error('generateMasterCertificate:', e);
         showToast('Error al generar el certificado. Intenta de nuevo.', 'error');
