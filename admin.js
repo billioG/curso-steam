@@ -268,7 +268,6 @@ async function loadDashboard() {
     const total = progress.length;
     const active30 = progress.filter(isActive30d).length;
     const totalCards = progress.reduce((a,p) => a + (p.completed_cards?.length||0), 0);
-    const horasFormacion = Math.round(totalCards * 3 / 60);
     const completedFull = progress.filter(p => (p.completed_cards?.length||0) >= 70).length;
     const tasaFinalizacion = total ? Math.round((completedFull/total)*100) : 0;
 
@@ -280,6 +279,13 @@ async function loadDashboard() {
                    (c.id === 'steam' && (p?.daily_missions?.examScore || 0) >= 70);
         }).length;
     }, 0);
+
+    // Horas de formación — tiempo REAL desde resource_views
+    const { data: rv } = await sb.from('resource_views').select('time_spent_seconds').not('time_spent_seconds','is',null);
+    const totalSeconds = rv?.reduce((a,b) => a + (b.time_spent_seconds||0), 0) || 0;
+    const horasFormacion = totalSeconds > 0
+        ? Math.round(totalSeconds / 3600)
+        : Math.round(totalCards * 3 / 60); // fallback estimado si no hay datos reales
 
     // Banner de impacto
     const now = new Date();
@@ -294,9 +300,8 @@ async function loadDashboard() {
     document.getElementById('kpiActive').textContent = fmt(active30);
     document.getElementById('kpiCards').textContent = fmt(totalCards);
 
-    // Tiempo promedio desde resource_views
-    const { data: rv } = await sb.from('resource_views').select('time_spent_seconds').not('time_spent_seconds','is',null);
-    const avgS = rv?.length ? Math.round(rv.reduce((a,b)=>a+(b.time_spent_seconds||0),0)/rv.length) : 0;
+    // Tiempo promedio por sesión
+    const avgS = rv?.length ? Math.round(totalSeconds / rv.length) : 0;
     document.getElementById('kpiAvgTime').textContent = avgS ? fmtTime(avgS) : 'N/A';
 
     // NPS
