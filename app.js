@@ -71,6 +71,17 @@ function getCourseExam(course) {
     return { title: '📝 Examen Final', passingScore: 70, questions };
 }
 
+// Prefijo de IDs de tarjeta por curso (para contar progreso en completedCards).
+// steam usa IDs numéricos (sin prefijo); el resto se normalizó a "<courseId>-N".
+const _COURSE_CARD_PREFIX = {
+    steam: null, abp: 'abp-', 'design-thinking': 'dt-', evaluacion: 'ev-',
+    'tipos-estudiantes': 'te-', storytelling: 'st-'
+};
+function _courseCardPrefix(courseId) {
+    if (Object.prototype.hasOwnProperty.call(_COURSE_CARD_PREFIX, courseId)) return _COURSE_CARD_PREFIX[courseId];
+    return courseId === 'steam' ? null : courseId + '-'; // cursos nuevos: "creatividad-", etc.
+}
+
 // ==================== VARIABLES GLOBALES ====================
 let currentUser = null;
 let currentModule = 1;
@@ -441,16 +452,7 @@ async function checkExistingSession() {
 
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
-        // Flujo obligatorio para usuarios nuevos: onboarding → diagnóstico → elegir ruta
-        const _needOnboarding = !localStorage.getItem('onboardingDone');
-        const _needDiag = !localStorage.getItem('diagDone');
-        if (_needOnboarding && typeof startOnboarding === 'function') {
-            startOnboarding(); // closeOnboarding lanza el diagnóstico, y closeDiagnostic abre el selector
-        } else if (_needDiag && typeof startDiagnostic === 'function') {
-            startDiagnostic(); // diagnóstico obligatorio antes de elegir ruta
-        } else {
-            showCourseSelector();
-        }
+        _postAuthEntry();
         return true;
     }
     return false;
@@ -497,19 +499,9 @@ function updateUI() {
     if (_cpPct) _cpPct.style.color = _courseColor;
 
     const totalAll = modulesData.reduce((acc, m) => acc + m.cards.length, 0);
-    // Filtrar tarjetas completadas del curso activo (por prefijo de ID o courseId guardado)
-    const _activeCourseId = (currentCourseId || 'steam');
-    // Map courseId to card ID prefix used in data.js
-    const _prefixMap = { 'steam': null, 'abp': 'abp-', 'design-thinking': 'dt-', 'evaluacion': 'ev-', 'tipos-estudiantes': 'te-' };
-    const _cardPrefix = _prefixMap[_activeCourseId];
-    const completedTotal = (progress.completedCards || []).filter(id => {
-        const s = String(id);
-        if (!_cardPrefix) {
-            // STEAM cards: numeric IDs ("1","2") or old module-index format ("1-0"), never prefixed
-            return /^\d/.test(s) && !s.includes('-m');
-        }
-        return s.startsWith(_cardPrefix);
-    }).length;
+    // Contar tarjetas completadas del curso activo usando sus IDs reales (robusto)
+    const _courseCardIds = new Set(modulesData.flatMap(m => m.cards.map(c => String(c.id))));
+    const completedTotal = (progress.completedCards || []).filter(id => _courseCardIds.has(String(id))).length;
     const coursePercent = Math.min(Math.round((completedTotal / totalAll) * 100), 100);
     const courseProgressBar = document.getElementById("courseProgressBar");
     if (courseProgressBar) courseProgressBar.style.width = `${coursePercent}%`;
@@ -3198,8 +3190,6 @@ function _checkMasterCert() {
     const statusEl = document.getElementById('certCourseStatus');
     if (statusEl) {
         const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', storytelling:'#F59E0B', creatividad:'#E83C8D', 'herramientas-tec':'#7C3AED', 'm-learning':'#F59E0B', 'flipped-classroom':'#10B981', abv:'#6366F1', 'micro-learning':'#F97316' };
-        const prefixMap = { abp:'abp-', 'design-thinking':'dt-', evaluacion:'ev-', 'tipos-estudiantes':'te-', creatividad:'crea-', 'herramientas-tec':'htec-', 'm-learning':'ml-', 'flipped-classroom':'fc-', abv:'abv-', 'micro-learning':'mlearn-' };
-
         statusEl.innerHTML = LEARNING_PATHS.map(path => {
             const pathCourses = (path.courses || [])
                 .map(id => available.find(c => c.id === id))
@@ -3216,9 +3206,9 @@ function _checkMasterCert() {
                 const passed = s !== undefined && s >= 70;
                 const started = (progress?.completedCards || []).some(id => {
                     const str = String(id);
-                    if (c.id === 'steam') return /^\d/.test(str) && !str.includes('-m');
-                    const px = prefixMap[c.id] || '';
-                    return px && str.startsWith(px);
+                    const px = _courseCardPrefix(c.id);
+                    if (!px) return /^\d/.test(str) && !str.includes('-m'); // steam (numérico)
+                    return str.startsWith(px);
                 });
                 const col = courseColors[c.id] || '#4f46e5';
                 if (passed) {
@@ -3691,7 +3681,7 @@ document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
     const success = await loginWithEmail(email, password);
     if (success) {
         loadSavedProgress(true);
-        showCourseSelector();
+        _postAuthEntry();
     }
 });
 document.getElementById("doRegister")?.addEventListener("click", async () => {
@@ -3702,7 +3692,7 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
     if (success) {
         loadSavedProgress(true);
         await checkReferralBonus();
-        showCourseSelector();
+        _postAuthEntry();
     }
 });
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
@@ -4199,6 +4189,21 @@ if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
 // ==================== SELECTOR DE CURSOS (Multi-curso) ====================
 let currentCourseId = 'steam';
 let _selectedPathId  = null; // ruta activa en el selector
+
+// Flujo tras autenticarse: onboarding → diagnóstico (obligatorio) → elegir ruta.
+// Para usuarios nuevos muestra el onboarding; closeOnboarding lanza el diagnóstico,
+// y closeDiagnostic abre el selector de rutas.
+function _postAuthEntry() {
+    const needOnboarding = !localStorage.getItem('onboardingDone');
+    const needDiag       = !localStorage.getItem('diagDone');
+    if (needOnboarding && typeof startOnboarding === 'function') {
+        startOnboarding();
+    } else if (needDiag && typeof startDiagnostic === 'function') {
+        startDiagnostic();
+    } else {
+        showCourseSelector();
+    }
+}
 
 function showCourseSelector() {
     const el = document.getElementById('courseSelector');
