@@ -1563,7 +1563,11 @@
         </div>
 
         <!-- ── CONTENIDO ─────────────────────────────────────────────── -->
-        <div class="px-4 pt-5 md:max-w-2xl md:mx-auto">
+        <!-- Mobile: 1 col · Desktop: 2 col con columnas independientes -->
+        <div class="px-4 pt-5 md:px-8 md:pt-6 md:max-w-5xl md:mx-auto md:grid md:grid-cols-2 md:gap-6 md:items-start">
+
+        <!-- ╔══ COLUMNA DERECHA desktop (en móvil va después) ══╗ -->
+        <div class="md:order-2">
 
             <!-- ── Sección: Aprendizaje ── -->
             <p class="text-[11px] font-black uppercase tracking-widest mb-3 px-1" style="color:#1e3a5f">Aprendizaje</p>
@@ -1722,6 +1726,11 @@
                     <polyline points="9 18 15 12 9 6" />
                 </svg>
             </a>
+
+        </div><!-- end columna derecha -->
+
+        <!-- ╔══ COLUMNA IZQUIERDA desktop (en móvil va después) ══╗ -->
+        <div class="md:order-1 mt-5 md:mt-0">
 
             <!-- ── Sección: Logros ── -->
             <p class="text-[11px] font-black uppercase tracking-widest mb-3 mt-1 px-1" style="color:#1e3a5f">Logros y estadísticas</p>
@@ -1904,7 +1913,9 @@
                 <span data-icon="logout" style="display:inline-flex;width:16px;height:16px;color:#ef4444"></span>Cerrar sesión
             </button>
 
-        </div><!-- end inner content -->
+        </div><!-- end columna izquierda -->
+
+        </div><!-- end grid -->
         </div><!-- end tabPerfil -->
 
         <!-- ══════════════════════════════════════════ -->

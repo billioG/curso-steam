@@ -104,20 +104,36 @@ const prizes = [
 ];
 
 // ==================== LOGROS ====================
+const BADGE_SVG = {
+    firstCard:    `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#d1fae5"/><path d="M20 10c-1.1 0-2 .9-2 2v7.17l-2.59-2.58L14 18l6 6 6-6-1.41-1.41L22 19.17V12c0-1.1-.9-2-2-2z" fill="#059669"/><rect x="13" y="27" width="14" height="2" rx="1" fill="#059669"/></svg>`,
+    module1:      `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#dbeafe"/><rect x="12" y="11" width="16" height="20" rx="2" fill="#3b82f6"/><rect x="15" y="16" width="10" height="1.5" rx=".75" fill="white"/><rect x="15" y="19.5" width="10" height="1.5" rx=".75" fill="white"/><rect x="15" y="23" width="7" height="1.5" rx=".75" fill="white"/></svg>`,
+    module2:      `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fef3c7"/><path d="M20 12a2 2 0 012 2v1.27a6 6 0 11-4 0V14a2 2 0 012-2z" fill="#d97706"/><circle cx="20" cy="24" r="3" fill="#fbbf24"/><rect x="16" y="29" width="8" height="2" rx="1" fill="#d97706"/></svg>`,
+    module3:      `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#ede9fe"/><ellipse cx="20" cy="20" rx="8" ry="5" stroke="#7c3aed" stroke-width="1.5" fill="none"/><ellipse cx="20" cy="20" rx="8" ry="5" stroke="#7c3aed" stroke-width="1.5" fill="none" transform="rotate(60 20 20)"/><ellipse cx="20" cy="20" rx="8" ry="5" stroke="#7c3aed" stroke-width="1.5" fill="none" transform="rotate(120 20 20)"/><circle cx="20" cy="20" r="2.5" fill="#7c3aed"/></svg>`,
+    module4:      `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fce7f3"/><rect x="13" y="24" width="3" height="6" rx="1" fill="#db2777"/><rect x="18.5" y="19" width="3" height="11" rx="1" fill="#db2777"/><rect x="24" y="14" width="3" height="16" rx="1" fill="#db2777"/><polyline points="13,21 19,16 25,12" stroke="#f9a8d4" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`,
+    module5:      `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#dcfce7"/><path d="M20 12l2.5 5 5.5.8-4 3.9.9 5.5L20 24.5l-4.9 2.7.9-5.5-4-3.9 5.5-.8z" fill="#16a34a"/></svg>`,
+    quizMaster:   `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fef9c3"/><circle cx="20" cy="20" r="8" stroke="#ca8a04" stroke-width="1.5" fill="none"/><circle cx="20" cy="20" r="2" fill="#ca8a04"/><line x1="20" y1="12" x2="20" y2="10" stroke="#ca8a04" stroke-width="2" stroke-linecap="round"/><line x1="20" y1="30" x2="20" y2="28" stroke="#ca8a04" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="20" x2="10" y2="20" stroke="#ca8a04" stroke-width="2" stroke-linecap="round"/><line x1="30" y1="20" x2="28" y2="20" stroke="#ca8a04" stroke-width="2" stroke-linecap="round"/></svg>`,
+    feedbackGiver:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#e0f2fe"/><path d="M12 14h16a2 2 0 012 2v8a2 2 0 01-2 2h-5l-4 3v-3h-7a2 2 0 01-2-2v-8a2 2 0 012-2z" fill="#0284c7"/><circle cx="17" cy="20" r="1.2" fill="white"/><circle cx="20" cy="20" r="1.2" fill="white"/><circle cx="23" cy="20" r="1.2" fill="white"/></svg>`,
+    examPass:     `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#f3e8ff"/><circle cx="20" cy="17" r="6" fill="#7c3aed"/><path d="M15 28l5 4 5-4-1.5-5H16.5z" fill="#7c3aed"/><rect x="18.5" y="14" width="3" height="6" rx="1" fill="white"/><rect x="18.5" y="21" width="3" height="2" rx="1" fill="white"/></svg>`,
+    allModules:   `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fef3c7"/><path d="M20 11l2.8 5.6 6.2.9-4.5 4.4 1.1 6.1L20 25l-5.6 3 1.1-6.1-4.5-4.4 6.2-.9z" fill="#f59e0b" stroke="#d97706" stroke-width=".5"/><circle cx="20" cy="20" r="3" fill="#fff7ed"/></svg>`,
+    streak7:      `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fff7ed"/><path d="M22 11c0 4-4 5-4 9a4 4 0 008 0c0-3-2-5-2-7" fill="#f97316"/><path d="M17 22c0 2 1.5 3.5 3 3.5S23 24 23 22" fill="#fbbf24"/><circle cx="20" cy="30" r="1" fill="#f97316"/></svg>`,
+    streak30:     `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fdf4ff"/><path d="M20 12l1.5 3h3.2l-2.6 1.9 1 3.1L20 18.2l-3.1 1.8 1-3.1L15.3 15h3.2z" fill="#a855f7"/><path d="M20 20l1 2h2.1l-1.7 1.2.6 2L20 24l-2 1.2.6-2L17 22h2.1z" fill="#d8b4fe"/><line x1="20" y1="26" x2="20" y2="29" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    level5:       `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fef9c3"/><text x="20" y="25" text-anchor="middle" font-size="16" font-weight="900" fill="#ca8a04" font-family="Arial">5</text><path d="M20 10l1 3h3l-2.5 1.8.9 3-2.4-1.7-2.4 1.7.9-3L16 13h3z" fill="#f59e0b"/></svg>`,
+};
+
 const badges = {
-    firstCard: { id: "firstCard", name: "🌱 Primer paso", desc: "Completaste tu primera tarjeta", icon: "🌱", xpReward: 10 },
-    module1: { id: "module1", name: "📘 Primer módulo", desc: "Completaste el Módulo 1 de tu primer curso", icon: "📘", xpReward: 50 },
-    module2: { id: "module2", name: "🔧 En profundidad", desc: "Completaste el Módulo 2 de algún curso", icon: "🔧", xpReward: 50 },
-    module3: { id: "module3", name: "🧠 Metodólogo", desc: "Completaste el Módulo 3 de algún curso", icon: "🧠", xpReward: 50 },
-    module4: { id: "module4", name: "📊 Aplicador", desc: "Completaste el Módulo 4 de algún curso", icon: "📊", xpReward: 50 },
-    module5: { id: "module5", name: "🇬🇹 Experto local", desc: "Completaste el Módulo 5 de algún curso", icon: "🇬🇹", xpReward: 50 },
-    quizMaster: { id: "quizMaster", name: "🎯 Maestro de quizzes", desc: "10 quizzes correctos", icon: "🎯", xpReward: 30 },
-    feedbackGiver: { id: "feedbackGiver", name: "💬 Tu voz importa", desc: "Diste feedback en 3 módulos", icon: "💬", xpReward: 40 },
-    examPass: { id: "examPass", name: "🎓 Certificado STEAM", desc: "Aprobaste el examen final", icon: "🎓", xpReward: 100 },
-    allModules: { id: "allModules", name: "🏆 STEAM Master", desc: "Completaste todos los módulos", icon: "🏆", xpReward: 200 },
-    streak7: { id: "streak7", name: "🔥 Racha de 7 días", desc: "7 días seguidos aprendiendo", icon: "🔥", xpReward: 100 },
-    streak30: { id: "streak30", name: "⚡ Leyenda", desc: "30 días de racha", icon: "⚡", xpReward: 500 },
-    level5: { id: "level5", name: "🌟 Nivel 5", desc: "Alcanzaste el Nivel 5", icon: "🌟", xpReward: 100 }
+    firstCard:    { id: "firstCard",    name: "Primer paso",       desc: "Completaste tu primera tarjeta",              icon: "🌱", xpReward: 10  },
+    module1:      { id: "module1",      name: "Primer módulo",     desc: "Completaste el Módulo 1 de tu primer curso",  icon: "📘", xpReward: 50  },
+    module2:      { id: "module2",      name: "En profundidad",    desc: "Completaste el Módulo 2 de algún curso",      icon: "🔧", xpReward: 50  },
+    module3:      { id: "module3",      name: "Metodólogo",        desc: "Completaste el Módulo 3 de algún curso",      icon: "🧠", xpReward: 50  },
+    module4:      { id: "module4",      name: "Aplicador",         desc: "Completaste el Módulo 4 de algún curso",      icon: "📊", xpReward: 50  },
+    module5:      { id: "module5",      name: "Experto local",     desc: "Completaste el Módulo 5 de algún curso",      icon: "⭐", xpReward: 50  },
+    quizMaster:   { id: "quizMaster",   name: "Maestro de quizzes",desc: "10 quizzes correctos",                        icon: "🎯", xpReward: 30  },
+    feedbackGiver:{ id: "feedbackGiver",name: "Tu voz importa",    desc: "Diste feedback en 3 módulos",                 icon: "💬", xpReward: 40  },
+    examPass:     { id: "examPass",     name: "Certificado STEAM", desc: "Aprobaste el examen final",                   icon: "🎓", xpReward: 100 },
+    allModules:   { id: "allModules",   name: "STEAM Master",      desc: "Completaste todos los módulos",               icon: "🏆", xpReward: 200 },
+    streak7:      { id: "streak7",      name: "Racha de 7 días",   desc: "7 días seguidos aprendiendo",                 icon: "🔥", xpReward: 100 },
+    streak30:     { id: "streak30",     name: "Leyenda",           desc: "30 días de racha",                            icon: "⚡", xpReward: 500 },
+    level5:       { id: "level5",       name: "Nivel 5",           desc: "Alcanzaste el Nivel 5",                       icon: "🌟", xpReward: 100 },
 };
 
 // ==================== MISIONES DIARIAS ====================
@@ -1726,7 +1742,15 @@ function showBadgesModal() {
     let badgesHtml = "";
     Object.values(badges).forEach(badge => {
         const unlocked = progress.badges.includes(badge.id);
-        badgesHtml += `<div class="bg-gray-50 rounded-xl p-3 text-center ${unlocked ? 'border-2 border-yellow-400' : 'opacity-50'}"><div class="text-4xl mb-1">${badge.icon}</div><div class="font-bold text-sm">${badge.name}</div><div class="text-xs text-gray-500">${badge.desc}</div>${unlocked ? `<span class="text-green-500 text-xs" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.check||'✓'}</span> Desbloqueado</span>` : `<span class="text-gray-400 text-xs">+${badge.xpReward} XP</span>`}</div>`;
+        const svg = BADGE_SVG[badge.id] || `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#e2e8f0"/></svg>`;
+        badgesHtml += `<div style="background:${unlocked?'white':'#f8fafc'};border:${unlocked?'2px solid #fbbf24':'1.5px solid #e2e8f0'};border-radius:16px;padding:14px 10px;text-align:center;${unlocked?'':'opacity:.55'}">
+            <div style="width:48px;height:48px;margin:0 auto 8px">${svg}</div>
+            <div style="font-size:12px;font-weight:800;color:#0f172a;line-height:1.3;margin-bottom:3px">${badge.name}</div>
+            <div style="font-size:10px;color:#64748b;line-height:1.4;margin-bottom:5px">${badge.desc}</div>
+            ${unlocked
+                ? `<span style="font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;border-radius:20px;padding:2px 8px;display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:11px;height:11px">${ICONS?.check||'✓'}</span>Desbloqueado</span>`
+                : `<span style="font-size:10px;font-weight:700;color:#94a3b8;background:#f1f5f9;border-radius:20px;padding:2px 8px">+${badge.xpReward} XP</span>`}
+        </div>`;
     });
     document.getElementById('badgesList').innerHTML = badgesHtml;
     document.getElementById('badgesModal').classList.remove('hidden');
