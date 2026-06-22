@@ -85,6 +85,7 @@ function getActiveCourseData() {
     }
     return courseData; // fallback: STEAM
 }
+const ADMIN_EMAIL = "profebillio@gmail.com";
 let progress = null;
 let db = null;
 let currentAvatar = "👨‍🏫";
@@ -1987,7 +1988,7 @@ async function showRanking() {
     const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
     const podiumPos   = top3[1] ? [2, 1, 3] : [1];
     const podiumH     = ['64px', '88px', '52px'];
-    const podiumColors= ['rgba(255,255,255,.18)', 'rgba(255,255,255,.28)', 'rgba(255,255,255,.14)'];
+    const podiumColors= ['#5b21b6', '#4c1d95', '#6d28d9'];
     const crownIdx    = top3[1] ? 1 : 0; // índice del 1° en podiumOrder
 
     if (podiumEl) {
@@ -3800,7 +3801,6 @@ function exportStatsToCSV() {
 function clearStats() { if (confirm("⚠️ ¿Eliminar TODOS los datos de feedback?")) { progress.moduleFeedback = {}; progress.npsHistory = []; saveProgress(); showStatsPanel(); } }
 
 // ==================== MODO PROFE ====================
-const ADMIN_EMAIL = "profebillio@gmail.com";
 
 function toggleDevMode() {
     const active = localStorage.getItem('devMode') === '1';
