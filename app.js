@@ -4235,10 +4235,12 @@ function showCourseSelector() {
     const el = document.getElementById('courseSelector');
     if (!el) return;
     _selectedPathId = null;
-    _renderCourseSelector();
+    // Ocultar otras pantallas y mostrar el selector ANTES de renderizar,
+    // para que cualquier error en el render no deje la pantalla en blanco.
     document.getElementById('loginScreen')?.classList.add('hidden');
     document.getElementById('mainApp')?.classList.add('hidden');
     el.classList.remove('hidden');
+    try { _renderCourseSelector(); } catch(e) { console.error('[Selector] Error al renderizar:', e); }
 }
 
 function _renderCourseSelector() {
