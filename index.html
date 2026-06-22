@@ -622,7 +622,7 @@
             left: 50%;
             transform: translateX(-50%);
             right: 0;
-            z-index: 40;
+            z-index: 60;
             background: white;
             border-top: 1px solid #f1f5f9;
             padding: 6px 0 env(safe-area-inset-bottom, 0);
@@ -1223,7 +1223,7 @@
 
     <!-- ==================== SELECTOR DE CURSOS ==================== -->
     <div id="courseSelector" class="fixed inset-0 z-50 hidden overflow-y-auto" style="background:#1A6B68">
-        <div class="mx-auto px-4 py-10" style="max-width:64rem">
+        <div class="mx-auto px-4 py-10" style="max-width:64rem;padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))">
             <div class="text-center mb-8">
                 <div class="mx-auto mb-3" style="width:80px;height:80px" id="courseSelectorIcon"></div>
                 <script>document.addEventListener('DOMContentLoaded', function () { var el = document.getElementById('courseSelectorIcon'); if (el && typeof ICONS !== 'undefined') el.innerHTML = ICONS.books; });</script>
