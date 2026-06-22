@@ -294,6 +294,97 @@ const MICRO_ILLUS = {
     5: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M44 8 L22 44 L38 44 L34 72 L58 34 L42 34 Z" stroke-width="2.5" fill="rgba(255,255,255,0.12)"/></svg>`,
 };
 
+// ── Storytelling: tonos ámbar/cálidos ──
+const ST_THEME = {
+    1: { primary: '#F59E0B', soft: '#FEF3C7' }, // Poder de las historias
+    2: { primary: '#D97706', soft: '#FDE68A' }, // Estructura narrativa
+    3: { primary: '#B45309', soft: '#FEF3C7' }, // Técnicas avanzadas
+    4: { primary: '#F59E0B', soft: '#FFF7ED' }, // Storytelling digital
+    5: { primary: '#92400E', soft: '#FFEDD5' }, // Práctica docente
+};
+const ST_ILLUS = {
+    // Módulo 1 — Poder de las historias: libro abierto con estrellas
+    1: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M40 14 C40 14 22 18 18 32 L18 66 C22 54 36 52 40 54 C44 52 58 54 62 66 L62 32 C58 18 40 14 40 14Z" stroke-width="2.4" fill="rgba(255,255,255,0.1)"/>
+        <line x1="40" y1="14" x2="40" y2="54" stroke-width="2.2"/>
+        <line x1="26" y1="34" x2="38" y2="34" stroke-width="1.8" stroke="rgba(255,255,255,0.6)"/>
+        <line x1="26" y1="40" x2="38" y2="40" stroke-width="1.8" stroke="rgba(255,255,255,0.6)"/>
+        <line x1="26" y1="46" x2="34" y2="46" stroke-width="1.8" stroke="rgba(255,255,255,0.6)"/>
+        <circle cx="58" cy="18" r="3" fill="rgba(255,255,255,0.7)" stroke="none"/>
+        <circle cx="66" cy="12" r="2" fill="rgba(255,255,255,0.5)" stroke="none"/>
+        <circle cx="62" cy="24" r="1.5" fill="rgba(255,255,255,0.4)" stroke="none"/>
+    </svg>`,
+    // Módulo 2 — Estructura narrativa: arco dramático (montaña con flecha)
+    2: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 62 Q28 28 40 20 Q52 28 68 62" stroke-width="2.5" fill="none"/>
+        <circle cx="40" cy="20" r="4" fill="rgba(255,255,255,0.25)" stroke-width="2"/>
+        <circle cx="12" cy="62" r="3.5" fill="rgba(255,255,255,0.2)" stroke-width="2"/>
+        <circle cx="68" cy="62" r="3.5" fill="rgba(255,255,255,0.2)" stroke-width="2"/>
+        <text x="6" y="74" font-size="8" fill="rgba(255,255,255,0.7)" font-family="sans-serif" stroke="none">Inicio</text>
+        <text x="34" y="14" font-size="8" fill="rgba(255,255,255,0.7)" font-family="sans-serif" stroke="none">Clímax</text>
+        <text x="58" y="74" font-size="8" fill="rgba(255,255,255,0.7)" font-family="sans-serif" stroke="none">Fin</text>
+        <line x1="40" y1="20" x2="40" y2="62" stroke-width="1.5" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3 3"/>
+    </svg>`,
+    // Módulo 3 — Técnicas avanzadas: máscara de teatro
+    3: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="30" cy="38" rx="14" ry="18" stroke-width="2.4" fill="rgba(255,255,255,0.1)"/>
+        <ellipse cx="52" cy="42" rx="13" ry="16" stroke-width="2.4" fill="rgba(255,255,255,0.08)"/>
+        <path d="M25 44 Q30 48 35 44" stroke-width="2" fill="none"/>
+        <path d="M47 50 Q52 46 57 50" stroke-width="2" fill="none"/>
+        <path d="M24 33 Q27 31 30 33" stroke-width="1.8" fill="none"/>
+        <path d="M49 36 Q52 34 55 36" stroke-width="1.8" fill="none"/>
+    </svg>`,
+    // Módulo 4 — Storytelling digital: pantalla con micrófono
+    4: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="12" y="18" width="56" height="36" rx="5" stroke-width="2.4" fill="rgba(255,255,255,0.08)"/>
+        <line x1="30" y1="54" x2="50" y2="54" stroke-width="2.2"/>
+        <line x1="40" y1="54" x2="40" y2="62" stroke-width="2.2"/>
+        <line x1="32" y1="62" x2="48" y2="62" stroke-width="2.2"/>
+        <rect x="34" y="26" width="12" height="20" rx="6" stroke-width="2.2" fill="rgba(255,255,255,0.15)"/>
+        <path d="M28 38 Q28 50 40 50 Q52 50 52 38" stroke-width="2.2" fill="none"/>
+        <line x1="40" y1="50" x2="40" y2="54" stroke-width="2.2"/>
+    </svg>`,
+    // Módulo 5 — Práctica docente: docente con globo de diálogo
+    5: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="30" cy="22" r="9" stroke-width="2.4" fill="rgba(255,255,255,0.1)"/>
+        <path d="M14 62 Q14 46 30 46 Q46 46 46 62" stroke-width="2.4" fill="rgba(255,255,255,0.08)"/>
+        <rect x="46" y="14" width="22" height="16" rx="5" stroke-width="2.2" fill="rgba(255,255,255,0.12)"/>
+        <path d="M50 30 L48 36 L56 30" fill="rgba(255,255,255,0.5)" stroke="none"/>
+        <line x1="50" y1="20" x2="64" y2="20" stroke-width="1.8" stroke="rgba(255,255,255,0.7)"/>
+        <line x1="50" y1="25" x2="60" y2="25" stroke-width="1.8" stroke="rgba(255,255,255,0.7)"/>
+    </svg>`,
+};
+
+// ── SVGs temáticos por ruta de aprendizaje ──────────────────────────────────
+// Usados en el selector de rutas (_renderCourseSelector)
+const PATH_SVG = {
+    // steam20: Cohete STEAM (ciencia + tecnología + innovación)
+    steam20: `<svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 6 C22 6 32 10 32 22 L22 38 L12 22 C12 10 22 6 22 6Z" stroke-width="2" fill="rgba(255,255,255,0.15)"/>
+        <circle cx="22" cy="20" r="4" stroke-width="2" fill="rgba(255,255,255,0.2)"/>
+        <path d="M12 28 Q8 32 10 38 Q14 34 22 38 Q30 34 34 38 Q36 32 32 28" stroke-width="1.8" fill="rgba(255,255,255,0.1)"/>
+        <line x1="16" y1="14" x2="13" y2="11" stroke-width="1.6" stroke="rgba(255,255,255,0.7)"/>
+        <line x1="28" y1="14" x2="31" y2="11" stroke-width="1.6" stroke="rgba(255,255,255,0.7)"/>
+    </svg>`,
+    // creativo: Paleta de pintor + pincel
+    creativo: `<svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 30 Q8 22 14 16 Q20 10 28 12 Q36 14 36 22 Q36 28 30 30 Q26 32 24 28 Q20 24 24 22 Q26 20 28 22" stroke-width="2" fill="none"/>
+        <circle cx="14" cy="34" r="4" stroke-width="2" fill="rgba(255,255,255,0.2)"/>
+        <line x1="30" y1="8" x2="38" y2="4" stroke-width="2"/>
+        <line x1="34" y1="6" x2="36" y2="12" stroke-width="1.8"/>
+    </svg>`,
+    // metodologias: Engranajes interconectados (metodología activa, proceso)
+    metodologias: `<svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="16" cy="18" r="7" stroke-width="2" fill="rgba(255,255,255,0.1)"/>
+        <circle cx="16" cy="18" r="2.5" fill="rgba(255,255,255,0.4)" stroke="none"/>
+        <path d="M16 9 L16 7 M16 29 L16 27 M7 18 L5 18 M27 18 L25 18 M9.6 11.6 L8.2 10.2 M22.4 24.4 L23.8 25.8 M22.4 11.6 L23.8 10.2 M9.6 24.4 L8.2 25.8" stroke-width="1.8"/>
+        <circle cx="30" cy="30" r="6" stroke-width="2" fill="rgba(255,255,255,0.1)"/>
+        <circle cx="30" cy="30" r="2.2" fill="rgba(255,255,255,0.35)" stroke="none"/>
+        <path d="M30 22.5 L30 21 M30 39 L30 37.5 M22.5 30 L21 30 M39 30 L37.5 30" stroke-width="1.6"/>
+        <line x1="21" y1="24" x2="24" y2="25" stroke-width="1.8" stroke="rgba(255,255,255,0.6)"/>
+    </svg>`,
+};
+
 // Función que retorna el theme e ilustración del módulo activo según el curso
 function getCourseThemeAndIllus(courseId, moduleIndex) {
     switch(courseId) {
@@ -328,6 +419,11 @@ function getCourseThemeAndIllus(courseId, moduleIndex) {
             return {
                 theme: TE_THEME[moduleIndex] || { primary: '#7C3AED', soft: '#EDE9FE' },
                 illus: TE_ILLUSTRATIONS[moduleIndex] || TE_ILLUSTRATIONS[1]
+            };
+        case 'storytelling':
+            return {
+                theme: ST_THEME[moduleIndex] || { primary: '#F59E0B', soft: '#FEF3C7' },
+                illus: ST_ILLUS[moduleIndex] || ST_ILLUS[1]
             };
         default:
             return {

@@ -4189,8 +4189,8 @@ function _renderCourseSelector() {
                      class="cursor-pointer active:scale-95 transition-all backdrop-blur border rounded-2xl p-4 mb-3"
                      style="background:${path.color}22;border-color:${path.color}55">
                     <div class="flex items-center gap-3">
-                        <div style="width:44px;height:44px;border-radius:14px;background:${path.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">
-                            🎓
+                        <div style="width:44px;height:44px;border-radius:14px;background:${path.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            ${(typeof PATH_SVG !== 'undefined' && PATH_SVG[path.id]) ? PATH_SVG[path.id] : '<span style="font-size:20px">🎓</span>'}
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
@@ -4224,7 +4224,9 @@ function _renderCourseSelector() {
                 ‹ Todas las rutas
             </button>
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-                <div style="width:36px;height:36px;border-radius:10px;background:${path.color};flex-shrink:0"></div>
+                <div style="width:36px;height:36px;border-radius:10px;background:${path.color};flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                    ${(typeof PATH_SVG !== 'undefined' && PATH_SVG[path.id]) ? `<div style="width:28px;height:28px">${PATH_SVG[path.id]}</div>` : ''}
+                </div>
                 <div>
                     <h2 style="font-size:15px;font-weight:800;color:white;margin:0">${path.label}</h2>
                     <p style="font-size:11px;color:rgba(255,255,255,.5);margin:0">${pathCourses.length} cursos en esta ruta</p>
