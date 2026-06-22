@@ -441,16 +441,7 @@ async function checkExistingSession() {
 
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
-        // Flujo obligatorio para usuarios nuevos: onboarding → diagnóstico → elegir ruta
-        const _needOnboarding = !localStorage.getItem('onboardingDone');
-        const _needDiag = !localStorage.getItem('diagDone');
-        if (_needOnboarding && typeof startOnboarding === 'function') {
-            startOnboarding(); // closeOnboarding lanza el diagnóstico, y closeDiagnostic abre el selector
-        } else if (_needDiag && typeof startDiagnostic === 'function') {
-            startDiagnostic(); // diagnóstico obligatorio antes de elegir ruta
-        } else {
-            showCourseSelector();
-        }
+        _postLoginFlow(); // onboarding → diagnóstico → selector (según estado de cada paso)
         return true;
     }
     return false;
@@ -3650,13 +3641,26 @@ document.getElementById("showLoginBtn")?.addEventListener("click", () => {
     document.getElementById("registerForm").classList.add("hidden");
     document.getElementById("emailLoginForm").classList.remove("hidden");
 });
+// Flujo post-login unificado: onboarding → diagnóstico → selector
+function _postLoginFlow() {
+    const needOnboarding = !localStorage.getItem('onboardingDone');
+    const needDiag       = !localStorage.getItem('diagDone');
+    if (needOnboarding && typeof startOnboarding === 'function') {
+        startOnboarding();
+    } else if (needDiag && typeof startDiagnostic === 'function') {
+        startDiagnostic();
+    } else {
+        showCourseSelector();
+    }
+}
+
 document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
     const success = await loginWithEmail(email, password);
     if (success) {
         loadSavedProgress(true);
-        showCourseSelector();
+        _postLoginFlow();
     }
 });
 document.getElementById("doRegister")?.addEventListener("click", async () => {
@@ -3667,7 +3671,7 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
     if (success) {
         loadSavedProgress(true);
         await checkReferralBonus();
-        showCourseSelector();
+        _postLoginFlow();
     }
 });
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
