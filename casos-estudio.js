@@ -1302,6 +1302,995 @@ const CASE_STUDIES = [
         xpReward: 10
       }
     }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 5: "La Creatividad de Lucía" — Docente Creativo
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs5',
+    title: 'La Creatividad de Lucía',
+    course: 'Docente Creativo',
+    color: '#E83C8D',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 017 7c0 2.5-1.5 4.5-3 6l-1 1H9l-1-1C6.5 13.5 5 11.5 5 9a7 7 0 017-7z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="9.5" y1="7" x2="9" y2="5"/><line x1="14.5" y1="7" x2="15" y2="5"/><line x1="7" y1="9.5" x2="5" y2="9"/><line x1="17" y1="9.5" x2="19" y2="9"/></svg>',
+    duration: '20-25 min',
+    description: 'Lucía es docente en una escuela urbana de Guatemala City y quiere aplicar técnicas de creatividad, pero sus estudiantes están acostumbrados a clases tradicionales. Acompáñala a transformar su aula en un espacio donde el error es bienvenido y la imaginación tiene lugar.',
+    start: 'cs5_n1',
+    nodes: {
+
+      'cs5_n1': {
+        type: 'scenario',
+        text: 'Lucía da clases de Ciencias Sociales en el Instituto Nacional Mixto Central de Guatemala City. Sus 32 estudiantes de tercero básico son brillantes — pero callados. Acostumbrados a copiar del pizarrón y a responder solo cuando tienen la respuesta "correcta". Hoy Lucía quiere hacer su primera sesión de brainstorming sobre la identidad cultural guatemalteca.',
+        context: 'Cuando Lucía dice "escriban lo primero que se les venga a la mente cuando piensan en Guatemala", los estudiantes se miran entre sí. Silencio. Nadie escribe. Una niña en la fila de atrás pregunta: "¿Qué nota tiene esta actividad?"',
+        choices: [
+          { text: 'Empezar con un ejemplo personal: compartir lo primero que a Lucía le viene a la mente y normalizar respuestas "imperfectas".', next: 'cs5_n2a', points: 10 },
+          { text: 'Dar una lista de temas sugeridos para que los estudiantes elijan y "no se equivoquen".', next: 'cs5_n2b', points: 5 },
+          { text: 'Regañarlos por el silencio y exigirles que participen porque "esto tiene nota".', next: 'cs5_n2c', points: 0 }
+        ]
+      },
+
+      'cs5_n2a': {
+        type: 'feedback_correct',
+        text: 'Lucía dice en voz alta: "Yo escribí: el olor de la marimba en la madrugada del 15 de septiembre". Los estudiantes ríen. Luego alguien escribe. Después otro. En cinco minutos el pizarrón está lleno: barriletes de Sumpango, el mercado de Chichicastenango, el ruido de los cohetillos, el frío del altiplano, el güipil de la abuela.',
+        feedback: 'La modelización docente rompe el bloqueo creativo mejor que cualquier instrucción. Cuando el docente muestra vulnerabilidad y normaliza la respuesta "rara", los estudiantes comprenden que el objetivo no es adivinar la respuesta correcta sino explorar ideas genuinas.',
+        choices: [
+          { text: 'Usar las respuestas del pizarrón como base para clasificar y profundizar.', next: 'cs5_n3a', points: 10 },
+          { text: 'Decirles que esas ideas son el "primer borrador" y que ahora hay que corregirlas.', next: 'cs5_n3b', points: 3 }
+        ]
+      },
+
+      'cs5_n2b': {
+        type: 'feedback_partial',
+        text: 'Los estudiantes eligen temas de la lista, pero las respuestas son predecibles: "quetzal", "lago Atitlán", "Tikal". El brainstorming funciona técnicamente, pero pierde su propósito: generar conexiones inesperadas y pensamiento divergente. La lista actúa como un techo cognitivo.',
+        feedback: 'Dar opciones cerradas en un brainstorming contradice su naturaleza. Los andamiajes de creatividad deben abrir posibilidades, no acotarlas. Una alternativa mejor sería dar categorías amplias ("sonidos", "olores", "recuerdos") en vez de respuestas específicas.',
+        choices: [
+          { text: 'Ampliar la actividad pidiendo que a cada idea le agreguen una sensación o recuerdo personal.', next: 'cs5_n3a', points: 7 },
+          { text: 'Continuar con la lista original y pasar a la siguiente actividad.', next: 'cs5_n3b', points: 2 }
+        ]
+      },
+
+      'cs5_n2c': {
+        type: 'feedback_incorrect',
+        text: 'El silencio se convierte en tensión. Dos o tres estudiantes escriben algo rápido para evitar problemas. El resto espera a copiar lo que escriben sus compañeros. La sesión de brainstorming produce respuestas homogéneas escritas por miedo, no por genuina exploración creativa.',
+        feedback: 'La amenaza de calificación activa el sistema de evitación de riesgo en los adolescentes. El pensamiento creativo requiere seguridad psicológica — la certeza de que una respuesta "equivocada" no tendrá consecuencias. La presión externa bloquea la divergencia cognitiva que es la esencia de la creatividad.',
+        choices: [
+          { text: 'Reconocer el error y transformar el ambiente: "Olvidemos la nota por hoy. Quiero saber qué piensan DE VERDAD."', next: 'cs5_n3a', points: 6 },
+          { text: 'Mantener la presión y recoger los papeles para calificar.', next: 'cs5_n3c', points: 0 }
+        ]
+      },
+
+      'cs5_n3a': {
+        type: 'scenario',
+        text: 'La clase está en movimiento. Lucía quiere llevar la creatividad más lejos: propone que los estudiantes creen una "instalación artística" en el aula usando materiales que traigan de sus casas — telas típicas, fotografías, objetos de sus comunidades. Pero en ese momento el ambiente se vuelve ruidoso y desordenado. Varios grupos hablan al mismo tiempo, algunos están de pie, dos estudiantes están discutiendo sobre qué objeto es "más representativo".',
+        context: 'El docente de la aula de al lado toca la pared y dice "¡silencio!" a través del muro. El director pasa por el corredor y mira hacia adentro con cara de preocupación.',
+        choices: [
+          { text: 'Establecer un protocolo claro: cada grupo tiene 3 minutos para hablar, un vocero designado y una señal de silencio acordada.', next: 'cs5_n4a', points: 10 },
+          { text: 'Pedir a todos que se sienten y bajen la voz, regresando a la actividad individual.', next: 'cs5_n4b', points: 4 },
+          { text: 'Ignorar el caos y dejar que los grupos "se organicen solos" sin intervenir.', next: 'cs5_n4c', points: 2 }
+        ]
+      },
+
+      'cs5_n3b': {
+        type: 'scenario',
+        text: 'Las ideas del brainstorming se perdieron sin profundizarse. Lucía pasa directamente a la siguiente actividad: un cuestionario sobre "elementos de la cultura guatemalteca". Los estudiantes responden correctamente pero mecánicamente. Lucía siente que algo se perdió en la sesión.',
+        context: 'Al salir de clase, una estudiante le dice: "Maestra, esa actividad del principio estuvo bonita. ¿La vamos a volver a hacer?"',
+        choices: [
+          { text: 'Tomar nota de ese comentario y planificar una siguiente sesión que sí desarrolle las ideas del brainstorming.', next: 'cs5_n4a', points: 7 },
+          { text: 'Continuar con el programa sin modificar nada.', next: 'cs5_n4c', points: 1 }
+        ]
+      },
+
+      'cs5_n3c': {
+        type: 'scenario',
+        text: 'Los papeles están calificados: la mayoría reprobó o sacó notas bajas porque no hubo ideas "suficientemente desarrolladas". Lucía siente que la actividad fue un fracaso. Varios estudiantes se ven desanimados.',
+        context: 'Lucía reflexiona sola después de clase: "¿Estoy midiendo creatividad o estoy midiendo el miedo a equivocarse?"',
+        choices: [
+          { text: 'Reconocer que el instrumento de evaluación no era adecuado para medir creatividad y rediseñarlo.', next: 'cs5_n4a', points: 6 },
+          { text: 'Abandonar las actividades creativas porque "no funcionan con este grupo".', next: 'cs5_nFIN_c', points: 0 }
+        ]
+      },
+
+      'cs5_n4a': {
+        type: 'scenario',
+        text: 'La instalación artística quedó increíble. Hay un güipil de Nebaj colgado junto a una foto del lago Atitlán y un barrilete de papel china hecho a mano. Un estudiante trajo el bordado de su abuela; otro pegó una entrada al mercado de artesanías. Pero ahora llega el momento más difícil: ¿cómo evalúa Lucía esto sin poner una nota numérica que destruya el espíritu de la actividad?',
+        context: 'El reglamento del instituto exige una nota de 0-100 en todas las actividades. La subdirectora le pregunta a Lucía cómo va a registrar esta actividad en el libro de calificaciones.',
+        choices: [
+          { text: 'Crear una rúbrica de proceso que evalúe criterios creativos: originalidad, conexión personal, uso de elementos culturales, colaboración — y no el resultado estético final.', next: 'cs5_n5a', points: 10 },
+          { text: 'Poner una nota de participación (todos 90 puntos) para cumplir con el requisito sin destruir el espíritu.', next: 'cs5_n5b', points: 5 },
+          { text: 'Decir a la subdirectora que fue "actividad extra" y no registrarla.', next: 'cs5_n5c', points: 2 }
+        ]
+      },
+
+      'cs5_n4b': {
+        type: 'scenario',
+        text: 'La actividad se calmó pero también perdió energía. Los grupos terminaron haciendo algo correcto pero sin la chispa del principio. Lucía siente que frenó algo importante por querer control.',
+        context: 'Un estudiante le dice después: "Profe, estábamos bien emocionados. ¿Por qué nos bajaron?"',
+        choices: [
+          { text: 'Reflexionar sobre cómo equilibrar estructura y libertad en actividades creativas grupales.', next: 'cs5_n5a', points: 6 },
+          { text: 'Concluir que las actividades grupales creativas son demasiado complicadas.', next: 'cs5_n5c', points: 1 }
+        ]
+      },
+
+      'cs5_n4c': {
+        type: 'scenario',
+        text: 'Sin estructura, el caos duró toda la clase. Algunos grupos avanzaron; otros no hicieron nada. La brecha entre grupos motivados y grupos perdidos se amplió. Al final, Lucía no sabe qué aprendió cada quien.',
+        context: 'Al revisar los "productos" de cada grupo, nota que son muy desiguales — no en calidad creativa, sino en esfuerzo y comprensión.',
+        choices: [
+          { text: 'Usar esa desigualdad como diagnóstico: identificar qué grupos necesitan más andamiaje en el próximo proyecto.', next: 'cs5_n5a', points: 5 },
+          { text: 'Calificar todo igual para evitar conflictos.', next: 'cs5_n5c', points: 0 }
+        ]
+      },
+
+      'cs5_n5a': {
+        type: 'scenario',
+        text: 'Lucía quiere consolidar todo lo aprendido en un proyecto final: los estudiantes van a crear una "Cápsula de Creatividad Cultural" — una caja donde guardan un objeto, un texto y una imagen que representen algo único de su comunidad o familia. Lo presentarán ante sus compañeros en una exposición abierta, como si fuera un festival de barrilete pero de ideas.',
+        context: 'Algunos estudiantes traen tejidos de sus madres, semillas de milpa, fotografías de la marimba en una fiesta patronal. Otros traen cosas inesperadas: un silbato de barro, la letra de una canción que inventaron, una receta de pepián escrita a mano.',
+        choices: [
+          { text: 'Celebrar la diversidad de las cápsulas y crear un "museo de aula" donde todos puedan ver y escuchar cada historia.', next: 'cs5_nFIN_a', points: 10 },
+          { text: 'Pedir que todas las cápsulas tengan el mismo formato para que sea más fácil de evaluar.', next: 'cs5_nFIN_b', points: 5 }
+        ]
+      },
+
+      'cs5_n5b': {
+        type: 'scenario',
+        text: 'Lucía asignó los 90 puntos sin mayor reflexión. Los estudiantes lo recibieron bien, pero al preguntarles por qué obtuvieron esa nota, nadie supo responder. La nota cumplió la función administrativa pero no la pedagógica.',
+        context: 'Una semana después, cuando Lucía propone otra actividad creativa, escucha: "¿Esto también tiene los 90 de siempre?"',
+        choices: [
+          { text: 'Diseñar una rúbrica sencilla para que los estudiantes sepan qué se valora en las actividades creativas.', next: 'cs5_nFIN_b', points: 6 },
+          { text: 'Mantener el sistema de los 90 puntos fijos porque "funciona sin conflictos".', next: 'cs5_nFIN_c', points: 1 }
+        ]
+      },
+
+      'cs5_n5c': {
+        type: 'scenario',
+        text: 'Las decisiones tomadas llevaron a Lucía a un punto de tensión: siente que quiere enseñar creativamente pero el sistema, el tiempo, el ruido y la evaluación la empujan de vuelta a lo tradicional.',
+        context: 'En una reunión de maestros, escucha a un colega decir: "La creatividad en el aula es un lujo. Nosotros tenemos programa que cumplir."',
+        choices: [
+          { text: 'Rebatir respetuosamente: "La creatividad no es el tema — es la forma de enseñar cualquier tema."', next: 'cs5_nFIN_b', points: 5 },
+          { text: 'Estar de acuerdo y decidir que "ya será en otro momento".', next: 'cs5_nFIN_c', points: 0 }
+        ]
+      },
+
+      'cs5_nFIN_a': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Lucía: El aula que se convirtió en festival',
+        text: 'La exposición de las Cápsulas de Creatividad fue el momento más memorable del año escolar. Los padres de familia vinieron. Uno de ellos — un tejedor de Momostenango — enseñó a tres estudiantes un nudo tradicional durante la presentación. La marimba sonó en un video que grabó un estudiante en su teléfono. Lucía entendió que la creatividad no es una materia — es una manera de ver el mundo que se aprende cuando el aula se convierte en un lugar seguro para compartir lo que eres.',
+        badge: 'Docente Creativa',
+        xpReward: 50
+      },
+
+      'cs5_nFIN_b': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 70,
+        title: 'Lucía: La semilla plantada',
+        text: 'Lucía no logró todo lo que se propuso, pero plantó algo importante: sus estudiantes vivieron al menos una experiencia donde su identidad y su imaginación importaban. Algunos proyectos quedaron a medias, algunas evaluaciones no capturaron bien lo que los estudiantes aprendieron — pero el rumbo cambió. Y eso, en pedagogía, es el comienzo de todo.',
+        badge: 'Docente en Florecimiento',
+        xpReward: 25
+      },
+
+      'cs5_nFIN_c': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 40,
+        title: 'Lucía: El potencial sin desarrollar',
+        text: 'Lucía tiene el instinto correcto — quiere que sus estudiantes creen, imaginen y conecten. Pero las presiones del sistema, el miedo al desorden y la falta de herramientas para evaluar la creatividad la hicieron retroceder a lo conocido. Lo valioso es que Lucía sabe que algo le falta. Esa incomodidad, si se convierte en pregunta, puede ser el punto de partida de una transformación real.',
+        badge: 'Docente ante el Umbral Creativo',
+        xpReward: 10
+      }
+    }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 6: "Mario y el Celular" — Mobile Learning
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs6',
+    title: 'Mario y el Celular',
+    course: 'Mobile Learning',
+    color: '#F59E0B',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><path d="M8.5 7c.5-1 1.5-1.5 3-1.5s2.5.5 3 1.5"/><path d="M7 10c.8-2 2.5-3 5-3s4.2 1 5 3"/></svg>',
+    duration: '20-25 min',
+    description: 'Mario enseña en un colegio de Quetzaltenango y quiere usar m-learning, pero solo la mitad de sus estudiantes tiene smartphone y hay problemas de conectividad. Acompáñalo a diseñar un modelo de aprendizaje móvil que sea equitativo, funcional y pedagógicamente sólido.',
+    start: 'cs6_n1',
+    nodes: {
+
+      'cs6_n1': {
+        type: 'scenario',
+        text: 'Mario es docente de Comunicación y Lenguaje en el Colegio Privado Mixto San Marcos, en Quetzaltenango. Su directora le ha pedido que "incorpore tecnología móvil" después de una capacitación sobre m-learning. Mario hace un diagnóstico rápido: de sus 35 estudiantes de segundo básico, 17 tienen smartphone, 10 tienen teléfono básico sin internet, y 8 no tienen ningún dispositivo. La conectividad del colegio es irregular — el wifi del aula cae varias veces al día.',
+        context: 'Mario quiere ser innovador, pero antes de entusiasmarse demasiado, necesita tomar una decisión fundamental sobre cómo va a manejar la inequidad digital en su salón.',
+        choices: [
+          { text: 'Diseñar todas las actividades para que funcionen sin internet, usando el celular como herramienta offline (cámara, notas de voz, apps descargadas).', next: 'cs6_n2a', points: 10 },
+          { text: 'Pedir a los estudiantes sin celular que trabajen en parejas con quienes sí tienen, y usar solo actividades que requieren internet.', next: 'cs6_n2b', points: 5 },
+          { text: 'Esperar a que el colegio resuelva el problema de conectividad antes de implementar m-learning.', next: 'cs6_n2c', points: 2 }
+        ]
+      },
+
+      'cs6_n2a': {
+        type: 'feedback_correct',
+        text: 'Mario decide que el celular en su aula va a ser una herramienta, no un requisito de conectividad. Planifica actividades donde los estudiantes usan la cámara para documentar, el micrófono para grabar, y apps descargadas previamente — sin depender del wifi. Para los 8 estudiantes sin dispositivo, negocia con la dirección el préstamo de 4 tablets antiguas del laboratorio.',
+        feedback: 'El m-learning efectivo en contextos de baja conectividad parte de un principio clave: el dispositivo móvil como herramienta cognitiva, no como ventana a internet. En zonas como el altiplano guatemalteco, donde los datos móviles son costosos y el wifi es inestable, el diseño offline-first no es un plan B — es la estrategia principal.',
+        choices: [
+          { text: 'Empezar con una actividad de documentación fotográfica del entorno del colegio como práctica de escritura descriptiva.', next: 'cs6_n3a', points: 10 },
+          { text: 'Comenzar enseñando a los estudiantes a usar WhatsApp como herramienta de aprendizaje colaborativo.', next: 'cs6_n3b', points: 6 }
+        ]
+      },
+
+      'cs6_n2b': {
+        type: 'feedback_partial',
+        text: 'El sistema de parejas funciona a medias. Los estudiantes con celular tienden a acaparar la herramienta mientras el compañero sin dispositivo observa pasivamente. Además, cuando cae el wifi, toda la actividad se detiene. Mario nota que la mitad del tiempo de clase se pierde esperando que la conexión vuelva.',
+        feedback: 'El trabajo en parejas con un solo dispositivo puede ser poderoso — pero requiere roles claramente definidos y rotación de quién "maneja" el dispositivo. Sin esa estructura, el estudiante sin celular se convierte en espectador. La dependencia del internet en contextos de conectividad inestable es un riesgo pedagógico que hay que planificar antes, no resolver cuando ya falló.',
+        choices: [
+          { text: 'Rediseñar las actividades para que sean offline-first y establecer roles claros en cada pareja.', next: 'cs6_n3a', points: 7 },
+          { text: 'Mantener las actividades en línea pero crear un "plan B en papel" para cuando caiga el wifi.', next: 'cs6_n3b', points: 4 }
+        ]
+      },
+
+      'cs6_n2c': {
+        type: 'feedback_incorrect',
+        text: 'Un mes después, el wifi sigue igual. La directora pregunta por los avances en tecnología móvil. Mario no tiene nada que mostrar. La oportunidad de innovar se está convirtiendo en presión institucional sin avance pedagógico real.',
+        feedback: 'Esperar condiciones perfectas para implementar m-learning es una trampa común. Las condiciones perfectas rara vez llegan — especialmente en contextos educativos con recursos limitados. El m-learning exitoso en contextos como Quetzaltenango comienza con lo que ya existe: los dispositivos que los estudiantes ya tienen y las apps que ya conocen, como WhatsApp.',
+        choices: [
+          { text: 'Comenzar con lo disponible: hacer un diagnóstico de qué apps tienen instaladas los estudiantes y diseñar desde ahí.', next: 'cs6_n3a', points: 6 },
+          { text: 'Pedir a los padres de familia que compren datos para que los estudiantes participen en actividades en línea.', next: 'cs6_n3c', points: 1 }
+        ]
+      },
+
+      'cs6_n3a': {
+        type: 'scenario',
+        text: 'Mario lanza la primera actividad: los estudiantes fotografían tres objetos del patio del colegio y escriben una descripción de 50 palabras para cada uno usando la app de notas de su teléfono. Los estudiantes con tablets del laboratorio hacen lo mismo. La actividad fluye — hasta que Mario recibe un mensaje de WhatsApp de la presidenta del comité de padres de familia: "Maestro, ¿para qué están usando el celular en clase? Mi hijo me dice que la maestra del año pasado los castigaba por tenerlo."',
+        context: 'Mario sabe que tiene que responder pronto. La reunión de padres es en tres días y el tema del celular en clase puede convertirse en conflicto si no se maneja bien.',
+        choices: [
+          { text: 'Convocar una reunión informativa con padres y mostrarles ejemplos concretos de lo que los estudiantes han producido con el celular como herramienta pedagógica.', next: 'cs6_n4a', points: 10 },
+          { text: 'Enviar una circular explicando la nueva política de uso del celular en clase.', next: 'cs6_n4b', points: 6 },
+          { text: 'Suspender el uso del celular hasta que la situación con los padres se calme.', next: 'cs6_n4c', points: 1 }
+        ]
+      },
+
+      'cs6_n3b': {
+        type: 'scenario',
+        text: 'Mario decide usar WhatsApp como plataforma de aprendizaje: crea un grupo de clase y les pide a los estudiantes que envíen audios de dos minutos respondiendo preguntas de comprensión lectora. La actividad es un éxito parcial: 20 estudiantes participan activamente. Los 15 restantes no tienen datos o tienen teléfonos sin WhatsApp.',
+        context: 'Mario se da cuenta de que WhatsApp, siendo la app más usada en Guatemala (incluso en zonas con poco acceso a datos), puede ser su puente pedagógico — pero necesita diseñar para quienes no tienen acceso.',
+        choices: [
+          { text: 'Crear versiones duales de cada actividad: digital (WhatsApp/audio) para quienes tienen acceso, y análoga (papel/oral en clase) para quienes no.', next: 'cs6_n4a', points: 8 },
+          { text: 'Pedir a los 15 estudiantes que busquen wifi en casa de un familiar o en un cyber para participar.', next: 'cs6_n4c', points: 2 }
+        ]
+      },
+
+      'cs6_n3c': {
+        type: 'scenario',
+        text: 'Algunos padres compraron datos. Otros no pudieron. La actividad funcionó para un tercio del grupo. Los demás se quedaron fuera o improvisaron con wifi de un vecino. Mario siente que creó una actividad que amplió la brecha en vez de reducirla.',
+        context: 'Un estudiante le dice en privado: "Profe, mi mamá se enojó porque le pedimos datos y no teníamos para la recarga. ¿Puedo hacer otra cosa?"',
+        choices: [
+          { text: 'Reconocer el error y rediseñar para que ninguna actividad requiera datos comprados por los estudiantes.', next: 'cs6_n4a', points: 6 },
+          { text: 'Mantener el modelo pero decirle al estudiante que puede "ponerse al día" cuando tenga datos.', next: 'cs6_n4c', points: 0 }
+        ]
+      },
+
+      'cs6_n4a': {
+        type: 'scenario',
+        text: 'La reunión de padres fue bien. Mario mostró los textos descriptivos que los estudiantes escribieron, los audios de comprensión lectora y un video corto que grabó durante la actividad en el patio. Un padre — que trabaja en una empresa de telecomunicaciones en Xela — ofreció gestionar una donación de 10 tarjetas SIM con datos para los estudiantes sin acceso. Ahora Mario enfrenta un nuevo reto: ¿cómo establece normas de uso del celular que sean claras, justas y pedagógicamente coherentes?',
+        context: 'Sin normas claras, el celular puede convertirse en distractor. Con normas demasiado rígidas, pierde su potencial como herramienta. Mario quiere un término medio.',
+        choices: [
+          { text: 'Co-construir las normas con los estudiantes: hacer una sesión donde ellos propongan reglas de uso y las justifiquen pedagógicamente.', next: 'cs6_n5a', points: 10 },
+          { text: 'Establecer un reglamento firmado por el docente y los estudiantes con consecuencias claras.', next: 'cs6_n5b', points: 6 },
+          { text: 'No establecer normas formales y manejar cada situación en el momento.', next: 'cs6_n5c', points: 2 }
+        ]
+      },
+
+      'cs6_n4b': {
+        type: 'scenario',
+        text: 'La circular fue leída por pocos padres. En la reunión mensual, el tema del celular surgió de todas formas y Mario tuvo que explicarlo sin la preparación adecuada. Algunos padres expresaron preocupación, otros apoyaron. El ambiente quedó incómodo.',
+        context: 'La directora le dice a Mario en privado: "La próxima vez que hagamos algo así, avisame antes para que yo también pueda respaldarte."',
+        choices: [
+          { text: 'Aprender de la situación: documentar mejor las actividades y presentarlas de forma proactiva.', next: 'cs6_n5a', points: 6 },
+          { text: 'Reducir las actividades con celular para evitar más conflictos con padres.', next: 'cs6_n5c', points: 2 }
+        ]
+      },
+
+      'cs6_n4c': {
+        type: 'scenario',
+        text: 'Sin comunicación clara con padres ni normas establecidas, las actividades con celular generan tensión constante. Un día, un estudiante usa el celular para jugar durante una explicación. Mario lo regaña. El estudiante responde que "el profe dice que el celular es para aprender y él estaba aprendiendo con un juego".',
+        context: 'Mario se da cuenta de que sin un marco compartido, el celular es terreno de negociación permanente — y él siempre pierde.',
+        choices: [
+          { text: 'Usar ese momento como punto de quiebre para co-construir normas con el grupo.', next: 'cs6_n5a', points: 6 },
+          { text: 'Prohibir el celular durante el resto del bimestre como consecuencia del incidente.', next: 'cs6_n5c', points: 1 }
+        ]
+      },
+
+      'cs6_n5a': {
+        type: 'scenario',
+        text: 'Las normas co-construidas funcionaron sorprendentemente bien. Los estudiantes propusieron reglas más estrictas de las que Mario hubiera impuesto — y las cumplieron mejor, porque eran propias. Ahora Mario diseña su proyecto final de m-learning: una "Guía de Quetzaltenango en Audio" donde cada estudiante graba un segmento sobre un lugar, tradición o personaje de la ciudad, usando solo el micrófono del celular y notas escritas a mano.',
+        context: 'El proyecto no requiere internet. Los audios se guardan en los dispositivos y se comparten en clase vía bluetooth o cables de audio. Es 100% offline. Pero Mario enfrenta la pregunta final: ¿cómo evalúa el aprendizaje en un proyecto así?',
+        choices: [
+          { text: 'Evaluar el proceso completo: planificación, grabación, edición oral y presentación — con retroalimentación entre pares.', next: 'cs6_nFIN_a', points: 10 },
+          { text: 'Evaluar solo el producto final: la calidad del audio y la precisión de la información.', next: 'cs6_nFIN_b', points: 5 }
+        ]
+      },
+
+      'cs6_n5b': {
+        type: 'scenario',
+        text: 'El reglamento fue firmado y publicado. Funcionó bien durante las primeras semanas. Luego empezó a volverse letra muerta — nadie lo recordaba, y Mario tampoco lo aplicaba consistentemente.',
+        context: 'Mario reflexiona: "Las normas que yo hice para ellos duran poco. Las que hacemos juntos duran más."',
+        choices: [
+          { text: 'Revisar las normas con el grupo y co-construir una versión que ellos sientan propia.', next: 'cs6_nFIN_b', points: 6 },
+          { text: 'Reforzar el reglamento original con más consecuencias para quienes no lo cumplan.', next: 'cs6_nFIN_c', points: 2 }
+        ]
+      },
+
+      'cs6_n5c': {
+        type: 'scenario',
+        text: 'Sin normas claras y con tensión constante, el uso del celular en clase se convirtió en problema en vez de herramienta. Mario llega al final del bimestre con actividades incompletas, padres preocupados y estudiantes confundidos sobre cuándo sí y cuándo no pueden usarlo.',
+        context: 'La directora le pide un informe sobre los "resultados del proyecto de m-learning". Mario no sabe bien qué escribir.',
+        choices: [
+          { text: 'Escribir un informe honesto: qué funcionó, qué no, y qué cambiaría — como docente reflexivo.', next: 'cs6_nFIN_b', points: 5 },
+          { text: 'Escribir un informe positivo para evitar problemas y abandonar el m-learning silenciosamente.', next: 'cs6_nFIN_c', points: 0 }
+        ]
+      },
+
+      'cs6_nFIN_a': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Mario: La Guía de Quetzaltenango que nadie esperaba',
+        text: 'La "Guía de Quetzaltenango en Audio" se convirtió en el proyecto más memorable del año. Un estudiante grabó a su abuelo contando la historia del mercado La Democracia. Otro documentó la preparación del caldo de res de su mamá como "patrimonio culinario de Xela". Una estudiante entrevistó a una tejedora del barrio de La Democracia sobre los significados de los colores en el tejido. El celular dejó de ser el dispositivo que había que controlar y se convirtió en la herramienta que dio voz a las historias que nadie más estaba documentando.',
+        badge: 'Docente Mobile',
+        xpReward: 50
+      },
+
+      'cs6_nFIN_b': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 70,
+        title: 'Mario: El puente digital en construcción',
+        text: 'Mario no resolvió todos los problemas de equidad digital, no diseñó el modelo perfecto de m-learning y no convenció a todos los padres. Pero movió la aguja: sus estudiantes usaron el celular para aprender algo real, documentaron su entorno y descubrieron que la tecnología que tienen en el bolsillo puede ser una herramienta pedagógica. En Quetzaltenango, con wifi inestable y datos escasos, eso ya es un logro significativo.',
+        badge: 'Docente Móvil en Progreso',
+        xpReward: 25
+      },
+
+      'cs6_nFIN_c': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 40,
+        title: 'Mario: La tecnología que asustó más que enseñó',
+        text: 'El m-learning de Mario terminó siendo una fuente de conflicto en vez de aprendizaje. La brecha digital se amplió, los padres quedaron desconfiados, las normas no funcionaron y el celular fue visto como problema. Pero Mario sabe algo que no sabía al principio: el m-learning no es poner el celular en el aula — es diseñar pedagógicamente para lo que el dispositivo puede hacer en ese contexto específico. Esa comprensión, si Mario la convierte en acción el próximo año, puede cambiar todo.',
+        badge: 'Docente ante el Umbral Digital',
+        xpReward: 10
+      }
+    }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 7: "Sofía y el Aula Invertida" — Flipped Classroom
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs7',
+    title: 'Sofía y el Aula Invertida',
+    course: 'Flipped Classroom',
+    color: '#EF4444',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 10l5-4 5 4" transform="rotate(180 12 9)"/><path d="M7 10l5 4 5-4"/></svg>',
+    duration: '20-25 min',
+    description: 'Sofía quiere implementar el aula invertida en Escuintla, pero muchos estudiantes no tienen internet en casa y algunos no ven los videos. Acompáñala a diseñar un modelo flipped que funcione en contextos con conectividad limitada.',
+    start: 'cs7_n1',
+    nodes: {
+
+      'cs7_n1': {
+        type: 'scenario',
+        text: 'Sofía es docente de Ciencias Naturales en el Instituto Nacional de Educación Básica de Escuintla. Acaba de conocer el modelo de aula invertida en una capacitación y está emocionada: grabar videos para que los estudiantes vean en casa y usar el tiempo de clase para profundizar. Tiene 38 estudiantes de segundo básico. Pero al hacer un sondeo rápido, descubre que solo 12 tienen internet en casa. Los otros 26 no tienen o tienen datos muy limitados en el celular familiar.',
+        context: 'La capacitación asumía que todos los estudiantes tienen acceso a internet en casa. La realidad de Escuintla es diferente: muchas familias viven en colonias periféricas donde el internet fijo es caro y los datos móviles se comparten entre varios miembros de la familia.',
+        choices: [
+          { text: 'Grabar los videos de todas formas y pedirle a los estudiantes sin internet que busquen wifi en el cyber o en casa de un vecino.', next: 'cs7_n2a', points: 2 },
+          { text: 'Diseñar una estrategia "sin internet" para distribuir el contenido: grabar los videos y copiarlos en USB o como archivos descargables, y también crear guías impresas como alternativa al video.', next: 'cs7_n2b', points: 10 },
+          { text: 'Abandonar la idea del aula invertida porque no es viable sin internet — buscar otra metodología.', next: 'cs7_n2c', points: 1 }
+        ]
+      },
+
+      'cs7_n2a': {
+        type: 'feedback_incorrect',
+        text: 'La solución "busca wifi donde puedas" transfiere la responsabilidad de la brecha digital al estudiante y a su familia. En Escuintla, un cyber cobra Q3-5 por hora — un costo real para familias con ingresos mínimos. Además, pedir que el estudiante dependa de un tercero (vecino, familiar) para acceder al material del colegio no es una estrategia pedagógica: es esperar que el problema se resuelva solo. Dos semanas después, la mitad del grupo llega sin haber visto los videos.',
+        feedback: 'El flipped classroom falla cuando el "flipping" asume condiciones que no existen. La responsabilidad de diseñar para el contexto real es del docente, no del estudiante.',
+        choices: [
+          { text: 'Reconocer el problema y rediseñar: copiar los videos en USB y crear guías impresas para quienes no puedan ver el video.', next: 'cs7_n3a', points: 8 },
+          { text: 'Continuar igual y simplemente repetir el contenido del video en clase para quienes no lo vieron.', next: 'cs7_n3b', points: 3 }
+        ]
+      },
+
+      'cs7_n2b': {
+        type: 'feedback_correct',
+        text: 'Sofía adopta un enfoque "offline-first" para el flipped classroom. Graba sus videos en el celular (5-8 minutos) y los comparte de tres formas: en un USB rotativo que los estudiantes pueden llevar a casa de turno en turno, como archivo descargable en el grupo de WhatsApp de padres (donde muchos tienen datos), y como guía impresa resumida para quienes no puedan ver el video de ninguna forma. El modelo no es perfecto, pero incluye a todos.',
+        feedback: 'El aula invertida exitosa en contextos de baja conectividad requiere "múltiples puertas de entrada" al contenido previo. El video es una puerta; la guía impresa es otra; el audio grabado puede ser una tercera. Lo que el modelo necesita es que el estudiante llegue a clase habiendo encontrado el concepto — no necesariamente a través del mismo medio.',
+        choices: [
+          { text: 'Diseñar la actividad presencial pensando en qué hacer con los estudiantes que sí vieron el video y los que llegaron solo con la guía impresa.', next: 'cs7_n3c', points: 10 },
+          { text: 'Asumir que todos verán el video o la guía y diseñar la clase como si todos llegaran con el mismo nivel de preparación.', next: 'cs7_n3b', points: 4 }
+        ]
+      },
+
+      'cs7_n2c': {
+        type: 'feedback_incorrect',
+        text: 'Descartar el aula invertida ante el primer obstáculo es abandonar antes de explorar las adaptaciones posibles. En Guatemala, muchos docentes han implementado versiones "analógicas" del flipped classroom: la tarea de casa es una lectura o un ejercicio guiado en papel, no necesariamente un video. El principio — que el primer contacto con el contenido ocurra antes de la clase — puede funcionar sin internet.',
+        feedback: 'El flipped classroom es un principio pedagógico, no una tecnología específica. El principio puede adaptarse al contexto. Lo que requiere internet es UNA forma de implementarlo — no la única.',
+        choices: [
+          { text: 'Reconsiderar: diseñar un flipped classroom "analógico" donde la tarea previa es una guía de lectura o un ejercicio en papel.', next: 'cs7_n3a', points: 7 },
+          { text: 'Buscar otra metodología completamente diferente y abandonar el flipped classroom.', next: 'cs7_n3b', points: 2 }
+        ]
+      },
+
+      'cs7_n3a': {
+        type: 'scenario',
+        text: 'Sofía adopta el modelo "analógico + digital": una guía impresa de dos páginas que los estudiantes deben leer en casa, con preguntas de comprensión al final. Para los que quieran más, el video está disponible en USB. El primer ciclo arranca. Pero después de la primera semana, Sofía nota que muchos estudiantes no hicieron la tarea previa — ya sea el video o la guía. Llegan a clase sin haber encontrado el concepto.',
+        context: 'El problema de la responsabilidad fuera del aula es uno de los mayores retos del flipped classroom: no todos los estudiantes completan las tareas previas, y si la clase presencial asume que sí lo hicieron, los que no hicieron la tarea quedan perdidos desde el inicio.',
+        choices: [
+          { text: 'Dedicar los primeros 10 minutos de clase a una actividad de "calentamiento" que le permite a Sofía saber quién trajo el concepto y quién no, sin humillar a nadie.', next: 'cs7_n4a', points: 10 },
+          { text: 'Regañar al grupo por no haber hecho la tarea y repetir el contenido del video/guía de forma expositiva.', next: 'cs7_n4b', points: 2 },
+          { text: 'Ignorar quién hizo y quién no hizo la tarea, y proceder con la actividad presencial como si todos estuvieran al mismo nivel.', next: 'cs7_n4c', points: 1 }
+        ]
+      },
+
+      'cs7_n3b': {
+        type: 'scenario',
+        text: 'La clase presencial transcurre con muchos estudiantes perdidos: no vieron el video ni la guía, y la actividad presupone que ya encontraron el concepto. Sofía termina explicando el contenido en clase, convirtiendo el aula invertida en una clase tradicional con video de tarea. Los estudiantes que sí vieron el video están aburridos esperando. Los que no lo vieron, perdidos.',
+        context: 'Sofía se da cuenta de que tiene dos grupos dentro de un mismo salón: los que llegaron preparados y los que no. Necesita una estrategia para manejar esta heterogeneidad.',
+        choices: [
+          { text: 'Usar la heterogeneidad como recurso: poner en cada grupo un estudiante que haya visto el video para que pueda explicar a los que no lo hicieron durante la actividad inicial.', next: 'cs7_n4a', points: 7 },
+          { text: 'Volver al modelo tradicional — el aula invertida no funciona si los estudiantes no cooperan.', next: 'cs7_n4d', points: 1 }
+        ]
+      },
+
+      'cs7_n3c': {
+        type: 'scenario',
+        text: 'Sofía diseña la clase presencial con tres momentos: 1) Una actividad de apertura que todos pueden hacer, hayan visto el video o no. 2) Una actividad central que aprovecha el conocimiento previo de quienes sí prepararon la tarea. 3) Un cierre donde todos consolidan el aprendizaje. En la primera clase con este diseño, algo inesperado ocurre: una estudiante que no tiene internet en casa — y solo leyó la guía impresa — hace la pregunta más profunda de todo el grupo.',
+        context: 'La guía impresa, al requerir que la estudiante subrayara y anotara, la obligó a procesar el contenido de forma más activa que simplemente ver el video.',
+        choices: [
+          { text: 'Usar ese momento para validar frente al grupo que hay múltiples formas de prepararse, y que el formato no determina la calidad del aprendizaje.', next: 'cs7_n4e', points: 10 },
+          { text: 'Tomar nota en privado pero no comentarlo — señalar que la estudiante sin internet hizo mejor tarea podría incomodar a los demás.', next: 'cs7_n4a', points: 6 }
+        ]
+      },
+
+      'cs7_n4a': {
+        type: 'scenario',
+        text: 'La actividad de diagnóstico inicial funciona bien. Sofía usa una pregunta rápida en papel — anónima — al inicio de clase: "Escribe en una oración qué entendiste del tema de hoy. Si no leíste ni viste nada, escribe una pregunta que tengas sobre el tema." Con esto sabe en 5 minutos qué tiene el grupo. Pero ahora enfrenta la pregunta más difícil del flipped classroom: ¿cómo graba un buen video con un celular básico sin estudio, sin micrófono externo y sin edición?',
+        context: 'Sofía tiene un celular de gama media, poca luz en su casa por las noches, y mucho ruido de fondo (tráfico, familia, televisión). Sus primeros videos suenan mal y se ve oscuro.',
+        choices: [
+          { text: 'Optimizar las condiciones básicas de grabación: grabar de día junto a una ventana, usar la cámara trasera, hablar cerca del micrófono, y hacer el video de máximo 7 minutos con un guion escrito antes.', next: 'cs7_n5a', points: 10 },
+          { text: 'Buscar videos ya hechos en YouTube sobre los mismos temas y usarlos en lugar de grabar los propios.', next: 'cs7_n5b', points: 5 },
+          { text: 'Grabar de todas formas aunque la calidad sea mala — el contenido importa más que la producción.', next: 'cs7_n5c', points: 3 }
+        ]
+      },
+
+      'cs7_n4b': {
+        type: 'scenario',
+        text: 'El regaño genera silencio y defensividad. Los estudiantes que no hicieron la tarea se cierran; los que sí la hicieron se sienten invisibles. Sofía repite el contenido del video en 20 minutos de clase expositiva. Al final, apenas queda tiempo para la actividad presencial que era el propósito del modelo flipped. Sofía se da cuenta de que está haciendo doble trabajo: enseñando en casa (video) y enseñando en clase (explicación) sin aprovechar las ventajas de ninguno de los dos momentos.',
+        context: 'El aula invertida requiere que la clase presencial sea cualitativamente diferente — más activa, más profunda, más colaborativa — no solo "más de lo mismo".',
+        choices: [
+          { text: 'Rediseñar el momento presencial para que funcione con el nivel de preparación real del grupo, no con el nivel ideal.', next: 'cs7_n5a', points: 7 },
+          { text: 'Mantener la estructura actual y esperar que con el tiempo los estudiantes se acostumbren a hacer la tarea previa.', next: 'cs7_n5c', points: 2 }
+        ]
+      },
+
+      'cs7_n4c': {
+        type: 'scenario',
+        text: 'La clase avanza con una brecha invisible pero real: unos estudiantes participan con el concepto claro, otros están perdidos desde el inicio y no lo dicen. Al terminar la unidad, las notas revelan la fractura: los que hicieron la tarea previa consistentemente tienen notas altas; los que no la hicieron, bajas. Pero Sofía no sabe si la diferencia se debe al aprendizaje o simplemente a quién tiene más acceso en casa.',
+        context: 'La equidad en el flipped classroom requiere que el docente diagnostique activamente quién está llegando preparado y quién no — y por qué.',
+        choices: [
+          { text: 'Hacer un diagnóstico honesto: hablar individualmente con los estudiantes de notas bajas para entender si el problema es acceso, motivación o comprensión.', next: 'cs7_n5a', points: 6 },
+          { text: 'Asumir que quien no hizo la tarea previa simplemente no quiso hacerla y calificar en consecuencia.', next: 'cs7_n5d', points: 0 }
+        ]
+      },
+
+      'cs7_n4d': {
+        type: 'scenario',
+        text: 'Sofía abandona el flipped classroom y regresa al modelo tradicional. Los estudiantes no notan mucha diferencia. La directora le pregunta por los "resultados del experimento de aula invertida" en la siguiente reunión pedagógica. Sofía no tiene mucho que contar.',
+        context: 'La directora le pregunta: "¿Qué aprendiste del proceso?" — y esa pregunta abre una conversación más interesante de lo esperado.',
+        choices: [
+          { text: 'Compartir honestamente lo que funcionó, lo que no, y qué haría diferente: el flipped classroom no falló — la implementación necesitaba más andamiaje.', next: 'cs7_n5a', points: 6 },
+          { text: 'Decir que el modelo no es viable en este contexto y cerrar el tema.', next: 'cs7_n5d', points: 1 }
+        ]
+      },
+
+      'cs7_n4e': {
+        type: 'scenario',
+        text: 'La validación de Sofía hacia la estudiante con guía impresa tiene un efecto multiplicador: varios estudiantes preguntan si pueden "entregar la guía en papel" en vez de ver el video. Sofía dice que sí — lo que importa es que lleguen con el concepto, no el formato. En las semanas siguientes, nota algo inesperado: los estudiantes que usan la guía impresa tienen mayor retención en las actividades presenciales, posiblemente porque leer activamente requiere más procesamiento que ver un video de forma pasiva.',
+        context: 'Sofía está descubriendo algo importante sobre el diseño del aprendizaje previo en el flipped classroom.',
+        choices: [
+          { text: 'Rediseñar la guía impresa para que sea aún más activa: incluir un espacio para que el estudiante escriba UNA pregunta propia y UNA conexión con algo que ya sabe.', next: 'cs7_n5a', points: 10 },
+          { text: 'Mantener la guía tal como está — ya funciona bien y no es necesario complicarla.', next: 'cs7_n5b', points: 5 }
+        ]
+      },
+
+      'cs7_n5a': {
+        type: 'scenario',
+        text: 'El modelo de Sofía ha evolucionado: video de 7 minutos + guía impresa de 2 páginas + actividad presencial diseñada para lo que el video/guía no puede hacer (debate, experimento, resolución de casos). Los resultados son visibles. Pero llega el momento de la evaluación final de la unidad. Sofía quiere que la evaluación sea coherente con el modelo flipped: no un examen que mide solo memorización, sino algo que evidencie lo que pudieron hacer con el conocimiento que construyeron.',
+        context: 'El sistema escolar exige una nota numérica. Sofía necesita un instrumento que sea auténtico pero que también sea reconocible por el sistema.',
+        choices: [
+          { text: 'Diseñar una "evaluación aplicada": los estudiantes resuelven un caso real de Escuintla usando los conceptos de la unidad, y son evaluados con una rúbrica que incluye criterios de proceso y de producto.', next: 'cs7_nFIN_a', points: 10 },
+          { text: 'Usar un examen tradicional pero incluir preguntas de análisis y aplicación además de memorización.', next: 'cs7_nFIN_b', points: 6 }
+        ]
+      },
+
+      'cs7_n5b': {
+        type: 'scenario',
+        text: 'Sofía usa videos de YouTube en español sobre los temas. Algunos son excelentes; otros tienen errores conceptuales o usan ejemplos de México o España que no conectan con la realidad guatemalteca. Un estudiante llega con una confusión que viene directamente de un dato incorrecto del video de YouTube que vio.',
+        context: 'Sofía se da cuenta de que los videos de terceros tienen el riesgo de no estar alineados con el currículo local ni con el contexto cultural de sus estudiantes.',
+        choices: [
+          { text: 'Grabar sus propios videos cortos para los temas más críticos, y usar YouTube solo como recurso complementario para quien quiera profundizar.', next: 'cs7_nFIN_b', points: 7 },
+          { text: 'Continuar usando YouTube y añadir al inicio de clase una revisión de "qué decía el video y qué ajustamos para Guatemala".', next: 'cs7_nFIN_b', points: 5 }
+        ]
+      },
+
+      'cs7_n5c': {
+        type: 'scenario',
+        text: 'Los videos con mala calidad de audio generan un patrón preocupante: los estudiantes los abren, no pueden escuchar bien, y los cierran a los 2 minutos. Las estadísticas de visualización que Sofía pide a los estudiantes reportar muestran que el tiempo de visualización real es mucho menor que el que debería ser.',
+        context: 'Un video que no se ve no cumple ninguna función pedagógica, sin importar cuán rico sea el contenido.',
+        choices: [
+          { text: 'Invertir una tarde en aprender las técnicas básicas de grabación y re-grabar los videos más importantes con mejor calidad.', next: 'cs7_nFIN_b', points: 6 },
+          { text: 'Reemplazar los videos con podcasts de audio grabados con auriculares como micrófono — mejor calidad de sonido con lo que ya tiene.', next: 'cs7_nFIN_b', points: 7 }
+        ]
+      },
+
+      'cs7_n5d': {
+        type: 'scenario',
+        text: 'Al final del bimestre, los resultados del flipped classroom son desiguales. Los estudiantes con mejores condiciones en casa progresaron; los de condiciones más difíciles quedaron más rezagados que antes. El modelo amplificó la brecha en lugar de reducirla. Sofía siente que algo salió mal pero no puede identificar exactamente qué.',
+        context: 'El flipped classroom puede amplificar las desigualdades existentes si no se diseña específicamente para contrarrestarlas.',
+        choices: [
+          { text: 'Hacer una reflexión honesta: identificar exactamente en qué momento del diseño la inequidad se amplificó y qué cambiaría en la próxima implementación.', next: 'cs7_nFIN_c', points: 5 },
+          { text: 'Concluir que el flipped classroom no es apropiado para este contexto y no intentarlo de nuevo.', next: 'cs7_nFIN_c', points: 1 }
+        ]
+      },
+
+      'cs7_nFIN_a': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Sofía: El aula invertida que sí incluyó a todos',
+        text: 'El modelo de Sofía demostró que el flipped classroom no necesita internet universal ni producción profesional de video. Necesita un docente que entienda el principio (el primer contacto con el concepto ocurre antes de la clase) y que diseñe múltiples caminos para llegar a ese primer contacto. En Escuintla, con USB, guías impresas y videos de 7 minutos grabados junto a la ventana de su cocina, Sofía logró que sus estudiantes llegaran a clase listos para pensar — no solo para escuchar. La actividad presencial se convirtió en el mejor momento de la semana.',
+        badge: 'Docente Flipped Contextualizada',
+        xpReward: 50
+      },
+
+      'cs7_nFIN_b': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 70,
+        title: 'Sofía: El flip que se fue ajustando',
+        text: 'Sofía no implementó el flipped classroom perfecto — pero sí implementó uno real. Algunos momentos funcionaron mejor que otros; algunas decisiones de diseño tuvieron consecuencias no previstas. Pero el movimiento fue hacia adelante: sus estudiantes tuvieron al menos algunos momentos en que llegaron con un concepto propio y lo usaron en clase para hacer algo más que copiar. En pedagogía, eso ya es un cambio significativo.',
+        badge: 'Docente Flipped en Proceso',
+        xpReward: 25
+      },
+
+      'cs7_nFIN_c': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 40,
+        title: 'Sofía: El primer intento con lecciones reales',
+        text: 'El flipped classroom de Sofía no funcionó como esperaba. Pero el fracaso tiene información valiosa: revela que el modelo amplifica las condiciones previas — si las condiciones en casa son desiguales y el diseño no lo contempla, el modelo profundiza la brecha. La próxima vez, Sofía sabe que el primer paso no es grabar un video — es diseñar para la realidad de sus 38 estudiantes, no para el promedio imaginario de la capacitación.',
+        badge: 'Docente ante el Umbral Flipped',
+        xpReward: 10
+      }
+    }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 8: "Pedro y los Videos" — Aprendizaje Basado en Videos
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs8',
+    title: 'Pedro y los Videos',
+    course: 'Aprendizaje Basado en Videos',
+    color: '#10B981',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>',
+    duration: '20-25 min',
+    description: 'Pedro usa YouTube con sus estudiantes, pero hay distracciones, los videos son en inglés o muy largos, y algunos no tienen datos. Acompáñalo a diseñar un modelo de aprendizaje basado en videos que sea pedagógicamente sólido y equitativo.',
+    start: 'cs8_n1',
+    nodes: {
+
+      'cs8_n1': {
+        type: 'scenario',
+        text: 'Pedro es docente de Ciencias en el Colegio Evangélico de Chiquimula. Sus 30 estudiantes de tercero básico tienen celular (la mayoría) o acceso al celular familiar. Pedro quiere usar videos de YouTube para enriquecer sus clases de biología. La semana pasada intentó proyectar un video sobre el sistema circulatorio: el projector tardó 10 minutos en conectarse, el video era en inglés con subtítulos en español, duraba 22 minutos, y para el minuto 8 ya había tres estudiantes mirando otros videos en sus propios celulares. El experimento fue un caos.',
+        context: 'Pedro sabe que el video PUEDE ser una herramienta poderosa. El problema no es el medio — es la forma en que lo está usando. Necesita replantear su enfoque completo.',
+        choices: [
+          { text: 'Buscar mejores videos: más cortos, en español, con animaciones. El problema fue la selección del video, no la estrategia.', next: 'cs8_n2a', points: 5 },
+          { text: 'Diseñar una "guía de visualización" para que los estudiantes no vean el video de forma pasiva sino con preguntas específicas que deben responder mientras lo ven.', next: 'cs8_n2b', points: 10 },
+          { text: 'Abandonar el uso de videos en clase — si los estudiantes no pueden verlos sin distraerse, no es el momento.', next: 'cs8_n2c', points: 1 }
+        ]
+      },
+
+      'cs8_n2a': {
+        type: 'feedback_partial',
+        text: 'Mejor selección de videos es un paso necesario pero no suficiente. Los videos más cortos y en español reducen algunas barreras, pero no resuelven el problema pedagógico de fondo: los estudiantes están viendo el video de forma pasiva, sin propósito claro, sin estructura para procesar lo que ven. Un video mejor seleccionado sin una guía de visualización sigue siendo entretenimiento, no aprendizaje.',
+        feedback: 'La selección del video es el primer paso; la estructura pedagógica alrededor del video es el segundo y más importante. Un video de 5 minutos con una guía de visualización activa produce más aprendizaje que un documental de 45 minutos sin estructura.',
+        choices: [
+          { text: 'Combinar la mejor selección con una guía de visualización activa.', next: 'cs8_n3a', points: 9 },
+          { text: 'Continuar solo con la mejor selección de videos y observar si la calidad del video resuelve el problema de atención.', next: 'cs8_n3b', points: 4 }
+        ]
+      },
+
+      'cs8_n2b': {
+        type: 'feedback_correct',
+        text: 'Pedro diseña su primera "guía de visualización": una hoja con 5 preguntas que los estudiantes responden MIENTRAS ven el video, haciendo pausa cada vez que encuentran la respuesta. Las preguntas no son de memorización — son de observación y conexión: "¿Qué pasa con el oxígeno cuando llega al corazón?" y "¿Qué conecta esto con lo que estudiamos la semana pasada?". La segunda vez que intenta el video, el ambiente es completamente diferente.',
+        feedback: 'La guía de visualización transforma el video de espectáculo a herramienta cognitiva. Al pedirle al estudiante que busque respuestas específicas, la atención tiene dirección. Al incluir preguntas de conexión, el video se integra al aprendizaje previo en lugar de flotar como isla de información.',
+        choices: [
+          { text: 'Diseñar actividades para ANTES y DESPUÉS del video, además de la guía durante la visualización.', next: 'cs8_n3c', points: 10 },
+          { text: 'Mantener solo la guía de visualización — ya es una mejora significativa.', next: 'cs8_n3a', points: 6 }
+        ]
+      },
+
+      'cs8_n2c': {
+        type: 'feedback_incorrect',
+        text: 'Abandonar el video como herramienta por la dificultad de la primera implementación es como descartar el pizarrón porque la primera vez que se usó un estudiante se durmió. El problema no era el video — era la falta de estructura pedagógica alrededor de él. Los videos son una de las herramientas más poderosas disponibles para un docente de ciencias en contextos con recursos limitados: permiten mostrar procesos invisibles (el interior de una célula, el movimiento de las placas tectónicas, el latido del corazón) que ningún libro de texto puede mostrar de la misma forma.',
+        feedback: 'La herramienta no es el problema. La estructura pedagógica alrededor de la herramienta es lo que determina si produce aprendizaje o distracción.',
+        choices: [
+          { text: 'Intentar de nuevo con una guía de visualización que le dé estructura al momento del video.', next: 'cs8_n3a', points: 7 },
+          { text: 'Buscar otra herramienta completamente diferente y no usar videos.', next: 'cs8_n3b', points: 1 }
+        ]
+      },
+
+      'cs8_n3a': {
+        type: 'scenario',
+        text: 'Pedro ha mejorado su selección de videos y usa una guía de visualización básica. El ambiente en clase es mejor pero sigue habiendo un problema: 8 estudiantes que no tienen datos en su celular no pueden ver los videos que Pedro a veces asigna para ver en casa. Y los videos que proyecta en clase dependen del wifi del colegio, que es irregular. Pedro necesita una estrategia para que el aprendizaje basado en videos sea equitativo.',
+        context: 'En Chiquimula, como en muchas áreas de Guatemala, el acceso a datos es desigual y costoso. Un plan de datos puede costar entre Q50-Q100 al mes — significativo para muchas familias.',
+        choices: [
+          { text: 'Descargar los videos con anticipación y proyectarlos desde el celular o computadora sin depender del wifi, y para la tarea en casa, compartir el video descargado vía WhatsApp o USB.', next: 'cs8_n4a', points: 10 },
+          { text: 'Pedir a los estudiantes sin datos que vean los videos en el cyber del municipio fuera del horario escolar.', next: 'cs8_n4b', points: 2 },
+          { text: 'Crear versiones en texto de los videos para los estudiantes sin acceso — un resumen de lo que muestra el video.', next: 'cs8_n4c', points: 6 }
+        ]
+      },
+
+      'cs8_n3b': {
+        type: 'scenario',
+        text: 'Sin guía de visualización, los estudiantes ven los videos mejorados con más interés inicial — la calidad ayuda — pero el aprendizaje sigue siendo superficial. En el siguiente examen, las preguntas relacionadas con los contenidos de los videos muestran un rendimiento bajo. Los estudiantes pueden describir imágenes del video pero no explican procesos.',
+        context: 'Ver un video sin estructura produce memoria visual pero no comprensión conceptual. Los estudiantes "recuerdan" el video pero no pueden usar el conocimiento.',
+        choices: [
+          { text: 'Añadir una actividad post-video de 5 minutos: los estudiantes escriben "3 cosas que aprendieron y 1 pregunta que aún tienen".', next: 'cs8_n4a', points: 7 },
+          { text: 'Continuar mejorando la selección de videos y esperar que el aprendizaje mejore con el tiempo.', next: 'cs8_n4d', points: 2 }
+        ]
+      },
+
+      'cs8_n3c': {
+        type: 'scenario',
+        text: 'Pedro diseña el ciclo completo: ANTES del video, los estudiantes activan conocimiento previo con una pregunta de 3 minutos. DURANTE, usan la guía de visualización. DESPUÉS, hacen una actividad de consolidación (un organizador gráfico, un resumen de 5 líneas, o una discusión en parejas). La primera vez que usa el ciclo completo, Pedro queda sorprendido: el tiempo de clase se le va rápido — y se da cuenta de que ha estado proyectando videos muy largos para el tiempo disponible.',
+        context: 'Un video de 15 minutos con ciclo completo antes-durante-después requiere 30-35 minutos de clase total. Pedro necesita recalibrar la duración de los videos.',
+        choices: [
+          { text: 'Adoptar la regla "máximo 7 minutos por video" para que el ciclo completo quepa en una clase de 45 minutos con tiempo para más.', next: 'cs8_n4a', points: 10 },
+          { text: 'Dividir el ciclo en dos clases: un día el video, al siguiente día la actividad post-video.', next: 'cs8_n4c', points: 6 }
+        ]
+      },
+
+      'cs8_n4a': {
+        type: 'scenario',
+        text: 'El modelo de Pedro está funcionando. Los videos son cortos (máximo 7 minutos), en español, descargados con anticipación para no depender del wifi, y compartidos por WhatsApp o USB para quien los necesite en casa. El ciclo antes-durante-después es consistente. Pero ahora Pedro quiere dar el siguiente paso: grabar sus propios videos. Tiene contenidos que no encuentra en YouTube en español o que necesitan contexto guatemalteco (por ejemplo, un video sobre la biodiversidad del Bosque Nuboso de Chiquimula, no de Costa Rica).',
+        context: 'Pedro tiene un celular con buena cámara pero nunca ha grabado un video educativo. No sabe por dónde empezar.',
+        choices: [
+          { text: 'Empezar con lo más simple: grabar un video de "experimento en casa" donde Pedro demuestra un concepto con materiales cotidianos — sin edición, sin título, solo él y el experimento.', next: 'cs8_n5a', points: 10 },
+          { text: 'Esperar a tener mejores herramientas (micrófono, luz, trípode) antes de grabar — un video mal producido hace más daño que no tener video.', next: 'cs8_n5b', points: 4 },
+          { text: 'Pedir a los estudiantes que graben los videos ellos mismos como actividad de aprendizaje.', next: 'cs8_n5c', points: 8 }
+        ]
+      },
+
+      'cs8_n4b': {
+        type: 'scenario',
+        text: 'Pedir a los estudiantes que vayan al cyber genera las mismas inequidades de siempre: los que pueden pagar van, los que no pueden no van. Después de dos semanas, Pedro nota que los 8 estudiantes sin datos tienen consistentemente menor participación en las actividades basadas en videos. La brecha de aprendizaje se amplía.',
+        context: 'La equidad no se logra diciendo "ve a buscarlo donde puedas" — se logra diseñando para que el acceso no dependa de los recursos del estudiante.',
+        choices: [
+          { text: 'Cambiar el modelo: descargar todos los videos con anticipación y distribuirlos por USB o WhatsApp sin costo para los estudiantes.', next: 'cs8_n4a', points: 8 },
+          { text: 'Hablar con la dirección para que el colegio pague el acceso a internet de los estudiantes sin datos.', next: 'cs8_n4c', points: 4 }
+        ]
+      },
+
+      'cs8_n4c': {
+        type: 'scenario',
+        text: 'Las versiones en texto ayudan a los estudiantes sin acceso a seguir el contenido, pero Pedro nota algo: los estudiantes con el texto tienen diferentes conceptos de los estudiantes con el video, porque el video muestra procesos dinámicos que el texto solo puede describir. En una discusión sobre el sistema circulatorio, los estudiantes que vieron el video hablan de "ver la sangre moverse"; los que leyeron el texto hablan de "leer que la sangre se mueve". La experiencia es cualitativamente diferente.',
+        context: 'Pedro enfrenta la tensión entre equidad de acceso y equidad de experiencia.',
+        choices: [
+          { text: 'Priorizar que TODOS vean el video, aunque sea en clase: proyectarlo dos veces si es necesario, o crear una "sesión de recuperación" en recreo para quienes no pudieron verlo en casa.', next: 'cs8_n5a', points: 8 },
+          { text: 'Aceptar que habrá diferencias en la experiencia y compensar con actividades en clase que nivelan.', next: 'cs8_n5b', points: 5 }
+        ]
+      },
+
+      'cs8_n4d': {
+        type: 'scenario',
+        text: 'Los resultados no mejoran significativamente. Pedro sigue invirtiendo tiempo en buscar buenos videos, pero sin estructura pedagógica, el aprendizaje sigue siendo superficial. Al final del bimestre, los estudiantes "conocen" muchos videos pero no pueden aplicar los conceptos que mostraban.',
+        context: 'Pedro siente que está trabajando mucho para resultados mediocres. Tiene razón en que algo falta — pero no sabe qué.',
+        choices: [
+          { text: 'Buscar formación específica en aprendizaje basado en videos: aprender sobre el ciclo antes-durante-después y la guía de visualización.', next: 'cs8_n5a', points: 7 },
+          { text: 'Reducir el uso de videos y regresar a clases más tradicionales.', next: 'cs8_n5d', points: 1 }
+        ]
+      },
+
+      'cs8_n5a': {
+        type: 'scenario',
+        text: 'Pedro graba su primer video: en el patio del colegio, con el celular en la mano, explica el proceso de fotosíntesis usando una planta de frijol. El video dura 6 minutos, tiene ruido de fondo de pájaros, y la imagen se mueve un poco. Pero el contenido es claro, la planta es reconocible para los estudiantes de Chiquimula, y Pedro habla con la naturalidad que tiene en clase. Cuando lo proyecta, algo notable ocurre: los estudiantes prestan más atención que con cualquier video de YouTube.',
+        context: 'El video propio, aunque técnicamente imperfecto, tiene algo que los videos de YouTube no tienen: el docente familiar, el entorno reconocible, el lenguaje adaptado al grupo.',
+        choices: [
+          { text: 'Continuar grabando videos propios para los temas más importantes, y usar YouTube para complementar con animaciones o procesos que el celular no puede capturar.', next: 'cs8_nFIN_a', points: 10 },
+          { text: 'Mejorar la calidad técnica antes de seguir grabando: comprar un trípode y un micrófono de solapa básico.', next: 'cs8_nFIN_b', points: 7 }
+        ]
+      },
+
+      'cs8_n5b': {
+        type: 'scenario',
+        text: 'Esperando las herramientas perfectas, Pedro no graba ningún video propio durante el bimestre. Los videos de YouTube siguen siendo el único recurso visual. Al final del año, reflexiona sobre los momentos en que el aprendizaje fue más rico y recuerda que fueron las pocas veces que él mismo demostró algo en el pizarrón o en el patio — y que si hubiera grabado esos momentos, habrían sido videos perfectos sin necesitar ningún equipo adicional.',
+        context: 'La perfección técnica es el enemigo del video educativo bueno y oportuno.',
+        choices: [
+          { text: 'Comenzar el próximo año grabando los momentos de clase ya existentes — las demostraciones, los experimentos, las explicaciones en el pizarrón.', next: 'cs8_nFIN_b', points: 7 },
+          { text: 'Aceptar que el video propio no es para todos los docentes y continuar con YouTube.', next: 'cs8_nFIN_c', points: 3 }
+        ]
+      },
+
+      'cs8_n5c': {
+        type: 'scenario',
+        text: 'Los estudiantes graban sus propios videos explicando conceptos de biología. El resultado es sorprendente: para grabar un video explicando el sistema circulatorio, los estudiantes tienen que entenderlo profundamente — no pueden leer un papel, tienen que explicarlo con sus propias palabras. La actividad genera más aprendizaje que ver cualquier video de YouTube. Pero algunos grupos tienen dificultades técnicas y Pedro no sabe cómo evaluarlos.',
+        context: 'El "video como producto de aprendizaje" es una de las estrategias más potentes del aprendizaje basado en videos — más que ver videos, crear videos.',
+        choices: [
+          { text: 'Diseñar una rúbrica que evalúe el contenido científico (¿es correcto?) y la comunicación (¿se entiende?) — no la calidad técnica de la imagen o el sonido.', next: 'cs8_nFIN_a', points: 10 },
+          { text: 'Evaluar los videos principalmente por su calidad técnica porque eso fue lo que más trabajo requirió a los estudiantes.', next: 'cs8_nFIN_c', points: 2 }
+        ]
+      },
+
+      'cs8_n5d': {
+        type: 'scenario',
+        text: 'Pedro regresa al modelo tradicional. Los estudiantes lo notan y algunos preguntan si van a usar más videos. Pedro dice que "por ahora no". Al final del año, en la evaluación de satisfacción del colegio, varios estudiantes mencionan que les hubiera gustado "usar más tecnología en Ciencias".',
+        context: 'Los estudiantes querían los videos — el problema nunca fue la herramienta sino la falta de estructura pedagógica alrededor de ella.',
+        choices: [
+          { text: 'Comenzar el próximo año con la estructura antes-durante-después desde el primer video — aplicar lo aprendido.', next: 'cs8_nFIN_c', points: 5 },
+          { text: 'Mantener el modelo tradicional — es más predecible y seguro.', next: 'cs8_nFIN_c', points: 1 }
+        ]
+      },
+
+      'cs8_nFIN_a': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Pedro: El docente que convirtió el video en aprendizaje real',
+        text: 'Pedro descubrió que el aprendizaje basado en videos no es poner YouTube en el proyector — es diseñar un ciclo pedagógico donde el video es el detonador, no el destino. Sus estudiantes de Chiquimula terminaron el año habiendo visto docenas de videos, pero sobre todo habiendo creado sus propios: videos sobre la biodiversidad del bosque local, sobre los ríos de la región, sobre los cultivos de la familia. En el proceso de crear esos videos, aprendieron biología de una forma que ningún examen hubiera podido evaluar completamente.',
+        badge: 'Docente de Video',
+        xpReward: 50
+      },
+
+      'cs8_nFIN_b': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 70,
+        title: 'Pedro: El video como herramienta, en construcción',
+        text: 'Pedro mejoró significativamente su uso del video como herramienta pedagógica. No todo funcionó perfectamente, y todavía hay momentos donde el video se convierte en espectáculo en lugar de aprendizaje. Pero sus estudiantes llegaron al final del año con más exposición a contenido visual bien estructurado que cualquier generación anterior de su escuela — y con la experiencia de al menos algunos momentos donde el video fue el inicio de una conversación, no el final de una clase.',
+        badge: 'Docente Video en Progreso',
+        xpReward: 25
+      },
+
+      'cs8_nFIN_c': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 40,
+        title: 'Pedro: El potencial del video sin desarrollar',
+        text: 'Pedro tiene acceso a una de las bibliotecas visuales más ricas de la historia — YouTube en español tiene millones de videos educativos. Pero sin estructura pedagógica, ese acceso produce distracción más que aprendizaje. La buena noticia: Pedro sabe que algo falta. El ciclo antes-durante-después, la guía de visualización, el video como producto — todas estas herramientas están disponibles y no requieren tecnología adicional. Solo requieren que Pedro las conozca y las pruebe.',
+        badge: 'Docente ante el Umbral del Video',
+        xpReward: 10
+      }
+    }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 9: "Carmen y las Cápsulas" — Micro-learning
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs9',
+    title: 'Carmen y las Cápsulas',
+    course: 'Micro-learning',
+    color: '#6366F1',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M11.5 8l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5L8 13l2.5-1 1-2.5z" fill="currentColor" stroke="none"/><path d="M17 3l.5 1.5 1.5.5-1.5.5L17 7l-.5-1.5L15 5l1.5-.5L17 3z" fill="currentColor" stroke="none"/></svg>',
+    duration: '20-25 min',
+    description: 'Carmen quiere enviar micro-cápsulas de aprendizaje por WhatsApp a sus estudiantes de bachillerato en San Marcos. Pero algunos padres se oponen y no todos tienen datos suficientes. Acompáñala a diseñar un modelo de micro-learning equitativo y efectivo.',
+    start: 'cs9_n1',
+    nodes: {
+
+      'cs9_n1': {
+        type: 'scenario',
+        text: 'Carmen es docente de Matemáticas en el Instituto de Bachillerato por Madurez de San Marcos. Sus 25 estudiantes son adultos jóvenes (18-28 años) que trabajan de día y estudian de noche. Muchos olvidan los conceptos entre una clase y otra porque pasan 3-4 días sin practicar. Carmen quiere enviar micro-cápsulas de aprendizaje por WhatsApp: un audio de 2 minutos, una imagen explicativa o un ejercicio rápido, entre lunes y viernes por la tarde.',
+        context: 'San Marcos está en el altiplano occidental. La conexión a internet es variable: algunos estudiantes tienen datos móviles, otros dependen del wifi del trabajo o de familiares. Además, Carmen ya tiene un grupo de WhatsApp de padres de familia del instituto — pero algunos padres han expresado preocupación por el uso de WhatsApp con fines escolares.',
+        choices: [
+          { text: 'Comenzar a enviar cápsulas sin consultar a nadie — los estudiantes son adultos y pueden decidir solos.', next: 'cs9_n2a', points: 3 },
+          { text: 'Hacer un diagnóstico primero: consultar a los estudiantes sobre acceso a datos, horarios disponibles y preferencia de formato antes de diseñar las cápsulas.', next: 'cs9_n2b', points: 10 },
+          { text: 'Esperar a que la institución tenga una política clara sobre el uso de WhatsApp educativo antes de empezar.', next: 'cs9_n2c', points: 2 }
+        ]
+      },
+
+      'cs9_n2a': {
+        type: 'feedback_incorrect',
+        text: 'Comenzar sin diagnóstico genera problemas predecibles: dos semanas después, Carmen descubre que 6 estudiantes no tienen datos en su celular personal y dependen del wifi del trabajo — que no está disponible por las tardes cuando ella envía las cápsulas. Otros 3 estudiantes no ven el grupo de WhatsApp porque trabajan en lugares sin señal. Las cápsulas están llegando al 60% del grupo.',
+        feedback: 'El micro-learning por WhatsApp en contextos rurales o de baja conectividad requiere diagnóstico previo. Asumir que todos tienen acceso perpetúa la desigualdad digital. El diagnóstico es el primer paso del diseño, no un trámite opcional.',
+        choices: [
+          { text: 'Hacer el diagnóstico ahora, aunque sea tarde: encuesta rápida en clase sobre acceso y horarios disponibles.', next: 'cs9_n3a', points: 8 },
+          { text: 'Continuar enviando y asumir que los que no reciben se pondrán al día en clase.', next: 'cs9_n3b', points: 2 }
+        ]
+      },
+
+      'cs9_n2b': {
+        type: 'feedback_correct',
+        text: 'El diagnóstico revela información valiosa: 19 de 25 estudiantes tienen datos móviles propios, pero solo en la noche (después de las 7 pm) porque durante el día trabajan en zonas sin señal o no pueden revisar el celular. 6 estudiantes dependen del wifi del hogar, disponible solo en la tarde-noche. Todos prefieren audios cortos (máximos 2 minutos) sobre imágenes con texto, porque las escuchan mientras hacen otras cosas. Nadie quiere ejercicios que requieran responder de vuelta — están muy ocupados.',
+        feedback: 'El diagnóstico de Carmen revela tres cosas clave: el mejor horario de envío (después de las 7 pm), el formato preferido (audio, no texto), y el nivel de interactividad esperado (bajo — escuchar, no responder). Con estos datos, puede diseñar cápsulas que realmente lleguen y sean usadas.',
+        choices: [
+          { text: 'Diseñar las cápsulas según el diagnóstico: audios de máximo 2 minutos, enviados después de las 7 pm, con un ejercicio opcional (no obligatorio) al final.', next: 'cs9_n3c', points: 10 },
+          { text: 'Diseñar las cápsulas con lo que Carmen considera pedagógicamente ideal, aunque no coincida completamente con las preferencias del diagnóstico.', next: 'cs9_n3a', points: 5 }
+        ]
+      },
+
+      'cs9_n2c': {
+        type: 'feedback_incorrect',
+        text: 'Esperar una política institucional en un instituto de bachillerato por madurez de San Marcos puede significar esperar meses o años. Mientras tanto, el problema real — los estudiantes olvidan los conceptos entre clases — sigue sin solución. La autonomía docente incluye la capacidad de experimentar con herramientas nuevas sin esperar permiso institucional para todo, especialmente cuando la herramienta (WhatsApp) ya es de uso cotidiano para todos.',
+        feedback: 'La innovación pedagógica responsable no espera aprobación institucional para cada herramienta. Lo que requiere es criterio pedagógico, diagnóstico de contexto y disposición a ajustar. La política institucional puede venir después de que haya evidencia de que la práctica funciona.',
+        choices: [
+          { text: 'Comenzar con un piloto pequeño: enviar cápsulas por dos semanas, documentar los resultados y presentarlos a la dirección.', next: 'cs9_n3a', points: 7 },
+          { text: 'Continuar esperando la política institucional.', next: 'cs9_n3b', points: 0 }
+        ]
+      },
+
+      'cs9_n3a': {
+        type: 'scenario',
+        text: 'Carmen empieza a enviar cápsulas. Los estudiantes responden bien en general — pero a las dos semanas, recibe un mensaje en el grupo de WhatsApp de padres: "Profe Carmen, con todo respeto, ¿por qué está mandando cosas por WhatsApp? Eso es para chatear, no para estudiar. Además mi hijo ya pasa mucho tiempo en el celular." El mensaje genera que otros dos padres expresen preocupación similar.',
+        context: 'Los estudiantes son adultos, pero algunos viven con sus padres que son también parte del contexto institucional. La resistencia de los padres puede generar tensión en casa y desincentivar a los estudiantes de participar.',
+        choices: [
+          { text: 'Responder en el grupo con una explicación clara del propósito pedagógico y datos concretos: "En las últimas dos semanas, el 80% de los estudiantes que escucharon las cápsulas sacaron mejor nota en el quiz."', next: 'cs9_n4a', points: 10 },
+          { text: 'Suspender las cápsulas hasta hablar personalmente con cada padre que protestó.', next: 'cs9_n4b', points: 5 },
+          { text: 'Ignorar el mensaje — los estudiantes son adultos y la opinión de los padres no debería afectar las decisiones pedagógicas.', next: 'cs9_n4c', points: 2 }
+        ]
+      },
+
+      'cs9_n3b': {
+        type: 'scenario',
+        text: 'Sin estructura clara, las cápsulas llegan irregularmente — a veces todos los días, a veces no hay nada por una semana. Los estudiantes no saben cuándo esperarlas ni cómo usarlas. Al final del mes, Carmen nota que solo 8 de 25 estudiantes están viendo las cápsulas regularmente. Los demás las ignoran o no las están recibiendo.',
+        context: 'El micro-learning requiere consistencia y predictibilidad para crear el hábito de aprendizaje en pequeños momentos. Sin horario y frecuencia establecidos, las cápsulas son ruido digital, no herramienta de aprendizaje.',
+        choices: [
+          { text: 'Establecer un calendario fijo: lunes, miércoles y viernes a las 7:30 pm — y avisarlo al grupo para que los estudiantes lo esperen.', next: 'cs9_n4a', points: 9 },
+          { text: 'Continuar enviando cuando Carmen tenga tiempo y esperar que los estudiantes se adapten.', next: 'cs9_n4d', points: 1 }
+        ]
+      },
+
+      'cs9_n3c': {
+        type: 'scenario',
+        text: 'El modelo funciona bien desde el inicio. Los audios de 2 minutos llegan a las 7:30 pm los lunes, miércoles y viernes. Los estudiantes los escuchan durante la cena, en el camino al instituto, o mientras se preparan para clase. Pero después de tres semanas, Carmen se pregunta: ¿cómo sabe si los estudiantes están aprendiendo? No quiere hacer un examen de las cápsulas — eso destruiría su carácter informal. Pero tampoco quiere que sean solo entretenimiento.',
+        context: 'Medir el aprendizaje en el micro-learning es uno de los retos más difíciles del modelo. Los métodos de evaluación tradicionales no son compatibles con la informalidad y brevedad que hace al micro-learning efectivo.',
+        choices: [
+          { text: 'Usar la clase presencial como momento de evaluación informal: al inicio de cada clase, hacer una pregunta oral sobre el tema de la cápsula de la semana — no como examen, sino como conversación.', next: 'cs9_n4e', points: 10 },
+          { text: 'Pedir a los estudiantes que respondan una pregunta por WhatsApp después de cada cápsula para confirmar que la entendieron.', next: 'cs9_n4a', points: 6 }
+        ]
+      },
+
+      'cs9_n4a': {
+        type: 'scenario',
+        text: 'La estrategia de Carmen funciona y el modelo de cápsulas se estabiliza. Pero después de seis semanas, nota un problema diferente: no todos los mensajes están llegando. En el grupo de WhatsApp, algunos estudiantes tienen el grupo silenciado o han cambiado de número sin avisar. Carmen envía una cápsula importante sobre ecuaciones cuadráticas y al día siguiente descubre que 7 estudiantes no la recibieron o no la vieron.',
+        context: 'La dependencia de un solo canal de comunicación es una vulnerabilidad del modelo. WhatsApp es conveniente pero no garantiza que el mensaje llegue ni que se vea.',
+        choices: [
+          { text: 'Diversificar el canal: además de WhatsApp, compartir las cápsulas como archivo en un grupo de Telegram (como respaldo) y mencionar el tema al inicio de cada clase para que quienes no vieron la cápsula sepan de qué se trató.', next: 'cs9_n5a', points: 10 },
+          { text: 'Pedir a los estudiantes que confirmen con un emoji cuando reciben cada cápsula para saber quién la está viendo.', next: 'cs9_n5b', points: 6 }
+        ]
+      },
+
+      'cs9_n4b': {
+        type: 'scenario',
+        text: 'Carmen suspende las cápsulas por una semana para hablar con los padres. Cuando regresa con el modelo, nota que la semana de pausa rompió el hábito de algunos estudiantes — tres que participaban activamente ya no ven las cápsulas con regularidad. La consistencia del micro-learning es más frágil de lo que parecía.',
+        context: 'El hábito de consumir micro-contenido educativo es delicado: se construye con semanas de consistencia y se rompe con días de ausencia.',
+        choices: [
+          { text: 'Reiniciar el modelo con una comunicación explícita a los estudiantes: "Retomamos las cápsulas — lunes, miércoles y viernes a las 7:30 pm. Esta semana empezamos con los temas que más preguntas generaron."', next: 'cs9_n5a', points: 8 },
+          { text: 'Continuar enviando cápsulas sin mencionar la pausa — como si nada hubiera cambiado.', next: 'cs9_n5b', points: 3 }
+        ]
+      },
+
+      'cs9_n4c': {
+        type: 'scenario',
+        text: 'Ignorar la preocupación de los padres tiene consecuencias: uno de ellos habla directamente con el director del instituto, quien llama a Carmen para preguntarle sobre el uso de WhatsApp con fines educativos. La conversación es incómoda porque Carmen no tiene documentación de los resultados del modelo ni una explicación pedagógica preparada.',
+        context: 'La innovación pedagógica necesita ser comunicable y documentable. Un docente que no puede explicar por qué hace lo que hace pierde la oportunidad de convertir su práctica en argumento.',
+        choices: [
+          { text: 'Preparar una presentación breve para el director: objetivo del modelo, resultados observados, plan de ajuste ante las preocupaciones de los padres.', next: 'cs9_n5a', points: 8 },
+          { text: 'Comprometerse con el director a suspender las cápsulas de forma permanente para evitar más conflictos.', next: 'cs9_n5d', points: 0 }
+        ]
+      },
+
+      'cs9_n4d': {
+        type: 'scenario',
+        text: 'El modelo irregular colapsa: después de un mes, Carmen ha enviado apenas 8 cápsulas en lugar de las 12 planificadas. Los estudiantes dejaron de esperar las cápsulas porque no llegaban con consistencia. En clase, los estudiantes siguen llegando con los mismos olvidos de siempre entre una sesión y otra. El problema original no se resolvió.',
+        context: 'El micro-learning irregular es peor que no tener micro-learning: genera expectativa sin cumplirla, lo que puede generar desconfianza en el modelo.',
+        choices: [
+          { text: 'Reconocer el error y reiniciar con un compromiso de consistencia: establecer un horario fijo y preparar las cápsulas con una semana de anticipación para garantizar la regularidad.', next: 'cs9_n5a', points: 7 },
+          { text: 'Abandonar el modelo — si no hay tiempo para hacerlo bien, mejor no hacerlo.', next: 'cs9_n5d', points: 1 }
+        ]
+      },
+
+      'cs9_n4e': {
+        type: 'scenario',
+        text: 'La pregunta oral al inicio de clase funciona mejor de lo esperado. No solo permite a Carmen saber quiénes vieron la cápsula — permite que los estudiantes que la vieron enseñen a los que no. Un estudiante que escuchó la cápsula sobre factorización en el camino al trabajo la explica con sus propias palabras al inicio de clase, y la explicación es más clara que la de la cápsula misma. Carmen se da cuenta de que el micro-learning puede ser el detonador de la clase, no solo un suplemento.',
+        context: 'Las cápsulas de Carmen están cumpliendo una función que no anticipó: crear un lenguaje común y un punto de partida para las clases presenciales.',
+        choices: [
+          { text: 'Diseñar explícitamente la conexión entre cápsula y clase: cada cápsula termina con "mañana en clase vamos a usar esto para..." de modo que los estudiantes lleguen con la conexión ya hecha.', next: 'cs9_n5a', points: 10 },
+          { text: 'Mantener las cápsulas como suplemento independiente — la conexión con la clase puede hacerse intuitivamente sin diseñarla.', next: 'cs9_n5b', points: 5 }
+        ]
+      },
+
+      'cs9_n5a': {
+        type: 'scenario',
+        text: 'El modelo de Carmen ha madurado: cápsulas de audio de 2 minutos, lunes-miércoles-viernes a las 7:30 pm, con conexión explícita a la clase siguiente, y evaluación informal al inicio de cada sesión presencial. Los resultados en las pruebas bimensuales muestran una mejora notable: los estudiantes que escuchan las cápsulas regularmente tienen un 23% más de retención en los temas cubiertos. Carmen quiere documentar el modelo para compartirlo con sus colegas del instituto.',
+        context: 'Carmen tiene práctica pedagógica valiosa que puede beneficiar a otros docentes. La documentación es el paso que transforma la experiencia individual en conocimiento compartido.',
+        choices: [
+          { text: 'Crear una "guía de micro-learning para docentes de San Marcos": un documento de una página con los principios básicos, el horario recomendado, los formatos que funcionan, y los errores que evitar.', next: 'cs9_nFIN_a', points: 10 },
+          { text: 'Compartir el modelo verbalmente con sus colegas en la próxima reunión pedagógica — sin documento formal.', next: 'cs9_nFIN_b', points: 6 }
+        ]
+      },
+
+      'cs9_n5b': {
+        type: 'scenario',
+        text: 'El modelo funciona para la mayoría pero sigue teniendo puntos ciegos: los estudiantes sin datos consistentes siguen quedando fuera de algunas cápsulas, y no hay mecanismo para saber exactamente quién está aprendiendo y quién no. Al final del bimestre, Carmen tiene la sensación de que el modelo podría ser más equitativo y más medible.',
+        context: 'El micro-learning bien diseñado incluye mecanismos de seguimiento y alternativas para quienes tienen menor acceso.',
+        choices: [
+          { text: 'Agregar dos mejoras: compartir un resumen escrito de cada cápsula en clase (para quienes no la recibieron) y añadir una pregunta de salida al final de clase sobre el tema de las cápsulas de la semana.', next: 'cs9_nFIN_b', points: 7 },
+          { text: 'Mantener el modelo actual — funciona para la mayoría y mejorar más requeriría demasiado tiempo extra.', next: 'cs9_nFIN_b', points: 4 }
+        ]
+      },
+
+      'cs9_n5c': {
+        type: 'scenario',
+        text: 'Las cápsulas de Carmen se estabilizaron pero sin la consistencia necesaria para crear hábito. Algunos estudiantes las esperan; otros las ignoran. Al final del bimestre, es difícil saber si el modelo tuvo impacto porque no hay datos comparables.',
+        context: 'Sin consistencia y sin medición, es imposible saber si el micro-learning está funcionando o simplemente existiendo.',
+        choices: [
+          { text: 'Reiniciar con consistencia y con una medición simple: comparar las notas del próximo bimestre con las de este.', next: 'cs9_nFIN_b', points: 6 },
+          { text: 'Aceptar que el micro-learning es difícil de medir y continuar sin datos claros.', next: 'cs9_nFIN_c', points: 2 }
+        ]
+      },
+
+      'cs9_n5d': {
+        type: 'scenario',
+        text: 'Carmen abandona el modelo de micro-learning. Los estudiantes siguen llegando a clase con los mismos olvidos de siempre. Nada cambió — excepto que ahora Carmen sabe que intentó algo y no funcionó, pero no sabe bien por qué.',
+        context: 'Sin diagnóstico del fracaso, la experiencia no produce aprendizaje transferible.',
+        choices: [
+          { text: 'Hacer una retrospectiva honesta: ¿qué funcionó en las primeras semanas?, ¿qué rompió el modelo?, ¿qué haría diferente?', next: 'cs9_nFIN_c', points: 5 },
+          { text: 'Aceptar que el micro-learning no es para este contexto y buscar otra estrategia.', next: 'cs9_nFIN_c', points: 2 }
+        ]
+      },
+
+      'cs9_nFIN_a': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Carmen: Las cápsulas que transformaron el hábito de aprender',
+        text: 'Carmen demostró que el micro-learning en WhatsApp puede funcionar en San Marcos, en el altiplano occidental de Guatemala, con estudiantes que trabajan de día, tienen datos limitados y aprenden de noche. No fue fácil: hubo resistencia de padres, problemas de conectividad, semanas donde nada llegó a tiempo. Pero Carmen documentó lo que aprendió y lo compartió. El próximo año, tres colegas del instituto adoptaron el modelo. Lo que empezó como un experimento personal se convirtió en práctica institucional.',
+        badge: 'Docente Micro-learning',
+        xpReward: 50
+      },
+
+      'cs9_nFIN_b': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 70,
+        title: 'Carmen: La cápsula que llegó a la mitad',
+        text: 'El modelo de Carmen funcionó para muchos de sus estudiantes, pero quedaron puntos sin resolver: la equidad de acceso, la medición del impacto, la consistencia en momentos de presión. Sin embargo, algo cambió: sus estudiantes adultos de bachillerato por madurez en San Marcos tuvieron, por primera vez, un contacto con el aprendizaje entre una clase y otra. Eso, en un modelo de educación acelerada donde el tiempo entre sesiones puede hacer olvidar semanas de contenido, es más valioso de lo que los números pueden mostrar.',
+        badge: 'Docente Micro en Proceso',
+        xpReward: 25
+      },
+
+      'cs9_nFIN_c': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 40,
+        title: 'Carmen: El experimento que necesita un segundo intento',
+        text: 'El micro-learning de Carmen no tuvo el impacto que esperaba. Pero la experiencia contiene información pedagógica valiosa: reveló las condiciones de conectividad reales de sus estudiantes, la resistencia institucional a las herramientas informales, y la dificultad de crear hábitos de aprendizaje en adultos con vidas muy ocupadas. Si Carmen puede convertir esas revelaciones en principios de diseño para el próximo intento, el fracaso se habrá convertido en el paso más importante del camino.',
+        badge: 'Docente ante el Umbral del Micro',
+        xpReward: 10
+      }
+    }
   }
 
 ];
