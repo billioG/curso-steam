@@ -424,10 +424,17 @@ function _showDiagnosticResults() {
         }
     });
 
-    // Persist result
+    // Persist result — localStorage + Supabase (vía dailyMissions para que sobreviva limpiezas de caché)
     const resultData = { pct, level: level.key, domainScores, date: new Date().toISOString() };
     localStorage.setItem('diagResult', JSON.stringify(resultData));
     localStorage.setItem('diagDone', '1');
+    if (typeof progress !== 'undefined' && progress) {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        progress.dailyMissions.diagDone = '1';
+        progress.dailyMissions.diagResult = resultData;
+        if (typeof saveProgress === 'function') saveProgress();
+        if (typeof syncWithSupabase === 'function') syncWithSupabase();
+    }
 
     // Build domain rows
     let domainHtml = '';
@@ -480,9 +487,11 @@ function _showDiagnosticResults() {
 
 // Show saved result from profile
 function showDiagnosticResultFromProfile() {
-    const saved = localStorage.getItem('diagResult');
-    if (!saved) { startDiagnostic(); return; }
-    const data = JSON.parse(saved);
+    const rawSaved = localStorage.getItem('diagResult')
+        || (typeof progress !== 'undefined' && progress?.dailyMissions?.diagResult
+            ? JSON.stringify(progress.dailyMissions.diagResult) : null);
+    if (!rawSaved) { startDiagnostic(); return; }
+    const data = JSON.parse(rawSaved);
     const dateStr = new Date(data.date).toLocaleDateString('es-GT', { year: 'numeric', month: 'long', day: 'numeric' });
 
     const overlay = document.getElementById('diagOverlay');
