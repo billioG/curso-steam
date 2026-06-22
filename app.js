@@ -441,7 +441,16 @@ async function checkExistingSession() {
 
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
-        showCourseSelector();
+        // Flujo obligatorio para usuarios nuevos: onboarding → diagnóstico → elegir ruta
+        const _needOnboarding = !localStorage.getItem('onboardingDone');
+        const _needDiag = !localStorage.getItem('diagDone');
+        if (_needOnboarding && typeof startOnboarding === 'function') {
+            startOnboarding(); // closeOnboarding lanza el diagnóstico, y closeDiagnostic abre el selector
+        } else if (_needDiag && typeof startDiagnostic === 'function') {
+            startDiagnostic(); // diagnóstico obligatorio antes de elegir ruta
+        } else {
+            showCourseSelector();
+        }
         return true;
     }
     return false;
@@ -3955,11 +3964,13 @@ function startOnboarding() {
 function closeOnboarding() {
     document.getElementById('onboardingOverlay').classList.add('hidden');
     localStorage.setItem('onboardingDone', '1');
-    // Launch diagnostic unless already done or skipped
+    // Diagnóstico OBLIGATORIO tras el onboarding (no se puede saltar)
     const diagDone = localStorage.getItem('diagDone');
-    const diagSkipped = localStorage.getItem('diagSkipped');
-    if (!diagDone && !diagSkipped && typeof startDiagnostic === 'function') {
+    if (!diagDone && typeof startDiagnostic === 'function') {
         setTimeout(startDiagnostic, 350);
+    } else if (diagDone && typeof showCourseSelector === 'function') {
+        // Si ya hizo el diagnóstico antes, ir directo a elegir ruta
+        showCourseSelector();
     }
 }
 

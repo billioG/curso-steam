@@ -6,7 +6,10 @@ const DIAG_DOMAINS = {
     abp:   { label: 'Aprendizaje Basado en Proyectos', color: '#2563EB', icon: '📋' },
     dt:    { label: 'Design Thinking', color: '#E83C8D', icon: '💡' },
     eval:  { label: 'Evaluación Auténtica', color: '#E9A037', icon: '📊' },
-    tipos: { label: 'Conoce a Quien Enseñas', color: '#7C3AED', icon: '👥' }
+    tipos: { label: 'Conoce a Quien Enseñas', color: '#7C3AED', icon: '👥' },
+    creatividad: { label: 'Creatividad en el Aula', color: '#E83C8D', icon: '🎨' },
+    tecnologia:  { label: 'Herramientas Tecnológicas', color: '#7C3AED', icon: '💻' },
+    metodologias:{ label: 'Metodologías Activas', color: '#F59E0B', icon: '⚡' }
 };
 
 const DIAG_QUESTIONS = [
@@ -154,6 +157,72 @@ const DIAG_QUESTIONS = [
         options: ['Dar trabajo más fácil a los estudiantes con dificultades', 'Ajustar contenido, proceso o evaluación para que todos accedan al mismo aprendizaje de calidad por distintas rutas', 'Crear un plan de estudios individual para cada estudiante', 'Separar al grupo en subgrupos fijos por nivel de rendimiento'],
         correct: 1,
         explanation: 'Diferenciación no es reducir el nivel — es abrir múltiples rutas hacia el mismo aprendizaje de calidad. Mismo destino, distintos caminos.'
+    },
+    // ── Creatividad en el Aula ───────────────────────────────────────────────
+    {
+        id: 'dq21', domain: 'creatividad',
+        text: '¿Qué caracteriza al pensamiento divergente, base de la creatividad?',
+        options: ['Buscar la única respuesta correcta lo más rápido posible', 'Generar muchas ideas y posibilidades distintas a partir de un mismo punto', 'Memorizar procedimientos establecidos', 'Evitar el error a toda costa'],
+        correct: 1,
+        explanation: 'El pensamiento divergente abre posibilidades: muchas ideas, variadas y originales. El convergente luego selecciona y afina.'
+    },
+    {
+        id: 'dq22', domain: 'creatividad',
+        text: 'En un aula creativa, ¿cuál es la actitud más adecuada del docente ante una idea "rara" de un estudiante?',
+        options: ['Descartarla por poco realista', 'Acogerla con curiosidad y preguntar cómo la desarrollaría', 'Corregirla de inmediato', 'Compararla con la del mejor estudiante'],
+        correct: 1,
+        explanation: 'Un clima seguro para el error y la curiosidad es la condición número uno para que florezca la creatividad.'
+    },
+    {
+        id: 'dq23', domain: 'creatividad',
+        text: '¿Para qué sirve la técnica SCAMPER?',
+        options: ['Para calificar proyectos artísticos', 'Para disparar ideas modificando algo existente (Sustituir, Combinar, Adaptar...)', 'Para ordenar la fila del recreo', 'Para medir la inteligencia'],
+        correct: 1,
+        explanation: 'SCAMPER es un set de preguntas para transformar una idea u objeto existente y generar soluciones nuevas.'
+    },
+    // ── Herramientas Tecnológicas ────────────────────────────────────────────
+    {
+        id: 'dq24', domain: 'tecnologia',
+        text: 'Según el modelo SAMR, ¿qué nivel representa usar tecnología para una tarea antes imposible sin ella?',
+        options: ['Sustitución', 'Aumento', 'Modificación', 'Redefinición'],
+        correct: 3,
+        explanation: 'Redefinición es el nivel más alto: la tecnología permite tareas pedagógicas que antes eran inconcebibles.'
+    },
+    {
+        id: 'dq25', domain: 'tecnologia',
+        text: 'Antes de elegir una herramienta digital para tu clase, lo primero que debes definir es:',
+        options: ['Si es la app de moda', 'El objetivo pedagógico que quieres lograr', 'Si tiene muchos colores', 'Cuántos seguidores tiene en redes'],
+        correct: 1,
+        explanation: 'La tecnología es un medio, no un fin. Primero el objetivo de aprendizaje; luego la herramienta que mejor lo sirve.'
+    },
+    {
+        id: 'dq26', domain: 'tecnologia',
+        text: '¿Qué es la ciudadanía digital que debemos enseñar a los estudiantes?',
+        options: ['Usar internet solo para tareas', 'El uso seguro, ético y responsable de la tecnología', 'Tener muchos dispositivos', 'Programar videojuegos'],
+        correct: 1,
+        explanation: 'Ciudadanía digital es comportarse de forma segura, respetuosa y responsable en los entornos digitales.'
+    },
+    // ── Metodologías Activas ─────────────────────────────────────────────────
+    {
+        id: 'dq27', domain: 'metodologias',
+        text: 'En el modelo de Aula Invertida (Flipped Classroom), ¿qué ocurre normalmente en casa?',
+        options: ['Los exámenes', 'El primer contacto con el contenido (ej. ver un video)', 'Las actividades prácticas en grupo', 'Nada, todo es en clase'],
+        correct: 1,
+        explanation: 'En el aula invertida el estudiante accede al contenido en casa y el tiempo de clase se usa para practicar y resolver dudas.'
+    },
+    {
+        id: 'dq28', domain: 'metodologias',
+        text: 'El micro-learning se apoya en combatir un fenómeno descrito por Ebbinghaus. ¿Cuál?',
+        options: ['La curva del olvido', 'La ley de la gravedad', 'El efecto invernadero', 'La pirámide de Maslow'],
+        correct: 0,
+        explanation: 'La curva del olvido muestra que olvidamos rápido lo aprendido; las cápsulas breves y la repetición espaciada ayudan a retener.'
+    },
+    {
+        id: 'dq29', domain: 'metodologias',
+        text: '¿Cuál es una ventaja del mobile learning (m-learning) en el contexto guatemalteco?',
+        options: ['Exige computadoras de última generación', 'Aprovecha el celular, el dispositivo más accesible en muchos hogares', 'Solo funciona con internet de fibra óptica', 'Reemplaza por completo al docente'],
+        correct: 1,
+        explanation: 'En muchas comunidades el celular es el único dispositivo con conexión; el m-learning lo convierte en herramienta de aprendizaje.'
     }
 ];
 
