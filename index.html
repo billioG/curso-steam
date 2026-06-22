@@ -829,6 +829,28 @@
                 margin-right: auto !important;
                 padding-bottom: 40px !important;
             }
+
+            /* Perfil: ancho completo disponible */
+            #tabPerfil {
+                max-width: none !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+            #tabPerfil .perfil-hero {
+                padding-left: 48px !important;
+                padding-right: 48px !important;
+            }
+            #tabPerfil .perfil-grid {
+                max-width: 1100px;
+                margin-left: auto;
+                margin-right: auto;
+                padding-left: 48px;
+                padding-right: 48px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 24px;
+                align-items: start;
+            }
         }
 
         .bnav-btn {
@@ -1493,12 +1515,14 @@
         <div id="tabPerfil" class="tab-panel hidden pb-28" style="background:#f0f6ff;min-height:100vh">
 
         <!-- ── HERO ─────────────────────────────────────────────────── -->
-        <div class="relative overflow-hidden pt-16 pb-6 px-5" style="background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 50%,#1e40af 100%)">
+        <div class="perfil-hero relative overflow-hidden pt-16 pb-6 px-5" style="background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 50%,#1e40af 100%)">
             <!-- Círculos decorativos (como la imagen) -->
             <div class="absolute" style="top:-60px;right:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.05)"></div>
             <div class="absolute" style="bottom:-40px;left:-30px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
             <div class="absolute" style="top:40px;left:-20px;width:70px;height:70px;border-radius:50%;background:rgba(99,179,237,.08)"></div>
 
+            <!-- Contenedor interno alineado al mismo ancho que el grid -->
+            <div style="max-width:1100px;margin:0 auto">
             <!-- Avatar + nombre + editar -->
             <div class="relative flex flex-col items-center text-center md:flex-row md:text-left md:items-end md:gap-6 mt-2">
                 <!-- Avatar -->
@@ -1560,14 +1584,15 @@
                     <div id="courseProgressBarPerfil" class="h-full rounded-full transition-all duration-500" style="width:0%;background:linear-gradient(90deg,#38bdf8,#818cf8)"></div>
                 </div>
             </div>
-        </div>
+            </div><!-- /contenedor interno hero -->
+        </div><!-- /hero -->
 
         <!-- ── CONTENIDO ─────────────────────────────────────────────── -->
         <!-- Mobile: 1 col · Desktop: 2 col con columnas independientes -->
-        <div class="px-4 pt-5 md:px-8 md:pt-6 md:max-w-5xl md:mx-auto md:grid md:grid-cols-2 md:gap-6 md:items-start">
+        <div class="perfil-grid px-4 pt-5">
 
-        <!-- ╔══ COLUMNA DERECHA desktop (en móvil va después) ══╗ -->
-        <div class="md:order-2">
+        <!-- ╔══ COLUMNA DERECHA ══╗ -->
+        <div>
 
             <!-- ── Sección: Aprendizaje ── -->
             <p class="text-[11px] font-black uppercase tracking-widest mb-3 px-1" style="color:#1e3a5f">Aprendizaje</p>
@@ -1729,8 +1754,8 @@
 
         </div><!-- end columna derecha -->
 
-        <!-- ╔══ COLUMNA IZQUIERDA desktop (en móvil va después) ══╗ -->
-        <div class="md:order-1 mt-5 md:mt-0">
+        <!-- ╔══ COLUMNA IZQUIERDA ══╗ -->
+        <div class="mt-5 md:mt-0">
 
             <!-- ── Sección: Logros ── -->
             <p class="text-[11px] font-black uppercase tracking-widest mb-3 mt-1 px-1" style="color:#1e3a5f">Logros y estadísticas</p>
