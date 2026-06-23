@@ -529,6 +529,7 @@ async function checkExistingSession() {
 
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
+        await loadAppConfig();
         showCourseSelector();
         return true;
     }
@@ -5430,8 +5431,11 @@ async function loadAppConfig() {
         data.forEach(row => {
             if (row.key === 'learning_paths' && Array.isArray(row.value) && row.value.length > 0) {
                 LEARNING_PATHS = row.value;
-                // MASTER_CERT_COURSES se deriva ahora per-ruta; no se necesita como lista global
                 _checkMasterCert();
+                // Re-renderizar selector si ya está visible
+                if (!document.getElementById('courseSelector')?.classList.contains('hidden')) {
+                    try { _renderCourseSelector(); } catch(_) {}
+                }
             } else if (row.key === 'master_cert_courses' && Array.isArray(row.value)) {
                 // compatibilidad hacia atrás: si no existe la nueva clave learning_paths
                 MASTER_CERT_COURSES = row.value;
