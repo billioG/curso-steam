@@ -210,6 +210,10 @@ function loadFromLocalCache(userId) {
 // ==================== SINCRONIZACIÓN CON SUPABASE ====================
 async function syncWithSupabase() {
     if (!currentUser || !progress) return;
+    // Capturar referencias locales — la sesión puede cambiar durante los awaits
+    const _user = currentUser;
+    const _prog = progress;
+    if (!_user?.id) return;
 
     updateSyncStatus("syncing", "Sincronizando...");
 
@@ -217,35 +221,35 @@ async function syncWithSupabase() {
         const { error } = await supabase
             .from('progress')
             .upsert({
-                user_id: currentUser.id,
-                email: currentUser.email,
+                user_id: _user.id,
+                email: _user.email,
                 current_module: currentModule,
                 current_card: currentCardIndex,
-                completed_cards: progress.completedCards || [],
-                xp: progress.xp || 0,
-                level: progress.level || 1,
-                badges: progress.badges || [],
-                redeemed_prizes: progress.redeemedPrizes || [],
-                quiz_correct_count: progress.quizCorrectCount || 0,
-                streak: progress.streak || 0,
-                last_activity_date: progress.lastActivityDate || localDateStr(),
-                daily_missions: progress.dailyMissions || {},
-                raffle_tickets: progress.raffleTickets || 0,
-                module_feedback: progress.moduleFeedback || {},
-                nps_history: progress.npsHistory || [],
+                completed_cards: _prog.completedCards || [],
+                xp: _prog.xp || 0,
+                level: _prog.level || 1,
+                badges: _prog.badges || [],
+                redeemed_prizes: _prog.redeemedPrizes || [],
+                quiz_correct_count: _prog.quizCorrectCount || 0,
+                streak: _prog.streak || 0,
+                last_activity_date: _prog.lastActivityDate || localDateStr(),
+                daily_missions: _prog.dailyMissions || {},
+                raffle_tickets: _prog.raffleTickets || 0,
+                module_feedback: _prog.moduleFeedback || {},
+                nps_history: _prog.npsHistory || [],
                 updated_at: new Date().toISOString()
             }, { onConflict: 'user_id' });
 
         if (error) throw error;
 
-        await saveToLocalCache(currentUser.id, progress);
+        await saveToLocalCache(_user.id, _prog);
         updateSyncStatus("online", "✓ Sincronizado");
         setTimeout(() => updateSyncStatus("online", "✓ Sincronizado"), 2000);
 
     } catch (error) {
         console.error("Error sync:", error);
         updateSyncStatus("offline", "⚠️ Sin conexión");
-        await saveToLocalCache(currentUser.id, progress);
+        if (_user?.id) await saveToLocalCache(_user.id, _prog);
     }
 }
 
