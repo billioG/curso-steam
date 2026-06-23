@@ -244,7 +244,7 @@
             </div>
 
             <!-- KPI row -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div class="card">
                     <p class="kpi-label">Docentes activos</p>
                     <p class="kpi-val" id="kpiActive">—</p>
@@ -264,6 +264,23 @@
                     <p class="kpi-label">NPS global</p>
                     <p class="kpi-val" id="kpiNps">—</p>
                     <p class="kpi-sub">satisfacción docentes</p>
+                </div>
+            </div>
+            <!-- Session KPI row -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="card">
+                    <p class="kpi-label">Sesiones totales</p>
+                    <p class="kpi-val text-indigo-600" id="kpiTotalSessions">—</p>
+                    <p class="kpi-sub">desde el lanzamiento</p>
+                </div>
+                <div class="card">
+                    <p class="kpi-label">Duración promedio</p>
+                    <p class="kpi-val text-indigo-600" id="kpiAvgSession">—</p>
+                    <p class="kpi-sub">por sesión</p>
+                </div>
+                <div class="card lg:col-span-2">
+                    <p class="kpi-label mb-2">Sesiones últimos 14 días</p>
+                    <canvas id="sessionsChart" height="60"></canvas>
                 </div>
             </div>
 
@@ -474,9 +491,10 @@
                     <h1 class="text-2xl font-bold text-slate-800">Docentes registrados</h1>
                     <p class="text-sm text-slate-400 mt-0.5">Historial de progreso y actividad por docente</p>
                 </div>
-                <div class="users-actions flex gap-2">
+                <div class="users-actions flex gap-2 flex-wrap">
                     <input id="userSearch" type="text" placeholder="Buscar docente…" class="input-field w-48 text-xs" oninput="filterUsers(this.value)">
                     <button onclick="exportUsersCSV()" class="btn-secondary text-xs"><i class="fas fa-file-csv"></i> CSV</button>
+                    <button onclick="showInviteModal()" class="btn-primary text-xs"><i class="fas fa-user-plus"></i> Invitar</button>
                 </div>
             </div>
             <div class="users-kpi-grid grid grid-cols-3 gap-4 mb-5">

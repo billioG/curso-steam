@@ -310,6 +310,21 @@ async function loadDashboard() {
 
     document.getElementById('kpiAvgTime').textContent = avgS ? fmtTime(avgS) : 'N/A';
 
+    // Métricas de sesiones
+    const { data: sessions } = await sb.from('user_sessions')
+        .select('duration_seconds, user_id, start_time')
+        .not('duration_seconds', 'is', null)
+        .gt('duration_seconds', 0);
+    if (sessions?.length) {
+        const avgSession = Math.round(sessions.reduce((a,s) => a + (s.duration_seconds||0), 0) / sessions.length);
+        const sesEl = document.getElementById('kpiAvgSession');
+        if (sesEl) sesEl.textContent = fmtTime(avgSession);
+        const totalSesEl = document.getElementById('kpiTotalSessions');
+        if (totalSesEl) totalSesEl.textContent = fmt(sessions.length);
+        // Sesiones de los últimos 7 días para mini-gráfico
+        await renderSessionsChart(sessions);
+    }
+
     // NPS
     const { data: fb } = await sb.from('feedback').select('nps,rating');
     let npsText = 'N/A';
@@ -424,6 +439,74 @@ function renderCourseSummary(progress) {
         </tr></thead>
         <tbody>${rows.join('')}</tbody>
     </table>`;
+}
+
+// ────────────────────────────────────────────────────────────
+// SESIONES
+// ────────────────────────────────────────────────────────────
+async function renderSessionsChart(sessions) {
+    const ctx = document.getElementById('sessionsChart');
+    if (!ctx) return;
+    // Agrupar sesiones por día (últimos 14 días)
+    const days = {};
+    const now = Date.now();
+    for (let i = 13; i >= 0; i--) {
+        const d = new Date(now - i * 86400000).toLocaleDateString('en-CA');
+        days[d] = { count: 0, totalSec: 0 };
+    }
+    sessions.forEach(s => {
+        const d = new Date(s.start_time).toLocaleDateString('en-CA');
+        if (days[d]) { days[d].count++; days[d].totalSec += s.duration_seconds || 0; }
+    });
+    const labels = Object.keys(days).map(d => d.slice(5)); // MM-DD
+    const counts = Object.values(days).map(d => d.count);
+    const avgMins = Object.values(days).map(d => d.count ? Math.round(d.totalSec / d.count / 60) : 0);
+    if (window._sessChart) window._sessChart.destroy();
+    window._sessChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                { label: 'Sesiones', data: counts, backgroundColor: '#07B0E4', borderRadius: 6, yAxisID: 'y' },
+                { label: 'Min promedio', data: avgMins, type: 'line', borderColor: '#6366f1', backgroundColor: 'transparent', tension: 0.4, yAxisID: 'y1' }
+            ]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'Sesiones' } },
+                      y1: { beginAtZero: true, position: 'right', title: { display: true, text: 'Min promedio' }, grid: { drawOnChartArea: false } } } }
+    });
+}
+
+// ── Cambio de rol via Edge Function ──
+async function changeUserRole(userId, newRole) {
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    if (!token) { toast('No autenticado', 'error'); return; }
+    const EDGE_URL = `${sb.supabaseUrl}/functions/v1/admin-users`;
+    const res = await fetch(EDGE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ action: 'setRole', userId, role: newRole })
+    });
+    const json = await res.json();
+    if (!res.ok) { toast('Error: ' + (json.error || res.status), 'error'); return; }
+    toast(`Rol actualizado a "${newRole}"`, 'success');
+    loadUsers();
+}
+
+async function inviteUser(email, role = 'student') {
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    if (!token) { toast('No autenticado', 'error'); return; }
+    const EDGE_URL = `${sb.supabaseUrl}/functions/v1/admin-users`;
+    const res = await fetch(EDGE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ action: 'invite', email, role })
+    });
+    const json = await res.json();
+    if (!res.ok) { toast('Error: ' + (json.error || res.status), 'error'); return; }
+    toast(`Invitación enviada a ${email}`, 'success');
 }
 
 // ────────────────────────────────────────────────────────────
@@ -607,9 +690,14 @@ function renderUsersTable(users) {
     const courses = _coursesList.length ? _coursesList : STATIC_COURSES;
     const shortTitle = t => t.length > 14 ? t.substring(0,13)+'…' : t;
 
+    // Cargar roles actuales desde user_roles
+    const { data: roleRows } = await sb.from('user_roles').select('user_id, role');
+    const _roleMap = {};
+    (roleRows || []).forEach(r => { _roleMap[r.user_id] = r.role; });
+
     cont.innerHTML = `<div class="overflow-x-auto"><table>
         <thead><tr>
-            <th>Docente</th><th>Correo</th><th>Escuela</th><th>XP</th><th>Racha</th><th>Diagnóstico</th>
+            <th>Docente</th><th>Correo</th><th>Rol</th><th>Escuela</th><th>XP</th><th>Racha</th><th>Diagnóstico</th>
             ${courses.map(c=>`<th title="${esc(c.title)}">${shortTitle(c.title)}</th>`).join('')}
             <th>Último acceso</th>
         </tr></thead>
@@ -624,6 +712,7 @@ function renderUsersTable(users) {
             };
             const diagLabel = diag ? (_diagMap[diag.level] || '—') : '—';
             const school = getSchool(p);
+            const currentRole = _roleMap[p.user_id] || 'student';
             const courseCells = courses.map(c => {
                 if (hasCourseExamPassed(p, c.id)) {
                     return `<td><span class="badge tag-green" style="font-size:9px">✓ Cert.</span></td>`;
@@ -633,24 +722,27 @@ function renderUsersTable(users) {
                 }
                 return `<td><span class="text-slate-300 text-xs">—</span></td>`;
             }).join('');
-            const isAdmin = getEmail(p) === 'billy@1bot.org';
-            const isCoord = _coordUserIds.has(p.user_id);
-            const roleBadge = isAdmin
-                ? '<span class="badge" style="background:#fef3c7;color:#92400e;font-size:9px">Admin</span>'
-                : isCoord
-                ? '<span class="badge" style="background:#ede9fe;color:#6d28d9;font-size:9px">Coordinador</span>'
-                : '<span class="badge" style="background:#f1f5f9;color:#475569;font-size:9px">Docente</span>';
+            const actBadge = activo ? '<span class="badge tag-green" style="font-size:9px">Activo</span>' : '';
             return `<tr>
                 <td>
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs shrink-0">${esc(getName(p).charAt(0).toUpperCase())}</div>
                         <div>
                             <p class="font-semibold text-slate-800 text-xs">${esc(getName(p))}</p>
-                            <div class="flex gap-1 mt-0.5">${roleBadge}${activo ? '<span class="badge tag-green" style="font-size:9px">Activo</span>' : ''}</div>
+                            <div class="flex gap-1 mt-0.5">${actBadge}</div>
                         </div>
                     </div>
                 </td>
                 <td class="text-slate-400 text-xs">${esc(getEmail(p))}</td>
+                <td>
+                    <select onchange="changeUserRole('${p.user_id}', this.value)"
+                        class="border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                        title="Cambiar rol">
+                        <option value="student" ${currentRole==='student'?'selected':''}>Docente</option>
+                        <option value="coordinator" ${currentRole==='coordinator'?'selected':''}>Coordinador</option>
+                        <option value="admin" ${currentRole==='admin'?'selected':''}>Admin</option>
+                    </select>
+                </td>
                 <td class="text-xs">
                     <select onchange="assignTeacherSchool('${p.user_id}', this.value)"
                         class="border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-300 max-w-[130px]"
@@ -678,6 +770,48 @@ function filterUsers(q) {
         getSchool(p).toLowerCase().includes(ql)||
         getDept(p).toLowerCase().includes(ql)
     ));
+}
+
+function showInviteModal() {
+    const existing = document.getElementById('inviteModal');
+    if (existing) existing.remove();
+    const m = document.createElement('div');
+    m.id = 'inviteModal';
+    m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    m.innerHTML = `
+    <div style="background:white;border-radius:20px;width:100%;max-width:400px;padding:28px 24px">
+        <h3 style="font-size:18px;font-weight:800;color:#0f172a;margin-bottom:6px">Invitar docente</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:20px">Se enviará un correo con enlace de acceso a la plataforma.</p>
+        <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Correo electrónico</label>
+        <input id="inviteEmail" type="email" placeholder="docente@escuela.edu.gt"
+            style="width:100%;border:1.5px solid #e2e8f0;border-radius:12px;padding:10px 14px;font-size:14px;outline:none;box-sizing:border-box;margin-bottom:6px">
+        <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px;margin-top:12px">Rol inicial</label>
+        <select id="inviteRole" style="width:100%;border:1.5px solid #e2e8f0;border-radius:12px;padding:10px 14px;font-size:14px;outline:none;box-sizing:border-box;margin-bottom:20px">
+            <option value="student">Docente</option>
+            <option value="coordinator">Coordinador</option>
+            <option value="admin">Admin</option>
+        </select>
+        <div style="display:flex;gap:10px">
+            <button onclick="document.getElementById('inviteModal').remove()"
+                style="flex:1;padding:11px;border-radius:12px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-weight:600;font-size:14px;cursor:pointer">
+                Cancelar
+            </button>
+            <button onclick="_doInvite()"
+                style="flex:1;padding:11px;border-radius:12px;border:none;background:#5C35C5;color:white;font-weight:700;font-size:14px;cursor:pointer">
+                Enviar invitación
+            </button>
+        </div>
+    </div>`;
+    document.body.appendChild(m);
+    document.getElementById('inviteEmail').focus();
+}
+
+async function _doInvite() {
+    const email = document.getElementById('inviteEmail')?.value.trim();
+    const role  = document.getElementById('inviteRole')?.value || 'student';
+    if (!email || !email.includes('@')) { toast('Ingresa un correo válido', 'error'); return; }
+    document.getElementById('inviteModal').remove();
+    await inviteUser(email, role);
 }
 
 // ────────────────────────────────────────────────────────────
