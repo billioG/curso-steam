@@ -641,7 +641,12 @@ async function loadUsers() {
     (assignments || []).forEach(a => { _userSchoolMap[a.user_id] = a.school_id; });
     _coordUserIds = new Set((coordRows || []).map(c => c.user_id));
 
-    renderUsersTable(progress);
+    const { data: roleRows } = await sb.from('user_roles').select('user_id, role');
+    const roleMap = {};
+    (roleRows || []).forEach(r => { roleMap[r.user_id] = r.role; });
+
+    _roleMapCache = roleMap;
+    renderUsersTable(progress, roleMap);
 }
 
 async function assignTeacherSchool(userId, schoolId) {
@@ -675,7 +680,7 @@ function hasCourseStarted(p, courseId) {
     });
 }
 
-function renderUsersTable(users) {
+function renderUsersTable(users, roleMap = {}) {
     const total = users.length;
     const active = users.filter(isActive30d).length;
     const certified = users.filter(hasCertificate).length;
@@ -690,10 +695,7 @@ function renderUsersTable(users) {
     const courses = _coursesList.length ? _coursesList : STATIC_COURSES;
     const shortTitle = t => t.length > 14 ? t.substring(0,13)+'…' : t;
 
-    // Cargar roles actuales desde user_roles
-    const { data: roleRows } = await sb.from('user_roles').select('user_id, role');
-    const _roleMap = {};
-    (roleRows || []).forEach(r => { _roleMap[r.user_id] = r.role; });
+    const _roleMap = roleMap;
 
     cont.innerHTML = `<div class="overflow-x-auto"><table>
         <thead><tr>
@@ -761,15 +763,17 @@ function renderUsersTable(users) {
     </table></div>`;
 }
 
+let _roleMapCache = {};
+
 function filterUsers(q) {
-    if (!q.trim()) { renderUsersTable(_usersCache); return; }
+    if (!q.trim()) { renderUsersTable(_usersCache, _roleMapCache); return; }
     const ql = q.toLowerCase();
     renderUsersTable(_usersCache.filter(p =>
         getName(p).toLowerCase().includes(ql)  ||
         getEmail(p).toLowerCase().includes(ql) ||
         getSchool(p).toLowerCase().includes(ql)||
         getDept(p).toLowerCase().includes(ql)
-    ));
+    ), _roleMapCache);
 }
 
 function showInviteModal() {
