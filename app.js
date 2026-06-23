@@ -844,13 +844,21 @@ function loadDailyMissions() {
 
     if (savedMissions.date !== today) {
         const newMissions = dailyMissionsList.map(m => ({ ...m, current: 0, completed: false, claimed: false }));
-        // Preservar campos de perfil y exámenes que también viven en dailyMissions
+        // Preservar campos de perfil, exámenes y desbloqueos de módulos que también viven en dailyMissions
         const { fullName, profilePhoto, examScores, examScore, masterExamScore, masterExamScores,
-                masterExamDate, coursePositions, diagResult, portfolioByPath,
+                masterExamDate, coursePositions, diagResult, diagDone, onboardingDone, portfolioByPath,
                 portfolioAiTotal, portfolioScores, portfolioFeedback, portfolioSummary,
                 portfolioAttempts, portfolioLastAttempt } = savedMissions;
+        // Extraer todas las claves de bloqueo de módulos (moduleStart_* y moduleEarlyUnlock_*)
+        const moduleKeys = {};
+        Object.keys(savedMissions).forEach(k => {
+            if (k.startsWith('moduleStart_') || k.startsWith('moduleEarlyUnlock_')) {
+                moduleKeys[k] = savedMissions[k];
+            }
+        });
         progress.dailyMissions = {
             date: today, missions: newMissions,
+            ...moduleKeys,
             ...(fullName        && { fullName }),
             ...(profilePhoto    && { profilePhoto }),
             ...(examScores      && { examScores }),
@@ -860,6 +868,8 @@ function loadDailyMissions() {
             ...(masterExamDate  && { masterExamDate }),
             ...(coursePositions && { coursePositions }),
             ...(diagResult      && { diagResult }),
+            ...(diagDone        && { diagDone }),
+            ...(onboardingDone  && { onboardingDone }),
             ...(portfolioByPath && { portfolioByPath }),
             ...(portfolioAiTotal !== undefined && { portfolioAiTotal }),
             ...(portfolioScores  && { portfolioScores }),
@@ -3929,7 +3939,25 @@ document.getElementById("doForgotPassword")?.addEventListener("click", async () 
 
 document.getElementById("nextBtn")?.addEventListener("click", goToNextCard);
 document.getElementById("prevBtn")?.addEventListener("click", goToPrevCard);
-document.getElementById("examBtn")?.addEventListener("click", startExam);
+document.getElementById("examBtn")?.addEventListener("click", () => {
+    // Buscar el curso con más tarjetas completadas (por si modulesData no es el correcto)
+    if (typeof allCourses !== 'undefined' && allCourses.length) {
+        const completed = progress.completedCards || [];
+        let bestCourse = null, bestCount = -1;
+        allCourses.forEach(course => {
+            if (!course.modules) return;
+            const ids = course.modules.flatMap(m => m.cards.map(c => String(c.id)));
+            const count = ids.filter(id => completed.includes(id)).length;
+            const minReq = Math.ceil(ids.length * 0.8);
+            if (count >= minReq && count > bestCount) { bestCount = count; bestCourse = course; }
+        });
+        if (bestCourse && bestCourse.id !== currentCourseId) {
+            currentCourseId = bestCourse.id;
+            modulesData = bestCourse.modules;
+        }
+    }
+    startExam();
+});
 document.getElementById("badgesBtn")?.addEventListener("click", showBadgesModal);
 document.getElementById("closeBadgesBtn")?.addEventListener("click", () => document.getElementById("badgesModal")?.classList.add("hidden"));
 document.getElementById("shareBadgesBtn")?.addEventListener("click", shareBadges);
