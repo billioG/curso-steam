@@ -310,9 +310,27 @@ async function loadDashboard() {
 
     document.getElementById('kpiAvgTime').textContent = avgS ? fmtTime(avgS) : 'N/A';
 
+    // Tasa de finalización — docentes con ≥1 curso certificado
+    const certifiedAny = progress.filter(p => {
+        const sc = p?.daily_missions?.examScores || {};
+        return STATIC_COURSES.some(c =>
+            (sc[c.id]||0) >= 70 || (c.id==='steam' && (p?.daily_missions?.examScore||0)>=70)
+        );
+    }).length;
+    const completionRate = total ? Math.round((certifiedAny / total) * 100) : 0;
+    document.getElementById('kpiCompletion').textContent = completionRate + '%';
+
+    // Portafolios — docentes certificados que tienen portafolio enviado
+    const portfolioSubmitted = progress.filter(p => {
+        const pb = p?.daily_missions?.portfolioByPath;
+        return pb && Object.values(pb).some(v => v?.submitted || v?.score != null);
+    }).length;
+    const portEl = document.getElementById('kpiPortfolios');
+    if (portEl) portEl.textContent = portfolioSubmitted + ' / ' + totalCertificados;
+
     // Métricas de sesiones
     const { data: sessions } = await sb.from('user_sessions')
-        .select('duration_seconds, user_id, start_time')
+        .select('duration_seconds, user_id, start_time, device_info')
         .not('duration_seconds', 'is', null)
         .gt('duration_seconds', 0);
     if (sessions?.length) {
@@ -321,8 +339,17 @@ async function loadDashboard() {
         if (sesEl) sesEl.textContent = fmtTime(avgSession);
         const totalSesEl = document.getElementById('kpiTotalSessions');
         if (totalSesEl) totalSesEl.textContent = fmt(sessions.length);
-        // Sesiones de los últimos 7 días para mini-gráfico
+
+        // Móvil vs PC
+        const mobileCount = sessions.filter(s => s.device_info?.mobile).length;
+        const mobilePct = Math.round((mobileCount / sessions.length) * 100);
+        const kpiMob = document.getElementById('kpiMobile');
+        if (kpiMob) kpiMob.textContent = mobilePct + '%';
+        const kpiMobSub = document.getElementById('kpiMobileSub');
+        if (kpiMobSub) kpiMobSub.textContent = `móvil · ${100-mobilePct}% PC`;
+
         await renderSessionsChart(sessions);
+        renderDeviceChart(mobileCount, sessions.length - mobileCount);
     }
 
     // NPS
@@ -335,6 +362,12 @@ async function loadDashboard() {
         npsText = nps;
     }
     document.getElementById('kpiNps').textContent = npsText;
+
+    // Embudo de conversión
+    renderFunnelChart(progress, total);
+
+    // Departamentos
+    renderDeptChart(progress);
 
     // Gráfico XP top 10
     const top10 = progress.slice(0,10);
@@ -475,6 +508,120 @@ async function renderSessionsChart(sessions) {
             scales: { y: { beginAtZero: true, title: { display: true, text: 'Sesiones' } },
                       y1: { beginAtZero: true, position: 'right', title: { display: true, text: 'Min promedio' }, grid: { drawOnChartArea: false } } } }
     });
+}
+
+// ── Embudo de conversión ──────────────────────────────────
+function renderFunnelChart(progress, total) {
+    const el = document.getElementById('funnelChart');
+    if (!el) return;
+
+    const startedAny = progress.filter(p => (p.completed_cards?.length||0) > 0).length;
+    const completed80 = progress.filter(p => {
+        return STATIC_COURSES.some(c => getProgressPct(p, c.id) >= 80);
+    }).length;
+    const certifiedAny = progress.filter(p => {
+        const sc = p?.daily_missions?.examScores || {};
+        return STATIC_COURSES.some(c => (sc[c.id]||0)>=70 || (c.id==='steam'&&(p?.daily_missions?.examScore||0)>=70));
+    }).length;
+    const withPortfolio = progress.filter(p => {
+        const pb = p?.daily_missions?.portfolioByPath;
+        return pb && Object.values(pb).some(v => v?.submitted || v?.score != null);
+    }).length;
+
+    const steps = [
+        { label: 'Registrados', val: total, color: '#6366f1' },
+        { label: 'Iniciaron curso', val: startedAny, color: '#07B0E4' },
+        { label: 'Completaron 80%', val: completed80, color: '#10b981' },
+        { label: 'Aprobaron examen', val: certifiedAny, color: '#f59e0b' },
+        { label: 'Enviaron portafolio', val: withPortfolio, color: '#8b5cf6' },
+    ];
+
+    const maxVal = total || 1;
+    el.innerHTML = steps.map((s, i) => {
+        const pct = Math.round((s.val / maxVal) * 100);
+        const width = Math.max(pct, 8);
+        const convRate = i > 0 && steps[i-1].val > 0
+            ? ` <span style="color:#94a3b8;font-size:10px">(${Math.round(s.val/steps[i-1].val*100)}% del paso anterior)</span>` : '';
+        return `<div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:12px;font-weight:600;color:#374151">${s.label}</span>
+                <span style="font-size:12px;font-weight:800;color:#1e293b">${fmt(s.val)}${convRate}</span>
+            </div>
+            <div style="background:#f1f5f9;border-radius:8px;height:10px;overflow:hidden">
+                <div style="width:${width}%;background:${s.color};height:100%;border-radius:8px;transition:width .6s ease"></div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Gráfico dispositivos ──────────────────────────────────
+function renderDeviceChart(mobile, desktop) {
+    const ctx = document.getElementById('deviceChart');
+    if (!ctx) return;
+    if (window._devChart) window._devChart.destroy();
+    window._devChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Móvil', 'Computadora'],
+            datasets: [{ data: [mobile, desktop],
+                backgroundColor: ['#8b5cf6','#07B0E4'],
+                borderWidth: 3, borderColor: '#fff' }]
+        },
+        options: { cutout: '68%', plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+            tooltip: { callbacks: { label: ctx => {
+                const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+                return ` ${ctx.label}: ${ctx.raw} (${Math.round(ctx.raw/total*100)}%)`;
+            }}}
+        }}
+    });
+}
+
+// ── Mapa de departamentos ─────────────────────────────────
+function renderDeptChart(progress) {
+    const counts = {};
+    progress.forEach(p => {
+        const dept = p?.daily_missions?.department;
+        if (dept && dept !== 'Individual' && dept.trim()) {
+            counts[dept] = (counts[dept]||0) + 1;
+        }
+    });
+    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+
+    const barCtx = document.getElementById('deptBarChart');
+    if (barCtx && sorted.length) {
+        if (window._deptChart) window._deptChart.destroy();
+        window._deptChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: sorted.map(([d])=>d),
+                datasets: [{ label: 'Docentes', data: sorted.map(([,n])=>n),
+                    backgroundColor: sorted.map((_,i)=>`hsl(${200+i*12},70%,55%)`),
+                    borderRadius: 6, borderSkipped: false }]
+            },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+                          y: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
+        });
+    }
+
+    const tableEl = document.getElementById('deptTable');
+    if (tableEl) {
+        if (!sorted.length) {
+            tableEl.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">Sin datos de departamento aún.<br><span class="text-xs">Los docentes deben completar su perfil.</span></p>';
+        } else {
+            const maxN = sorted[0][1] || 1;
+            tableEl.innerHTML = `<table><thead><tr>
+                <th>#</th><th>Departamento</th><th>Docentes</th><th>%</th>
+            </tr></thead><tbody>` +
+            sorted.map(([dept, n], i) => `<tr>
+                <td class="text-slate-400">${i+1}</td>
+                <td class="font-semibold text-slate-700">${esc(dept)}</td>
+                <td><span class="badge tag-blue">${n}</span></td>
+                <td class="text-slate-500">${Math.round(n/progress.length*100)}%</td>
+            </tr>`).join('') + '</tbody></table>';
+        }
+    }
 }
 
 // ── Cambio de rol via Edge Function ──
