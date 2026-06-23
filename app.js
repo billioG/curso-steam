@@ -1518,8 +1518,20 @@ function formatCountdown(ms) {
 function isModuleLocked(moduleNum) {
     if (moduleNum <= 1) return false;
     if (isModuleEarlyUnlocked(moduleNum)) return false;
+    // Si todas las tarjetas del módulo ya están completadas, nunca debe bloquearse
+    const modData = modulesData[moduleNum - 1];
+    if (modData) {
+        const modCardIds = modData.cards.map(c => String(c.id));
+        const allDone = modCardIds.length > 0 && modCardIds.every(id => (progress.completedCards || []).includes(id));
+        if (allDone) {
+            // Registrar como desbloqueado para que no vuelva a pasar
+            setModuleEarlyUnlock(moduleNum);
+            if (!getModuleStartDate(moduleNum)) setModuleStartDate(moduleNum, new Date().toISOString());
+            return false;
+        }
+    }
     const startDate = getModuleStartDate(moduleNum);
-    if (!startDate) return true; // nunca se desbloqueó
+    if (!startDate) return true;
     return msUntilUnlock(moduleNum) > 0;
 }
 
