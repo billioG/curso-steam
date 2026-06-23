@@ -2755,4 +2755,18 @@ document.getElementById('resetAnalyticsBtn')?.addEventListener('click', async ()
 // ────────────────────────────────────────────────────────────
 // INIT
 // ────────────────────────────────────────────────────────────
-checkAdminAuth().then(ok => { if (ok) switchView('dashboard'); });
+async function refreshOnlineCount() {
+    const since = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // últimos 5 min
+    const { count } = await sb.from('progress')
+        .select('*', { count: 'exact', head: true })
+        .gte('updated_at', since);
+    const el = document.getElementById('onlineCount');
+    if (el) el.textContent = count ?? '—';
+}
+
+checkAdminAuth().then(ok => {
+    if (!ok) return;
+    switchView('dashboard');
+    refreshOnlineCount();
+    setInterval(refreshOnlineCount, 30_000);
+});
