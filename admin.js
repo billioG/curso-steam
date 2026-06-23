@@ -88,7 +88,16 @@ function getName(p) {
     return p?.daily_missions?.fullName || (p?.email ? p.email.split('@')[0] : 'Docente');
 }
 
-function getSchool(p) { return p?.daily_missions?.school || 'Individual'; }
+function getSchool(p) {
+    // Primero usa la asignación admin (_userSchoolMap), luego el campo de perfil
+    const schoolId = _userSchoolMap?.[p.user_id];
+    if (schoolId) {
+        const found = _schools?.find(s => s.id === schoolId);
+        if (found) return found.name;
+    }
+    const selfReported = p?.daily_missions?.school;
+    return (selfReported && selfReported !== 'Individual') ? selfReported : '';
+}
 function getDept(p)   { return p?.daily_missions?.department || 'Individual'; }
 
 function getEmail(p) { return p?.email || '—'; }
