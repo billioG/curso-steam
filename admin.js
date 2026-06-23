@@ -842,7 +842,7 @@ async function loadUsers() {
     (roleRows || []).forEach(r => { roleMap[r.user_id] = r.role; });
 
     _roleMapCache = roleMap;
-    renderUsersTable(progress, roleMap);
+    _applyUsersView();
 }
 
 async function assignTeacherSchool(userId, schoolId) {
@@ -876,7 +876,7 @@ function hasCourseStarted(p, courseId) {
     });
 }
 
-function renderUsersTable(users, roleMap = {}) {
+function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
     const total = users.length;
     const active = users.filter(isActive30d).length;
     const certified = users.filter(hasCertificate).length;
@@ -890,59 +890,77 @@ function renderUsersTable(users, roleMap = {}) {
 
     const courses = _coursesList.length ? _coursesList : STATIC_COURSES;
 
-    cont.innerHTML = `<table>
-        <thead><tr>
-            <th>Docente</th>
-            <th>Escuela</th>
-            <th>XP</th>
-            <th>Cursos cert.</th>
-            <th>Progreso</th>
-            <th>Último acceso</th>
-        </tr></thead>
-        <tbody>${users.map(p => {
+    const thead = `<thead><tr>
+        <th>Docente</th><th>Escuela</th><th>XP</th><th>Cursos cert.</th><th>Progreso</th><th>Último acceso</th>
+    </tr></thead>`;
+
+    const rowHtml = p => {
             const activo = isActive30d(p);
             const certCount = courses.filter(c => hasCourseExamPassed(p, c.id)).length;
-            const startedCourses = courses.filter(c => hasCourseStarted(p, c.id));
-            const avgPct = startedCourses.length
-                ? Math.round(startedCourses.reduce((a,c) => a + getProgressPct(p,c.id), 0) / startedCourses.length)
-                : 0;
-            const role = roleMap[p.user_id] || 'student';
-            const roleLabel = role === 'admin' ? '<span class="badge tag-violet" style="font-size:9px">Admin</span>'
-                : role === 'coordinator' ? '<span class="badge tag-blue" style="font-size:9px">Coord.</span>' : '';
-            const school = getSchool(p);
-            return `<tr style="cursor:pointer" onclick="openUserPanel('${p.user_id}')" title="Ver perfil">
-                <td>
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm shrink-0 text-white" style="background:${avatarColor(getName(p))}">${esc(getName(p).charAt(0).toUpperCase())}</div>
-                        <div>
-                            <p class="font-semibold text-slate-800 text-sm">${esc(getName(p))}</p>
-                            <div class="flex items-center gap-1 mt-0.5">
-                                ${activo ? '<span class="badge tag-green" style="font-size:9px">Activo</span>' : '<span class="badge tag-slate" style="font-size:9px">Inactivo</span>'}
-                                ${roleLabel}
-                            </div>
+        const startedCourses = courses.filter(c => hasCourseStarted(p, c.id));
+        const avgPct = startedCourses.length
+            ? Math.round(startedCourses.reduce((a,c) => a + getProgressPct(p,c.id), 0) / startedCourses.length)
+            : 0;
+        const role = roleMap[p.user_id] || 'student';
+        const roleLabel = role === 'admin' ? '<span class="badge tag-violet" style="font-size:9px">Admin</span>'
+            : role === 'coordinator' ? '<span class="badge tag-blue" style="font-size:9px">Coord.</span>' : '';
+        const school = getSchool(p);
+        const name = getName(p);
+        return `<tr style="cursor:pointer" onclick="openUserPanel('${p.user_id}')" title="Ver perfil">
+            <td>
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm shrink-0 text-white" style="background:${avatarColor(name)}">${esc(name.charAt(0).toUpperCase())}</div>
+                    <div>
+                        <p class="font-semibold text-slate-800 text-sm">${esc(name)}</p>
+                        <div class="flex items-center gap-1 mt-0.5">
+                            ${activo ? '<span class="badge tag-green" style="font-size:9px">Activo</span>' : '<span class="badge tag-slate" style="font-size:9px">Inactivo</span>'}
+                            ${roleLabel}
                         </div>
                     </div>
-                </td>
-                <td class="text-xs text-slate-500">${esc(school || '—')}</td>
-                <td><span class="font-bold text-amber-600 text-sm"><i class="fas fa-star text-yellow-400 text-xs"></i> ${fmt(p.xp||0)}</span></td>
-                <td>
-                    ${certCount > 0
-                        ? `<span class="badge tag-green">${certCount} cert.</span>`
-                        : `<span class="text-slate-300 text-xs">—</span>`}
-                </td>
-                <td style="min-width:120px">
-                    ${startedCourses.length ? `
-                    <div class="flex items-center gap-2">
-                        <div style="flex:1;background:#f1f5f9;border-radius:4px;height:6px">
-                            <div style="width:${avgPct}%;background:${avgPct>=80?'#10b981':avgPct>=40?'#07B0E4':'#f59e0b'};height:100%;border-radius:4px"></div>
-                        </div>
-                        <span class="text-xs font-bold text-slate-500">${avgPct}%</span>
-                    </div>` : '<span class="text-slate-300 text-xs">Sin iniciar</span>'}
-                </td>
-                <td class="text-slate-400 text-xs whitespace-nowrap">${fmtDateTime(p.updated_at)}</td>
-            </tr>`;
-        }).join('')}</tbody>
-    </table>`;
+                </div>
+            </td>
+            <td class="text-xs text-slate-500">${esc(school || '—')}</td>
+            <td><span class="font-bold text-amber-600 text-sm"><i class="fas fa-star text-yellow-400 text-xs"></i> ${fmt(p.xp||0)}</span></td>
+            <td>${certCount > 0 ? `<span class="badge tag-green">${certCount} cert.</span>` : `<span class="text-slate-300 text-xs">—</span>`}</td>
+            <td style="min-width:120px">
+                ${startedCourses.length ? `
+                <div class="flex items-center gap-2">
+                    <div style="flex:1;background:#f1f5f9;border-radius:4px;height:6px">
+                        <div style="width:${avgPct}%;background:${avgPct>=80?'#10b981':avgPct>=40?'#07B0E4':'#f59e0b'};height:100%;border-radius:4px"></div>
+                    </div>
+                    <span class="text-xs font-bold text-slate-500">${avgPct}%</span>
+                </div>` : '<span class="text-slate-300 text-xs">Sin iniciar</span>'}
+            </td>
+            <td class="text-slate-400 text-xs whitespace-nowrap">${fmtDateTime(p.updated_at)}</td>
+        </tr>`;
+    };
+
+    if (!groupBySchool) {
+        cont.innerHTML = `<table>${thead}<tbody>${users.map(rowHtml).join('')}</tbody></table>`;
+    } else {
+        // Agrupar por escuela
+        const groups = {};
+        users.forEach(p => {
+            const school = getSchool(p) || 'Sin centro asignado';
+            if (!groups[school]) groups[school] = [];
+            groups[school].push(p);
+        });
+        const sorted = Object.entries(groups).sort((a, b) => {
+            if (a[0] === 'Sin centro asignado') return 1;
+            if (b[0] === 'Sin centro asignado') return -1;
+            return a[0].localeCompare(b[0], 'es');
+        });
+        cont.innerHTML = sorted.map(([school, members]) => {
+            const totalXP = members.reduce((a,p) => a+(p.xp||0), 0);
+            const certs = members.reduce((a,p) => a + courses.filter(c=>hasCourseExamPassed(p,c.id)).length, 0);
+            return `<div class="school-group-header">
+                <i class="fas fa-school" style="color:#818cf8"></i>
+                <span style="flex:1">${esc(school)}</span>
+                <span style="font-weight:500;color:#94a3b8;font-size:10px;text-transform:none;letter-spacing:0">${members.length} docentes &nbsp;·&nbsp; ${fmt(totalXP)} XP &nbsp;·&nbsp; ${certs} cert.</span>
+            </div>
+            <table style="margin-bottom:0">${thead}<tbody>${members.map(rowHtml).join('')}</tbody></table>`;
+        }).join('');
+    }
 }
 
 function avatarColor(name) {
@@ -953,16 +971,55 @@ function avatarColor(name) {
 
 let _roleMapCache = {};
 let _activePanelUserId = null;
+let _usersSort = 'xp';
+let _usersGroupBySchool = false;
+let _usersFilterQ = '';
+
+function setUsersSort(key) {
+    _usersSort = key;
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('sort' + key.charAt(0).toUpperCase() + key.slice(1) + 'Btn')?.classList.add('active');
+    _applyUsersView();
+}
+
+function toggleGroupSchool() {
+    _usersGroupBySchool = !_usersGroupBySchool;
+    document.getElementById('groupSchoolBtn')?.classList.toggle('active', _usersGroupBySchool);
+    _applyUsersView();
+}
 
 function filterUsers(q) {
-    if (!q.trim()) { renderUsersTable(_usersCache, _roleMapCache); return; }
-    const ql = q.toLowerCase();
-    renderUsersTable(_usersCache.filter(p =>
-        getName(p).toLowerCase().includes(ql)  ||
-        getEmail(p).toLowerCase().includes(ql) ||
-        getSchool(p).toLowerCase().includes(ql)||
-        getDept(p).toLowerCase().includes(ql)
-    ), _roleMapCache);
+    _usersFilterQ = q;
+    _applyUsersView();
+}
+
+function _applyUsersView() {
+    const courses = _coursesList.length ? _coursesList : STATIC_COURSES;
+    let users = _usersCache;
+
+    // Filtro de búsqueda
+    if (_usersFilterQ.trim()) {
+        const ql = _usersFilterQ.toLowerCase();
+        users = users.filter(p =>
+            getName(p).toLowerCase().includes(ql)  ||
+            getEmail(p).toLowerCase().includes(ql) ||
+            getSchool(p).toLowerCase().includes(ql)||
+            getDept(p).toLowerCase().includes(ql)
+        );
+    }
+
+    // Ordenar
+    users = [...users].sort((a, b) => {
+        if (_usersSort === 'xp')   return (b.xp||0) - (a.xp||0);
+        if (_usersSort === 'cert') {
+            const ca = courses.filter(c => hasCourseExamPassed(a, c.id)).length;
+            const cb = courses.filter(c => hasCourseExamPassed(b, c.id)).length;
+            return cb - ca || (b.xp||0) - (a.xp||0);
+        }
+        return getName(a).localeCompare(getName(b), 'es');
+    });
+
+    renderUsersTable(users, _roleMapCache, _usersGroupBySchool);
 }
 
 // ── Panel lateral docente ─────────────────────────────────
