@@ -1436,6 +1436,24 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="STEAM 2.0">
     <link rel="apple-touch-icon" href="icon.svg">
+    <style>
+    /* Markdown en burbujas del chatbot */
+    .chat-md h1,.chat-md h2,.chat-md h3{font-weight:700;margin:.5em 0 .25em}
+    .chat-md h1{font-size:1.1em}.chat-md h2{font-size:1em}.chat-md h3{font-size:.95em}
+    .chat-md p{margin:.3em 0}
+    .chat-md ul,.chat-md ol{padding-left:1.3em;margin:.3em 0}
+    .chat-md li{margin:.15em 0}
+    .chat-md code{background:rgba(0,0,0,.08);border-radius:4px;padding:1px 5px;font-size:.85em;font-family:monospace}
+    .chat-md pre{background:rgba(0,0,0,.08);border-radius:8px;padding:10px;overflow-x:auto;margin:.4em 0}
+    .chat-md pre code{background:none;padding:0}
+    .chat-md strong{font-weight:700}
+    .chat-md em{font-style:italic}
+    .chat-md table{border-collapse:collapse;width:100%;margin:.4em 0;font-size:.85em}
+    .chat-md th,.chat-md td{border:1px solid rgba(0,0,0,.15);padding:4px 8px;text-align:left}
+    .chat-md th{background:rgba(0,0,0,.06);font-weight:700}
+    .chat-md a{color:#2563eb;text-decoration:underline}
+    .chat-md hr{border:none;border-top:1px solid rgba(0,0,0,.12);margin:.5em 0}
+    </style>
 </head>
 
 <body>
@@ -2652,6 +2670,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb@8.0.0/build/umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- ==================== MODAL COMENTARIOS POR TARJETA ==================== -->
     <!-- ══ MODAL: PORTAFOLIO DE PRÁCTICA ══ -->
     <div id="portfolioModal" class="hidden fixed inset-0 bg-black/60 z-[200] flex items-end justify-center"
