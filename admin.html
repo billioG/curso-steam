@@ -514,7 +514,7 @@
             <div class="section-header flex items-center justify-between mb-6">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-800">Docentes registrados</h1>
-                    <p class="text-sm text-slate-400 mt-0.5">Historial de progreso y actividad por docente</p>
+                    <p class="text-sm text-slate-400 mt-0.5">Clic en un docente para ver su perfil completo</p>
                 </div>
                 <div class="users-actions flex gap-2 flex-wrap">
                     <input id="userSearch" type="text" placeholder="Buscar docente…" class="input-field w-48 text-xs" oninput="filterUsers(this.value)">
@@ -531,6 +531,69 @@
                 <div id="usersTableContainer"></div>
             </div>
         </div>
+
+        <!-- ═══ PANEL LATERAL DOCENTE ═══ -->
+        <div id="userPanelOverlay" class="hidden fixed inset-0 bg-black/30 z-50" onclick="closeUserPanel()"></div>
+        <aside id="userPanel" class="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl z-50 flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto">
+            <!-- Header del panel -->
+            <div id="panelHeader" class="p-5 border-b border-slate-100">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div id="panelAvatar" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-lg shrink-0" style="background:#4f46e5">A</div>
+                        <div>
+                            <p id="panelName" class="font-bold text-slate-800 text-base leading-tight">—</p>
+                            <p id="panelEmail" class="text-xs text-slate-400 mt-0.5">—</p>
+                            <div id="panelBadges" class="flex gap-1 mt-1.5 flex-wrap"></div>
+                        </div>
+                    </div>
+                    <button onclick="closeUserPanel()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 shrink-0 text-lg leading-none">&times;</button>
+                </div>
+                <div id="panelMeta" class="grid grid-cols-3 gap-3 text-center">
+                    <div class="bg-amber-50 rounded-xl p-2"><p class="text-lg font-black text-amber-600" id="panelXP">—</p><p class="text-[10px] text-slate-400 uppercase font-semibold">XP</p></div>
+                    <div class="bg-orange-50 rounded-xl p-2"><p class="text-lg font-black text-orange-500" id="panelStreak">—</p><p class="text-[10px] text-slate-400 uppercase font-semibold">Racha</p></div>
+                    <div class="bg-indigo-50 rounded-xl p-2"><p class="text-lg font-black text-indigo-600" id="panelCards">—</p><p class="text-[10px] text-slate-400 uppercase font-semibold">Tarjetas</p></div>
+                </div>
+            </div>
+            <!-- Rol y escuela -->
+            <div class="p-5 border-b border-slate-100 space-y-3">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1.5">Rol</p>
+                    <select id="panelRoleSelect" onchange="changePanelRole(this.value)" class="input-field text-sm">
+                        <option value="student">Docente</option>
+                        <option value="coordinator">Coordinador</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1.5">Centro educativo</p>
+                    <select id="panelSchoolSelect" onchange="changePanelSchool(this.value)" class="input-field text-sm">
+                        <option value="">— Sin centro —</option>
+                    </select>
+                </div>
+                <div id="panelDeptWrap">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Departamento</p>
+                    <p id="panelDept" class="text-sm text-slate-600">—</p>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Último acceso</p>
+                    <p id="panelLastAccess" class="text-sm text-slate-600">—</p>
+                </div>
+            </div>
+            <!-- Diagnóstico -->
+            <div class="px-5 pt-4 pb-2" id="panelDiagWrap">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Diagnóstico inicial</p>
+                <div id="panelDiag"></div>
+            </div>
+            <!-- Progreso por curso -->
+            <div class="px-5 pt-2 pb-4">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-3">Progreso por curso</p>
+                <div id="panelCourses" class="space-y-3"></div>
+            </div>
+            <!-- Botón peligroso -->
+            <div class="mt-auto p-5 border-t border-slate-100">
+                <button id="panelDeleteBtn" onclick="deletePanelUser()" class="w-full btn-danger text-sm flex items-center justify-center gap-2"><i class="fas fa-trash-alt"></i> Eliminar docente</button>
+            </div>
+        </aside>
 
         <!-- ═══ FEEDBACK ═══ -->
         <div id="feedbackView" class="view">

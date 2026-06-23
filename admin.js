@@ -889,77 +889,70 @@ function renderUsersTable(users, roleMap = {}) {
     if (!users.length) { cont.innerHTML='<div class="loader">Sin docentes registrados aún.</div>'; return; }
 
     const courses = _coursesList.length ? _coursesList : STATIC_COURSES;
-    const shortTitle = t => t.length > 14 ? t.substring(0,13)+'…' : t;
 
-    const _roleMap = roleMap;
-
-    cont.innerHTML = `<div class="overflow-x-auto"><table>
+    cont.innerHTML = `<table>
         <thead><tr>
-            <th>Docente</th><th>Correo</th><th>Rol</th><th>Escuela</th><th>XP</th><th>Racha</th><th>Diagnóstico</th>
-            ${courses.map(c=>`<th title="${esc(c.title)}">${shortTitle(c.title)}</th>`).join('')}
+            <th>Docente</th>
+            <th>Escuela</th>
+            <th>XP</th>
+            <th>Cursos cert.</th>
+            <th>Progreso</th>
             <th>Último acceso</th>
         </tr></thead>
         <tbody>${users.map(p => {
             const activo = isActive30d(p);
-            const diag = p?.daily_missions?.diagResult;
-            const _diagMap = {
-                inicial:       '<span class="badge" style="background:#fee2e2;color:#991b1b;font-size:9px">Inicial</span>',
-                proceso:       '<span class="badge" style="background:#fef3c7;color:#92400e;font-size:9px">En Proceso</span>',
-                satisfactorio: '<span class="badge" style="background:#dcfce7;color:#166534;font-size:9px">Satisfactorio</span>',
-                destacado:     '<span class="badge" style="background:#f3e8ff;color:#6b21a8;font-size:9px">Destacado</span>',
-            };
-            const diagLabel = diag ? (_diagMap[diag.level] || '—') : '—';
+            const certCount = courses.filter(c => hasCourseExamPassed(p, c.id)).length;
+            const startedCourses = courses.filter(c => hasCourseStarted(p, c.id));
+            const avgPct = startedCourses.length
+                ? Math.round(startedCourses.reduce((a,c) => a + getProgressPct(p,c.id), 0) / startedCourses.length)
+                : 0;
+            const role = roleMap[p.user_id] || 'student';
+            const roleLabel = role === 'admin' ? '<span class="badge tag-violet" style="font-size:9px">Admin</span>'
+                : role === 'coordinator' ? '<span class="badge tag-blue" style="font-size:9px">Coord.</span>' : '';
             const school = getSchool(p);
-            const currentRole = _roleMap[p.user_id] || 'student';
-            const courseCells = courses.map(c => {
-                if (hasCourseExamPassed(p, c.id)) {
-                    return `<td><span class="badge tag-green" style="font-size:9px">✓ Cert.</span></td>`;
-                } else if (hasCourseStarted(p, c.id)) {
-                    const pct = getProgressPct(p, c.id);
-                    return `<td><span class="badge tag-blue" style="font-size:9px">${pct}%</span></td>`;
-                }
-                return `<td><span class="text-slate-300 text-xs">—</span></td>`;
-            }).join('');
-            const actBadge = activo ? '<span class="badge tag-green" style="font-size:9px">Activo</span>' : '';
-            return `<tr>
+            return `<tr style="cursor:pointer" onclick="openUserPanel('${p.user_id}')" title="Ver perfil">
                 <td>
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs shrink-0">${esc(getName(p).charAt(0).toUpperCase())}</div>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm shrink-0 text-white" style="background:${avatarColor(getName(p))}">${esc(getName(p).charAt(0).toUpperCase())}</div>
                         <div>
-                            <p class="font-semibold text-slate-800 text-xs">${esc(getName(p))}</p>
-                            <div class="flex gap-1 mt-0.5">${actBadge}</div>
+                            <p class="font-semibold text-slate-800 text-sm">${esc(getName(p))}</p>
+                            <div class="flex items-center gap-1 mt-0.5">
+                                ${activo ? '<span class="badge tag-green" style="font-size:9px">Activo</span>' : '<span class="badge tag-slate" style="font-size:9px">Inactivo</span>'}
+                                ${roleLabel}
+                            </div>
                         </div>
                     </div>
                 </td>
-                <td class="text-slate-400 text-xs">${esc(getEmail(p))}</td>
+                <td class="text-xs text-slate-500">${esc(school || '—')}</td>
+                <td><span class="font-bold text-amber-600 text-sm"><i class="fas fa-star text-yellow-400 text-xs"></i> ${fmt(p.xp||0)}</span></td>
                 <td>
-                    <select onchange="changeUserRole('${p.user_id}', this.value)"
-                        class="border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-300"
-                        title="Cambiar rol">
-                        <option value="student" ${currentRole==='student'?'selected':''}>Docente</option>
-                        <option value="coordinator" ${currentRole==='coordinator'?'selected':''}>Coordinador</option>
-                        <option value="admin" ${currentRole==='admin'?'selected':''}>Admin</option>
-                    </select>
+                    ${certCount > 0
+                        ? `<span class="badge tag-green">${certCount} cert.</span>`
+                        : `<span class="text-slate-300 text-xs">—</span>`}
                 </td>
-                <td class="text-xs">
-                    <select onchange="assignTeacherSchool('${p.user_id}', this.value)"
-                        class="border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-300 max-w-[130px]"
-                        title="${esc(school)}">
-                        <option value="">— Sin centro —</option>
-                        ${_schools.map(s => `<option value="${s.id}" ${_userSchoolMap[p.user_id] === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}
-                    </select>
+                <td style="min-width:120px">
+                    ${startedCourses.length ? `
+                    <div class="flex items-center gap-2">
+                        <div style="flex:1;background:#f1f5f9;border-radius:4px;height:6px">
+                            <div style="width:${avgPct}%;background:${avgPct>=80?'#10b981':avgPct>=40?'#07B0E4':'#f59e0b'};height:100%;border-radius:4px"></div>
+                        </div>
+                        <span class="text-xs font-bold text-slate-500">${avgPct}%</span>
+                    </div>` : '<span class="text-slate-300 text-xs">Sin iniciar</span>'}
                 </td>
-                <td><span class="font-bold text-amber-600 text-xs"><i class="fas fa-star text-yellow-400"></i> ${fmt(p.xp||0)}</span></td>
-                <td class="text-xs"><i class="fas fa-fire text-orange-400"></i> ${p.streak||0}d</td>
-                <td class="text-xs">${diagLabel}</td>
-                ${courseCells}
                 <td class="text-slate-400 text-xs whitespace-nowrap">${fmtDateTime(p.updated_at)}</td>
             </tr>`;
         }).join('')}</tbody>
-    </table></div>`;
+    </table>`;
+}
+
+function avatarColor(name) {
+    const colors = ['#4f46e5','#07B0E4','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4'];
+    let h = 0; for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h<<5)-h);
+    return colors[Math.abs(h) % colors.length];
 }
 
 let _roleMapCache = {};
+let _activePanelUserId = null;
 
 function filterUsers(q) {
     if (!q.trim()) { renderUsersTable(_usersCache, _roleMapCache); return; }
@@ -970,6 +963,137 @@ function filterUsers(q) {
         getSchool(p).toLowerCase().includes(ql)||
         getDept(p).toLowerCase().includes(ql)
     ), _roleMapCache);
+}
+
+// ── Panel lateral docente ─────────────────────────────────
+function openUserPanel(userId) {
+    const p = _usersCache.find(u => u.user_id === userId);
+    if (!p) return;
+    _activePanelUserId = userId;
+
+    const name = getName(p);
+    const color = avatarColor(name);
+    const courses = _coursesList.length ? _coursesList : STATIC_COURSES;
+
+    // Header
+    const av = document.getElementById('panelAvatar');
+    if (av) { av.textContent = name.charAt(0).toUpperCase(); av.style.background = color; }
+    setText('panelName', name);
+    setText('panelEmail', getEmail(p));
+    setText('panelXP', fmt(p.xp||0));
+    setText('panelStreak', (p.streak||0)+'d');
+    setText('panelCards', fmt(p.completed_cards?.length||0));
+    setText('panelDept', getDept(p) || 'No especificado');
+    setText('panelLastAccess', fmtDateTime(p.updated_at));
+
+    // Badges de estado
+    const badgesEl = document.getElementById('panelBadges');
+    if (badgesEl) {
+        const isActive = isActive30d(p);
+        const role = _roleMapCache[userId] || 'student';
+        const roleBadge = role==='admin' ? '<span class="badge tag-violet">Admin</span>'
+            : role==='coordinator' ? '<span class="badge tag-blue">Coordinador</span>'
+            : '<span class="badge tag-slate">Docente</span>';
+        badgesEl.innerHTML = (isActive ? '<span class="badge tag-green">Activo</span>' : '<span class="badge tag-slate">Inactivo</span>') + roleBadge;
+    }
+
+    // Rol select
+    const roleEl = document.getElementById('panelRoleSelect');
+    if (roleEl) roleEl.value = _roleMapCache[userId] || 'student';
+
+    // Escuela select
+    const schoolEl = document.getElementById('panelSchoolSelect');
+    if (schoolEl) {
+        schoolEl.innerHTML = '<option value="">— Sin centro —</option>' +
+            _schools.map(s => `<option value="${s.id}" ${_userSchoolMap[userId]===s.id?'selected':''}>${esc(s.name)}</option>`).join('');
+    }
+
+    // Diagnóstico
+    const diagEl = document.getElementById('panelDiag');
+    if (diagEl) {
+        const diag = p?.daily_missions?.diagResult;
+        const diagStyles = {
+            inicial:       { bg:'#fee2e2', color:'#991b1b', label:'Inicial' },
+            proceso:       { bg:'#fef3c7', color:'#92400e', label:'En proceso' },
+            satisfactorio: { bg:'#dcfce7', color:'#166534', label:'Satisfactorio' },
+            destacado:     { bg:'#f3e8ff', color:'#6b21a8', label:'Destacado' },
+        };
+        const ds = diag?.level ? diagStyles[diag.level] : null;
+        diagEl.innerHTML = ds
+            ? `<span class="badge" style="background:${ds.bg};color:${ds.color}">${ds.label}</span>`
+            : '<span class="text-slate-400 text-sm">No completado</span>';
+    }
+
+    // Progreso por curso
+    const coursesEl = document.getElementById('panelCourses');
+    if (coursesEl) {
+        coursesEl.innerHTML = courses.map(c => {
+            const passed = hasCourseExamPassed(p, c.id);
+            const started = hasCourseStarted(p, c.id);
+            const pct = getProgressPct(p, c.id);
+            const barColor = passed ? '#10b981' : pct >= 40 ? '#07B0E4' : '#f59e0b';
+            const shortT = c.title.length > 32 ? c.title.substring(0,31)+'…' : c.title;
+            return `<div>
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-semibold text-slate-700">${esc(shortT)}</span>
+                    ${passed ? '<span class="badge tag-green" style="font-size:9px">✓ Cert.</span>'
+                        : started ? `<span class="text-xs font-bold" style="color:${barColor}">${pct}%</span>`
+                        : '<span class="text-slate-300 text-xs">Sin iniciar</span>'}
+                </div>
+                ${started || passed ? `<div style="background:#f1f5f9;border-radius:4px;height:5px">
+                    <div style="width:${passed?100:pct}%;background:${barColor};height:100%;border-radius:4px;transition:width .4s"></div>
+                </div>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    // Mostrar panel
+    document.getElementById('userPanelOverlay')?.classList.remove('hidden');
+    const panel = document.getElementById('userPanel');
+    if (panel) { panel.style.transform = 'translateX(0)'; }
+}
+
+function closeUserPanel() {
+    _activePanelUserId = null;
+    document.getElementById('userPanelOverlay')?.classList.add('hidden');
+    const panel = document.getElementById('userPanel');
+    if (panel) panel.style.transform = 'translateX(100%)';
+}
+
+function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+}
+
+async function changePanelRole(role) {
+    if (!_activePanelUserId) return;
+    await changeUserRole(_activePanelUserId, role);
+    _roleMapCache[_activePanelUserId] = role;
+    renderUsersTable(_usersCache, _roleMapCache);
+}
+
+async function changePanelSchool(schoolId) {
+    if (!_activePanelUserId) return;
+    await assignTeacherSchool(_activePanelUserId, schoolId);
+}
+
+async function deletePanelUser() {
+    if (!_activePanelUserId) return;
+    const p = _usersCache.find(u => u.user_id === _activePanelUserId);
+    if (!confirm(`¿Eliminar permanentemente a ${getName(p)}? Esta acción no se puede deshacer.`)) return;
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    const EDGE_URL = `${sb.supabaseUrl}/functions/v1/admin-users`;
+    const res = await fetch(EDGE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ action: 'deleteUser', userId: _activePanelUserId })
+    });
+    const json = await res.json();
+    if (!res.ok) { toast('Error: ' + (json.error || res.status), false); return; }
+    toast(`Docente eliminado.`);
+    closeUserPanel();
+    loadUsers();
 }
 
 function showInviteModal() {
