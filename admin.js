@@ -600,7 +600,8 @@ function renderDeptChart(progress) {
         tableEl.innerHTML = '<p class="text-slate-400 text-sm text-center py-8">Sin datos de departamento aún.<br><span class="text-xs">Los docentes deben completar su perfil.</span></p>';
         return;
     }
-    const maxN = sorted[0][1] || 1;
+    // maxN debe considerar TODOS los valores incluido "Sin departamento"
+    const maxN = Math.max(...sorted.map(([,n]) => n), 1);
     const total = progress.length;
     const colors = ['#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a78bfa'];
     tableEl.innerHTML = sorted.map(([dept, n], i) => {
@@ -944,8 +945,14 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
         </tr>`;
     };
 
+    const tableStyle = `style="table-layout:fixed;width:100%"`;
+    const colGroup = `<colgroup>
+        <col style="width:28%"><col style="width:20%"><col style="width:10%">
+        <col style="width:10%"><col style="width:17%"><col style="width:15%">
+    </colgroup>`;
+
     if (!groupBySchool) {
-        cont.innerHTML = `<table>${thead}<tbody>${users.map(rowHtml).join('')}</tbody></table>`;
+        cont.innerHTML = `<table ${tableStyle}>${colGroup}${thead}<tbody>${users.map(rowHtml).join('')}</tbody></table>`;
     } else {
         // Agrupar por escuela
         const groups = {};
@@ -967,7 +974,7 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
                 <span style="flex:1">${esc(school)}</span>
                 <span style="font-weight:500;color:#94a3b8;font-size:10px;text-transform:none;letter-spacing:0">${members.length} docentes &nbsp;·&nbsp; ${fmt(totalXP)} XP &nbsp;·&nbsp; ${certs} cert.</span>
             </div>
-            <table style="margin-bottom:0">${thead}<tbody>${members.map(rowHtml).join('')}</tbody></table>`;
+            <table ${tableStyle} style="margin-bottom:0">${colGroup}${thead}<tbody>${members.map(rowHtml).join('')}</tbody></table>`;
         }).join('');
     }
 }
