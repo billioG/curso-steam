@@ -5076,9 +5076,19 @@ function _checkOnboardingRequirements(onComplete) {
     overlay.id = 'onboardingOverlay';
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
 
+    // Carga lazy de la base de datos de centros educativos
+    function _loadSchoolsDB(cb) {
+        if (typeof SCHOOLS_GT !== 'undefined') { cb(); return; }
+        const s = document.createElement('script');
+        s.src = './schools_gt.js';
+        s.onload = cb;
+        s.onerror = cb;
+        document.head.appendChild(s);
+    }
+
     function showProfileStep() {
         overlay.innerHTML = `
-        <div style="background:#fff;border-radius:24px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.25)">
+        <div style="background:#fff;border-radius:24px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto">
             <div style="text-align:center;margin-bottom:20px">
                 <div style="font-size:36px;margin-bottom:8px">🏫</div>
                 <h2 style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 6px">Completa tu perfil</h2>
@@ -5091,17 +5101,75 @@ function _checkOnboardingRequirements(onComplete) {
                     ${GT_DEPARTMENTS.map(d => `<option value="${d}"${dm.department===d?' selected':''}>${d}</option>`).join('')}
                 </select>
             </div>
-            <div style="margin-bottom:20px">
+            <div style="margin-bottom:20px;position:relative">
                 <label style="display:block;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Nombre del establecimiento *</label>
-                <input id="_ob_school" type="text" placeholder="Ej: Escuela Oficial Rural Mixta No. 123"
+                <input id="_ob_school" type="text" autocomplete="off"
+                    placeholder="Escribe para buscar tu centro educativo…"
                     value="${esc(dm.school||'')}"
                     style="width:100%;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px 14px;font-size:14px;background:#f8fafc;outline:none;box-sizing:border-box">
+                <div id="_ob_schoolDrop" style="display:none;position:absolute;top:calc(100% - 4px);left:0;right:0;background:#fff;border:1.5px solid #e2e8f0;border-top:none;border-radius:0 0 14px 14px;max-height:200px;overflow-y:auto;z-index:10000;box-shadow:0 8px 24px rgba(0,0,0,.12)"></div>
             </div>
             <button id="_ob_profileSave" style="width:100%;padding:14px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;font-weight:800;font-size:14px;border:none;border-radius:14px;cursor:pointer">
                 Guardar y continuar →
             </button>
             <p id="_ob_profileErr" style="color:#ef4444;font-size:12px;text-align:center;margin:8px 0 0;display:none">Por favor completa ambos campos.</p>
         </div>`;
+
+        // Autocompletado de centros educativos
+        let _obSchoolTimer = null;
+        function _obUpdateSuggestions() {
+            const drop = document.getElementById('_ob_schoolDrop');
+            const inp  = document.getElementById('_ob_school');
+            const dept = document.getElementById('_ob_dept')?.value;
+            if (!drop || !inp) return;
+            const query = inp.value.trim().toLowerCase();
+            if (!query || query.length < 2 || typeof SCHOOLS_GT === 'undefined' || !dept) {
+                drop.style.display = 'none';
+                return;
+            }
+            const pool = SCHOOLS_GT[dept] || [];
+            const matches = pool.filter(s => s.toLowerCase().includes(query)).slice(0, 10);
+            if (!matches.length) { drop.style.display = 'none'; return; }
+            drop.innerHTML = matches.map(s => {
+                const parts  = s.split(' · ');
+                const name   = parts[0] || s;
+                const mun    = parts[1] || '';
+                const hi     = name.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<strong>$1</strong>');
+                return `<div onclick="_obSelectSchool(this)" data-name="${name.replace(/"/g,'&quot;')}"
+                    style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid #f1f5f9;transition:background .15s"
+                    onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background=''">${hi}<span style="font-size:11px;color:#94a3b8;margin-left:6px">· ${mun}</span></div>`;
+            }).join('');
+            drop.style.display = 'block';
+        }
+
+        window._obSelectSchool = function(el) {
+            const name = el.dataset.name;
+            const inp  = document.getElementById('_ob_school');
+            const drop = document.getElementById('_ob_schoolDrop');
+            if (inp) inp.value = name;
+            if (drop) drop.style.display = 'none';
+        };
+
+        // Cargar BD y conectar eventos
+        _loadSchoolsDB(() => {
+            const inp  = document.getElementById('_ob_school');
+            const dept = document.getElementById('_ob_dept');
+            if (!inp) return;
+            inp.addEventListener('input', () => {
+                clearTimeout(_obSchoolTimer);
+                _obSchoolTimer = setTimeout(_obUpdateSuggestions, 180);
+            });
+            inp.addEventListener('focus', _obUpdateSuggestions);
+            inp.addEventListener('blur', () => setTimeout(() => {
+                const d = document.getElementById('_ob_schoolDrop');
+                if (d) d.style.display = 'none';
+            }, 200));
+            if (dept) dept.addEventListener('change', () => {
+                const d = document.getElementById('_ob_schoolDrop');
+                if (d) d.style.display = 'none';
+                _obUpdateSuggestions();
+            });
+        });
 
         document.getElementById('_ob_profileSave').onclick = () => {
             const dept   = document.getElementById('_ob_dept').value.trim();
