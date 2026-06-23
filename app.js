@@ -1292,7 +1292,6 @@ function renderCard() {
                 }
             });
         }
-    }
     } else if (card.type === 'project') {
         // Tarjeta de proyecto (caso de estudio / actividad práctica)
         const cardId = card.id ? String(card.id) : `${currentModule}-${currentCardIndex}`;
