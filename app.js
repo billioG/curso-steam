@@ -2723,8 +2723,26 @@ function getDisplayName() {
     return raw.replace(/\b\w/g, c => c.toUpperCase());
 }
 
-// ── Helper: ir a la tarjeta de contenido anterior al quiz ──
+// ── Helper: ir a la tarjeta de referencia del quiz ──
 function goToRefCard() {
+    const currentCard = modulesData[currentModule - 1]?.cards?.[currentCardIndex];
+    const targetId = currentCard?.reviewCard;
+
+    if (targetId) {
+        // Buscar la tarjeta por ID en todos los módulos
+        for (let m = 0; m < modulesData.length; m++) {
+            const cards = modulesData[m]?.cards || [];
+            const idx = cards.findIndex(c => c.id === targetId);
+            if (idx !== -1) {
+                currentModule = m + 1;
+                currentCardIndex = idx;
+                renderCard();
+                return;
+            }
+        }
+    }
+
+    // Fallback: tarjeta de contenido anterior en el mismo módulo
     let idx = currentCardIndex - 1;
     const mod = modulesData[currentModule - 1];
     while (idx >= 0 && mod?.cards[idx]?.type !== 'content') idx--;
