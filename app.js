@@ -1973,6 +1973,8 @@ function renderModulesTab() {
         let actionBtn = '';
         let opacity = '';
 
+        const allCardsSeen = modCards.length > 0 && pct === 100;
+
         if (locked) {
             opacity = 'opacity-60';
             statusBadge = `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-500">🔒 <span data-unlock-ms="${remainingMs}">${formatCountdown(remainingMs)}</span></span>`;
@@ -1981,7 +1983,7 @@ function renderModulesTab() {
                        🔓 Desbloquear con ${XP_UNLOCK_COST} XP
                    </button>`
                 : `<p class="mt-2 text-xs text-slate-400 text-center">Disponible en <span data-unlock-ms="${remainingMs}">${formatCountdown(remainingMs)}</span> · o con ${XP_UNLOCK_COST} XP</p>`;
-        } else if (isCompleted) {
+        } else if (isCompleted || allCardsSeen) {
             statusBadge = `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">✅ Completado</span>`;
             actionBtn = `<button onclick="goToModule(${i})" class="mt-3 w-full text-sm font-semibold py-2 rounded-xl border-2" style="color:${theme.primary};border-color:${theme.primary}">
                              Repasar módulo
