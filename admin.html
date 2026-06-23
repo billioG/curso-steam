@@ -243,12 +243,45 @@
                 </div>
             </div>
 
-            <!-- KPI row -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <!-- KPI row principal -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                 <div class="card">
                     <p class="kpi-label">Docentes activos</p>
                     <p class="kpi-val" id="kpiActive">—</p>
                     <p class="kpi-sub">últimos 30 días</p>
+                </div>
+                <div class="card">
+                    <p class="kpi-label">Tasa finalización</p>
+                    <p class="kpi-val text-emerald-600" id="kpiCompletion">—</p>
+                    <p class="kpi-sub">completaron ≥1 curso</p>
+                </div>
+                <div class="card">
+                    <p class="kpi-label">NPS global</p>
+                    <p class="kpi-val" id="kpiNps">—</p>
+                    <p class="kpi-sub">satisfacción docentes</p>
+                </div>
+                <div class="card">
+                    <p class="kpi-label">Duración sesión</p>
+                    <p class="kpi-val text-indigo-600" id="kpiAvgSession">—</p>
+                    <p class="kpi-sub">promedio por sesión</p>
+                </div>
+                <div class="card">
+                    <p class="kpi-label">Móvil vs PC</p>
+                    <p class="kpi-val text-violet-600" id="kpiMobile">—</p>
+                    <p class="kpi-sub" id="kpiMobileSub">desde celular</p>
+                </div>
+            </div>
+            <!-- KPI row secundario -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="card">
+                    <p class="kpi-label">Total sesiones</p>
+                    <p class="kpi-val text-indigo-600" id="kpiTotalSessions">—</p>
+                    <p class="kpi-sub">desde el lanzamiento</p>
+                </div>
+                <div class="card">
+                    <p class="kpi-label">Total tarjetas</p>
+                    <p class="kpi-val" id="kpiCards">—</p>
+                    <p class="kpi-sub">completadas (todos)</p>
                 </div>
                 <div class="card">
                     <p class="kpi-label">Tiempo promedio</p>
@@ -256,31 +289,38 @@
                     <p class="kpi-sub">por tarjeta</p>
                 </div>
                 <div class="card">
-                    <p class="kpi-label">Total tarjetas</p>
-                    <p class="kpi-val" id="kpiCards">—</p>
-                    <p class="kpi-sub">completadas</p>
-                </div>
-                <div class="card">
-                    <p class="kpi-label">NPS global</p>
-                    <p class="kpi-val" id="kpiNps">—</p>
-                    <p class="kpi-sub">satisfacción docentes</p>
+                    <p class="kpi-label">Portafolios</p>
+                    <p class="kpi-val text-amber-600" id="kpiPortfolios">—</p>
+                    <p class="kpi-sub">enviados / con cert.</p>
                 </div>
             </div>
-            <!-- Session KPI row -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="card">
-                    <p class="kpi-label">Sesiones totales</p>
-                    <p class="kpi-val text-indigo-600" id="kpiTotalSessions">—</p>
-                    <p class="kpi-sub">desde el lanzamiento</p>
+
+            <!-- Embudo + Dispositivos + Sesiones -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+                <div class="card lg:col-span-1">
+                    <p class="font-bold text-slate-800 mb-0.5">Embudo de conversión</p>
+                    <p class="text-xs text-slate-400 mb-4">De registrado a certificado</p>
+                    <div id="funnelChart"></div>
                 </div>
                 <div class="card">
-                    <p class="kpi-label">Duración promedio</p>
-                    <p class="kpi-val text-indigo-600" id="kpiAvgSession">—</p>
-                    <p class="kpi-sub">por sesión</p>
+                    <p class="font-bold text-slate-800 mb-0.5">Dispositivos</p>
+                    <p class="text-xs text-slate-400 mb-4">Móvil vs computadora</p>
+                    <canvas id="deviceChart" height="180"></canvas>
                 </div>
-                <div class="card lg:col-span-2">
-                    <p class="kpi-label mb-2">Sesiones últimos 14 días</p>
-                    <canvas id="sessionsChart" height="60"></canvas>
+                <div class="card">
+                    <p class="font-bold text-slate-800 mb-0.5">Sesiones últimos 14 días</p>
+                    <p class="text-xs text-slate-400 mb-2">Actividad diaria</p>
+                    <canvas id="sessionsChart" height="160"></canvas>
+                </div>
+            </div>
+
+            <!-- Departamentos -->
+            <div class="card mb-5">
+                <p class="font-bold text-slate-800 mb-0.5">Docentes por departamento</p>
+                <p class="text-xs text-slate-400 mb-4">Distribución geográfica — Guatemala</p>
+                <div id="deptChart" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <canvas id="deptBarChart" height="220"></canvas>
+                    <div id="deptTable" class="overflow-auto max-h-64"></div>
                 </div>
             </div>
 
