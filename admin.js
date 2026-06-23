@@ -301,7 +301,7 @@ async function loadDashboard() {
     const now = new Date();
     document.getElementById('dashPeriod').textContent =
         `Actualizado ${now.toLocaleDateString('es-GT',{day:'2-digit',month:'long',year:'numeric'})}`;
-    document.getElementById('impactDocentes').textContent = fmt(total);
+    document.getElementById('impactDocentes').textContent = fmt(active30);
     document.getElementById('impactHoras').textContent = fmt(horasFormacion)+'h';
     const horasRealEl = document.getElementById('impactHorasReal');
     if (horasRealEl) horasRealEl.textContent = metodoLabel;
@@ -638,13 +638,13 @@ function renderCardTimeTable(rows) {
         map[id].total += r.time_spent_seconds || 0;
         map[id].count++;
     });
-    // Intentar mapear a nombres de tarjeta desde datos de cursos
+    // Mapear card IDs a nombres si hay cursos cargados desde DB (tienen módulos como array)
     const cardNames = {};
-    const allCourses = typeof _coursesList !== 'undefined' && _coursesList.length ? _coursesList : STATIC_COURSES;
-    allCourses.forEach(c => {
-        (c.modules||[]).forEach(m => {
+    const dbCourses = (typeof _coursesList !== 'undefined' ? _coursesList : []).filter(c => Array.isArray(c.modules));
+    dbCourses.forEach(c => {
+        c.modules.forEach(m => {
             (m.cards||[]).forEach(card => {
-                cardNames[String(card.id)] = { title: card.title || card.type || 'Tarjeta', course: c.title };
+                cardNames[String(card.id)] = card.title || card.type || 'Tarjeta';
             });
         });
     });
@@ -659,13 +659,14 @@ function renderCardTimeTable(rows) {
         <span>Tarjeta</span><span style="text-align:right">Vistas</span><span style="text-align:right">Promedio</span>
     </div>` +
     sorted.map(({ id, avg, count }) => {
-        const info = cardNames[id];
+        const name = cardNames[id];
+        const label = name ? (name.length > 28 ? name.substring(0,27)+'…' : name) : 'ID: '+id;
         const barW = Math.round(avg / maxAvg * 100);
         const color = avg > 120 ? '#f59e0b' : avg > 60 ? '#06b6d4' : '#10b981';
         return `<div style="padding:7px 0;border-bottom:1px solid #f8fafc">
             <div style="display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;align-items:center;margin-bottom:3px">
-                <span style="font-size:12px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(info?.title||id)}">
-                    ${esc(info?.title ? info.title.substring(0,28) + (info.title.length>28?'…':'') : 'ID: '+id)}
+                <span style="font-size:12px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(name||id)}">
+                    ${esc(label)}
                 </span>
                 <span style="font-size:11px;color:#94a3b8;text-align:right">${count}</span>
                 <span style="font-size:12px;font-weight:700;color:${color};text-align:right">${fmtTime(avg)}</span>

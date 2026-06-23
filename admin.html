@@ -233,28 +233,16 @@
                 <h1 class="text-2xl font-black mb-1">Formación Docente en Pedagogía Innovadora</h1>
                 <p class="text-white/70 text-sm">Guatemala — <span id="dashPeriod">—</span></p>
                 <div class="impact-stats-grid flex flex-wrap gap-6 mt-5">
-                    <div><p class="text-3xl font-black" id="impactDocentes">—</p><p class="text-xs opacity-70 mt-0.5">Docentes alcanzados</p></div>
+                    <div><p class="text-3xl font-black" id="impactDocentes">—</p><p class="text-xs opacity-70 mt-0.5">Docentes activos (30d)</p></div>
                     <div class="impact-divider w-px bg-white/20 self-stretch"></div>
                     <div><p class="text-3xl font-black" id="impactHoras">—</p><p class="text-xs opacity-70 mt-0.5">Horas de formación</p><p class="text-xs opacity-50 mt-0.5" id="impactHorasReal"></p></div>
-                    <div class="impact-divider w-px bg-white/20 self-stretch"></div>
-                    <div><p class="text-3xl font-black" id="impactFinalizacion">—</p><p class="text-xs opacity-70 mt-0.5">Tasa de finalización</p></div>
                     <div class="impact-divider w-px bg-white/20 self-stretch"></div>
                     <div><p class="text-3xl font-black" id="impactCertificados">—</p><p class="text-xs opacity-70 mt-0.5">Certificados emitidos</p></div>
                 </div>
             </div>
 
-            <!-- KPI row principal -->
-            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-                <div class="card">
-                    <p class="kpi-label">Docentes activos</p>
-                    <p class="kpi-val" id="kpiActive">—</p>
-                    <p class="kpi-sub">últimos 30 días</p>
-                </div>
-                <div class="card">
-                    <p class="kpi-label">Tasa finalización</p>
-                    <p class="kpi-val text-emerald-600" id="kpiCompletion">—</p>
-                    <p class="kpi-sub">completaron ≥1 curso</p>
-                </div>
+            <!-- KPI row -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div class="card">
                     <p class="kpi-label">NPS global</p>
                     <p class="kpi-val" id="kpiNps">—</p>
@@ -270,23 +258,10 @@
                     <p class="kpi-val text-violet-600" id="kpiMobile">—</p>
                     <p class="kpi-sub" id="kpiMobileSub">desde celular</p>
                 </div>
-            </div>
-            <!-- KPI row secundario -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div class="card">
                     <p class="kpi-label">Total sesiones</p>
                     <p class="kpi-val text-indigo-600" id="kpiTotalSessions">—</p>
                     <p class="kpi-sub">desde el lanzamiento</p>
-                </div>
-                <div class="card">
-                    <p class="kpi-label">Total tarjetas</p>
-                    <p class="kpi-val" id="kpiCards">—</p>
-                    <p class="kpi-sub">completadas (todos)</p>
-                </div>
-                <div class="card">
-                    <p class="kpi-label">Tiempo promedio</p>
-                    <p class="kpi-val" id="kpiAvgTime">—</p>
-                    <p class="kpi-sub">por tarjeta</p>
                 </div>
                 <div class="card">
                     <p class="kpi-label">Portafolios</p>
@@ -294,6 +269,11 @@
                     <p class="kpi-sub">enviados / con cert.</p>
                 </div>
             </div>
+            <!-- IDs ocultos para compatibilidad con admin.js -->
+            <span id="kpiActive" class="hidden"></span>
+            <span id="kpiCompletion" class="hidden"></span>
+            <span id="kpiCards" class="hidden"></span>
+            <span id="kpiAvgTime" class="hidden"></span>
 
             <!-- Embudo + Dispositivos + Sesiones -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
