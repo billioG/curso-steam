@@ -1211,6 +1211,171 @@ async function _doInvite() {
 // ────────────────────────────────────────────────────────────
 // FEEDBACK
 // ────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// COMENTARIOS EN TARJETAS
+// ══════════════════════════════════════════════════════════════
+let _allAdminComments = [];
+let _adminCommentsPage = 0;
+const _COMMENTS_PER_PAGE = 25;
+
+async function loadAdminComments() {
+    const listEl = document.getElementById('adminCommentsList');
+    if (!listEl) return;
+    listEl.innerHTML = `<div class="card text-center text-slate-400 py-8">Cargando comentarios…</div>`;
+    _adminCommentsPage = 0;
+
+    const { data, error } = await sb
+        .from('card_comments')
+        .select('id, user_id, card_id, module_id, comment, created_at')
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+    if (error || !data) { listEl.innerHTML = `<div class="card text-center text-slate-400 py-8">Error al cargar: ${error?.message}</div>`; return; }
+
+    _allAdminComments = data;
+
+    // KPIs
+    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+    const thisWeek = data.filter(c => new Date(c.created_at) >= weekAgo).length;
+    const uniqueUsers = new Set(data.map(c => c.user_id)).size;
+    const uniqueCards = new Set(data.map(c => c.card_id)).size;
+    document.getElementById('cTotal').textContent = data.length;
+    document.getElementById('cUsers').textContent = uniqueUsers;
+    document.getElementById('cCards').textContent = uniqueCards;
+    document.getElementById('cWeek').textContent  = thisWeek;
+
+    // Badge en sidebar
+    const badge = document.getElementById('commentsBadge');
+    if (badge && thisWeek > 0) { badge.textContent = thisWeek; badge.style.display = 'inline-block'; }
+
+    // Poblar filtro de cursos a partir de los card_id (formato "módulo-índice" o número)
+    const courseFilter = document.getElementById('commentsFilterCourse');
+    if (courseFilter && courseFilter.options.length <= 1) {
+        (STATIC_COURSES || []).forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id; opt.textContent = c.title;
+            courseFilter.appendChild(opt);
+        });
+    }
+
+    // Cargar nombres de usuarios
+    const userIds = [...new Set(data.map(c => c.user_id))];
+    const { data: profiles } = await sb.from('progress')
+        .select('user_id, email, daily_missions')
+        .in('user_id', userIds);
+    const _nameMap = {};
+    (profiles || []).forEach(p => {
+        _nameMap[p.user_id] = p.daily_missions?.fullName || p.email?.split('@')[0] || 'Docente';
+    });
+    _allAdminComments = data.map(c => ({ ...c, _userName: _nameMap[c.user_id] || 'Docente' }));
+
+    _renderAdminComments();
+}
+
+function _getCardLabel(cardId) {
+    // cardId puede ser número (id de tarjeta) o string "modulo-indice"
+    if (!cardId) return `Tarjeta ${cardId}`;
+    // Buscar por ID numérico en allCourses
+    if (typeof allCourses !== 'undefined') {
+        for (const course of allCourses) {
+            for (const mod of (course.modules || [])) {
+                const card = (mod.cards || []).find(c => String(c.id) === String(cardId));
+                if (card) return `${card.title || cardId} — ${mod.title || ''}`;
+            }
+        }
+    }
+    return `Tarjeta ${cardId}`;
+}
+
+function _renderAdminComments(filtered) {
+    const listEl = document.getElementById('adminCommentsList');
+    const moreEl = document.getElementById('adminCommentsLoadMore');
+    if (!listEl) return;
+
+    const src = filtered ?? _allAdminComments;
+    const page = src.slice(0, (_adminCommentsPage + 1) * _COMMENTS_PER_PAGE);
+
+    if (!src.length) {
+        listEl.innerHTML = `<div class="card text-center text-slate-400 py-8">No hay comentarios aún.</div>`;
+        if (moreEl) moreEl.classList.add('hidden');
+        return;
+    }
+
+    listEl.innerHTML = page.map(c => {
+        const date = new Date(c.created_at);
+        const dateStr = date.toLocaleDateString('es', { day:'numeric', month:'short', year:'numeric' });
+        const timeStr = date.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
+        const cardLabel = _getCardLabel(c.card_id);
+        const initial = (c._userName || 'D')[0].toUpperCase();
+
+        return `
+        <div class="card hover:shadow-md transition-shadow" style="border-left:3px solid #6366f1">
+            <div class="flex items-start gap-3">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a5b4fc);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;flex-shrink:0">
+                    ${initial}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <span class="font-bold text-sm text-slate-800">${c._userName}</span>
+                        <span class="text-[10px] text-slate-400">${dateStr} · ${timeStr}</span>
+                    </div>
+                    <p class="text-sm text-slate-700 leading-relaxed mb-2">${c.comment}</p>
+                    <div class="flex items-center gap-1.5">
+                        <span style="background:#eef2ff;color:#4f46e5;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px">
+                            📍 ${cardLabel}
+                        </span>
+                        ${c.module_id ? `<span style="background:#f0fdf4;color:#16a34a;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px">Módulo ${c.module_id}</span>` : ''}
+                    </div>
+                </div>
+                <button onclick="deleteAdminComment('${c.id}')" title="Eliminar" style="flex-shrink:0;background:none;border:none;color:#cbd5e1;cursor:pointer;padding:4px;border-radius:6px;transition:.15s" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+
+    if (moreEl) moreEl.classList.toggle('hidden', page.length >= src.length);
+}
+
+function filterAdminComments() {
+    const q     = (document.getElementById('commentsSearch')?.value || '').toLowerCase();
+    const course = document.getElementById('commentsFilterCourse')?.value || '';
+    _adminCommentsPage = 0;
+
+    let filtered = _allAdminComments;
+    if (q) filtered = filtered.filter(c =>
+        c.comment?.toLowerCase().includes(q) ||
+        c._userName?.toLowerCase().includes(q) ||
+        String(c.card_id).toLowerCase().includes(q)
+    );
+    if (course) {
+        // Filtrar por curso: los card_ids del curso son numéricos para steam, con prefijo para otros
+        const prefixMap = { abp:'abp-', 'design-thinking':'dt-', evaluacion:'ev-', 'tipos-estudiantes':'te-' };
+        const prefix = prefixMap[course];
+        filtered = filtered.filter(c => {
+            if (course === 'steam') return /^\d+$/.test(String(c.card_id));
+            return prefix ? String(c.card_id).startsWith(prefix) : true;
+        });
+    }
+
+    _renderAdminComments(filtered);
+}
+
+function loadMoreAdminComments() {
+    _adminCommentsPage++;
+    _renderAdminComments();
+}
+
+async function deleteAdminComment(commentId) {
+    if (!confirm('¿Eliminar este comentario?')) return;
+    const { error } = await sb.from('card_comments').delete().eq('id', commentId);
+    if (error) { toast('Error al eliminar: ' + error.message, false); return; }
+    _allAdminComments = _allAdminComments.filter(c => c.id !== commentId);
+    document.getElementById('cTotal').textContent = _allAdminComments.length;
+    _renderAdminComments();
+    toast('Comentario eliminado');
+}
+
 async function loadFeedback() {
     const { data:fb, error } = await sb.from('feedback').select('*').order('created_at',{ascending:false});
     if (error || !fb) { empty('feedbackList','Error al cargar feedback.'); return; }
@@ -2532,6 +2697,7 @@ function switchView(view) {
     if (view==='analytics') loadAnalytics();
     if (view==='users')     loadUsers();
     if (view==='feedback')  loadFeedback();
+    if (view==='comments')  loadAdminComments();
     if (view==='cms')       loadCMS();
     if (view==='settings')  loadSettings();
 }
