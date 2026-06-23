@@ -134,7 +134,7 @@ function getProgressPct(p, courseId='steam') {
     }).length;
     const courseInfo = STATIC_COURSES.find(c => c.id === courseId);
     const total = courseInfo?.totalCards || 73;
-    return Math.round((completed / total) * 100);
+    return Math.min(100, Math.round((completed / total) * 100));
 }
 
 function loader(id) {
@@ -901,16 +901,13 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
     const courses = _coursesList.length ? _coursesList : STATIC_COURSES;
 
     const thead = `<thead><tr>
-        <th>Docente</th><th>Escuela</th><th>XP</th><th>Cursos cert.</th><th>Progreso</th><th>Último acceso</th>
+        <th>Docente</th><th>Escuela</th><th>XP</th><th>Certificados</th><th>Avance global</th><th>Último acceso</th>
     </tr></thead>`;
 
     const rowHtml = p => {
             const activo = isActive30d(p);
             const certCount = courses.filter(c => hasCourseExamPassed(p, c.id)).length;
-        const startedCourses = courses.filter(c => hasCourseStarted(p, c.id));
-        const avgPct = startedCourses.length
-            ? Math.round(startedCourses.reduce((a,c) => a + getProgressPct(p,c.id), 0) / startedCourses.length)
-            : 0;
+        const globalPct = courses.length ? Math.round((certCount / courses.length) * 100) : 0;
         const role = roleMap[p.user_id] || 'student';
         const roleLabel = role === 'admin' ? '<span class="badge tag-violet" style="font-size:9px">Admin</span>'
             : role === 'coordinator' ? '<span class="badge tag-blue" style="font-size:9px">Coord.</span>' : '';
@@ -932,14 +929,14 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
             <td class="text-xs text-slate-500">${esc(school || '—')}</td>
             <td><span class="font-bold text-amber-600 text-sm"><i class="fas fa-star text-yellow-400 text-xs"></i> ${fmt(p.xp||0)}</span></td>
             <td>${certCount > 0 ? `<span class="badge tag-green">${certCount} cert.</span>` : `<span class="text-slate-300 text-xs">—</span>`}</td>
-            <td style="min-width:120px">
-                ${startedCourses.length ? `
+            <td>
                 <div class="flex items-center gap-2">
                     <div style="flex:1;background:#f1f5f9;border-radius:4px;height:6px">
-                        <div style="width:${avgPct}%;background:${avgPct>=80?'#10b981':avgPct>=40?'#07B0E4':'#f59e0b'};height:100%;border-radius:4px"></div>
+                        <div style="width:${globalPct}%;background:${globalPct>=80?'#10b981':globalPct>=40?'#07B0E4':'#f59e0b'};height:100%;border-radius:4px;transition:width .4s"></div>
                     </div>
-                    <span class="text-xs font-bold text-slate-500">${avgPct}%</span>
-                </div>` : '<span class="text-slate-300 text-xs">Sin iniciar</span>'}
+                    <span class="text-xs font-bold text-slate-500">${globalPct}%</span>
+                </div>
+                <span class="text-[10px] text-slate-400">${certCount}/${courses.length} cursos</span>
             </td>
             <td class="text-slate-400 text-xs whitespace-nowrap">${fmtDateTime(p.updated_at)}</td>
         </tr>`;
