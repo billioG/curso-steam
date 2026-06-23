@@ -599,6 +599,11 @@ function updateUI() {
 
     updateStreakDisplay();
 
+    // Ocultar botón de diagnóstico si ya fue completado
+    const _diagDone = localStorage.getItem('diagDone') || progress?.dailyMissions?.diagDone;
+    const _diagBtn = document.getElementById('diagProfileBtn');
+    if (_diagBtn) _diagBtn.classList.toggle('hidden', !!_diagDone);
+
     // Botón Estadísticas, Compendio y Modo Dev: solo visibles para el admin
     const _isAdmin = currentUser && (currentUser.role === 'admin');
     const _statsBtn = document.getElementById('statsSecretBtn');
