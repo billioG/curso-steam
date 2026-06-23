@@ -197,7 +197,7 @@ async function fetchAllProgress() {
         return [];
     }
     showConnectionError(false);
-    _allProgress = data || [];
+    _allProgress = (data || []).filter(p => !ADMIN_EMAILS.includes(p.email));
     _usersCache  = [..._allProgress];
     return _allProgress;
 }
@@ -824,7 +824,7 @@ let _coordUserIds   = new Set(); // user_ids que son coordinadores
 
 async function loadUsers() {
     const progress = _allProgress.length ? _allProgress : await fetchAllProgress();
-    _usersCache = [...progress];
+    _usersCache = progress.filter(p => !ADMIN_EMAILS.includes(p.email));
 
     // Fetch DB courses
     if (!_dbCourses.length) {
@@ -907,7 +907,27 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
     const rowHtml = p => {
             const activo = isActive30d(p);
             const certCount = courses.filter(c => hasCourseExamPassed(p, c.id)).length;
-        const globalPct = courses.length ? Math.round((certCount / courses.length) * 100) : 0;
+        // Avance global: % de rutas INICIADAS que ya tienen certificado
+        // "iniciada" = al menos 1 tarjeta completada en ese curso
+        const completedCards = p.completed_cards || [];
+        const coursePrefix = { steam: c => /^\d+$/.test(String(c)) };
+        const startedIds = new Set();
+        completedCards.forEach(cc => {
+            const s = String(cc);
+            if (/^\d+$/.test(s))          startedIds.add('steam');
+            else if (s.startsWith('abp-')) startedIds.add('abp');
+            else if (s.startsWith('dt-'))  startedIds.add('design-thinking');
+            else if (s.startsWith('ev-'))  startedIds.add('evaluacion-formativa');
+            else {
+                // Cursos con prefijo libre: extraer hasta el primer '-mX'
+                const m = s.match(/^([a-z][a-z0-9-]*?)-m\d/);
+                if (m) startedIds.add(m[1]);
+            }
+        });
+        const startedCourses = courses.filter(c => startedIds.has(c.id));
+        const globalPct = startedCourses.length
+            ? Math.round((courses.filter(c => startedIds.has(c.id) && hasCourseExamPassed(p, c.id)).length / startedCourses.length) * 100)
+            : 0;
         const role = roleMap[p.user_id] || 'student';
         const roleLabel = role === 'admin' ? '<span class="badge tag-violet" style="font-size:9px">Admin</span>'
             : role === 'coordinator' ? '<span class="badge tag-blue" style="font-size:9px">Coord.</span>' : '';
@@ -936,7 +956,7 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
                     </div>
                     <span class="text-xs font-bold text-slate-500">${globalPct}%</span>
                 </div>
-                <span class="text-[10px] text-slate-400">${certCount}/${courses.length} cursos</span>
+                <span class="text-[10px] text-slate-400">${startedCourses.length ? `${certCount}/${startedCourses.length} iniciadas` : 'Sin iniciar'}</span>
             </td>
             <td class="text-slate-400 text-xs whitespace-nowrap">${fmtDateTime(p.updated_at)}</td>
         </tr>`;
@@ -963,15 +983,20 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
             if (b[0] === 'Sin centro asignado') return -1;
             return a[0].localeCompare(b[0], 'es');
         });
-        cont.innerHTML = sorted.map(([school, members]) => {
+        cont.innerHTML = sorted.map(([school, members], idx) => {
             const totalXP = members.reduce((a,p) => a+(p.xp||0), 0);
             const certs = members.reduce((a,p) => a + courses.filter(c=>hasCourseExamPassed(p,c.id)).length, 0);
-            return `<div class="school-group-header">
+            const gid = `sg_${idx}`;
+            return `<div class="school-group-header" style="cursor:pointer;user-select:none"
+                    onclick="(function(el){const t=document.getElementById('${gid}');const open=t.style.display!=='none';t.style.display=open?'none':'';el.querySelector('.sg-chevron').style.transform=open?'rotate(-90deg)':'rotate(0deg)'})(this)">
                 <i class="fas fa-school" style="color:#818cf8"></i>
                 <span style="flex:1">${esc(school)}</span>
                 <span style="font-weight:500;color:#94a3b8;font-size:10px;text-transform:none;letter-spacing:0">${members.length} docentes &nbsp;·&nbsp; ${fmt(totalXP)} XP &nbsp;·&nbsp; ${certs} cert.</span>
+                <i class="fas fa-chevron-down sg-chevron" style="color:#94a3b8;font-size:10px;margin-left:8px;transition:transform .2s;transform:rotate(-90deg)"></i>
             </div>
-            <table ${tableStyle} style="margin-bottom:0">${colGroup}${thead}<tbody>${members.map(rowHtml).join('')}</tbody></table>`;
+            <div id="${gid}" style="display:none">
+                <table ${tableStyle} style="margin-bottom:0">${colGroup}${thead}<tbody>${members.map(rowHtml).join('')}</tbody></table>
+            </div>`;
         }).join('');
     }
 }

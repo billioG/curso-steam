@@ -5112,7 +5112,7 @@ function _checkOnboardingRequirements(onComplete) {
                     placeholder="Escribe para buscar tu centro educativo…"
                     value="${esc(dm.school||'')}"
                     style="width:100%;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px 14px;font-size:14px;background:#f8fafc;outline:none;box-sizing:border-box">
-                <div id="_ob_schoolDrop" style="display:none;position:absolute;top:calc(100% - 4px);left:0;right:0;background:#fff;border:1.5px solid #e2e8f0;border-top:none;border-radius:0 0 14px 14px;max-height:200px;overflow-y:auto;z-index:10000;box-shadow:0 8px 24px rgba(0,0,0,.12)"></div>
+                <div id="_ob_schoolDrop" style="display:none;position:fixed;background:#fff;border:1.5px solid #e2e8f0;border-top:none;border-radius:0 0 14px 14px;max-height:200px;overflow-y:auto;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.18)"></div>
             </div>
             <button id="_ob_profileSave" style="width:100%;padding:14px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;font-weight:800;font-size:14px;border:none;border-radius:14px;cursor:pointer">
                 Guardar y continuar →
@@ -5136,14 +5136,19 @@ function _checkOnboardingRequirements(onComplete) {
             const matches = pool.filter(s => s.toLowerCase().includes(query)).slice(0, 10);
             if (!matches.length) { drop.style.display = 'none'; return; }
             drop.innerHTML = matches.map(s => {
-                const parts  = s.split(' · ');
-                const name   = parts[0] || s;
-                const mun    = parts[1] || '';
-                const hi     = name.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<strong>$1</strong>');
+                const parts = s.split(' · ');
+                const name  = parts[0] || s;
+                const mun   = parts[1] || '';
+                const hi    = name.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<strong>$1</strong>');
                 return `<div onclick="_obSelectSchool(this)" data-name="${name.replace(/"/g,'&quot;')}"
                     style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid #f1f5f9;transition:background .15s"
                     onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background=''">${hi}<span style="font-size:11px;color:#94a3b8;margin-left:6px">· ${mun}</span></div>`;
             }).join('');
+            // Posicionar usando fixed + getBoundingClientRect para evitar el clip del overflow:auto
+            const r = inp.getBoundingClientRect();
+            drop.style.left   = r.left + 'px';
+            drop.style.top    = (r.bottom - 1) + 'px';
+            drop.style.width  = r.width + 'px';
             drop.style.display = 'block';
         }
 
