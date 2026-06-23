@@ -121,26 +121,41 @@ const BADGE_SVG = {
 };
 
 const badges = {
-    firstCard:    { id: "firstCard",    name: "Primer paso",       desc: "Completaste tu primera tarjeta",              icon: "🌱", xpReward: 10  },
-    module1:      { id: "module1",      name: "Primer módulo",     desc: "Completaste el Módulo 1 de tu primer curso",  icon: "📘", xpReward: 50  },
-    module2:      { id: "module2",      name: "En profundidad",    desc: "Completaste el Módulo 2 de algún curso",      icon: "🔧", xpReward: 50  },
-    module3:      { id: "module3",      name: "Metodólogo",        desc: "Completaste el Módulo 3 de algún curso",      icon: "🧠", xpReward: 50  },
-    module4:      { id: "module4",      name: "Aplicador",         desc: "Completaste el Módulo 4 de algún curso",      icon: "📊", xpReward: 50  },
-    module5:      { id: "module5",      name: "Experto local",     desc: "Completaste el Módulo 5 de algún curso",      icon: "⭐", xpReward: 50  },
-    quizMaster:   { id: "quizMaster",   name: "Maestro de quizzes",desc: "10 quizzes correctos",                        icon: "🎯", xpReward: 30  },
-    feedbackGiver:{ id: "feedbackGiver",name: "Tu voz importa",    desc: "Diste feedback en 3 módulos",                 icon: "💬", xpReward: 40  },
-    examPass:     { id: "examPass",     name: "Certificado STEAM", desc: "Aprobaste el examen final",                   icon: "🎓", xpReward: 100 },
-    allModules:   { id: "allModules",   name: "STEAM Master",      desc: "Completaste todos los módulos",               icon: "🏆", xpReward: 200 },
-    streak7:      { id: "streak7",      name: "Racha de 7 días",   desc: "7 días seguidos aprendiendo",                 icon: "🔥", xpReward: 100 },
-    streak30:     { id: "streak30",     name: "Leyenda",           desc: "30 días de racha",                            icon: "⚡", xpReward: 500 },
-    level5:       { id: "level5",       name: "Nivel 5",           desc: "Alcanzaste el Nivel 5",                       icon: "🌟", xpReward: 100 },
+    firstCard:     { id: "firstCard",     name: "Primer paso",          desc: "Completaste tu primera tarjeta",              icon: "🌱", xpReward: 10  },
+    module1:       { id: "module1",       name: "Primer módulo",        desc: "Completaste el Módulo 1 de tu primer curso",  icon: "📘", xpReward: 50  },
+    module2:       { id: "module2",       name: "En profundidad",       desc: "Completaste el Módulo 2 de algún curso",      icon: "🔧", xpReward: 50  },
+    module3:       { id: "module3",       name: "Metodólogo",           desc: "Completaste el Módulo 3 de algún curso",      icon: "🧠", xpReward: 50  },
+    module4:       { id: "module4",       name: "Aplicador",            desc: "Completaste el Módulo 4 de algún curso",      icon: "📊", xpReward: 50  },
+    module5:       { id: "module5",       name: "Experto local",        desc: "Completaste el Módulo 5 de algún curso",      icon: "⭐", xpReward: 50  },
+    quizMaster:    { id: "quizMaster",    name: "Maestro de quizzes",   desc: "10 quizzes correctos",                        icon: "🎯", xpReward: 30  },
+    quiz25:        { id: "quiz25",        name: "Imparable",            desc: "25 quizzes correctos",                        icon: "🏹", xpReward: 75  },
+    perfect10:     { id: "perfect10",     name: "Perfeccionista",       desc: "10 quizzes correctos seguidos sin fallar",    icon: "💎", xpReward: 150 },
+    feedbackGiver: { id: "feedbackGiver", name: "Tu voz importa",       desc: "Diste feedback en 3 módulos",                 icon: "💬", xpReward: 40  },
+    examPass:      { id: "examPass",      name: "Certificado STEAM",    desc: "Aprobaste el examen final",                   icon: "🎓", xpReward: 100 },
+    allModules:    { id: "allModules",    name: "STEAM Master",         desc: "Completaste todos los módulos",               icon: "🏆", xpReward: 200 },
+    streak7:       { id: "streak7",       name: "Racha de 7 días",      desc: "7 días seguidos aprendiendo",                 icon: "🔥", xpReward: 100 },
+    streak30:      { id: "streak30",      name: "Leyenda",              desc: "30 días de racha",                            icon: "⚡", xpReward: 500 },
+    streak3:       { id: "streak3",       name: "Constante",            desc: "3 días seguidos aprendiendo",                 icon: "✨", xpReward: 30  },
+    earlyBird:     { id: "earlyBird",     name: "Madrugadora STEAM",    desc: "Completaste 5 tarjetas antes de las 8am",     icon: "🌅", xpReward: 80  },
+    noteWriter:    { id: "noteWriter",    name: "Apuntes de oro",       desc: "Escribiste notas en 10 tarjetas",             icon: "📝", xpReward: 60  },
+    applied5:      { id: "applied5",      name: "Docente en acción",    desc: "Marcaste 5 tarjetas como aplicadas en clase", icon: "🍎", xpReward: 100 },
+    weeklyChamp:   { id: "weeklyChamp",   name: "Campeón semanal",      desc: "Terminaste en el top 3 del ranking semanal",  icon: "🥇", xpReward: 200 },
+    level5:        { id: "level5",        name: "Nivel 5",              desc: "Alcanzaste el Nivel 5",                       icon: "🌟", xpReward: 100 },
+    level10:       { id: "level10",       name: "Nivel 10",             desc: "Alcanzaste el Nivel 10",                      icon: "💫", xpReward: 300 },
 };
 
-// ==================== MISIONES DIARIAS ====================
+// ==================== MISIONES DIARIAS Y SEMANALES ====================
 const dailyMissionsList = [
     { id: "mission1", name: "📖 Completa 3 tarjetas", target: 3, type: "cards", reward: 30, current: 0 },
     { id: "mission2", name: "✅ Responde 2 quizzes", target: 2, type: "quizzes", reward: 25, current: 0 },
     { id: "mission3", name: "⭐ Gana 50 XP hoy", target: 50, type: "xp", reward: 20, current: 0 }
+];
+
+const weeklyMissionsList = [
+    { id: "wmission1", name: "📚 Completa 2 módulos esta semana", target: 2, type: "w_modules", reward: 150, current: 0 },
+    { id: "wmission2", name: "🎯 Responde 15 quizzes correctos", target: 15, type: "w_quizzes", reward: 120, current: 0 },
+    { id: "wmission3", name: "🔥 Mantén racha 5 días", target: 5, type: "w_streak", reward: 100, current: 0 },
+    { id: "wmission4", name: "🍎 Aplica 3 conceptos en clase", target: 3, type: "w_applied", reward: 200, current: 0 },
 ];
 
 // ==================== INICIALIZAR INDEXEDDB ====================
@@ -796,6 +811,11 @@ function saveProgress() {
 function addXP(amount, reason) {
     if (!progress) return;
     progress.xp += amount;
+    // Trackear XP diario
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    progress.dailyMissions.dailyXP = (progress.dailyMissions.dailyXP || 0) + amount;
+    progress.dailyMissions.weeklyXP = (progress.dailyMissions.weeklyXP || 0) + amount;
+    _updateDailyXPBar();
     showToast(`+${amount} XP ✨ (${reason})`, "success");
     // Micro-animación en el contador de XP del top bar
     const xpEl = document.getElementById('xpDisplay');
@@ -854,9 +874,30 @@ function checkBadges() {
         }
     }
     if (modulesCompleted === modulesData.length && !progress.badges.includes("allModules")) unlockBadge("allModules");
-    if ((progress.quizCorrectCount || 0) >= 10 && !progress.badges.includes("quizMaster")) unlockBadge("quizMaster");
+
+    const qc = progress.quizCorrectCount || 0;
+    if (qc >= 10  && !progress.badges.includes("quizMaster"))  unlockBadge("quizMaster");
+    if (qc >= 25  && !progress.badges.includes("quiz25"))       unlockBadge("quiz25");
+
+    // Perfeccionista: 10 quizzes correctos seguidos
+    if ((progress.dailyMissions?.quizStreak || 0) >= 10 && !progress.badges.includes("perfect10")) unlockBadge("perfect10");
+
     const feedbackCount = Object.keys(progress.moduleFeedback || {}).length;
     if (feedbackCount >= 3 && !progress.badges.includes("feedbackGiver")) unlockBadge("feedbackGiver");
+
+    // Notas en tarjetas
+    const noteCount = Object.keys(progress.dailyMissions?.cardNotes || {}).length;
+    if (noteCount >= 10 && !progress.badges.includes("noteWriter")) unlockBadge("noteWriter");
+
+    // Lo apliqué en clase
+    const appliedCount = (progress.dailyMissions?.appliedCards || []).length;
+    if (appliedCount >= 5 && !progress.badges.includes("applied5")) unlockBadge("applied5");
+
+    // Madrugadora: tarjetas antes de las 8am
+    if ((progress.dailyMissions?.earlyBirdCards || 0) >= 5 && !progress.badges.includes("earlyBird")) unlockBadge("earlyBird");
+
+    // Nivel 10
+    if ((progress.level || 1) >= 10 && !progress.badges.includes("level10")) unlockBadge("level10");
 }
 
 function checkDailyStreak() {
@@ -883,12 +924,53 @@ function checkDailyStreak() {
         if (progress.streak === 30 && !progress.badges.includes("streak30")) unlockBadge("streak30");
         if (progress.streak % 5 === 0) addXP(20, `Racha de ${progress.streak} días`);
     } else {
-        if (progress.streak > 1) showToast(`😢 Se rompió tu racha de ${progress.streak} días`, "warning");
-        progress.streak = 1;
-        progress.lastActivityDate = today;
-        saveProgress();
+        // ¿Tiene freeze disponible?
+        const freezes = progress.dailyMissions?.streakFreezes || 0;
+        if (progress.streak > 1 && freezes > 0) {
+            progress.dailyMissions.streakFreezes = freezes - 1;
+            progress.lastActivityDate = today;
+            saveProgress();
+            showToast(`🧊 ¡Protector de racha usado! Te quedan ${freezes - 1}`, "info");
+        } else {
+            if (progress.streak > 1) showToast(`😢 Se rompió tu racha de ${progress.streak} días`, "warning");
+            progress.streak = 1;
+            progress.lastActivityDate = today;
+            saveProgress();
+        }
     }
+    // Insignias de racha
+    if (progress.streak >= 3  && !progress.badges.includes("streak3"))  unlockBadge("streak3");
+    if (progress.streak >= 7  && !progress.badges.includes("streak7"))  unlockBadge("streak7");
+    if (progress.streak >= 30 && !progress.badges.includes("streak30")) unlockBadge("streak30");
     updateStreakDisplay();
+}
+
+// Regalar un freeze cada lunes si el docente completó al menos 3 tarjetas la semana pasada
+function _checkWeeklyFreeze() {
+    const today = new Date();
+    if (today.getDay() !== 1) return; // solo lunes
+    const dm = progress.dailyMissions || {};
+    const lastFreezeWeek = dm.lastFreezeWeek || '';
+    const thisWeek = `${today.getFullYear()}-W${_isoWeek(today)}`;
+    if (lastFreezeWeek === thisWeek) return;
+    const wCards = dm.weeklyMissions?.find(m => m.id === 'wmission1')?.current || 0;
+    if (wCards >= 1) { // completó al menos 1 módulo la semana pasada
+        const cur = dm.streakFreezes || 0;
+        if (cur < 2) { // máximo 2 freezes acumulados
+            dm.streakFreezes = cur + 1;
+            dm.lastFreezeWeek = thisWeek;
+            saveProgress();
+            showToast('🧊 ¡Ganaste un Protector de Racha por tu actividad semanal!', 'success');
+        }
+    }
+}
+
+function _isoWeek(d) {
+    const date = new Date(d);
+    date.setHours(0,0,0,0);
+    date.setDate(date.getDate() + 3 - (date.getDay()+6)%7);
+    const week1 = new Date(date.getFullYear(),0,4);
+    return 1 + Math.round(((date-week1)/86400000 - 3 + (week1.getDay()+6)%7)/7);
 }
 
 function updateStreakDisplay() {
@@ -907,7 +989,10 @@ function loadDailyMissions() {
         const { fullName, profilePhoto, examScores, examScore, masterExamScore, masterExamScores,
                 masterExamDate, coursePositions, diagResult, diagDone, onboardingDone, portfolioByPath,
                 portfolioAiTotal, portfolioScores, portfolioFeedback, portfolioSummary,
-                portfolioAttempts, portfolioLastAttempt } = savedMissions;
+                portfolioAttempts, portfolioLastAttempt,
+                // persistentes entre días:
+                cardNotes, appliedCards, streakFreezes, lastFreezeWeek,
+                weeklyMissions, weeklyMissionsDate, weeklyXP, quizStreak, earlyBirdCards } = savedMissions;
         // Extraer todas las claves de bloqueo de módulos (moduleStart_* y moduleEarlyUnlock_*)
         const moduleKeys = {};
         Object.keys(savedMissions).forEach(k => {
@@ -917,6 +1002,7 @@ function loadDailyMissions() {
         });
         progress.dailyMissions = {
             date: today, missions: newMissions,
+            dailyXP: 0, // reinicia XP diario
             ...moduleKeys,
             ...(fullName        && { fullName }),
             ...(profilePhoto    && { profilePhoto }),
@@ -936,9 +1022,24 @@ function loadDailyMissions() {
             ...(portfolioSummary && { portfolioSummary }),
             ...(portfolioAttempts !== undefined && { portfolioAttempts }),
             ...(portfolioLastAttempt && { portfolioLastAttempt }),
+            // persistentes:
+            ...(cardNotes       && { cardNotes }),
+            ...(appliedCards    && { appliedCards }),
+            ...(streakFreezes !== undefined && { streakFreezes }),
+            ...(lastFreezeWeek  && { lastFreezeWeek }),
+            ...(weeklyMissions  && { weeklyMissions }),
+            ...(weeklyMissionsDate && { weeklyMissionsDate }),
+            ...(weeklyXP !== undefined && { weeklyXP }),
+            ...(quizStreak !== undefined && { quizStreak }),
+            ...(earlyBirdCards !== undefined && { earlyBirdCards }),
         };
         saveProgress();
     }
+
+    // Inicializar misiones semanales si es necesario (reinician cada lunes)
+    _initWeeklyMissions();
+    _checkWeeklyFreeze();
+
     renderDailyMissions();
 
     const tomorrow = new Date();
@@ -949,31 +1050,83 @@ function loadDailyMissions() {
     if (resetSpan) resetSpan.innerText = `Reinicia en ${hoursLeft}h`;
 }
 
+function _updateDailyXPBar() {
+    const bar = document.getElementById('dailyXPBar');
+    const label = document.getElementById('dailyXPLabel');
+    if (!bar && !label) return;
+    const daily = progress.dailyMissions?.dailyXP || 0;
+    const goal = 100;
+    const pct = Math.min((daily / goal) * 100, 100);
+    if (bar) bar.style.width = pct + '%';
+    if (label) label.textContent = `${daily}/${goal} XP hoy`;
+}
+
 function renderDailyMissions() {
     const container = document.getElementById("missionsList");
     if (!container) return;
     const missions = progress.dailyMissions?.missions || [];
-    if (missions.length === 0) {
-        container.innerHTML = '<div class="text-gray-400 text-center">¡Completa misiones para ganar XP extra!</div>';
-        return;
-    }
-    let html = "";
-    missions.forEach(mission => {
-        const progressPercent = Math.min((mission.current / mission.target) * 100, 100);
-        html += `<div class="flex items-center justify-between text-xs">
-            <div class="flex items-center gap-1">
-                <span>${mission.completed ? (mission.claimed ? "✅" : "🔓") : "⏳"}</span>
-                <span class="${mission.completed ? 'text-green-600' : 'text-gray-600'}">${mission.name}</span>
-                <span class="text-yellow-600">(+${mission.reward} XP)</span>
+    const wMissions = progress.dailyMissions?.weeklyMissions || [];
+    const dailyXP = progress.dailyMissions?.dailyXP || 0;
+    const dailyGoal = 100;
+    const dailyPct = Math.min((dailyXP / dailyGoal) * 100, 100);
+    const freezes = progress.dailyMissions?.streakFreezes || 0;
+
+    const _missionRow = (m, weekly = false) => {
+        const pct = Math.min((m.current / m.target) * 100, 100);
+        const claimFn = weekly ? `claimWeeklyMissionReward` : `claimMissionReward`;
+        return `<div class="flex items-center gap-2 py-1.5">
+            <span class="text-base flex-shrink-0">${m.completed ? (m.claimed ? '✅' : '🔓') : '⏳'}</span>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-[11px] font-semibold ${m.completed ? 'text-green-600' : 'text-gray-700'} truncate">${m.name}</span>
+                    <span class="text-[10px] text-yellow-600 font-bold ml-1 flex-shrink-0">+${m.reward} XP</span>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="h-1.5 rounded-full transition-all" style="width:${pct}%;background:${m.completed?'#22c55e':'#f59e0b'}"></div></div>
+                <div class="text-[9px] text-gray-400 mt-0.5">${m.current}/${m.target}</div>
             </div>
-            <div class="w-24 bg-gray-200 rounded-full h-1.5"><div class="bg-yellow-500 h-1.5 rounded-full" style="width: ${progressPercent}%"></div></div>
-            ${mission.completed && !mission.claimed ? `<button data-mission="${mission.id}" class="claim-mission-btn bg-green-500 text-white text-[10px] px-2 py-0.5 rounded hover:bg-green-600 transition">Reclamar</button>` : ''}
+            ${m.completed && !m.claimed ? `<button onclick="${claimFn}('${m.id}')" class="flex-shrink-0 bg-green-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold hover:bg-green-600 transition">¡Reclamar!</button>` : ''}
         </div>`;
-    });
-    container.innerHTML = html;
-    document.querySelectorAll('.claim-mission-btn').forEach(btn => {
-        btn.addEventListener('click', () => claimMissionReward(btn.dataset.mission));
-    });
+    };
+
+    container.innerHTML = `
+        <!-- Barra XP diario -->
+        <div class="mb-3 p-2.5 rounded-xl" style="background:#fefce8;border:1px solid #fde68a">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-bold text-yellow-700">⭐ Meta diaria</span>
+                <span id="dailyXPLabel" class="text-[11px] font-bold text-yellow-600">${dailyXP}/${dailyGoal} XP hoy</span>
+            </div>
+            <div class="w-full bg-yellow-100 rounded-full h-2">
+                <div id="dailyXPBar" class="h-2 rounded-full transition-all" style="width:${dailyPct}%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div>
+            </div>
+            ${dailyPct >= 100 ? '<div class="text-[10px] text-green-600 font-bold mt-1 text-center">🎉 ¡Meta del día alcanzada!</div>' : ''}
+        </div>
+        ${freezes > 0 ? `<div class="mb-2 flex items-center gap-1.5 text-[11px] text-blue-600 font-semibold"><span>🧊</span> ${freezes} Protector${freezes>1?'es':''} de Racha disponible${freezes>1?'s':''}</div>` : ''}
+        <!-- Tabs -->
+        <div class="flex gap-1 mb-2" id="missionTabBtns">
+            <button onclick="_switchMissionTab('daily')" id="mTabDaily" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg transition" style="background:#0f172a;color:white">Diarias</button>
+            <button onclick="_switchMissionTab('weekly')" id="mTabWeekly" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg transition" style="background:#f1f5f9;color:#64748b">Semanales</button>
+        </div>
+        <div id="missionTabDaily">${missions.length ? missions.map(m => _missionRow(m, false)).join('') : '<p class="text-xs text-gray-400 text-center py-2">Sin misiones</p>'}</div>
+        <div id="missionTabWeekly" style="display:none">${wMissions.length ? wMissions.map(m => _missionRow(m, true)).join('') : '<p class="text-xs text-gray-400 text-center py-2">Sin misiones semanales</p>'}</div>`;
+}
+
+function _switchMissionTab(tab) {
+    document.getElementById('missionTabDaily').style.display  = tab === 'daily'  ? '' : 'none';
+    document.getElementById('missionTabWeekly').style.display = tab === 'weekly' ? '' : 'none';
+    document.getElementById('mTabDaily').style.cssText  = tab === 'daily'  ? 'flex:1;font-size:11px;font-weight:700;padding:6px;border-radius:8px;border:none;cursor:pointer;background:#0f172a;color:white' : 'flex:1;font-size:11px;font-weight:700;padding:6px;border-radius:8px;border:none;cursor:pointer;background:#f1f5f9;color:#64748b';
+    document.getElementById('mTabWeekly').style.cssText = tab === 'weekly' ? 'flex:1;font-size:11px;font-weight:700;padding:6px;border-radius:8px;border:none;cursor:pointer;background:#0f172a;color:white' : 'flex:1;font-size:11px;font-weight:700;padding:6px;border-radius:8px;border:none;cursor:pointer;background:#f1f5f9;color:#64748b';
+}
+
+function _initWeeklyMissions() {
+    const dm = progress.dailyMissions || {};
+    const today = new Date();
+    const thisWeek = `${today.getFullYear()}-W${_isoWeek(today)}`;
+    if (dm.weeklyMissionsDate === thisWeek && Array.isArray(dm.weeklyMissions)) return;
+    dm.weeklyMissions = weeklyMissionsList.map(m => ({ ...m, current: 0, completed: false, claimed: false }));
+    dm.weeklyMissionsDate = thisWeek;
+    dm.weeklyXP = 0;
+    progress.dailyMissions = dm;
+    saveProgress();
 }
 
 function updateMissionProgress(type, amount = 1) {
@@ -984,7 +1137,20 @@ function updateMissionProgress(type, amount = 1) {
             mission.current += amount;
             if (mission.current >= mission.target) {
                 mission.completed = true;
-                showToast(`🎯 ¡Misión completada: ${mission.name}! Reclama tu recompensa`, "success");
+                showToast(`🎯 ¡Misión diaria: ${mission.name}! Reclama tu recompensa`, "success");
+            }
+            updated = true;
+        }
+    });
+    // Misiones semanales
+    const wMissions = progress.dailyMissions?.weeklyMissions || [];
+    const wType = 'w_' + type.replace(/^w_/, '');
+    wMissions.forEach(m => {
+        if (!m.completed && m.type === wType) {
+            m.current += amount;
+            if (m.current >= m.target) {
+                m.completed = true;
+                showToast(`🏆 ¡Misión semanal: ${m.name}! Reclama tu recompensa`, "success");
             }
             updated = true;
         }
@@ -997,7 +1163,18 @@ function claimMissionReward(missionId) {
     const mission = missions.find(m => m.id === missionId);
     if (mission && mission.completed && !mission.claimed) {
         mission.claimed = true;
-        addXP(mission.reward, `Misión: ${mission.name}`);
+        addXP(mission.reward, `Misión diaria: ${mission.name}`);
+        saveProgress();
+        renderDailyMissions();
+    }
+}
+
+function claimWeeklyMissionReward(missionId) {
+    const wMissions = progress.dailyMissions?.weeklyMissions || [];
+    const mission = wMissions.find(m => m.id === missionId);
+    if (mission && mission.completed && !mission.claimed) {
+        mission.claimed = true;
+        addXP(mission.reward, `Misión semanal: ${mission.name}`);
         saveProgress();
         renderDailyMissions();
     }
@@ -1060,7 +1237,11 @@ function renderCard() {
         if (!progress.completedCards.includes(cardId)) {
             progress.completedCards.push(cardId);
             updateMissionProgress("cards", 1);
+            // Madrugadora STEAM
+            const _h = new Date().getHours();
+            if (_h < 8) { if (!progress.dailyMissions) progress.dailyMissions = {}; progress.dailyMissions.earlyBirdCards = (progress.dailyMissions.earlyBirdCards || 0) + 1; }
             saveProgress();
+            checkBadges();
         }
 
         const _courseTheme = (typeof getCourseThemeAndIllus !== 'undefined')
@@ -1084,6 +1265,11 @@ function renderCard() {
             </div>
             <div class="card-body">
                 <h2>${card.title}</h2>
+                ${(() => {
+                    const words = ((card.content||'') + ' ' + (card.extra||'')).split(/\s+/).length;
+                    const mins = Math.max(1, Math.round(words / 200));
+                    return `<div style="font-size:10px;color:#94a3b8;margin-bottom:6px">⏱ ~${mins} min de lectura</div>`;
+                })()}
                 <div class="card-md">${cardContent}</div>
                 ${cardExtra ? `
                 <div class="card-key-insight" style="background:${theme.soft};border-color:${theme.primary};color:#1e293b">
@@ -1099,6 +1285,36 @@ function renderCard() {
                     📋 Ver instrucciones para implementar en clase
                 </button>
             </div>` : ''}
+            <!-- Botones "Lo apliqué" + "Mis notas" -->
+            <div class="px-4 pb-1 flex gap-2">
+                ${(() => {
+                    const cardKey = String(card.id ?? (currentModule+'-'+currentCardIndex));
+                    const applied = (progress.dailyMissions?.appliedCards || []).includes(cardKey);
+                    const hasNote = !!(progress.dailyMissions?.cardNotes?.[cardKey]);
+                    return `
+                    <button onclick="toggleApplied('${cardKey}')" id="appliedBtn_${cardKey}"
+                        class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-2xl border text-xs font-semibold transition"
+                        style="${applied ? 'background:#dcfce7;border-color:#86efac;color:#15803d' : 'background:white;border-color:#e2e8f0;color:#64748b'}">
+                        🍎 ${applied ? '¡Ya lo apliqué!' : 'Lo apliqué en clase'}
+                    </button>
+                    <button onclick="toggleCardNote('${cardKey}')" id="noteBtn_${cardKey}"
+                        class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-2xl border text-xs font-semibold transition"
+                        style="${hasNote ? 'background:#eff6ff;border-color:#93c5fd;color:#1d4ed8' : 'background:white;border-color:#e2e8f0;color:#64748b'}">
+                        📝 ${hasNote ? 'Ver mi nota' : 'Agregar nota'}
+                    </button>`;
+                })()}
+            </div>
+            <!-- Área de nota (oculta por defecto) -->
+            ${(() => {
+                const cardKey = String(card.id ?? (currentModule+'-'+currentCardIndex));
+                const savedNote = progress.dailyMissions?.cardNotes?.[cardKey] || '';
+                return `<div id="noteArea_${cardKey}" style="display:${savedNote?'block':'none'}" class="px-4 pb-2">
+                    <textarea id="noteInput_${cardKey}" placeholder="Escribe tus apuntes aquí…"
+                        oninput="saveCardNote('${cardKey}', this.value)"
+                        class="w-full text-xs rounded-xl border border-blue-200 p-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        rows="3" style="background:#eff6ff;color:#1e3a5f">${savedNote}</textarea>
+                </div>`;
+            })()}
             <div class="card-swipe-hint" style="display:flex;align-items:center;justify-content:center;gap:6px">
                 <span style="display:inline-flex;width:13px;height:13px;opacity:.5">${ICONS?.arrowLeft||'←'}</span>
                 <span style="font-size:10px;opacity:.5">desliza para navegar</span>
@@ -1187,12 +1403,31 @@ function renderCard() {
                             progress.completedCards.push(cardId);
                             addXP(10, `Quiz correcto: ${card.title || (card.question ? card.question.slice(0, 40) + (card.question.length > 40 ? '…' : '') : 'tarjeta')}`);
                             progress.quizCorrectCount = (progress.quizCorrectCount || 0) + 1;
+                            // Racha de quizzes correctos seguidos
+                            if (!progress.dailyMissions) progress.dailyMissions = {};
+                            progress.dailyMissions.quizStreak = (progress.dailyMissions.quizStreak || 0) + 1;
+                            _removeFromWrong(card.id ?? (currentModule+'-'+currentCardIndex));
                             updateMissionProgress("quizzes", 1);
+                            // Misión semanal de quizzes
+                            const _wm = progress.dailyMissions?.weeklyMissions || [];
+                            _wm.forEach(m => { if (!m.completed && m.type === 'w_quizzes') { m.current++; if (m.current >= m.target) { m.completed = true; showToast(`🏆 ¡Misión semanal: ${m.name}!`, 'success'); } } });
+                            // Madrugadora
+                            const _hr = new Date().getHours();
+                            if (_hr < 8) progress.dailyMissions.earlyBirdCards = (progress.dailyMissions.earlyBirdCards || 0) + 1;
                             saveProgress();
+                            checkBadges();
                         }
                         // Habilitar Siguiente (el usuario avanza manualmente)
                         if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
                     } else {
+                        // Reset racha de quizzes
+                        if (progress.dailyMissions) progress.dailyMissions.quizStreak = 0;
+                        // Guardar para modo repaso
+                        if (!progress.dailyMissions) progress.dailyMissions = {};
+                        if (!progress.dailyMissions.wrongQuizzes) progress.dailyMissions.wrongQuizzes = [];
+                        const _wqKey = String(card.id ?? (currentModule+'-'+currentCardIndex));
+                        if (!progress.dailyMissions.wrongQuizzes.includes(_wqKey)) progress.dailyMissions.wrongQuizzes.push(_wqKey);
+                        saveProgress();
                         feedbackDiv.className = 'mt-3 p-3 rounded-2xl text-sm font-medium bg-red-50 text-red-700 border border-red-200';
                         feedbackDiv.innerHTML = `<span style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:4px">${ICONS?.xCircle||'✗'}</span> Incorrecto. ${card.explanation}
                             <button onclick="goToRefCard()" class="mt-2 block w-full text-center text-xs font-bold text-indigo-600 hover:underline py-1" style="display:flex;align-items:center;justify-content:center;gap:4px"><span style="display:inline-flex;width:12px;height:12px">${ICONS?.arrowLeft||''}</span> Repasar tarjeta relacionada</button>`;
@@ -1695,8 +1930,21 @@ function renderModulesTab() {
     const container = document.getElementById('modulesIndexList');
     if (!container || !modulesData) return;
 
+    const wrongQuizzes = progress.dailyMissions?.wrongQuizzes || [];
     const totalModules = modulesData.length;
     let html = '';
+
+    // ── Modo repaso ──────────────────────────────────────────────────
+    if (wrongQuizzes.length > 0) {
+        html += `<div onclick="startRepasoMode()" style="margin-bottom:12px;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid #fbbf24;border-radius:16px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px">
+            <div style="width:44px;height:44px;background:#f59e0b;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🔁</div>
+            <div style="flex:1">
+                <p style="font-weight:800;font-size:14px;color:#92400e;margin:0">Modo Repaso</p>
+                <p style="font-size:11px;color:#b45309;margin:2px 0 0">${wrongQuizzes.length} quiz${wrongQuizzes.length!==1?'zes':''} que fallaste · ¡Practica hasta dominarlos!</p>
+            </div>
+            <span style="font-size:20px">›</span>
+        </div>`;
+    }
 
     for (let i = 1; i <= totalModules; i++) {
         const mod = modulesData[i - 1];
@@ -2056,9 +2304,12 @@ function showRedeemModal() {
 const showRankingModal = () => showRanking();
 
 async function showRanking() {
+    _rankingMode = 'total';
     const listEl = document.getElementById("rankingList");
     listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:32px;height:32px;color:#94a3b8">${ICONS?.spinner||'...'}</span></div>`;
     document.getElementById("rankingModal").classList.remove("hidden");
+    // Resetear tabs
+    switchRankingTab('total');
 
     let { data, error } = await supabase
         .from('ranking_view')
@@ -2089,6 +2340,10 @@ async function showRanking() {
         listEl.innerHTML = `<div class="text-center text-gray-400 py-6">Aún no hay participantes en el ranking.<br><span class="text-xs">¡Completa cursos y acumula XP para aparecer aquí!</span></div>`;
         return;
     }
+
+    _rankingDataTotal = data;
+    _renderTotalRanking(data);
+    return; // el resto del código original ya está en _renderTotalRanking
 
     // ── Definición de ligas por nivel ──────────────────────────────
     const LEAGUES = [
@@ -2187,6 +2442,115 @@ async function showRanking() {
         });
     }
     listEl.innerHTML = listHtml;
+}
+
+let _rankingMode = 'total'; // 'total' | 'weekly'
+let _rankingDataTotal = null;
+let _rankingDataWeekly = null;
+
+function switchRankingTab(tab) {
+    _rankingMode = tab;
+    const btnTotal  = document.getElementById('rankTabTotal');
+    const btnWeekly = document.getElementById('rankTabWeekly');
+    if (btnTotal)  { btnTotal.style.background  = tab==='total'  ? 'white' : 'rgba(255,255,255,.15)'; btnTotal.style.color  = tab==='total'  ? '#4c1d95' : 'white'; }
+    if (btnWeekly) { btnWeekly.style.background = tab==='weekly' ? 'white' : 'rgba(255,255,255,.15)'; btnWeekly.style.color = tab==='weekly' ? '#4c1d95' : 'white'; }
+    if (tab === 'weekly') _renderWeeklyRanking();
+    else _renderTotalRanking(_rankingDataTotal || []);
+}
+
+function _renderTotalRanking(data) {
+    const listEl = document.getElementById('rankingList');
+    const podiumEl = document.getElementById('rankingPodium');
+    if (!data?.length) { listEl.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:12px;padding:16px">Sin datos aún</p>'; return; }
+    const LEAGUES = [
+        { name:'Liga Diamante',emoji:'💎',min:11,color:'#06b6d4',bg:'#ecfeff' },
+        { name:'Liga Platino', emoji:'🪙',min:8, color:'#8b5cf6',bg:'#f5f3ff' },
+        { name:'Liga Oro',     emoji:'🥇',min:5, color:'#f59e0b',bg:'#fffbeb' },
+        { name:'Liga Plata',   emoji:'🥈',min:3, color:'#64748b',bg:'#f8fafc' },
+        { name:'Liga Bronce',  emoji:'🥉',min:1, color:'#b45309',bg:'#fef3c7' },
+    ];
+    const getLeague = lvl => LEAGUES.find(l => lvl >= l.min) || LEAGUES[LEAGUES.length-1];
+    const flat = [...data].sort((a,b)=>(b.level||1)-(a.level||1)||(b.xp||0)-(a.xp||0));
+    const _avatar = (u,size=44) => u.profile_photo
+        ? `<img src="${u.profile_photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
+        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:${size*.4}px;flex-shrink:0">👨‍🏫</div>`;
+
+    const top3=flat.slice(0,3); const podiumOrder=[top3[1],top3[0],top3[2]].filter(Boolean);
+    const podiumPos=top3[1]?[2,1,3]:[1]; const podiumH=['64px','88px','52px']; const podiumColors=['#5b21b6','#4c1d95','#6d28d9'];
+    if (podiumEl) podiumEl.innerHTML=`<div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;padding:0 8px">${podiumOrder.map((u,vi)=>{
+        const rank=podiumPos[vi];const isMe=u.user_id===currentUser?.id;const name=(u.full_name||u.nombre_usuario||'Docente').split(' ')[0];const isCrown=rank===1;
+        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;max-width:120px">${isCrown?'<div style="font-size:20px;margin-bottom:2px">👑</div>':'<div style="height:28px"></div>'}<div style="position:relative"><div style="border:3px solid ${isCrown?'#fbbf24':'rgba(255,255,255,.4)'};border-radius:50%;padding:2px">${_avatar(u,isCrown?52:44)}</div>${isMe?'<div style="position:absolute;bottom:-4px;right:-4px;background:#fbbf24;color:#1e1b4b;font-size:9px;font-weight:900;padding:1px 5px;border-radius:99px">TÚ</div>':''}</div><p style="color:white;font-weight:800;font-size:11px;margin:6px 0 4px;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</p><div style="background:rgba(255,255,255,.18);border-radius:99px;padding:2px 10px;margin-bottom:6px"><span style="color:white;font-size:10px;font-weight:700">⭐ ${(u.xp||0).toLocaleString()}</span></div><div style="background:${podiumColors[vi]};border-radius:12px 12px 0 0;height:${podiumH[vi]};width:100%;display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:${isCrown?'28px':'22px'};font-weight:900;opacity:.8">${rank}</span></div></div>`;
+    }).join('')}</div>`;
+
+    let listHtml='';
+    if(flat.length<=3) listHtml=`<p style="text-align:center;color:#94a3b8;font-size:12px;padding:16px 0">¡Solo los docentes del podio!</p>`;
+    else flat.slice(3).forEach((user,i)=>{
+        const rank=i+4;const isMe=user.user_id===currentUser?.id;const name=user.full_name||user.nombre_usuario||`Docente ${rank}`;
+        const lvl=user.level||1;const league=getLeague(lvl);
+        listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'linear-gradient(135deg,#ede9fe,#ddd6fe)':'#f8fafc'};border:${isMe?'2px solid #a78bfa':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#6d28d9':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#4c1d95':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#7c3aed">(Tú)</span>':''}</p><span style="font-size:10px;font-weight:600;color:${league.color}">${league.emoji} ${league.name}</span></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#6d28d9">⭐ ${(user.xp||0).toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">Nv. ${lvl}</p></div></div>`;
+    });
+    listEl.innerHTML = listHtml;
+}
+
+async function _renderWeeklyRanking() {
+    const listEl = document.getElementById('rankingList');
+    const podiumEl = document.getElementById('rankingPodium');
+    listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:28px;height:28px;color:#94a3b8">${ICONS?.spinner||'⏳'}</span></div>`;
+    if (podiumEl) podiumEl.innerHTML = '';
+
+    // Calcular inicio de semana (lunes)
+    const now = new Date();
+    const day = now.getDay();
+    const diff = (day === 0 ? -6 : 1 - day);
+    const monday = new Date(now); monday.setDate(now.getDate() + diff); monday.setHours(0,0,0,0);
+    const mondayStr = monday.toISOString();
+
+    const { data, error } = await supabase
+        .from('user_sessions')
+        .select('user_id, duration_seconds, started_at')
+        .gte('started_at', mondayStr);
+
+    // Construcción del ranking semanal basado en XP guardado en daily_missions.weeklyXP
+    const { data: progData } = await supabase
+        .from('progress')
+        .select('user_id, email, xp, level, daily_missions');
+
+    if (error && !progData) { listEl.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:16px">No hay datos semanales aún</p>'; return; }
+
+    const weekly = (progData || []).map(p => ({
+        user_id: p.user_id,
+        full_name: p.daily_missions?.fullName || p.email?.split('@')[0] || 'Docente',
+        profile_photo: p.daily_missions?.profilePhoto || null,
+        weeklyXP: p.daily_missions?.weeklyXP || 0,
+        xp: p.xp || 0, level: p.level || 1,
+    })).filter(p => p.weeklyXP > 0).sort((a,b) => b.weeklyXP - a.weeklyXP).slice(0,50);
+
+    if (!weekly.length) { listEl.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:12px;padding:24px">¡Sé el primero en acumular XP esta semana!</p>'; return; }
+
+    const _avatar = (u,size=44) => u.profile_photo
+        ? `<img src="${u.profile_photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
+        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#d97706,#fbbf24);display:flex;align-items:center;justify-content:center;font-size:${size*.4}px;flex-shrink:0">👨‍🏫</div>`;
+
+    const top3=weekly.slice(0,3); const podiumOrder=[top3[1],top3[0],top3[2]].filter(Boolean);
+    const podiumPos=top3[1]?[2,1,3]:[1]; const podiumH=['64px','88px','52px']; const podiumColors=['#b45309','#92400e','#d97706'];
+    if (podiumEl) podiumEl.innerHTML=`<div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;padding:0 8px">${podiumOrder.map((u,vi)=>{
+        const rank=podiumPos[vi];const isMe=u.user_id===currentUser?.id;const name=(u.full_name||'Docente').split(' ')[0];const isCrown=rank===1;
+        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;max-width:120px">${isCrown?'<div style="font-size:20px;margin-bottom:2px">👑</div>':'<div style="height:28px"></div>'}<div style="position:relative"><div style="border:3px solid ${isCrown?'#fbbf24':'rgba(255,255,255,.4)'};border-radius:50%;padding:2px">${_avatar(u,isCrown?52:44)}</div>${isMe?'<div style="position:absolute;bottom:-4px;right:-4px;background:#fbbf24;color:#1e1b4b;font-size:9px;font-weight:900;padding:1px 5px;border-radius:99px">TÚ</div>':''}</div><p style="color:white;font-weight:800;font-size:11px;margin:6px 0 4px;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</p><div style="background:rgba(255,255,255,.18);border-radius:99px;padding:2px 10px;margin-bottom:6px"><span style="color:white;font-size:10px;font-weight:700">🗓 ${u.weeklyXP.toLocaleString()} XP</span></div><div style="background:${podiumColors[vi]};border-radius:12px 12px 0 0;height:${podiumH[vi]};width:100%;display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:${isCrown?'28px':'22px'};font-weight:900;opacity:.8">${rank}</span></div></div>`;
+    }).join('')}</div>`;
+
+    let listHtml='';
+    if(weekly.length<=3) listHtml=`<p style="text-align:center;color:#94a3b8;font-size:12px;padding:16px 0">¡Solo los del podio esta semana!</p>`;
+    else weekly.slice(3).forEach((user,i)=>{
+        const rank=i+4;const isMe=user.user_id===currentUser?.id;const name=user.full_name||`Docente ${rank}`;
+        listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'linear-gradient(135deg,#fef3c7,#fde68a)':'#f8fafc'};border:${isMe?'2px solid #fbbf24':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#d97706':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#92400e':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#d97706">(Tú)</span>':''}</p></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#d97706">🗓 ${user.weeklyXP.toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">XP esta semana</p></div></div>`;
+    });
+    listEl.innerHTML = listHtml;
+
+    // Verificar insignia campeón semanal (top 3)
+    const myRank = weekly.findIndex(u => u.user_id === currentUser?.id) + 1;
+    if (myRank >= 1 && myRank <= 3 && !progress.badges.includes('weeklyChamp')) {
+        unlockBadge('weeklyChamp');
+    }
 }
 
 // ==================== SOLICITUD Y VOTACIÓN DE CURSOS ====================
@@ -2721,6 +3085,87 @@ function getDisplayName() {
     if (!currentUser?.email) return 'Profe';
     const raw = currentUser.email.split('@')[0].replace(/[._-]/g, ' ');
     return raw.replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// ── Modo Repaso ──
+function startRepasoMode() {
+    const wrongIds = progress.dailyMissions?.wrongQuizzes || [];
+    if (!wrongIds.length) { showToast('¡Sin quizzes pendientes de repasar! 🎉', 'success'); return; }
+
+    // Buscar el primer quiz fallado en todos los módulos
+    for (let m = 0; m < modulesData.length; m++) {
+        const cards = modulesData[m]?.cards || [];
+        for (let ci = 0; ci < cards.length; ci++) {
+            const c = cards[ci];
+            if (c.type === 'quiz' && wrongIds.includes(String(c.id))) {
+                currentModule = m + 1;
+                currentCardIndex = ci;
+                switchTab('home');
+                renderCard();
+                showToast(`🔁 Repaso: ${wrongIds.length} quiz${wrongIds.length!==1?'zes':''} pendiente${wrongIds.length!==1?'s':''}`, 'info');
+                return;
+            }
+        }
+    }
+    showToast('No se encontraron los quizzes a repasar', 'info');
+}
+
+// Al responder correctamente un quiz en repaso, quitarlo de wrongQuizzes
+function _removeFromWrong(cardId) {
+    const dm = progress.dailyMissions;
+    if (!dm?.wrongQuizzes) return;
+    dm.wrongQuizzes = dm.wrongQuizzes.filter(id => id !== String(cardId));
+    saveProgress();
+}
+
+// ── Notas por tarjeta ──
+function toggleCardNote(cardKey) {
+    const area = document.getElementById(`noteArea_${cardKey}`);
+    const btn  = document.getElementById(`noteBtn_${cardKey}`);
+    if (!area) return;
+    const visible = area.style.display !== 'none';
+    area.style.display = visible ? 'none' : 'block';
+    if (!visible) document.getElementById(`noteInput_${cardKey}`)?.focus();
+}
+
+function saveCardNote(cardKey, text) {
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    if (!progress.dailyMissions.cardNotes) progress.dailyMissions.cardNotes = {};
+    if (text.trim()) {
+        progress.dailyMissions.cardNotes[cardKey] = text;
+    } else {
+        delete progress.dailyMissions.cardNotes[cardKey];
+    }
+    const btn = document.getElementById(`noteBtn_${cardKey}`);
+    if (btn) btn.style.cssText = text.trim()
+        ? 'flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:16px;border:1px solid #93c5fd;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:600;cursor:pointer'
+        : 'flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:16px;border:1px solid #e2e8f0;background:white;color:#64748b;font-size:12px;font-weight:600;cursor:pointer';
+    clearTimeout(saveCardNote._t);
+    saveCardNote._t = setTimeout(() => { saveProgress(); checkBadges(); }, 1200);
+}
+
+// ── Lo apliqué en clase ──
+function toggleApplied(cardKey) {
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    if (!progress.dailyMissions.appliedCards) progress.dailyMissions.appliedCards = [];
+    const arr = progress.dailyMissions.appliedCards;
+    const idx = arr.indexOf(cardKey);
+    const btn = document.getElementById(`appliedBtn_${cardKey}`);
+    if (idx === -1) {
+        arr.push(cardKey);
+        if (btn) { btn.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:16px;border:1px solid #86efac;background:#dcfce7;color:#15803d;font-size:12px;font-weight:600;cursor:pointer'; btn.innerHTML = '🍎 ¡Ya lo apliqué!'; }
+        addXP(15, 'Concepto aplicado en clase');
+        updateMissionProgress('applied', 1);
+        showToast('🍎 +15 XP ¡Genial! Aplicar es el mejor aprendizaje', 'success');
+        // Misión semanal w_applied
+        const wm = progress.dailyMissions?.weeklyMissions || [];
+        wm.forEach(m => { if (!m.completed && m.type === 'w_applied') { m.current++; if (m.current >= m.target) { m.completed = true; showToast(`🏆 ¡Misión semanal: ${m.name}!`, 'success'); } } });
+    } else {
+        arr.splice(idx, 1);
+        if (btn) { btn.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:16px;border:1px solid #e2e8f0;background:white;color:#64748b;font-size:12px;font-weight:600;cursor:pointer'; btn.innerHTML = '🍎 Lo apliqué en clase'; }
+    }
+    saveProgress();
+    checkBadges();
 }
 
 // ── Helper: ir a la tarjeta de referencia del quiz ──
