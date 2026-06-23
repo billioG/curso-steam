@@ -5991,7 +5991,7 @@ async function _loadComments(cardId) {
 
     try {
         // 1. Obtener comentarios ordenados del más reciente al más antiguo
-        const { data: comments, error: cErr } = await supabase
+        let { data: comments, error: cErr } = await supabase
             .from('card_comments')
             .select('*')
             .eq('card_id', cardId)
@@ -6009,7 +6009,21 @@ async function _loadComments(cardId) {
             return;
         }
 
-        // 2. Obtener los likes del usuario actual para saber cuáles ya dio
+        // 2. Enriquecer nombres de usuarios que no tienen user_name guardado
+        const missingNameIds = [...new Set(comments.filter(c => !c.user_name).map(c => c.user_id))];
+        if (missingNameIds.length > 0) {
+            const { data: profiles } = await supabase
+                .from('progress')
+                .select('user_id, email, daily_missions')
+                .in('user_id', missingNameIds);
+            const nameMap = {};
+            (profiles || []).forEach(p => {
+                nameMap[p.user_id] = p.daily_missions?.fullName || p.email?.split('@')[0] || 'Docente';
+            });
+            comments = comments.map(c => c.user_name ? c : { ...c, user_name: nameMap[c.user_id] || 'Docente' });
+        }
+
+        // 3. Obtener los likes del usuario actual para saber cuáles ya dio
         const commentIds = comments.map(c => c.id);
         const { data: myLikes } = await supabase
             .from('comment_likes')
@@ -6111,7 +6125,8 @@ async function submitComment() {
                 user_id:   currentUser.id,
                 card_id:   _currentCommentsCardId,
                 module_id: currentModule || 1,
-                comment:   body
+                comment:   body,
+                user_name: getDisplayName() || currentUser.email?.split('@')[0] || 'Docente'
             });
 
         if (error) throw error;
