@@ -305,18 +305,7 @@ async function loadDashboard() {
     document.getElementById('impactHoras').textContent = fmt(horasFormacion)+'h';
     const horasRealEl = document.getElementById('impactHorasReal');
     if (horasRealEl) horasRealEl.textContent = metodoLabel;
-    document.getElementById('impactFinalizacion').textContent = tasaFinalizacion+'%';
     document.getElementById('impactCertificados').textContent = fmt(totalCertificados);
-
-    // KPIs
-    document.getElementById('kpiActive').textContent = fmt(active30);
-    document.getElementById('kpiCards').textContent = fmt(totalCards);
-
-    document.getElementById('kpiAvgTime').textContent = avgS ? fmtTime(avgS) : 'N/A';
-
-    // Tasa de finalización — misma que el banner (certificaron ≥1 curso)
-    const completionRate = tasaFinalizacion;
-    document.getElementById('kpiCompletion').textContent = completionRate + '%';
 
     // Portafolios — docentes certificados que tienen portafolio enviado
     const portfolioSubmitted = progress.filter(p => {
