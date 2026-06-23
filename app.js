@@ -636,23 +636,28 @@ function renderBadgesCarousel() {
     };
     track.innerHTML = tripled.map(itemHTML).join('');
 
-    requestAnimationFrame(() => {
+    // Medir después de dos frames para asegurar layout completo
+    requestAnimationFrame(() => requestAnimationFrame(() => {
         const first = track.querySelector('.badge-carousel-item');
-        if (first) _bcItemW = first.offsetWidth + 10;
+        if (first) {
+            const style = window.getComputedStyle(first);
+            const marginL = parseFloat(style.marginLeft) || 0;
+            const marginR = parseFloat(style.marginRight) || 0;
+            _bcItemW = first.offsetWidth + marginL + marginR;
+        }
         _bcApply(false);
-    });
+    }));
 }
 
 function badgesCarouselMove(dir) {
-    _bcIndex += dir;
-    _bcApply(true);
     const track = document.getElementById('badgesCarousel');
     if (!track) return;
+    _bcIndex += dir;
+    _bcApply(true);
     track.addEventListener('transitionend', function once() {
-        track.removeEventListener('transitionend', once);
         const n = _bcN();
-        if (_bcIndex <= 0)       { _bcIndex = n;     _bcApply(false); }
-        else if (_bcIndex >= n*2){ _bcIndex = n;     _bcApply(false); }
+        if (_bcIndex <= 0)        { _bcIndex = n; _bcApply(false); }
+        else if (_bcIndex >= n*2) { _bcIndex = n; _bcApply(false); }
     }, { once: true });
 }
 
@@ -660,7 +665,11 @@ function _bcApply(animate) {
     const track = document.getElementById('badgesCarousel');
     if (!track) return;
     track.style.transition = animate ? 'transform .4s cubic-bezier(.4,0,.2,1)' : 'none';
-    track.style.transform  = `translateX(-${_bcIndex * _bcItemW}px)`;
+    // Centrar el badge visible añadiendo offset del wrapper (margen de flechas = 38px)
+    const wrapper = track.parentElement;
+    const wrapW = wrapper ? wrapper.offsetWidth : 0;
+    const centerOffset = wrapW > 0 ? Math.round((wrapW - _bcItemW) / 2) : 0;
+    track.style.transform = `translateX(${centerOffset - _bcIndex * _bcItemW}px)`;
 }
 
 function showBadgeDetail(badgeId) {
@@ -1234,6 +1243,50 @@ function renderCard() {
             });
         }
     }
+    } else if (card.type === 'project') {
+        // Tarjeta de proyecto (caso de estudio / actividad práctica)
+        const cardId = card.id ? String(card.id) : `${currentModule}-${currentCardIndex}`;
+        if (!progress.completedCards.includes(cardId)) {
+            progress.completedCards.push(cardId);
+            updateMissionProgress('cards', 1);
+            saveProgress();
+        }
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = '1'; }
+
+        const _ct = (typeof getCourseThemeAndIllus !== 'undefined')
+            ? getCourseThemeAndIllus(currentCourseId || 'steam', currentModule)
+            : { theme: { primary: '#5C35C5', soft: '#EDE9FE' }, illus: '' };
+        const pt = _ct.theme;
+
+        const _section = (emoji, title, items) => items?.length ? `
+            <div style="margin-bottom:14px">
+                <p style="font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;color:${pt.primary};margin-bottom:8px">${emoji} ${title}</p>
+                <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px">
+                    ${items.map(i => `<li style="font-size:.9rem;color:#374151;line-height:1.5">${i}</li>`).join('')}
+                </ul>
+            </div>` : '';
+
+        container.innerHTML = `
+        <div id="activeCard" style="border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08)">
+            <div style="background:${pt.primary};padding:20px 20px 16px;position:relative">
+                <div style="position:absolute;inset:0;opacity:.12">${_ct.illus}</div>
+                <p style="color:rgba(255,255,255,.75);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">🛠️ Proyecto · Módulo ${currentModule}</p>
+                <h2 style="color:white;font-size:1.15rem;font-weight:800;line-height:1.3;margin:0">${card.title || 'Proyecto práctico'}</h2>
+            </div>
+            <div style="background:white;padding:18px 20px 20px">
+                ${card.description ? `<p style="font-size:.92rem;color:#374151;line-height:1.6;margin-bottom:16px;padding:12px 14px;background:${pt.soft};border-radius:12px;border-left:3px solid ${pt.primary}">${card.description}</p>` : ''}
+                ${card.objective ? `<div style="margin-bottom:14px"><p style="font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;color:${pt.primary};margin-bottom:6px">🎯 Objetivo</p><p style="font-size:.9rem;color:#374151;line-height:1.5">${card.objective}</p></div>` : ''}
+                ${_section('📦', 'Materiales', card.materials)}
+                ${card.steps?.length ? `<div style="margin-bottom:14px"><p style="font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;color:${pt.primary};margin-bottom:8px">📋 Pasos</p><ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px">${card.steps.map(s => `<li style="font-size:.9rem;color:#374151;line-height:1.5">${s}</li>`).join('')}</ol></div>` : ''}
+                ${card.think?.length || card.make?.length || card.improve?.length ? `
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px">
+                    ${card.think?.length ? `<div style="background:#eff6ff;border-radius:12px;padding:10px"><p style="font-weight:700;font-size:.75rem;color:#1d4ed8;margin-bottom:6px">💭 Think</p><ul style="margin:0;padding-left:14px">${card.think.map(t=>`<li style="font-size:.75rem;color:#374151;line-height:1.45;margin-bottom:3px">${t}</li>`).join('')}</ul></div>` : ''}
+                    ${card.make?.length  ? `<div style="background:#f0fdf4;border-radius:12px;padding:10px"><p style="font-weight:700;font-size:.75rem;color:#15803d;margin-bottom:6px">🔨 Make</p><ul style="margin:0;padding-left:14px">${card.make.map(m=>`<li style="font-size:.75rem;color:#374151;line-height:1.45;margin-bottom:3px">${m}</li>`).join('')}</ul></div>` : ''}
+                    ${card.improve?.length ? `<div style="background:#fefce8;border-radius:12px;padding:10px"><p style="font-weight:700;font-size:.75rem;color:#a16207;margin-bottom:6px">🔄 Improve</p><ul style="margin:0;padding-left:14px">${card.improve.map(i=>`<li style="font-size:.75rem;color:#374151;line-height:1.45;margin-bottom:3px">${i}</li>`).join('')}</ul></div>` : ''}
+                </div>` : ''}
+            </div>
+        </div>`;
+    }
     // Registrar swipe en cada tarjeta nueva (touch + mouse)
     initSwipe();
 }
@@ -1403,22 +1456,28 @@ function askModuleFeedback(moduleId) {
     const _feedbackKey = `${currentCourseId || 'steam'}-${moduleId}`;
     if (progress.moduleFeedback?.[_feedbackKey]) { continueToNextModule(); return; }
     const moduleName = modulesData[moduleId - 1]?.title || `Módulo ${moduleId}`;
-    const feedbackHtml = `<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6"><h2 class="text-xl font-bold text-indigo-800 mb-2">📝 ¿Cómo te fue en ${moduleName}?</h2><div class="mb-4"><label class="block font-medium mb-2">Satisfacción (1-5)</label><div class="flex gap-2 justify-between" id="ratingStars">${[1, 2, 3, 4, 5].map(n => `<button data-rating="${n}" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>`).join('')}</div><input type="hidden" id="selectedRating" value="0"></div><div class="mb-4"><label class="block font-medium mb-2">NPS (0-10): ¿Recomendarías este curso a otro docente?</label><div class="grid grid-cols-5 gap-1">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button data-nps="${n}" class="nps-btn w-9 h-9 rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition text-sm">${n}</button>`).join('')}</div><input type="hidden" id="selectedNPS" value="-1"></div><div class="mb-4"><textarea id="feedbackComment" rows="3" class="w-full border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Comentario o sugerencia (opcional)"></textarea></div><div class="flex gap-2"><button id="submitFeedbackBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex-1 transition">Enviar</button><button id="skipFeedbackBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition">Omitir</button></div></div></div>`;
+    const feedbackHtml = `<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6"><h2 class="text-xl font-bold text-indigo-800 mb-2">📝 ¿Cómo te fue en ${moduleName}?</h2><div class="mb-4"><label class="block font-medium mb-2">Satisfacción (1-5)</label><div class="flex gap-2 justify-between" id="ratingStars">${[1, 2, 3, 4, 5].map(n => `<button data-rating="${n}" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>`).join('')}</div><input type="hidden" id="selectedRating" value="0"></div><div class="mb-4"><label class="block font-medium mb-2">NPS (0-10): ¿Recomendarías este curso a otro docente?</label><div class="grid grid-cols-6 gap-1">${[0,1,2,3,4,5,6,7,8,9,10].map(n => `<button data-nps="${n}" class="nps-btn w-9 h-9 rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition text-sm">${n}</button>`).join('')}</div><input type="hidden" id="selectedNPS" value="-1"></div><div id="lowScorePrompt" style="display:none;background:#fef3c7;border:1px solid #fde68a;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:13px;color:#92400e">💬 <strong>¿Qué podríamos mejorar?</strong> Tu opinión nos ayuda a hacer el curso mejor.</div><div class="mb-4"><textarea id="feedbackComment" rows="3" class="w-full border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Comentario o sugerencia (opcional)"></textarea></div><div class="flex gap-2"><button id="submitFeedbackBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex-1 transition">Enviar</button><button id="skipFeedbackBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition">Omitir</button></div></div></div>`;
     document.body.insertAdjacentHTML('beforeend', feedbackHtml);
 
-    document.querySelectorAll('.rating-star').forEach(star => {
-        star.addEventListener('click', () => {
-            const rating = parseInt(star.dataset.rating);
-            document.getElementById('selectedRating').value = rating;
-            document.querySelectorAll('.rating-star').forEach((s, i) => { if (i < rating) s.classList.add('text-yellow-400'); else s.classList.remove('text-yellow-400'); });
-        });
-    });
     document.querySelectorAll('.nps-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const nps = parseInt(btn.dataset.nps);
             document.getElementById('selectedNPS').value = nps;
             document.querySelectorAll('.nps-btn').forEach(b => { b.classList.remove('bg-indigo-500', 'text-white'); b.classList.add('bg-gray-200'); });
             btn.classList.add('bg-indigo-500', 'text-white');
+            // Mostrar campo obligatorio si NPS ≤ 6
+            const lowMsg = document.getElementById('lowScorePrompt');
+            if (lowMsg) lowMsg.style.display = nps <= 6 ? 'block' : 'none';
+        });
+    });
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', () => {
+            const rating = parseInt(star.dataset.rating);
+            document.getElementById('selectedRating').value = rating;
+            document.querySelectorAll('.rating-star').forEach((s, i) => { if (i < rating) s.classList.add('text-yellow-400'); else s.classList.remove('text-yellow-400'); });
+            // Mostrar campo obligatorio si satisfacción ≤ 2
+            const lowMsg = document.getElementById('lowScorePrompt');
+            if (lowMsg) lowMsg.style.display = rating <= 2 ? 'block' : 'none';
         });
     });
     document.getElementById('submitFeedbackBtn').addEventListener('click', () => {
@@ -1427,6 +1486,12 @@ function askModuleFeedback(moduleId) {
         const comment = document.getElementById('feedbackComment').value;
         if (rating === 0) { alert("Por favor, selecciona una calificación de 1 a 5"); return; }
         if (nps === -1) { alert("Por favor, selecciona un puntaje NPS del 0 al 10"); return; }
+        // Si puntaje bajo, el comentario es obligatorio
+        if ((nps <= 6 || rating <= 2) && !comment.trim()) {
+            alert("Por favor cuéntanos por qué calificaste así — tu opinión nos ayuda a mejorar.");
+            document.getElementById('feedbackComment').focus();
+            return;
+        }
         progress.moduleFeedback[_feedbackKey] = { moduleName, rating, nps, comment, timestamp: new Date().toISOString(), moduleId, courseId: currentCourseId || 'steam' };
         progress.npsHistory = progress.npsHistory || [];
         progress.npsHistory.push({ moduleId, moduleName, nps, timestamp: new Date().toISOString() });
