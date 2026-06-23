@@ -912,6 +912,16 @@
             background:none; border:none; padding:0; cursor:pointer; text-align:left;
             margin-bottom:10px;
         }
+        .perfil-section-label {
+            display:flex; flex-direction:column; gap:1px;
+        }
+        .perfil-section-label-title {
+            font-size:11px; font-weight:900; text-transform:uppercase;
+            letter-spacing:.08em; color:#1e3a5f;
+        }
+        .perfil-section-label-sub {
+            font-size:11px; color:#94a3b8; font-weight:400; text-transform:none; letter-spacing:0;
+        }
         .perfil-section-toggle-icon {
             width:18px; height:18px; flex-shrink:0; transition:transform .25s ease;
             color:#94a3b8;
@@ -1841,7 +1851,7 @@
             <!-- ── Sección: Aprendizaje ── -->
             <div class="perfil-section">
                 <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
-                    <span class="perfil-section-label" style="margin-bottom:0">Aprendizaje</span>
+                    <span class="perfil-section-label"><span class="perfil-section-label-title">Aprendizaje</span><span class="perfil-section-label-sub">Cursos, simulaciones y evaluaciones</span></span>
                     <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <div class="perfil-section-body collapsed">
@@ -1952,7 +1962,7 @@
             <!-- ── Sección: Certificados ── -->
             <div id="certSection" class="perfil-section">
                 <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
-                    <span class="perfil-section-label" style="margin-bottom:0">Certificados</span>
+                    <span class="perfil-section-label"><span class="perfil-section-label-title">Certificados</span><span class="perfil-section-label-sub">Diplomas obtenidos en el programa</span></span>
                     <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <div class="perfil-section-body collapsed">
@@ -1998,7 +2008,7 @@
             <!-- ── Recursos descargables ── -->
             <div id="resourcesSection" class="perfil-section hidden">
                 <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
-                    <span class="perfil-section-label" style="margin-bottom:0">Recursos descargables</span>
+                    <span class="perfil-section-label"><span class="perfil-section-label-title">Recursos descargables</span><span class="perfil-section-label-sub">Materiales y rúbricas del curso</span></span>
                     <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <div class="perfil-section-body collapsed">
@@ -2009,7 +2019,7 @@
             <!-- ── Gana más XP ── -->
             <div class="perfil-section">
                 <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
-                    <span class="perfil-section-label" style="margin-bottom:0">Gana más XP</span>
+                    <span class="perfil-section-label"><span class="perfil-section-label-title">Gana más XP</span><span class="perfil-section-label-sub">Misiones y actividades para subir de nivel</span></span>
                     <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <div class="perfil-section-body collapsed">
