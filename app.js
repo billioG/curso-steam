@@ -345,6 +345,7 @@ async function loginWithEmail(email, password) {
         initExistingModuleDates();
         checkDailyStreak();
         loadDailyMissions();
+        startSessionTracking();
         await syncWithSupabase();
         loadPortfolio();
         loadAppConfig();
@@ -386,6 +387,7 @@ async function registerWithEmail(email, password) {
 
         checkDailyStreak();
         loadDailyMissions();
+        startSessionTracking();
         await syncWithSupabase();
         showToast("¡Registro exitoso! Bienvenido al curso", "success");
         return true;
@@ -415,7 +417,49 @@ async function checkUserAdminRole() {
 }
 
 
+// ==================== SESSION TRACKING ====================
+let _sessionId = null;
+let _sessionStart = null;
+const _SESSION_HEARTBEAT_MS = 60000; // actualiza duración cada 60s
+
+async function startSessionTracking() {
+    if (!currentUser) return;
+    _sessionId = crypto.randomUUID();
+    _sessionStart = Date.now();
+    const deviceInfo = {
+        ua: navigator.userAgent.slice(0, 200),
+        mobile: /Mobi|Android/i.test(navigator.userAgent),
+        lang: navigator.language
+    };
+    await supabase.from('user_sessions').insert({
+        id: _sessionId,
+        user_id: currentUser.id,
+        session_id: _sessionId,
+        start_time: new Date().toISOString(),
+        duration_seconds: 0,
+        device_info: deviceInfo
+    });
+    // Heartbeat: actualiza duration_seconds cada minuto
+    setInterval(() => _updateSessionDuration(), _SESSION_HEARTBEAT_MS);
+}
+
+async function _updateSessionDuration() {
+    if (!_sessionId || !_sessionStart) return;
+    const dur = Math.round((Date.now() - _sessionStart) / 1000);
+    await supabase.from('user_sessions').update({
+        end_time: new Date().toISOString(),
+        duration_seconds: dur
+    }).eq('id', _sessionId);
+}
+
+// Guardar al cerrar/cambiar de pestaña
+window.addEventListener('beforeunload', () => { if (_sessionId) _updateSessionDuration(); });
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') _updateSessionDuration();
+});
+
 async function logout() {
+    await _updateSessionDuration();
     await supabase.auth.signOut();
     currentUser = null;
     progress = null;
@@ -466,6 +510,7 @@ async function checkExistingSession() {
         initExistingModuleDates();
         checkDailyStreak();
         loadDailyMissions();
+        startSessionTracking();
 
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
