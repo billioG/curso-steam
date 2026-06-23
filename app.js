@@ -5247,7 +5247,18 @@ Reglas de comportamiento:
 - Promueve inclusión, equidad de género y respeto a la diversidad.
 - Cuando sea relevante, estructura las respuestas con: Objetivo, Competencias, Materiales, Pasos (Think-Make-Improve), Evaluación y Extensiones.
 - Nunca des respuestas vagas, genéricas o excesivamente cautelosas. Sé directo, explícito y práctico.
-- Responde SIEMPRE en español.`;
+- Responde SIEMPRE en español.
+- Si el usuario pregunta sobre drogas, sustancias ilegales, alcohol, tabaco, violencia, contenido para adultos o cualquier tema inapropiado para un entorno escolar, rechaza amablemente y redirige la conversación al contexto educativo STEAM.`;
+
+const _CHAT_BLOCKED = [
+    /droga[s]?/i, /narcot/i, /cocaín/i, /heroín/i, /marihuana/i, /cannabis/i, /fentanil/i,
+    /metanfetamin/i, /éxtasis/i, /psicodélic/i, /alucinógen/i, /estupefaciente/i,
+    /alcohol/i, /cerveza/i, /licor/i, /aguardiente/i, /ron\b/i, /vodka/i, /whisky/i,
+    /tabaco/i, /cigarro/i, /cigarrillo/i, /vaping/i, /vapear/i,
+    /pornograf/i, /contenido.*adult/i, /adult.*content/i,
+    /suicid/i, /autolesion/i, /hacerse daño/i,
+    /explosiv/i, /bomba\b/i, /arma[s]?\b/i, /weapon/i,
+];
 
 let _chatHistory = [];
 
@@ -5266,6 +5277,12 @@ async function sendChatMessage() {
 
     input.value = '';
     appendChatMsg('user', msg);
+
+    if (_CHAT_BLOCKED.some(r => r.test(msg))) {
+        appendChatMsg('bot', '🚫 Ese tema no es apropiado para este espacio educativo. ¿Te puedo ayudar con algo relacionado a STEAM, robótica o estrategias de enseñanza?');
+        return;
+    }
+
     appendChatMsg('bot', '⏳ Pensando...');
     _chatHistory.push({ role: 'user', content: msg });
 
@@ -5302,10 +5319,13 @@ function appendChatMsg(role, text) {
     const messages = document.getElementById('chatMessages');
     if (!messages) return;
     const div = document.createElement('div');
-    div.className = role === 'user'
-        ? 'bg-[#07B0E4] text-white rounded-2xl rounded-tr-sm px-3 py-2.5 text-sm max-w-[85%] ml-auto'
-        : 'bg-slate-100 text-slate-700 rounded-2xl rounded-tl-sm px-3 py-2.5 text-sm max-w-[85%] whitespace-pre-wrap';
-    div.textContent = text;
+    if (role === 'user') {
+        div.className = 'bg-[#07B0E4] text-white rounded-2xl rounded-tr-sm px-3 py-2.5 text-sm max-w-[85%] ml-auto';
+        div.textContent = text;
+    } else {
+        div.className = 'chat-bot-msg bg-slate-100 text-slate-700 rounded-2xl rounded-tl-sm px-3 py-2.5 text-sm max-w-[85%] chat-md';
+        div.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+    }
     messages.appendChild(div);
     messages.scrollTop = messages.scrollHeight;
 }
@@ -5313,8 +5333,10 @@ function appendChatMsg(role, text) {
 function replaceLastBotMsg(text) {
     const messages = document.getElementById('chatMessages');
     if (!messages) return;
-    const bots = messages.querySelectorAll('.bg-slate-100');
-    if (bots.length) bots[bots.length - 1].textContent = text;
+    const bots = messages.querySelectorAll('.chat-bot-msg');
+    if (bots.length) {
+        bots[bots.length - 1].innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+    }
     messages.scrollTop = messages.scrollHeight;
 }
 
