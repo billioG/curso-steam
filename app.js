@@ -5128,21 +5128,25 @@ function _checkOnboardingRequirements(onComplete) {
             const dept = document.getElementById('_ob_dept')?.value;
             if (!drop || !inp) return;
             const query = inp.value.trim().toLowerCase();
-            if (!query || query.length < 2 || typeof SCHOOLS_GT === 'undefined' || !dept) {
+            if (!query || query.length < 2 || typeof SCHOOLS_GT === 'undefined') {
                 drop.style.display = 'none';
                 return;
             }
-            const pool = SCHOOLS_GT[dept] || [];
+            // Si no hay departamento seleccionado, buscar en todos los departamentos
+            const pool = dept ? (SCHOOLS_GT[dept] || []) : Object.values(SCHOOLS_GT).flat();
             const matches = pool.filter(s => s.toLowerCase().includes(query)).slice(0, 10);
             if (!matches.length) { drop.style.display = 'none'; return; }
             drop.innerHTML = matches.map(s => {
                 const parts = s.split(' · ');
                 const name  = parts[0] || s;
                 const mun   = parts[1] || '';
-                const hi    = name.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<strong>$1</strong>');
+                let hi = esc(name);
+                try {
+                    hi = name.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<strong>$1</strong>');
+                } catch(e) {}
                 return `<div onclick="_obSelectSchool(this)" data-name="${name.replace(/"/g,'&quot;')}"
                     style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid #f1f5f9;transition:background .15s"
-                    onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background=''">${hi}<span style="font-size:11px;color:#94a3b8;margin-left:6px">· ${mun}</span></div>`;
+                    onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background=''">${hi}<span style="font-size:11px;color:#94a3b8;margin-left:6px">· ${esc(mun)}</span></div>`;
             }).join('');
             // Posicionar usando fixed + getBoundingClientRect para evitar el clip del overflow:auto
             const r = inp.getBoundingClientRect();
