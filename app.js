@@ -118,6 +118,15 @@ const BADGE_SVG = {
     streak7:      `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fff7ed"/><path d="M22 11c0 4-4 5-4 9a4 4 0 008 0c0-3-2-5-2-7" fill="#f97316"/><path d="M17 22c0 2 1.5 3.5 3 3.5S23 24 23 22" fill="#fbbf24"/><circle cx="20" cy="30" r="1" fill="#f97316"/></svg>`,
     streak30:     `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fdf4ff"/><path d="M20 12l1.5 3h3.2l-2.6 1.9 1 3.1L20 18.2l-3.1 1.8 1-3.1L15.3 15h3.2z" fill="#a855f7"/><path d="M20 20l1 2h2.1l-1.7 1.2.6 2L20 24l-2 1.2.6-2L17 22h2.1z" fill="#d8b4fe"/><line x1="20" y1="26" x2="20" y2="29" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round"/></svg>`,
     level5:       `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fef9c3"/><text x="20" y="25" text-anchor="middle" font-size="16" font-weight="900" fill="#ca8a04" font-family="Arial">5</text><path d="M20 10l1 3h3l-2.5 1.8.9 3-2.4-1.7-2.4 1.7.9-3L16 13h3z" fill="#f59e0b"/></svg>`,
+    level10:      `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fdf4ff"/><text x="20" y="25" text-anchor="middle" font-size="14" font-weight="900" fill="#7c3aed" font-family="Arial">10</text><path d="M20 9l1.2 3.6h3.8l-3.1 2.3 1.2 3.6L20 16.2l-3.1 2.3 1.2-3.6L15 12.6h3.8z" fill="#a855f7"/></svg>`,
+    quiz25:       `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fef2f2"/><path d="M14 20l4 4 8-8" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M20 11a9 9 0 100 18 9 9 0 000-18z" stroke="#ef4444" stroke-width="1.5" fill="none"/></svg>`,
+    perfect10:    `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#f0fdfa"/><polygon points="20,11 22.5,17 29,17 23.5,21 25.5,28 20,24 14.5,28 16.5,21 11,17 17.5,17" fill="none" stroke="#0d9488" stroke-width="1.5"/><polygon points="20,14 21.5,18.5 26,18.5 22.5,21.5 23.8,26 20,23.5 16.2,26 17.5,21.5 14,18.5 18.5,18.5" fill="#14b8a6"/></svg>`,
+    streak3:      `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fff7ed"/><path d="M21 11c0 3-3 4-3 7a3 3 0 006 0c0-2.5-1.5-4-1.5-6" fill="#fb923c"/><path d="M17.5 22c0 1.5 1.1 2.5 2.5 2.5s2.5-1 2.5-2.5" fill="#fbbf24"/></svg>`,
+    earlyBird:    `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fefce8"/><path d="M20 14a6 6 0 100 12 6 6 0 000-12z" fill="#facc15"/><path d="M20 11v-2M20 31v-2M11 20H9M31 20h-2M13.9 13.9l-1.4-1.4M27.5 27.5l-1.4-1.4M13.9 26.1l-1.4 1.4M27.5 12.5l-1.4 1.4" stroke="#eab308" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    noteWriter:   `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#f0f9ff"/><rect x="13" y="12" width="14" height="18" rx="2" fill="#0ea5e9"/><rect x="16" y="17" width="8" height="1.5" rx=".75" fill="white"/><rect x="16" y="20.5" width="8" height="1.5" rx=".75" fill="white"/><rect x="16" y="24" width="5" height="1.5" rx=".75" fill="white"/><path d="M24 12l3 3-2 2-3-3z" fill="#fbbf24"/><path d="M22 16l3-2" stroke="#fbbf24" stroke-width="1" fill="none"/></svg>`,
+    applied5:     `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#f0fdf4"/><path d="M14 20a6 6 0 1112 0 6 6 0 01-12 0z" fill="#22c55e"/><path d="M17 20l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M20 12v-2M20 30v-2M28 20h2M12 20h-2" stroke="#86efac" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    weeklyChamp:  `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fffbeb"/><path d="M14 14h12v8a6 6 0 01-12 0v-8z" fill="#f59e0b"/><path d="M14 17H11a3 3 0 003 3M26 17h3a3 3 0 01-3 3" stroke="#d97706" stroke-width="1.5" fill="none"/><rect x="16" y="28" width="8" height="2" rx="1" fill="#d97706"/><rect x="14" y="30" width="12" height="2" rx="1" fill="#d97706"/></svg>`,
+    masterDocente:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fdf4ff"/><path d="M20 12l2.8 5.6 6.2.9-4.5 4.4 1.1 6.1L20 25l-5.6 3 1.1-6.1-4.5-4.4 6.2-.9z" fill="#a855f7" stroke="#9333ea" stroke-width=".5"/><circle cx="20" cy="20" r="2.5" fill="#fff"/></svg>`,
 };
 
 const badges = {
@@ -530,7 +539,7 @@ async function checkExistingSession() {
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
         await loadAppConfig();
-        showCourseSelector();
+        _checkOnboardingRequirements(() => showCourseSelector());
         return true;
     }
     return false;
@@ -687,7 +696,9 @@ function renderBadgesCarousel() {
 
     const itemHTML = (b) => {
         const done = earned.has(b.id);
-        const svg = BADGE_SVG[b.id] || '';
+        const svg = BADGE_SVG[b.id]
+            ? BADGE_SVG[b.id]
+            : `<span style="font-size:22px;line-height:1">${b.icon}</span>`;
         return `<button class="badge-carousel-item${done?' earned':''}" onclick="showBadgeDetail('${b.id}')" style="width:86px">
             <div style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
                 background:${done?'linear-gradient(135deg,#f3e8ff,#ede9fe)':'#f1f5f9'};
@@ -715,15 +726,20 @@ function renderBadgesCarousel() {
     }));
 }
 
+let _bcMoving = false;
 function badgesCarouselMove(dir) {
+    if (_bcMoving) return;
     const track = document.getElementById('badgesCarousel');
     if (!track) return;
+    _bcMoving = true;
     _bcIndex += dir;
     _bcApply(true);
-    track.addEventListener('transitionend', function once() {
+    track.addEventListener('transitionend', function once(e) {
+        if (e.target !== track) return;
         const n = _bcN();
         if (_bcIndex <= 0)        { _bcIndex = n; _bcApply(false); }
         else if (_bcIndex >= n*2) { _bcIndex = n; _bcApply(false); }
+        _bcMoving = false;
     }, { once: true });
 }
 
@@ -832,7 +848,7 @@ function addXP(amount, reason) {
         progress.level = newLevel;
         showToast(`🎉 ¡SUBISTE AL NIVEL ${newLevel}!`, "levelup");
         if (newLevel === 5 && !progress.badges.includes("level5")) unlockBadge("level5");
-        if (newLevel === 10) generateLevelCertificate(newLevel);
+        if (newLevel === 10 && !progress.badges.includes("level10")) unlockBadge("level10");
         progress.raffleTickets = (progress.raffleTickets || 0) + 1;
     }
 
@@ -1322,7 +1338,7 @@ function renderCard() {
                 <span style="display:inline-flex;width:13px;height:13px;opacity:.5">${ICONS?.arrowRight||'→'}</span>
             </div>
             <div class="px-4 pb-3">
-                <button id="commentCountBtn" onclick="showCardComments('${currentModule}-${currentCardIndex}')"
+                <button id="commentCountBtn" onclick="showCardComments('${String(card.id)}')"
                     class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-slate-200 text-slate-500 text-xs font-semibold hover:bg-slate-50 transition">
                     <span style="display:inline-flex;width:15px;height:15px;color:#94a3b8;flex-shrink:0">${ICONS?.comments||''}</span><span>Comentarios y dudas</span><span style="background:#f1f5f9;color:#94a3b8;font-size:10px;font-weight:600;padding:1px 8px;border-radius:20px;margin-left:5px">...</span>
                 </button>
@@ -1330,7 +1346,7 @@ function renderCard() {
         </div>`;
 
         // Cargar conteo de comentarios en background
-        const _cntCardId = `${currentModule}-${currentCardIndex}`;
+        const _cntCardId = String(card.id);
         _fetchCommentCount(_cntCardId).then(n => _updateCommentCountBtn(_cntCardId, n));
 
     } else if (card.type === "quiz") {
@@ -3095,7 +3111,9 @@ function startRepasoMode() {
     const wrongIds = progress.dailyMissions?.wrongQuizzes || [];
     if (!wrongIds.length) { showToast('¡Sin quizzes pendientes de repasar! 🎉', 'success'); return; }
 
-    // Buscar el primer quiz fallado en todos los módulos
+    const _label = `🔁 Repaso: ${wrongIds.length} quiz${wrongIds.length!==1?'zes':''} pendiente${wrongIds.length!==1?'s':''}`;
+
+    // 1. Buscar primero en el curso actual
     for (let m = 0; m < modulesData.length; m++) {
         const cards = modulesData[m]?.cards || [];
         for (let ci = 0; ci < cards.length; ci++) {
@@ -3105,12 +3123,43 @@ function startRepasoMode() {
                 currentCardIndex = ci;
                 switchTab('home');
                 renderCard();
-                showToast(`🔁 Repaso: ${wrongIds.length} quiz${wrongIds.length!==1?'zes':''} pendiente${wrongIds.length!==1?'s':''}`, 'info');
+                showToast(_label, 'info');
                 return;
             }
         }
     }
-    showToast('No se encontraron los quizzes a repasar', 'info');
+
+    // 2. Si no está en el curso actual, buscar en todos los cursos
+    const _allC = (typeof allCourses !== 'undefined' && allCourses) || [];
+    for (const course of _allC) {
+        if (course.id === currentCourseId) continue;
+        const mods = course.modules || [];
+        for (let m = 0; m < mods.length; m++) {
+            const cards = mods[m]?.cards || [];
+            for (let ci = 0; ci < cards.length; ci++) {
+                const c = cards[ci];
+                if (c.type === 'quiz' && wrongIds.includes(String(c.id))) {
+                    // Cambiar al curso que contiene el quiz
+                    currentCourseId = course.id;
+                    modulesData = course.modules;
+                    if (progress) { progress.currentCourseId = course.id; saveProgress(); }
+                    currentModule = m + 1;
+                    currentCardIndex = ci;
+                    document.getElementById('courseSelector')?.classList.add('hidden');
+                    document.getElementById('mainApp')?.classList.remove('hidden');
+                    switchTab('home');
+                    renderCard();
+                    showToast(_label, 'info');
+                    return;
+                }
+            }
+        }
+    }
+
+    // 3. No se encontró en ningún curso — limpiar entradas huérfanas
+    progress.dailyMissions.wrongQuizzes = [];
+    saveProgress();
+    showToast('¡Sin quizzes pendientes de repasar! 🎉', 'success');
 }
 
 // Al responder correctamente un quiz en repaso, quitarlo de wrongQuizzes
@@ -4482,8 +4531,9 @@ document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
     const password = document.getElementById("loginPassword").value;
     const success = await loginWithEmail(email, password);
     if (success) {
+        document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
-        showCourseSelector();
+        _checkOnboardingRequirements(() => showCourseSelector());
     }
 });
 document.getElementById("doRegister")?.addEventListener("click", async () => {
@@ -4492,9 +4542,10 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
     if (password.length < 6) { showLoginError("La contraseña debe tener al menos 6 caracteres"); return; }
     const success = await registerWithEmail(email, password);
     if (success) {
+        document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
         await checkReferralBonus();
-        showCourseSelector();
+        _checkOnboardingRequirements(() => showCourseSelector());
     }
 });
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
@@ -5011,6 +5062,110 @@ if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
     }, 3000);
 }
 
+// ==================== ONBOARDING OBLIGATORIO ====================
+const GT_DEPARTMENTS = ['Alta Verapaz','Baja Verapaz','Chimaltenango','Chiquimula','El Progreso','Escuintla','Guatemala','Huehuetenango','Izabal','Jalapa','Jutiapa','Petén','Quetzaltenango','Quiché','Retalhuleu','Sacatepéquez','San Marcos','Santa Rosa','Sololá','Suchitepéquez','Totonicapán','Zacapa'];
+
+function _checkOnboardingRequirements(onComplete) {
+    const dm = progress?.dailyMissions || {};
+    const profileMissing = !dm.department || !dm.school;
+    const diagMissing    = !dm.diagDone && !localStorage.getItem('diagDone');
+
+    if (!profileMissing && !diagMissing) { onComplete(); return; }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'onboardingOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+
+    function showProfileStep() {
+        overlay.innerHTML = `
+        <div style="background:#fff;border-radius:24px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.25)">
+            <div style="text-align:center;margin-bottom:20px">
+                <div style="font-size:36px;margin-bottom:8px">🏫</div>
+                <h2 style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 6px">Completa tu perfil</h2>
+                <p style="font-size:13px;color:#64748b;margin:0">Para personalizar tu experiencia necesitamos saber dónde enseñas. <strong>Requerido para continuar.</strong></p>
+            </div>
+            <div style="margin-bottom:14px">
+                <label style="display:block;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Departamento *</label>
+                <select id="_ob_dept" style="width:100%;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px 14px;font-size:14px;background:#f8fafc;outline:none">
+                    <option value="">— Selecciona tu departamento —</option>
+                    ${GT_DEPARTMENTS.map(d => `<option value="${d}"${dm.department===d?' selected':''}>${d}</option>`).join('')}
+                </select>
+            </div>
+            <div style="margin-bottom:20px">
+                <label style="display:block;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Nombre del establecimiento *</label>
+                <input id="_ob_school" type="text" placeholder="Ej: Escuela Oficial Rural Mixta No. 123"
+                    value="${esc(dm.school||'')}"
+                    style="width:100%;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px 14px;font-size:14px;background:#f8fafc;outline:none;box-sizing:border-box">
+            </div>
+            <button id="_ob_profileSave" style="width:100%;padding:14px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;font-weight:800;font-size:14px;border:none;border-radius:14px;cursor:pointer">
+                Guardar y continuar →
+            </button>
+            <p id="_ob_profileErr" style="color:#ef4444;font-size:12px;text-align:center;margin:8px 0 0;display:none">Por favor completa ambos campos.</p>
+        </div>`;
+
+        document.getElementById('_ob_profileSave').onclick = () => {
+            const dept   = document.getElementById('_ob_dept').value.trim();
+            const school = document.getElementById('_ob_school').value.trim();
+            if (!dept || !school) {
+                document.getElementById('_ob_profileErr').style.display = 'block';
+                return;
+            }
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            progress.dailyMissions.department = dept;
+            progress.dailyMissions.school     = school;
+            const _pk = `userProfile_${currentUser?.id}`;
+            try {
+                const _saved = JSON.parse(localStorage.getItem(_pk) || '{}');
+                _saved.department = dept; _saved.school = school;
+                localStorage.setItem(_pk, JSON.stringify(_saved));
+            } catch(_) {}
+            saveProgress();
+            if (diagMissing) showDiagStep();
+            else { document.body.removeChild(overlay); onComplete(); }
+        };
+    }
+
+    function showDiagStep() {
+        overlay.innerHTML = `
+        <div style="background:#fff;border-radius:24px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.25)">
+            <div style="text-align:center;margin-bottom:20px">
+                <div style="font-size:36px;margin-bottom:8px">🧭</div>
+                <h2 style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 6px">Prueba diagnóstica</h2>
+                <p style="font-size:13px;color:#64748b;margin:0">Antes de comenzar necesitamos conocer tu punto de partida. La prueba toma <strong>5 minutos</strong> y nos ayuda a personalizar tu recorrido.</p>
+            </div>
+            <div style="background:#f0f9ff;border-radius:14px;padding:14px;margin-bottom:20px">
+                <p style="font-size:12px;color:#0369a1;margin:0;line-height:1.6">
+                    ✅ No tiene nota aprobatoria — es solo para conocerte mejor.<br>
+                    ✅ Sus resultados guían las recomendaciones del curso.<br>
+                    ✅ Solo se hace una vez.
+                </p>
+            </div>
+            <button id="_ob_diagStart" style="width:100%;padding:14px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:800;font-size:14px;border:none;border-radius:14px;cursor:pointer;margin-bottom:10px">
+                Iniciar prueba diagnóstica →
+            </button>
+            <button id="_ob_diagSkip" style="width:100%;padding:10px;background:none;border:1.5px solid #e2e8f0;border-radius:14px;font-size:13px;color:#94a3b8;cursor:pointer">
+                Saltar por ahora (se pedirá de nuevo al regresar)
+            </button>
+        </div>`;
+
+        document.getElementById('_ob_diagStart').onclick = () => {
+            document.body.removeChild(overlay);
+            onComplete();
+            setTimeout(() => {
+                if (typeof startDiagnostico === 'function') startDiagnostico();
+            }, 400);
+        };
+        document.getElementById('_ob_diagSkip').onclick = () => {
+            document.body.removeChild(overlay);
+            onComplete();
+        };
+    }
+
+    document.body.appendChild(overlay);
+    if (profileMissing) showProfileStep();
+    else showDiagStep();
+}
+
 // ==================== SELECTOR DE CURSOS (Multi-curso) ====================
 let currentCourseId = 'steam';
 let _selectedPathId  = null; // ruta activa en el selector
@@ -5270,7 +5425,7 @@ function showDailyChallenge() {
 
     document.body.insertAdjacentHTML('beforeend', `
     <div id="dailyChallengeModal" class="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-        <div class="bg-white w-full max-w-md rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto">
+        <div class="bg-white w-full max-w-md rounded-t-3xl px-5 pt-5 max-h-[80vh] overflow-y-auto" style="padding-bottom:max(2rem,env(safe-area-inset-bottom,0px) + 1.25rem)">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">⚡ Reto del día</p>
