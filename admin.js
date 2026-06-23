@@ -268,9 +268,6 @@ async function loadDashboard() {
     const total = progress.length;
     const active30 = progress.filter(isActive30d).length;
     const totalCards = progress.reduce((a,p) => a + (p.completed_cards?.length||0), 0);
-    const completedFull = progress.filter(p => (p.completed_cards?.length||0) >= 70).length;
-    const tasaFinalizacion = total ? Math.round((completedFull/total)*100) : 0;
-
     // Total de certificados = misma lógica que la tabla de cursos (garantiza coincidencia)
     const totalCertificados = STATIC_COURSES.reduce((sum, c) => {
         return sum + progress.filter(p => {
@@ -279,6 +276,13 @@ async function loadDashboard() {
                    (c.id === 'steam' && (p?.daily_missions?.examScore || 0) >= 70);
         }).length;
     }, 0);
+
+    // Tasa finalización unificada: docentes con ≥1 curso certificado (misma que KPI)
+    const certifiedAnyBanner = progress.filter(p => {
+        const sc = p?.daily_missions?.examScores || {};
+        return STATIC_COURSES.some(c => (sc[c.id]||0)>=70 || (c.id==='steam'&&(p?.daily_missions?.examScore||0)>=70));
+    }).length;
+    const tasaFinalizacion = total ? Math.round((certifiedAnyBanner / total) * 100) : 0;
 
     // Tiempo real acumulado de TODOS los docentes desde resource_views
     const { data: rv } = await sb.from('resource_views').select('time_spent_seconds').not('time_spent_seconds','is',null);
@@ -310,14 +314,8 @@ async function loadDashboard() {
 
     document.getElementById('kpiAvgTime').textContent = avgS ? fmtTime(avgS) : 'N/A';
 
-    // Tasa de finalización — docentes con ≥1 curso certificado
-    const certifiedAny = progress.filter(p => {
-        const sc = p?.daily_missions?.examScores || {};
-        return STATIC_COURSES.some(c =>
-            (sc[c.id]||0) >= 70 || (c.id==='steam' && (p?.daily_missions?.examScore||0)>=70)
-        );
-    }).length;
-    const completionRate = total ? Math.round((certifiedAny / total) * 100) : 0;
+    // Tasa de finalización — misma que el banner (certificaron ≥1 curso)
+    const completionRate = tasaFinalizacion;
     document.getElementById('kpiCompletion').textContent = completionRate + '%';
 
     // Portafolios — docentes certificados que tienen portafolio enviado
@@ -368,6 +366,14 @@ async function loadDashboard() {
 
     // Departamentos
     renderDeptChart(progress);
+
+    // Tiempo por tarjeta desde resource_views
+    const { data: rvAll } = await sb.from('resource_views')
+        .select('resource_id, time_spent_seconds')
+        .eq('resource_type', 'card')
+        .not('time_spent_seconds', 'is', null)
+        .gt('time_spent_seconds', 0);
+    renderCardTimeTable(rvAll || []);
 
     // Gráfico XP top 10
     const top10 = progress.slice(0,10);
@@ -587,41 +593,88 @@ function renderDeptChart(progress) {
         }
     });
     const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-
-    const barCtx = document.getElementById('deptBarChart');
-    if (barCtx && sorted.length) {
-        if (window._deptChart) window._deptChart.destroy();
-        window._deptChart = new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: sorted.map(([d])=>d),
-                datasets: [{ label: 'Docentes', data: sorted.map(([,n])=>n),
-                    backgroundColor: sorted.map((_,i)=>`hsl(${200+i*12},70%,55%)`),
-                    borderRadius: 6, borderSkipped: false }]
-            },
-            options: { indexAxis: 'y', plugins: { legend: { display: false } },
-                scales: { x: { beginAtZero: true, ticks: { font: { size: 10 } }, grid: { color: '#f1f5f9' } },
-                          y: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
-        });
-    }
-
     const tableEl = document.getElementById('deptTable');
-    if (tableEl) {
-        if (!sorted.length) {
-            tableEl.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">Sin datos de departamento aún.<br><span class="text-xs">Los docentes deben completar su perfil.</span></p>';
-        } else {
-            const maxN = sorted[0][1] || 1;
-            tableEl.innerHTML = `<table><thead><tr>
-                <th>#</th><th>Departamento</th><th>Docentes</th><th>%</th>
-            </tr></thead><tbody>` +
-            sorted.map(([dept, n], i) => `<tr>
-                <td class="text-slate-400">${i+1}</td>
-                <td class="font-semibold text-slate-700">${esc(dept)}</td>
-                <td><span class="badge tag-blue">${n}</span></td>
-                <td class="text-slate-500">${Math.round(n/progress.length*100)}%</td>
-            </tr>`).join('') + '</tbody></table>';
-        }
+    if (!tableEl) return;
+    if (!sorted.length) {
+        tableEl.innerHTML = '<p class="text-slate-400 text-sm text-center py-8">Sin datos de departamento aún.<br><span class="text-xs">Los docentes deben completar su perfil.</span></p>';
+        return;
     }
+    const maxN = sorted[0][1] || 1;
+    const total = progress.length;
+    const colors = ['#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a78bfa'];
+    tableEl.innerHTML = sorted.map(([dept, n], i) => {
+        const pct = Math.round(n / total * 100);
+        const barW = Math.round(n / maxN * 100);
+        const bg = colors[Math.min(i, colors.length-1)];
+        const isTop3 = i < 3;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+            <span style="width:20px;text-align:center;font-size:11px;font-weight:700;color:${isTop3?bg:'#94a3b8'}">${i+1}</span>
+            <div style="flex:1;min-width:0">
+                <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                    <span style="font-size:13px;font-weight:${isTop3?'700':'500'};color:#1e293b">${esc(dept)}</span>
+                    <span style="font-size:12px;font-weight:700;color:${bg}">${n} <span style="color:#94a3b8;font-weight:400">(${pct}%)</span></span>
+                </div>
+                <div style="background:#f1f5f9;border-radius:4px;height:6px">
+                    <div style="width:${barW}%;background:${bg};height:100%;border-radius:4px;transition:width .5s ease"></div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Tiempo por tarjeta ────────────────────────────────────
+function renderCardTimeTable(rows) {
+    const el = document.getElementById('cardTimeTable');
+    if (!el) return;
+    if (!rows.length) {
+        el.innerHTML = '<p class="text-slate-400 text-sm text-center py-8">Sin datos de tiempo por tarjeta aún.</p>';
+        return;
+    }
+    // Agrupar por card
+    const map = {};
+    rows.forEach(r => {
+        const id = String(r.resource_id);
+        if (!map[id]) map[id] = { total: 0, count: 0 };
+        map[id].total += r.time_spent_seconds || 0;
+        map[id].count++;
+    });
+    // Intentar mapear a nombres de tarjeta desde datos de cursos
+    const cardNames = {};
+    const allCourses = typeof _coursesList !== 'undefined' && _coursesList.length ? _coursesList : STATIC_COURSES;
+    allCourses.forEach(c => {
+        (c.modules||[]).forEach(m => {
+            (m.cards||[]).forEach(card => {
+                cardNames[String(card.id)] = { title: card.title || card.type || 'Tarjeta', course: c.title };
+            });
+        });
+    });
+
+    const sorted = Object.entries(map)
+        .map(([id, d]) => ({ id, avg: Math.round(d.total / d.count), total: d.total, count: d.count }))
+        .sort((a,b) => b.avg - a.avg)
+        .slice(0, 15);
+
+    const maxAvg = sorted[0]?.avg || 1;
+    el.innerHTML = `<div style="font-size:10px;color:#94a3b8;display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;padding:0 0 6px;border-bottom:1px solid #f1f5f9;font-weight:700;text-transform:uppercase">
+        <span>Tarjeta</span><span style="text-align:right">Vistas</span><span style="text-align:right">Promedio</span>
+    </div>` +
+    sorted.map(({ id, avg, count }) => {
+        const info = cardNames[id];
+        const barW = Math.round(avg / maxAvg * 100);
+        const color = avg > 120 ? '#f59e0b' : avg > 60 ? '#06b6d4' : '#10b981';
+        return `<div style="padding:7px 0;border-bottom:1px solid #f8fafc">
+            <div style="display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;align-items:center;margin-bottom:3px">
+                <span style="font-size:12px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(info?.title||id)}">
+                    ${esc(info?.title ? info.title.substring(0,28) + (info.title.length>28?'…':'') : 'ID: '+id)}
+                </span>
+                <span style="font-size:11px;color:#94a3b8;text-align:right">${count}</span>
+                <span style="font-size:12px;font-weight:700;color:${color};text-align:right">${fmtTime(avg)}</span>
+            </div>
+            <div style="background:#f1f5f9;border-radius:4px;height:4px">
+                <div style="width:${barW}%;background:${color};height:100%;border-radius:4px"></div>
+            </div>
+        </div>`;
+    }).join('');
 }
 
 // ── Cambio de rol via Edge Function ──
