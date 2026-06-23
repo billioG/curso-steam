@@ -2880,7 +2880,7 @@ function showEditProfile() {
     const schoolEl = document.getElementById('schoolInput');
     const deptEl   = document.getElementById('departmentInput');
     if (schoolEl) schoolEl.value = progress?.dailyMissions?.school || '';
-    if (deptEl)   deptEl.value   = progress?.dailyMissions?.department || 'Individual';
+    if (deptEl)   deptEl.value   = progress?.dailyMissions?.department || '';
 
     const photo = progress?.dailyMissions?.profilePhoto;
     if (photo) {
@@ -2922,12 +2922,12 @@ document.getElementById('saveProfileBtn')?.addEventListener('click', () => {
     const hasPhoto = !document.getElementById('editPhotoImg').classList.contains('hidden');
 
     const school = document.getElementById('schoolInput')?.value.trim() || '';
-    const department = document.getElementById('departmentInput')?.value || 'Individual';
+    const department = document.getElementById('departmentInput')?.value || '';
 
     if (!progress.dailyMissions) progress.dailyMissions = {};
     if (name) progress.dailyMissions.fullName = name;
     if (hasPhoto && photoSrc) progress.dailyMissions.profilePhoto = photoSrc;
-    progress.dailyMissions.school     = school || 'Individual';
+    progress.dailyMissions.school     = school || '';
     progress.dailyMissions.department = department || '';
 
     // Guardar perfil en localStorage Y en Supabase user_metadata para sincronizar entre dispositivos
@@ -5071,7 +5071,8 @@ const GT_DEPARTMENTS = ['Alta Verapaz','Baja Verapaz','Chimaltenango','Chiquimul
 
 function _checkOnboardingRequirements(onComplete) {
     const dm = progress?.dailyMissions || {};
-    const profileMissing = !dm.department || !dm.school;
+    const _blank = v => !v || v.trim().toLowerCase() === 'individual';
+    const profileMissing = _blank(dm.department) || _blank(dm.school);
     const diagMissing    = !dm.diagDone && !localStorage.getItem('diagDone');
 
     if (!profileMissing && !diagMissing) { onComplete(); return; }
