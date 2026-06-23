@@ -321,9 +321,9 @@ async function loadDashboard() {
         .not('duration_seconds', 'is', null)
         .gt('duration_seconds', 0);
     if (sessions?.length) {
-        const avgSession = Math.round(sessions.reduce((a,s) => a + (s.duration_seconds||0), 0) / sessions.length);
+        const totalTime = sessions.reduce((a,s) => a + (s.duration_seconds||0), 0);
         const sesEl = document.getElementById('kpiAvgSession');
-        if (sesEl) sesEl.textContent = fmtTime(avgSession);
+        if (sesEl) sesEl.textContent = fmtTime(totalTime);
         const totalSesEl = document.getElementById('kpiTotalSessions');
         if (totalSesEl) totalSesEl.textContent = fmt(sessions.length);
 
@@ -577,11 +577,14 @@ function renderDeptChart(progress) {
     const counts = {};
     progress.forEach(p => {
         const dept = p?.daily_missions?.department;
-        if (dept && dept !== 'Individual' && dept.trim()) {
-            counts[dept] = (counts[dept]||0) + 1;
-        }
+        const key = (dept && dept !== 'Individual' && dept.trim()) ? dept.trim() : 'Sin departamento';
+        counts[key] = (counts[key]||0) + 1;
     });
-    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    // "Sin departamento" siempre al final
+    const sorted = Object.entries(counts)
+        .filter(([k]) => k !== 'Sin departamento')
+        .sort((a,b) => b[1]-a[1])
+        .concat(counts['Sin departamento'] ? [['Sin departamento', counts['Sin departamento']]] : []);
     const tableEl = document.getElementById('deptTable');
     if (!tableEl) return;
     if (!sorted.length) {
@@ -594,8 +597,9 @@ function renderDeptChart(progress) {
     tableEl.innerHTML = sorted.map(([dept, n], i) => {
         const pct = Math.round(n / total * 100);
         const barW = Math.round(n / maxN * 100);
-        const bg = colors[Math.min(i, colors.length-1)];
-        const isTop3 = i < 3;
+        const isSinDept = dept === 'Sin departamento';
+        const bg = isSinDept ? '#94a3b8' : colors[Math.min(i, colors.length-1)];
+        const isTop3 = i < 3 && !isSinDept;
         return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
             <span style="width:20px;text-align:center;font-size:11px;font-weight:700;color:${isTop3?bg:'#94a3b8'}">${i+1}</span>
             <div style="flex:1;min-width:0">
@@ -627,13 +631,15 @@ function renderCardTimeTable(rows) {
         map[id].total += r.time_spent_seconds || 0;
         map[id].count++;
     });
-    // Mapear card IDs a nombres si hay cursos cargados desde DB (tienen módulos como array)
+    // Mapear card IDs a nombres usando allCourses de data.js (cargado en admin.html)
     const cardNames = {};
-    const dbCourses = (typeof _coursesList !== 'undefined' ? _coursesList : []).filter(c => Array.isArray(c.modules));
-    dbCourses.forEach(c => {
+    const courseSrc = (typeof allCourses !== 'undefined' && allCourses.length) ? allCourses
+        : (typeof _coursesList !== 'undefined' ? _coursesList : []);
+    courseSrc.filter(c => Array.isArray(c.modules)).forEach(c => {
         c.modules.forEach(m => {
             (m.cards||[]).forEach(card => {
-                cardNames[String(card.id)] = card.title || card.type || 'Tarjeta';
+                const clean = (card.title||'').replace(/^[\p{Emoji}\s]+/u,'').trim();
+                cardNames[String(card.id)] = clean || card.title || 'Tarjeta';
             });
         });
     });

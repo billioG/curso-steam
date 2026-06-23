@@ -6,6 +6,7 @@
     <title>Panel Administrativo — Formación Docente</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="./data.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body { font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -166,8 +167,8 @@
 <!-- Sidebar -->
 <aside id="sidebar" class="w-60 bg-white border-r border-slate-100 flex flex-col fixed top-0 left-0 h-screen z-40">
     <div class="px-4 py-5 border-b border-slate-100 flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 impact-bar">
-            <i class="fas fa-atom text-white text-sm"></i>
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background:#07B0E4">
+            <i class="fas fa-graduation-cap text-white text-sm"></i>
         </div>
         <div class="min-w-0">
             <p class="text-sm font-bold text-slate-800 leading-tight">Formación Docente</p>
@@ -249,9 +250,9 @@
                     <p class="kpi-sub">satisfacción docentes</p>
                 </div>
                 <div class="card">
-                    <p class="kpi-label">Duración sesión</p>
+                    <p class="kpi-label">Tiempo total</p>
                     <p class="kpi-val text-indigo-600" id="kpiAvgSession">—</p>
-                    <p class="kpi-sub">promedio por sesión</p>
+                    <p class="kpi-sub">formación acumulada</p>
                 </div>
                 <div class="card">
                     <p class="kpi-label">Móvil vs PC</p>
