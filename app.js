@@ -1024,15 +1024,15 @@ function generateLevelCertificate(level) {
 // ==================== UTILIDADES DE TEXTO ====================
 function _mdToHtml(text) {
     if (!text) return '';
+    if (typeof marked !== 'undefined') {
+        return marked.parse(text, { breaks: true, gfm: true });
+    }
+    // Fallback manual si marked no carga
     return text
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')      // **bold**
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')                   // *italic*
-        .replace(/\n•\s*/g, '</p><p class="card-bullet">• ')    // bullet después de \n
-        .replace(/^•\s*/gm, '<p class="card-bullet">• ')        // bullet al inicio de línea
-        .replace(/\n\n/g, '</p><p>')                             // párrafo doble
-        .replace(/\n/g, '<br>')                                  // salto simple
-        .replace(/\| (.+?) \|/g, (m) => m)                      // tablas — dejar como está
-        ;
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>');
 }
 
 // ==================== FUNCIONES BASE DEL CURSO ====================
@@ -1084,10 +1084,11 @@ function renderCard() {
             </div>
             <div class="card-body">
                 <h2>${card.title}</h2>
-                <p>${cardContent}</p>
+                <div class="card-md">${cardContent}</div>
                 ${cardExtra ? `
                 <div class="card-key-insight" style="background:${theme.soft};border-color:${theme.primary};color:#1e293b">
-                    <span style="font-weight:800;color:#0f172a">💡 Dato clave:</span> ${cardExtra}
+                    <span style="font-weight:800;color:#0f172a">💡 Dato clave:</span>
+                    <div class="card-md card-md-extra">${cardExtra}</div>
                 </div>` : ''}
             </div>
             ${card.project ? `
