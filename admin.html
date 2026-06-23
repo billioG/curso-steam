@@ -177,6 +177,18 @@
     </div>
 
     <nav class="flex-1 p-2 space-y-0.5 overflow-y-auto">
+        <!-- Indicador usuarios en línea -->
+        <div id="onlineIndicator" style="display:flex;align-items:center;gap:8px;padding:8px 14px;margin-bottom:4px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0">
+            <span style="position:relative;display:flex;width:10px;height:10px;flex-shrink:0">
+                <span style="position:absolute;inset:0;border-radius:50%;background:#22c55e;opacity:.75;animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite"></span>
+                <span style="position:relative;width:10px;height:10px;border-radius:50%;background:#16a34a;display:inline-flex"></span>
+            </span>
+            <span style="font-size:12px;font-weight:700;color:#15803d"><span id="onlineCount">—</span> en línea</span>
+        </div>
+        <style>
+            @keyframes ping { 75%,100% { transform:scale(2); opacity:0 } }
+        </style>
+
         <button data-view="dashboard" class="nav-btn nav-item active">
             <i class="fas fa-chart-line"></i><span>Dashboard</span>
         </button>
