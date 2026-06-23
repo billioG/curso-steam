@@ -348,7 +348,7 @@ async function loginWithEmail(email, password) {
         startSessionTracking();
         await syncWithSupabase();
         loadPortfolio();
-        loadAppConfig();
+        await loadAppConfig();
         return true;
     } catch (error) {
         showLoginError(_friendlyAuthError(error.message));
