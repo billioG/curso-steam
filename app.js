@@ -1171,9 +1171,9 @@ function renderCard() {
                 // Marcar visualmente la opción seleccionada
                 btn.classList.add(isCorrect ? 'correct' : 'incorrect');
                 if (!isCorrect) {
-                    // Mostrar también la correcta
+                    // Mostrar también la correcta (usar índice en el orden shuffled)
                     document.querySelectorAll('.quiz-option').forEach(b => {
-                        if (parseInt(b.dataset.opt) === card.correct) b.classList.add('correct');
+                        if (parseInt(b.dataset.opt) === _correctShuffled) b.classList.add('correct');
                     });
                 }
 
