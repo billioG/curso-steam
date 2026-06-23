@@ -314,13 +314,17 @@
                 </div>
             </div>
 
-            <!-- Departamentos -->
-            <div class="card mb-5">
-                <p class="font-bold text-slate-800 mb-0.5">Docentes por departamento</p>
-                <p class="text-xs text-slate-400 mb-4">Distribución geográfica — Guatemala</p>
-                <div id="deptChart" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <canvas id="deptBarChart" height="220"></canvas>
-                    <div id="deptTable" class="overflow-auto max-h-64"></div>
+            <!-- Departamentos + Tiempo por tarjeta -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+                <div class="card">
+                    <p class="font-bold text-slate-800 mb-0.5">Docentes por departamento</p>
+                    <p class="text-xs text-slate-400 mb-4">Distribución geográfica — Guatemala</p>
+                    <div id="deptTable"></div>
+                </div>
+                <div class="card">
+                    <p class="font-bold text-slate-800 mb-0.5">Tiempo por tarjeta</p>
+                    <p class="text-xs text-slate-400 mb-4">Promedio acumulado de todos los docentes</p>
+                    <div id="cardTimeTable"></div>
                 </div>
             </div>
 
