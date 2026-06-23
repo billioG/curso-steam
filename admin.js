@@ -899,35 +899,20 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
     if (!users.length) { cont.innerHTML='<div class="loader">Sin docentes registrados aún.</div>'; return; }
 
     const courses = _coursesList.length ? _coursesList : STATIC_COURSES;
+    // Total tarjetas únicas en toda la plataforma (suma de totalCards por curso único)
+    const _totalUniqueCards = STATIC_COURSES.reduce((a, c) => a + (c.totalCards || 0), 0) || 572;
 
     const thead = `<thead><tr>
-        <th>Docente</th><th>Escuela</th><th>XP</th><th>Certificados</th><th>Avance global</th><th>Último acceso</th>
+        <th>Docente</th><th>Escuela</th><th>XP</th><th>Certificados</th><th title="Tarjetas completadas del total disponible en la plataforma">Avance global</th><th>Último acceso</th>
     </tr></thead>`;
 
     const rowHtml = p => {
             const activo = isActive30d(p);
             const certCount = courses.filter(c => hasCourseExamPassed(p, c.id)).length;
-        // Avance global: % de rutas INICIADAS que ya tienen certificado
-        // "iniciada" = al menos 1 tarjeta completada en ese curso
+        // Avance global: tarjetas únicas completadas / total tarjetas disponibles en la plataforma
+        // Es path-agnostic y no se ve afectado por cursos compartidos entre rutas
         const completedCards = p.completed_cards || [];
-        const coursePrefix = { steam: c => /^\d+$/.test(String(c)) };
-        const startedIds = new Set();
-        completedCards.forEach(cc => {
-            const s = String(cc);
-            if (/^\d+$/.test(s))          startedIds.add('steam');
-            else if (s.startsWith('abp-')) startedIds.add('abp');
-            else if (s.startsWith('dt-'))  startedIds.add('design-thinking');
-            else if (s.startsWith('ev-'))  startedIds.add('evaluacion-formativa');
-            else {
-                // Cursos con prefijo libre: extraer hasta el primer '-mX'
-                const m = s.match(/^([a-z][a-z0-9-]*?)-m\d/);
-                if (m) startedIds.add(m[1]);
-            }
-        });
-        const startedCourses = courses.filter(c => startedIds.has(c.id));
-        const globalPct = startedCourses.length
-            ? Math.round((courses.filter(c => startedIds.has(c.id) && hasCourseExamPassed(p, c.id)).length / startedCourses.length) * 100)
-            : 0;
+        const globalPct = Math.min(100, Math.round((completedCards.length / _totalUniqueCards) * 100));
         const role = roleMap[p.user_id] || 'student';
         const roleLabel = role === 'admin' ? '<span class="badge tag-violet" style="font-size:9px">Admin</span>'
             : role === 'coordinator' ? '<span class="badge tag-blue" style="font-size:9px">Coord.</span>' : '';
@@ -956,7 +941,7 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
                     </div>
                     <span class="text-xs font-bold text-slate-500">${globalPct}%</span>
                 </div>
-                <span class="text-[10px] text-slate-400">${startedCourses.length ? `${certCount}/${startedCourses.length} iniciadas` : 'Sin iniciar'}</span>
+                <span class="text-[10px] text-slate-400">${completedCards.length}/${_totalUniqueCards} tarjetas</span>
             </td>
             <td class="text-slate-400 text-xs whitespace-nowrap">${fmtDateTime(p.updated_at)}</td>
         </tr>`;
