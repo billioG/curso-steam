@@ -4,7 +4,7 @@
 
 const SUPABASE_URL  = "https://grkjhzkgcmackbafqudu.supabase.co";
 const SUPABASE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
-const ADMIN_EMAILS  = ['billy@1bot.org'];
+const ADMIN_EMAILS  = ['billy@1bot.org', 'profebillio@gmail.com'];
 
 // Cursos estáticos del programa (datos reales de data.js)
 // Rutas de aprendizaje disponibles
