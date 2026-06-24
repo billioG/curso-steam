@@ -656,10 +656,10 @@ function renderCardTimeTable(rows) {
 
     const sorted = Object.entries(map)
         .map(([id, d]) => ({ id, avg: Math.round(d.total / d.count), total: d.total, count: d.count }))
-        .sort((a,b) => b.avg - a.avg)
+        .sort((a,b) => b.count - a.count || b.avg - a.avg)  // primero por vistas, luego por promedio
         .slice(0, 15);
 
-    const maxAvg = sorted[0]?.avg || 1;
+    const maxAvg = Math.max(...sorted.map(s => s.avg)) || 1;
     el.innerHTML = `<div style="font-size:10px;color:#94a3b8;display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;padding:0 0 6px;border-bottom:1px solid #f1f5f9;font-weight:700;text-transform:uppercase">
         <span>Tarjeta</span><span style="text-align:right">Vistas</span><span style="text-align:right">Promedio</span>
     </div>` +
