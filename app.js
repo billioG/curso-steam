@@ -5595,73 +5595,7 @@ function _updateCommentCountBtn(cardId, count) {
     btn.innerHTML = `<span style="display:inline-flex;width:15px;height:15px;color:#94a3b8;flex-shrink:0">${ICONS?.comments||''}</span><span>Comentarios y dudas</span>${badge}`;
 }
 
-async function showCardComments(cardId) {
-    _currentCommentCardId = cardId;
-    const modal = document.getElementById('commentsModal');
-    const list = document.getElementById('commentsList');
-    if (!modal || !list) return;
-
-    list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Cargando...</p>';
-    modal.classList.remove('hidden');
-
-    try {
-        const { data, error } = await supabase
-            .from('card_comments')
-            .select('id, user_id, comment, created_at')
-            .eq('card_id', cardId)
-            .order('created_at', { ascending: true });
-
-        if (error || !data?.length) {
-            list.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Sé el primero en comentar en esta tarjeta 💬</p>';
-            return;
-        }
-
-        const myId = currentUser?.id;
-        list.innerHTML = data.map(c => {
-            const isMe = c.user_id === myId;
-            const time = new Date(c.created_at).toLocaleDateString('es', { day: 'numeric', month: 'short' });
-            return `
-            <div class="flex gap-3 ${isMe ? 'flex-row-reverse' : ''}">
-                <div class="w-8 h-8 rounded-full ${isMe ? 'bg-[#07B0E4]' : 'bg-slate-200'} flex items-center justify-center text-xs font-bold ${isMe ? 'text-white' : 'text-slate-500'} shrink-0">
-                    ${isMe ? 'Yo' : '👨‍🏫'}
-                </div>
-                <div class="max-w-[75%]">
-                    <div class="${isMe ? 'bg-[#07B0E4] text-white' : 'bg-slate-100 text-slate-700'} rounded-2xl px-3 py-2 text-sm leading-relaxed">${c.comment}</div>
-                    <p class="text-[10px] text-slate-400 mt-1 ${isMe ? 'text-right' : ''}">${time}</p>
-                </div>
-            </div>`;
-        }).join('');
-        list.scrollTop = list.scrollHeight;
-    } catch (e) {
-        list.innerHTML = '<p class="text-xs text-red-400 text-center py-4">Error al cargar comentarios</p>';
-    }
-}
-
-async function submitComment() {
-    const input = document.getElementById('commentInput');
-    const text = input?.value.trim();
-    if (!text || !currentUser || !_currentCommentCardId) return;
-
-    const btn = document.querySelector('#commentsModal button[onclick="submitComment()"]');
-    if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
-
-    const { error } = await supabase.from('card_comments').insert({
-        user_id: currentUser.id,
-        card_id: _currentCommentCardId,
-        module_id: currentModule,
-        comment: text
-    });
-
-    if (btn) { btn.disabled = false; btn.textContent = 'Publicar'; }
-    if (!error) {
-        input.value = '';
-        _commentCountCache[_currentCommentCardId] = (_commentCountCache[_currentCommentCardId] || 0) + 1;
-        _updateCommentCountBtn(_currentCommentCardId, _commentCountCache[_currentCommentCardId]);
-        showCardComments(_currentCommentCardId);
-    } else {
-        showToast('Error al enviar comentario', 'error');
-    }
-}
+// showCardComments y submitComment definidos más abajo (bloque completo con likes)
 
 // ==================== PORTAFOLIO DE PRÁCTICA (evaluado por IA) ====================
 
@@ -6374,8 +6308,7 @@ async function submitComment() {
                 user_id:   currentUser.id,
                 card_id:   _currentCommentsCardId,
                 module_id: currentModule || 1,
-                comment:   body,
-                user_name: getDisplayName() || currentUser.email?.split('@')[0] || 'Docente'
+                comment:   body
             });
 
         if (error) throw error;
