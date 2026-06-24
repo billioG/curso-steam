@@ -5254,9 +5254,9 @@ function _checkOnboardingRequirements(onComplete) {
 
         document.getElementById('_ob_diagStart').onclick = () => {
             document.body.removeChild(overlay);
-            // Registrar onComplete como callback post-diagnóstico antes de lanzarlo
-            // closeDiagnostic() en diagnostico.js llama showCourseSelector() si mainApp está oculto,
-            // pero necesitamos que también llame onComplete para el flujo de onboarding.
+            // Ocultar loginScreen para que no tape el diagOverlay (z-[350] vs z-50)
+            document.getElementById('loginScreen')?.classList.add('hidden');
+            // Registrar onComplete como callback post-diagnóstico
             window._diagOnComplete = onComplete;
             if (typeof startDiagnostic === 'function') {
                 startDiagnostic();
