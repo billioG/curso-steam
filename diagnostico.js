@@ -311,6 +311,13 @@ function skipDiagnostic() {
 function closeDiagnostic() {
     const overlay = document.getElementById('diagOverlay');
     if (overlay) { overlay.classList.add('hidden'); overlay.style.display = ''; }
+    // Si viene del flujo de onboarding, usar su callback
+    if (typeof window._diagOnComplete === 'function') {
+        const cb = window._diagOnComplete;
+        window._diagOnComplete = null;
+        cb();
+        return;
+    }
     // Si la app principal no está visible aún (flujo post-onboarding), mostrar selector de cursos
     const mainApp = document.getElementById('mainApp');
     const courseSelector = document.getElementById('courseSelector');
