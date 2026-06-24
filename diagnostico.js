@@ -304,13 +304,13 @@ function startDiagnostic() {
 
 function skipDiagnostic() {
     const overlay = document.getElementById('diagOverlay');
-    if (overlay) { overlay.classList.add('hidden'); overlay.style.display = ''; }
+    if (overlay) { overlay.classList.add('hidden'); overlay.style.display = 'none'; }
     localStorage.setItem('diagSkipped', '1');
 }
 
 function closeDiagnostic() {
     const overlay = document.getElementById('diagOverlay');
-    if (overlay) { overlay.classList.add('hidden'); overlay.style.display = ''; }
+    if (overlay) { overlay.classList.add('hidden'); overlay.style.display = 'none'; }
     // Si viene del flujo de onboarding, usar su callback
     if (typeof window._diagOnComplete === 'function') {
         const cb = window._diagOnComplete;
