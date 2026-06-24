@@ -5234,8 +5234,8 @@ function _checkOnboardingRequirements(onComplete) {
         <div style="background:#fff;border-radius:24px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.25)">
             <div style="text-align:center;margin-bottom:20px">
                 <div style="font-size:36px;margin-bottom:8px">🧭</div>
-                <h2 style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 6px">Prueba diagnóstica</h2>
-                <p style="font-size:13px;color:#64748b;margin:0">Antes de comenzar necesitamos conocer tu punto de partida. La prueba toma <strong>5 minutos</strong> y nos ayuda a personalizar tu recorrido.</p>
+                <h2 style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 6px">Prueba diagnóstica disponible</h2>
+                <p style="font-size:13px;color:#64748b;margin:0">Puedes hacer la prueba diagnóstica cuando quieras desde tu perfil. Toma <strong>5 minutos</strong> y nos ayuda a personalizar tu recorrido.</p>
             </div>
             <div style="background:#f0f9ff;border-radius:14px;padding:14px;margin-bottom:20px">
                 <p style="font-size:12px;color:#0369a1;margin:0;line-height:1.6">
@@ -5244,26 +5244,11 @@ function _checkOnboardingRequirements(onComplete) {
                     ✅ Solo se hace una vez.
                 </p>
             </div>
-            <button id="_ob_diagStart" style="width:100%;padding:14px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:800;font-size:14px;border:none;border-radius:14px;cursor:pointer;margin-bottom:10px">
-                Iniciar prueba diagnóstica →
-            </button>
-            <button id="_ob_diagSkip" style="width:100%;padding:10px;background:none;border:1.5px solid #e2e8f0;border-radius:14px;font-size:13px;color:#94a3b8;cursor:pointer">
-                Saltar por ahora (se pedirá de nuevo al regresar)
+            <button id="_ob_diagSkip" style="width:100%;padding:14px;background:#5C35C5;color:#fff;font-weight:700;font-size:14px;border:none;border-radius:14px;cursor:pointer">
+                Entendido, continuar →
             </button>
         </div>`;
 
-        document.getElementById('_ob_diagStart').onclick = () => {
-            document.body.removeChild(overlay);
-            // Ocultar loginScreen para que no tape el diagOverlay (z-[350] vs z-50)
-            document.getElementById('loginScreen')?.classList.add('hidden');
-            // Registrar onComplete como callback post-diagnóstico
-            window._diagOnComplete = onComplete;
-            if (typeof startDiagnostic === 'function') {
-                startDiagnostic();
-            } else {
-                onComplete();
-            }
-        };
         document.getElementById('_ob_diagSkip').onclick = () => {
             document.body.removeChild(overlay);
             onComplete();
