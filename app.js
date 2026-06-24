@@ -612,7 +612,8 @@ function updateUI() {
     // Banner "Ir a examen" cuando el curso está al 100% pero sin examen aprobado
     const _examBannerId = 'courseExamReadyBanner';
     let _examBanner = document.getElementById(_examBannerId);
-    const _examScore = (progress?.dailyMissions?.examScores || {})[_activeCourseId] ?? progress?.dailyMissions?.examScore;
+    const _examScores = progress?.dailyMissions?.examScores || {};
+    const _examScore = _examScores[_activeCourseId] ?? (_activeCourseId === 'steam' ? progress?.dailyMissions?.examScore : undefined);
     const _examPassed = _examScore !== undefined && _examScore >= 70;
     const _hasFinalExam = _activeCourse ? getCourseExam(_activeCourse) !== null : false;
     if (coursePercent === 100 && _hasFinalExam && !_examPassed) {
@@ -2096,7 +2097,7 @@ function goToModule(modNum) {
 
 function _showExamPrompt() {
     const cid   = currentCourseId || 'steam';
-    const score = (progress?.dailyMissions?.examScores || {})[cid] ?? progress?.dailyMissions?.examScore;
+    const score = (progress?.dailyMissions?.examScores || {})[cid] ?? (cid === 'steam' ? progress?.dailyMissions?.examScore : undefined);
     const alreadyPassed = score !== undefined && score >= 70;
     if (alreadyPassed) return; // ya tiene certificado, no molestar
 
@@ -3485,7 +3486,7 @@ function showExamResults() {
         const _cid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
         if (!progress.dailyMissions.examScores) progress.dailyMissions.examScores = {};
         progress.dailyMissions.examScores[_cid] = pct;
-        progress.dailyMissions.examScore = pct; // backward compat
+        if (_cid === 'steam') progress.dailyMissions.examScore = pct; // backward compat solo para STEAM
         progress.dailyMissions.examDate = localDateStr();
         window._lastExamScore = pct;
         // Mostrar botón de certificado en perfil
