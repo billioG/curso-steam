@@ -6308,7 +6308,8 @@ async function submitComment() {
                 user_id:   currentUser.id,
                 card_id:   _currentCommentsCardId,
                 module_id: currentModule || 1,
-                comment:   body
+                comment:   body,
+                user_name: userName
             });
 
         if (error) throw error;
