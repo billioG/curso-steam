@@ -5,8 +5,12 @@
 // Devuelve: { scores: number[], feedback: string[], total: number (0-50), summary, combined, passed }
 // El total se normaliza SIEMPRE a 50 puntos, sin importar cuántos entregables tenga la ruta.
 
-const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY')!;
-const GROQ_MODEL   = 'llama-3.3-70b-versatile';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const GROQ_API_KEY    = Deno.env.get('GROQ_API_KEY')!;
+const GROQ_MODEL      = 'llama-3.3-70b-versatile';
+const SUPABASE_URL    = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_ANON   = Deno.env.get('SUPABASE_ANON_KEY')!;
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -18,6 +22,18 @@ const LEGACY_LABELS = ['STEAM', 'ABP', 'Design Thinking', 'Evaluación Formativa
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
+
+  // Verificar JWT del usuario autenticado
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } });
+  }
+  const token = authHeader.replace('Bearer ', '');
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+  const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+  if (authErr || !user) {
+    return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } });
+  }
 
   try {
     const body = await req.json();
