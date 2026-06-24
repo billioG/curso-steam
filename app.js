@@ -5254,10 +5254,15 @@ function _checkOnboardingRequirements(onComplete) {
 
         document.getElementById('_ob_diagStart').onclick = () => {
             document.body.removeChild(overlay);
-            onComplete();
-            setTimeout(() => {
-                if (typeof startDiagnostico === 'function') startDiagnostico();
-            }, 400);
+            // Registrar onComplete como callback post-diagnóstico antes de lanzarlo
+            // closeDiagnostic() en diagnostico.js llama showCourseSelector() si mainApp está oculto,
+            // pero necesitamos que también llame onComplete para el flujo de onboarding.
+            window._diagOnComplete = onComplete;
+            if (typeof startDiagnostic === 'function') {
+                startDiagnostic();
+            } else {
+                onComplete();
+            }
         };
         document.getElementById('_ob_diagSkip').onclick = () => {
             document.body.removeChild(overlay);
