@@ -649,7 +649,8 @@ function renderCardTimeTable(rows) {
         c.modules.forEach(m => {
             (m.cards||[]).forEach(card => {
                 const clean = (card.title||'').replace(/^[\p{Emoji}\s]+/u,'').trim();
-                cardNames[String(card.id)] = clean || card.title || 'Tarjeta';
+                // Si clean tiene texto real úsalo; si no, usar title completo (con emoji); si no hay nada, usar ID
+                cardNames[String(card.id)] = clean || (card.title && card.title.trim()) || String(card.id);
             });
         });
     });
