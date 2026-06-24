@@ -614,7 +614,7 @@ function updateUI() {
     let _examBanner = document.getElementById(_examBannerId);
     const _examScore = (progress?.dailyMissions?.examScores || {})[_activeCourseId] ?? progress?.dailyMissions?.examScore;
     const _examPassed = _examScore !== undefined && _examScore >= 70;
-    const _hasFinalExam = getCourseExam(_activeCourse) !== null;
+    const _hasFinalExam = _activeCourse ? getCourseExam(_activeCourse) !== null : false;
     if (coursePercent === 100 && _hasFinalExam && !_examPassed) {
         if (!_examBanner) {
             _examBanner = document.createElement('div');
