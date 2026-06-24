@@ -609,6 +609,27 @@ function updateUI() {
     const courseProgressPercent = document.getElementById("courseProgressPercent");
     if (courseProgressPercent) courseProgressPercent.innerText = `${coursePercent}%`;
 
+    // Banner "Ir a examen" cuando el curso está al 100% pero sin examen aprobado
+    const _examBannerId = 'courseExamReadyBanner';
+    let _examBanner = document.getElementById(_examBannerId);
+    const _examScore = (progress?.dailyMissions?.examScores || {})[_activeCourseId] ?? progress?.dailyMissions?.examScore;
+    const _examPassed = _examScore !== undefined && _examScore >= 70;
+    const _hasFinalExam = getFinalExam(_activeCourse) !== null;
+    if (coursePercent === 100 && _hasFinalExam && !_examPassed) {
+        if (!_examBanner) {
+            _examBanner = document.createElement('div');
+            _examBanner.id = _examBannerId;
+            _examBanner.style.cssText = 'margin:12px 16px 0;padding:14px 16px;background:linear-gradient(135deg,#5C35C5,#7C3AED);border-radius:16px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:0 4px 16px rgba(92,53,197,.35)';
+            _examBanner.onclick = () => _showExamPrompt();
+            _examBanner.innerHTML = '<span style="font-size:24px">🎓</span><div style="flex:1"><div style="color:white;font-weight:800;font-size:14px">¡Listo para el examen final!</div><div style="color:rgba(255,255,255,.8);font-size:12px">Completa tu certificado — toca aquí para evaluar</div></div><span style="color:white;font-size:18px">→</span>';
+            const _insertAfter = document.getElementById('courseProgressPercent')?.closest('.flex') || document.getElementById('courseProgressBar')?.parentElement;
+            if (_insertAfter?.parentElement) _insertAfter.parentElement.insertBefore(_examBanner, _insertAfter.nextSibling);
+            else document.getElementById('courseScreen')?.prepend(_examBanner);
+        }
+    } else if (_examBanner) {
+        _examBanner.remove();
+    }
+
     const xpDisplay = document.getElementById("xpDisplay");
     if (xpDisplay) xpDisplay.innerText = progress.xp || 0;
     const levelDisplay = document.getElementById("levelDisplay");
