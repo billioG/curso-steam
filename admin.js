@@ -293,10 +293,10 @@ async function loadDashboard() {
     }).length;
     const tasaFinalizacion = total ? Math.round((certifiedAnyBanner / total) * 100) : 0;
 
-    // Tiempo real acumulado de TODOS los docentes desde resource_views
-    const { data: rv } = await sb.from('resource_views').select('time_spent_seconds').not('time_spent_seconds','is',null);
-    const totalSeconds = rv?.reduce((a,b) => a + (b.time_spent_seconds||0), 0) || 0;
-    const avgS = rv?.length ? Math.round(totalSeconds / rv.length) : 0;
+    // Tiempo real acumulado — agregado en Postgres (evita descargar filas individuales)
+    const { data: rvStats } = await sb.rpc('get_resource_views_stats');
+    const totalSeconds = rvStats?.[0]?.total_seconds || 0;
+    const avgS         = rvStats?.[0]?.avg_seconds   || 0;
 
     // Horas de formación — estimado basado en tarjetas (3 min/tarjeta)
     const horasFormacion = Math.round(totalCards * 3 / 60);
@@ -365,13 +365,9 @@ async function loadDashboard() {
     // Departamentos
     renderDeptChart(progress);
 
-    // Tiempo por tarjeta desde resource_views
-    const { data: rvAll } = await sb.from('resource_views')
-        .select('resource_id, time_spent_seconds')
-        .eq('resource_type', 'card')
-        .not('time_spent_seconds', 'is', null)
-        .gt('time_spent_seconds', 0);
-    renderCardTimeTable(rvAll || []);
+    // Tiempo por tarjeta — agregado en Postgres
+    const { data: rvCards } = await sb.rpc('get_card_time_aggregates');
+    renderCardTimeTable(rvCards || []);
 
     // Gráfico XP top 10
     const top10 = progress.slice(0,10);
@@ -633,14 +629,6 @@ function renderCardTimeTable(rows) {
         el.innerHTML = '<p class="text-slate-400 text-sm text-center py-8">Sin datos de tiempo por tarjeta aún.</p>';
         return;
     }
-    // Agrupar por card
-    const map = {};
-    rows.forEach(r => {
-        const id = String(r.resource_id);
-        if (!map[id]) map[id] = { total: 0, count: 0 };
-        map[id].total += r.time_spent_seconds || 0;
-        map[id].count++;
-    });
     // Mapear card IDs a nombres usando allCourses de data.js (cargado en admin.html)
     const cardNames = {};
     const courseSrc = (typeof allCourses !== 'undefined' && allCourses.length) ? allCourses
@@ -655,10 +643,20 @@ function renderCardTimeTable(rows) {
         });
     });
 
-    const sorted = Object.entries(map)
-        .map(([id, d]) => ({ id, avg: Math.round(d.total / d.count), total: d.total, count: d.count }))
-        .sort((a,b) => b.count - a.count || b.avg - a.avg)  // primero por vistas, luego por promedio
-        .slice(0, 15);
+    // Soporta formato RPC {card_id, views_count, avg_seconds} y formato legacy {resource_id, time_spent_seconds}
+    const sorted = (rows[0]?.card_id !== undefined
+        ? rows.map(r => ({ id: String(r.card_id), avg: Math.round(r.avg_seconds), count: Number(r.views_count) }))
+        : (() => {
+            const map = {};
+            rows.forEach(r => {
+                const id = String(r.resource_id);
+                if (!map[id]) map[id] = { total: 0, count: 0 };
+                map[id].total += r.time_spent_seconds || 0;
+                map[id].count++;
+            });
+            return Object.entries(map).map(([id, d]) => ({ id, avg: Math.round(d.total / d.count), count: d.count }));
+        })()
+    ).sort((a,b) => b.count - a.count || b.avg - a.avg).slice(0, 15);
 
     const maxAvg = Math.max(...sorted.map(s => s.avg)) || 1;
     el.innerHTML = `<div style="font-size:10px;color:#94a3b8;display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;padding:0 0 6px;border-bottom:1px solid #f1f5f9;font-weight:700;text-transform:uppercase">
