@@ -3489,6 +3489,7 @@ function showExamResults() {
         if (_cid === 'steam') progress.dailyMissions.examScore = pct; // backward compat solo para STEAM
         progress.dailyMissions.examDate = localDateStr();
         window._lastExamScore = pct;
+        window._lastExamCourseId = _cid;
         // Mostrar botón de certificado en perfil
         const certBtn = document.getElementById('certDownloadBtn');
         if (certBtn) certBtn.classList.remove('hidden');
@@ -3661,15 +3662,18 @@ function _buildSignaturesHtml(signatures, firmaSrcFallback) {
     }).join('');
 }
 
-async function generateCertificateFromExam(percentage) {
+async function generateCertificateFromExam(percentage, overrideCourseId) {
     const nombre = getDisplayName();
     const fecha = new Date().toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' });
     const _now = new Date();
     const _issueYear = _now.getFullYear();
     const _issueMonth = _now.getMonth() + 1;
 
-    // Datos del curso activo
-    const _cid2 = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+    // Datos del curso: prioridad → override explícito → último examen → activo → steam
+    const _cid2 = overrideCourseId
+        || window._lastExamCourseId
+        || (typeof currentCourseId !== 'undefined' && currentCourseId)
+        || 'steam';
     const _course = (typeof allCourses !== 'undefined' && allCourses.find(c => c.id === _cid2)) || allCourses[0];
     const courseTitle = _course.title || 'Metodología STEAM 2.0';
     const courseDuration = _course.durationHours ? `${_course.durationHours} horas` : '10 horas';
@@ -5092,6 +5096,9 @@ if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
 const GT_DEPARTMENTS = ['Alta Verapaz','Baja Verapaz','Chimaltenango','Chiquimula','El Progreso','Escuintla','Guatemala','Huehuetenango','Izabal','Jalapa','Jutiapa','Petén','Quetzaltenango','Quiché','Retalhuleu','Sacatepéquez','San Marcos','Santa Rosa','Sololá','Suchitepéquez','Totonicapán','Zacapa'];
 
 function _checkOnboardingRequirements(onComplete) {
+    // Admins no necesitan onboarding
+    if (currentUser?.role === 'admin') { onComplete(); return; }
+
     const dm = progress?.dailyMissions || {};
     const _blank = v => !v || v.trim().toLowerCase() === 'individual';
     const profileMissing = _blank(dm.department) || _blank(dm.school);
