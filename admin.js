@@ -116,7 +116,7 @@ function buildChart(key, ctx, config) {
 function isActive30d(p) {
     if (!p.updated_at) return false;
     const d = new Date(p.updated_at);
-    return (Date.now() - d.getTime()) < 30 * 86400000;
+    return (Date.now() - d.getTime()) < 7 * 86400000;
 }
 
 function hasCertificate(p) {
