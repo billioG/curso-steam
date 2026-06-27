@@ -1436,9 +1436,12 @@ async function loadFeedback() {
     const nameMap = {};
     _allProgress.forEach(p => { if (p.user_id) nameMap[p.user_id] = { name: getName(p), email: getEmail(p) }; });
 
-    // Group by user_id
+    // Group by user_id (excluir admins)
+    const _adminSet = new Set(ADMIN_EMAILS.map(e => e.toLowerCase()));
     const byUser = {};
     fb.forEach(f => {
+        const fEmail = (nameMap[f.user_id]?.email || '').toLowerCase();
+        if (_adminSet.has(fEmail)) return; // ocultar admins de analytics
         const key = f.user_id || '__anon__';
         if (!byUser[key]) byUser[key] = { user_id: f.user_id, items: [] };
         byUser[key].items.push(f);
