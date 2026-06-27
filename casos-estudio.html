@@ -355,6 +355,10 @@
       background: var(--partial-bg);
       border: 1px solid var(--partial-bd);
     }
+    .feedback-box.partial {
+      background: color-mix(in srgb, #F59E0B 10%, var(--surface));
+      border: 1px solid #F59E0B;
+    }
     .feedback-header {
       display: flex;
       align-items: center;
@@ -364,8 +368,9 @@
       font-size: 14px;
     }
     .feedback-header svg { width: 18px; height: 18px; }
-    .feedback-header.correct { color: var(--correct); }
-    .feedback-header.wrong   { color: var(--wrong); }
+    .feedback-header.correct  { color: var(--correct); }
+    .feedback-header.wrong    { color: var(--wrong); }
+    .feedback-header.partial  { color: #F59E0B; }
 
     .feedback-text { font-size: 15px; color: var(--text); line-height: 1.7; margin-bottom: 14px; }
 
@@ -678,7 +683,8 @@ function renderNode(nodeId) {
 
   if (node.type === 'scenario') {
     renderScenario(node, container);
-  } else if (node.type === 'feedback_correct' || node.type === 'feedback_wrong') {
+  } else if (node.type === 'feedback_correct' || node.type === 'feedback_wrong' ||
+             node.type === 'feedback_incorrect' || node.type === 'feedback_partial') {
     renderFeedback(node, container);
   } else if (node.type === 'outcome') {
     renderOutcome(node, container);
@@ -743,10 +749,20 @@ function handleChoice(btn, node) {
 
   const feedbackArea = document.getElementById('feedback-area');
 
-  if (nextNode && (nextNode.type === 'feedback_correct' || nextNode.type === 'feedback_wrong')) {
+  const _isFeedbackNode = nextNode && (
+    nextNode.type === 'feedback_correct' ||
+    nextNode.type === 'feedback_wrong'   ||
+    nextNode.type === 'feedback_incorrect' ||
+    nextNode.type === 'feedback_partial'
+  );
+  if (_isFeedbackNode) {
     // Show inline feedback
-    const typeCls = nextNode.type === 'feedback_correct' ? 'correct' : 'wrong';
-    const headerText = nextNode.type === 'feedback_correct' ? 'Buena decisión' : 'Momento de reflexión';
+    const typeCls = nextNode.type === 'feedback_correct' ? 'correct'
+                  : nextNode.type === 'feedback_partial'  ? 'partial'
+                  : 'wrong';
+    const headerText = nextNode.type === 'feedback_correct' ? 'Buena decisión'
+                     : nextNode.type === 'feedback_partial'  ? 'Respuesta parcial'
+                     : 'Momento de reflexión';
     const icon = nextNode.type === 'feedback_correct' ? ICONS.check : ICONS.alert;
     const xpHtml = xpGain > 0
       ? `<div class="xp-pill">${ICONS.star} +${xpGain} XP</div>`
@@ -781,8 +797,12 @@ function handleChoice(btn, node) {
 
 function renderFeedback(node, container) {
   // Standalone feedback render (used for direct navigation)
-  const typeCls = node.type === 'feedback_correct' ? 'correct' : 'wrong';
-  const headerText = node.type === 'feedback_correct' ? 'Buena decisión' : 'Momento de reflexión';
+  const typeCls = node.type === 'feedback_correct' ? 'correct'
+                : node.type === 'feedback_partial'  ? 'partial'
+                : 'wrong';
+  const headerText = node.type === 'feedback_correct' ? 'Buena decisión'
+                   : node.type === 'feedback_partial'  ? 'Respuesta parcial'
+                   : 'Momento de reflexión';
   const icon = node.type === 'feedback_correct' ? ICONS.check : ICONS.alert;
 
   container.innerHTML = `
