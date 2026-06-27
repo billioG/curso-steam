@@ -1087,6 +1087,36 @@ function openUserPanel(userId) {
             _schools.map(s => `<option value="${s.id}" ${_userSchoolMap[userId]===s.id?'selected':''}>${esc(s.name)}</option>`).join('');
     }
 
+    // Logros desbloqueados
+    const logrosEl = document.getElementById('panelLogros');
+    if (logrosEl) {
+        const userBadges = p.badges || [];
+        if (userBadges.length === 0) {
+            logrosEl.innerHTML = '<span class="text-slate-400 text-xs">Sin logros aún</span>';
+        } else {
+            const BADGE_DEFS = {
+                firstCard:'🌱',module1:'📘',module2:'🔧',module3:'🧠',module4:'📊',module5:'⭐',
+                quizMaster:'🎯',quiz25:'🏹',perfect10:'💎',feedbackGiver:'💬',examPass:'🎓',
+                allModules:'🏆',streak7:'🔥',streak30:'⚡',streak3:'✨',earlyBird:'🌅',
+                noteWriter:'📝',applied5:'🍎',weeklyChamp:'🥇',level5:'🌟',level10:'💫'
+            };
+            const BADGE_NAMES = {
+                firstCard:'Primer paso',module1:'Primer módulo',module2:'En profundidad',
+                module3:'Metodólogo',module4:'Aplicador',module5:'Experto local',
+                quizMaster:'Maestro de quizzes',quiz25:'Imparable',perfect10:'Perfeccionista',
+                feedbackGiver:'Tu voz importa',examPass:'Certificado STEAM',allModules:'STEAM Master',
+                streak7:'Racha 7d',streak30:'Leyenda',streak3:'Constante',earlyBird:'Madrugadora',
+                noteWriter:'Apuntes de oro',applied5:'Docente en acción',weeklyChamp:'Campeón semanal',
+                level5:'Nivel 5',level10:'Nivel 10'
+            };
+            logrosEl.innerHTML = userBadges.map(b =>
+                `<span title="${BADGE_NAMES[b]||b}" style="display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:3px 8px;font-size:11px;font-weight:600;color:#334155">
+                    ${BADGE_DEFS[b]||'🏅'} ${BADGE_NAMES[b]||b}
+                </span>`
+            ).join('');
+        }
+    }
+
     // Diagnóstico
     const diagEl = document.getElementById('panelDiag');
     if (diagEl) {
