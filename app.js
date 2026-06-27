@@ -5289,13 +5289,15 @@ function _renderCourseSelector() {
     if (!_selectedPathId) {
         // ── Vista 1: Rutas ──────────────────────────────────────────
         const scores = progress?.dailyMissions?.examScores || {};
+        const _legacySteam = progress?.dailyMissions?.examScore; // legacy single-score for steam
+        const _getScore = id => id === 'steam' ? (scores['steam'] ?? _legacySteam) : scores[id];
         list.innerHTML = `
             <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.5);margin:0 0 14px">Elige tu ruta de formación</p>
             <div class="lp-grid">
             ${LEARNING_PATHS.map(path => {
                 const pathCourses = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(Boolean);
                 const available   = pathCourses.filter(c => c.status === 'available');
-                const passed      = available.filter(c => (scores[c.id] || 0) >= 70).length;
+                const passed      = available.filter(c => (_getScore(c.id) ?? 0) >= 70).length;
                 const pct         = available.length ? Math.round(passed / available.length * 100) : 0;
                 const totalHours  = pathCourses.reduce((a, c) => a + (c.durationHours || 0), 0);
                 const allDone     = available.length > 0 && passed === available.length;
