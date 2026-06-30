@@ -4592,6 +4592,40 @@ document.getElementById("backToLoginBtn")?.addEventListener("click", () => {
     document.getElementById("emailLoginForm").classList.remove("hidden");
     document.getElementById("forgotMsg")?.classList.add("hidden");
 });
+
+// ── Manejo de recuperación de contraseña ──────────────────────────
+supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+        const allForms = ['emailLoginForm','forgotForm','registerForm'];
+        allForms.forEach(id => document.getElementById(id)?.classList.add('hidden'));
+        document.getElementById('resetPasswordForm')?.classList.remove('hidden');
+    }
+});
+
+document.getElementById("doResetPassword")?.addEventListener("click", async () => {
+    const pwd = document.getElementById("newPasswordInput")?.value || '';
+    const confirm = document.getElementById("confirmPasswordInput")?.value || '';
+    const msgEl = document.getElementById("resetPasswordMsg");
+    const show = (text, ok) => {
+        if (!msgEl) return;
+        msgEl.textContent = text;
+        msgEl.className = ok
+            ? 'mt-3 text-sm text-center p-3 rounded-2xl border bg-emerald-50 text-emerald-700 border-emerald-100'
+            : 'mt-3 text-sm text-center p-3 rounded-2xl border bg-red-50 text-red-600 border-red-100';
+        msgEl.classList.remove('hidden');
+    };
+    if (pwd.length < 6) { show('Mínimo 6 caracteres.', false); return; }
+    if (pwd !== confirm) { show('Las contraseñas no coinciden.', false); return; }
+    const { error } = await supabase.auth.updateUser({ password: pwd });
+    if (error) { show('Error: ' + error.message, false); return; }
+    show('✓ Contraseña actualizada. Puedes iniciar sesión.', true);
+    setTimeout(() => {
+        document.getElementById('resetPasswordForm')?.classList.add('hidden');
+        document.getElementById('emailLoginForm')?.classList.remove('hidden');
+        document.getElementById('newPasswordInput').value = '';
+        document.getElementById('confirmPasswordInput').value = '';
+    }, 2500);
+});
 document.getElementById("doForgotPassword")?.addEventListener("click", async () => {
     const email = document.getElementById("forgotEmail").value.trim();
     const msgEl = document.getElementById("forgotMsg");
