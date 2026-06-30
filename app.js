@@ -267,6 +267,8 @@ async function loadFromSupabase() {
 
         if (data) {
             return {
+                current_module: data.current_module || 1,
+                current_card: data.current_card || 0,
                 completedCards: data.completed_cards || [],
                 xp: data.xp || 0,
                 level: data.level || 1,
