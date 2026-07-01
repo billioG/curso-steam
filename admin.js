@@ -1360,7 +1360,7 @@ function _renderAdminComments(filtered) {
         const dateStr = date.toLocaleDateString('es', { day:'numeric', month:'short', year:'numeric' });
         const timeStr = date.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
         const cardLabel = _getCardLabel(c.card_id);
-        const initial = (c._userName || 'D')[0].toUpperCase();
+        const initial = esc((c._userName || 'D')[0].toUpperCase());
 
         return `
         <div class="card hover:shadow-md transition-shadow" style="border-left:3px solid #6366f1">
@@ -1370,10 +1370,10 @@ function _renderAdminComments(filtered) {
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap mb-1">
-                        <span class="font-bold text-sm text-slate-800">${c._userName}</span>
+                        <span class="font-bold text-sm text-slate-800">${esc(c._userName)}</span>
                         <span class="text-[10px] text-slate-400">${dateStr} · ${timeStr}</span>
                     </div>
-                    <p class="text-sm text-slate-700 leading-relaxed mb-2">${c.comment}</p>
+                    <p class="text-sm text-slate-700 leading-relaxed mb-2">${esc(c.comment)}</p>
                     <div class="flex items-center gap-1.5">
                         <span style="background:#eef2ff;color:#4f46e5;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px">
                             📍 ${cardLabel}
