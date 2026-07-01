@@ -207,6 +207,34 @@ function loadFromLocalCache(userId) {
     });
 }
 
+// Respaldo síncrono en localStorage (por usuario) — cubre el hueco entre guardar
+// localmente y que la sincronización asíncrona con Supabase/IndexedDB termine
+// (ej. el navegador se cierra a la mitad). Se recupera al iniciar sesión si
+// resulta más avanzado que lo que ya se cargó de la nube o de IndexedDB.
+function _recoverLocalBackupIfNewer(userId) {
+    if (!userId || !progress) return false;
+    try {
+        const raw = localStorage.getItem(`steamProgressBackup_${userId}`);
+        if (!raw) return false;
+        const backup = JSON.parse(raw);
+        const backupCount = (backup.completedCards || []).length;
+        const currentCount = (progress.completedCards || []).length;
+        if (backupCount <= currentCount) return false; // la nube/caché ya está igual o más avanzada
+
+        progress.completedCards = Array.from(new Set([...(progress.completedCards || []), ...(backup.completedCards || [])]));
+        progress.xp = Math.max(progress.xp || 0, backup.xp || 0);
+        progress.level = Math.max(progress.level || 1, backup.level || 1);
+        progress.badges = Array.from(new Set([...(progress.badges || []), ...(backup.badges || [])]));
+        progress.streak = Math.max(progress.streak || 0, backup.streak || 0);
+        progress.quizCorrectCount = Math.max(progress.quizCorrectCount || 0, backup.quizCorrectCount || 0);
+        progress.raffleTickets = Math.max(progress.raffleTickets || 0, backup.raffleTickets || 0);
+        progress.moduleFeedback = { ...(backup.moduleFeedback || {}), ...(progress.moduleFeedback || {}) };
+        progress.dailyMissions = { ...(progress.dailyMissions || {}), ...(backup.dailyMissions || {}) };
+        console.warn('Progreso recuperado desde respaldo local: la nube tenía menos avance del esperado.');
+        return true;
+    } catch (e) { return false; /* respaldo corrupto o ausente, se ignora */ }
+}
+
 // ==================== SINCRONIZACIÓN CON SUPABASE ====================
 async function syncWithSupabase() {
     if (!currentUser || !progress) return;
@@ -336,6 +364,8 @@ async function loginWithEmail(email, password) {
                 raffleTickets: 0
             };
         }
+
+        if (_recoverLocalBackupIfNewer(currentUser.id)) saveProgress();
 
         // Restaurar nombre y foto desde localStorage — tiene prioridad sobre datos de nube
         // (protege contra sync incompleto antes de cerrar pestaña)
@@ -490,6 +520,7 @@ document.addEventListener('visibilitychange', () => {
 
 async function logout() {
     await _updateSessionDuration();
+    if (_syncDebounceTimer) { clearTimeout(_syncDebounceTimer); _syncDebounceTimer = null; await syncWithSupabase(); }
     await supabase.auth.signOut();
     currentUser = null;
     progress = null;
@@ -518,6 +549,8 @@ async function checkExistingSession() {
                 dailyMissions: {}, raffleTickets: 0
             };
         }
+
+        if (_recoverLocalBackupIfNewer(currentUser.id)) saveProgress();
 
         try {
             if (!progress.dailyMissions) progress.dailyMissions = {};
@@ -841,17 +874,40 @@ function updateSyncStatus(status, message) {
     }
 }
 
+// Agrupa ráfagas de saveProgress() (ej. varios logros desbloqueados de golpe)
+// en un solo upsert a Supabase, para no saturar la base de datos con muchos
+// usuarios activos a la vez.
+let _syncDebounceTimer = null;
+const _SYNC_DEBOUNCE_MS = 1200;
+
 function saveProgress() {
     if (!progress) return;
-    localStorage.setItem("steamProgressBackup", JSON.stringify(progress));
+    if (currentUser?.id) {
+        localStorage.setItem(`steamProgressBackup_${currentUser.id}`, JSON.stringify(progress));
+    }
     if (navigator.onLine && currentUser) {
-        syncWithSupabase();
+        clearTimeout(_syncDebounceTimer);
+        _syncDebounceTimer = setTimeout(() => { _syncDebounceTimer = null; syncWithSupabase(); }, _SYNC_DEBOUNCE_MS);
     } else if (currentUser) {
         saveToLocalCache(currentUser.id, progress);
     }
     updateUI();
     checkBadges();
 }
+
+// Si hay un sync pendiente por el debounce, lo dispara de inmediato al ocultar/
+// cerrar la pestaña para no perder los últimos segundos de progreso.
+function _flushPendingSync() {
+    if (_syncDebounceTimer) {
+        clearTimeout(_syncDebounceTimer);
+        _syncDebounceTimer = null;
+        syncWithSupabase();
+    }
+}
+window.addEventListener('beforeunload', _flushPendingSync);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') _flushPendingSync();
+});
 
 function addXP(amount, reason) {
     if (!progress) return;
@@ -890,8 +946,7 @@ function unlockBadge(badgeId) {
     const badge = badges[badgeId];
     if (!badge) return;
     progress.badges.push(badgeId);
-    addXP(badge.xpReward, `Logro: ${badge.name}`);
-    saveProgress();
+    addXP(badge.xpReward, `Logro: ${badge.name}`); // ya llama a saveProgress() internamente
     showBadgeUnlockAnimation(badge);
 }
 
