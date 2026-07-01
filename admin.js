@@ -476,12 +476,9 @@ function renderCourseSummary(progress) {
     const el = document.getElementById('courseSummaryTable');
     if (!el) return;
     const rows = STATIC_COURSES.map(c => {
-        const enrolled = progress.filter(p => {
-            const completed = p.completed_cards || [];
-            if (c.id === 'steam') return completed.some(id => /^\d/.test(String(id)) && !String(id).includes('-m'));
-            const prefix = c.id==='abp'?'abp-':c.id==='design-thinking'?'dt-':c.id==='evaluacion'?'ev-':c.id==='tipos-estudiantes'?'te-':'';
-            return completed.some(id => String(id).startsWith(prefix));
-        });
+        const enrolled = progress.filter(p =>
+            (p.completed_cards || []).some(id => _cardBelongsTo(c.id, id))
+        );
         const certified = enrolled.filter(p => {
             const sc = p?.daily_missions?.examScores || {};
             return (sc[c.id]||0) >= 70 || (c.id==='steam' && (p?.daily_missions?.examScore||0)>=70);
@@ -910,12 +907,7 @@ function hasCourseExamPassed(p, courseId) {
 }
 
 function hasCourseStarted(p, courseId) {
-    return (p.completed_cards || []).some(id => {
-        const s = String(id);
-        if (courseId === 'steam') return /^\d/.test(s) && !s.includes('-m');
-        const px = courseId==='abp'?'abp-':courseId==='design-thinking'?'dt-':courseId==='evaluacion'?'ev-':courseId==='tipos-estudiantes'?'te-':'';
-        return px ? s.startsWith(px) : false;
-    });
+    return (p.completed_cards || []).some(id => _cardBelongsTo(courseId, id));
 }
 
 function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
@@ -1430,13 +1422,8 @@ function filterAdminComments() {
         String(c.card_id).toLowerCase().includes(q)
     );
     if (course) {
-        // Filtrar por curso: los card_ids del curso son numéricos para steam, con prefijo para otros
-        const prefixMap = { abp:'abp-', 'design-thinking':'dt-', evaluacion:'ev-', 'tipos-estudiantes':'te-' };
-        const prefix = prefixMap[course];
-        filtered = filtered.filter(c => {
-            if (course === 'steam') return /^\d+$/.test(String(c.card_id));
-            return prefix ? String(c.card_id).startsWith(prefix) : true;
-        });
+        // Filtrar por curso usando los IDs reales de data.js (cubre los 12 cursos)
+        filtered = filtered.filter(c => _cardBelongsTo(course, c.card_id));
     }
 
     _renderAdminComments(filtered);
@@ -1600,13 +1587,9 @@ async function loadCMS() {
     const enrolled = {};
     _allProgress.forEach(p => {
         STATIC_COURSES.forEach(c => {
-            const has = (p.completed_cards||[]).some(id=>{
-                const s=String(id);
-                if(c.id==='steam') return /^\d/.test(s)&&!s.includes('-m');
-                const px=c.id==='abp'?'abp-':c.id==='design-thinking'?'dt-':c.id==='evaluacion'?'ev-':c.id==='tipos-estudiantes'?'te-':'';
-                return px && s.startsWith(px);
-            });
-            if (has) enrolled[c.id] = (enrolled[c.id]||0)+1;
+            if ((p.completed_cards||[]).some(id => _cardBelongsTo(c.id, id))) {
+                enrolled[c.id] = (enrolled[c.id]||0)+1;
+            }
         });
     });
 
@@ -2149,12 +2132,7 @@ async function generateMineduc() {
 
     // Tasa de certificación por curso (% con examen ≥70%)
     const courseCertRates = STATIC_COURSES.map(c => {
-        const enrolled = progress.filter(p => (p.completed_cards||[]).some(id => {
-            const s = String(id);
-            if (c.id === 'steam') return /^\d+$/.test(s);
-            const px = c.id==='abp'?'abp-':c.id==='design-thinking'?'dt-':c.id==='evaluacion'?'ev-':c.id==='tipos-estudiantes'?'te-':'';
-            return px && s.startsWith(px);
-        }));
+        const enrolled = progress.filter(p => (p.completed_cards||[]).some(id => _cardBelongsTo(c.id, id)));
         const passed = enrolled.filter(p => {
             const sc = p.daily_missions?.examScores || {};
             const v = c.id === 'steam' ? (sc['steam'] ?? p.daily_missions?.examScore ?? -1) : (sc[c.id] ?? -1);
