@@ -292,7 +292,7 @@ async function loadFromSupabase() {
 
 // ==================== AUTENTICACIÓN ====================
 function _friendlyAuthError(msg) {
-    if (!msg) return 'Error desconocido. Intenta de nuevo.';
+    if (typeof msg !== 'string' || !msg) return 'Error desconocido. Intenta de nuevo.';
     const m = msg.toLowerCase();
     if (m.includes('invalid login') || m.includes('invalid credentials')) return 'Email o contraseña incorrectos.';
     if (m.includes('email not confirmed'))  return 'Confirma tu email antes de ingresar.';
@@ -381,7 +381,8 @@ async function loginWithEmail(email, password) {
         await loadAppConfig();
         return true;
     } catch (error) {
-        showLoginError(_friendlyAuthError(error.message));
+        console.error('loginWithEmail error:', error);
+        showLoginError(_friendlyAuthError(error?.message));
         return false;
     }
 }
@@ -422,7 +423,8 @@ async function registerWithEmail(email, password) {
         showToast("¡Registro exitoso! Bienvenido al curso", "success");
         return true;
     } catch (error) {
-        showLoginError(_friendlyAuthError(error.message));
+        console.error('registerWithEmail error:', error);
+        showLoginError(_friendlyAuthError(error?.message));
         return false;
     }
 }
@@ -5395,6 +5397,8 @@ function _renderCourseSelector() {
 
         const pathCourses = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(Boolean);
         const scores = progress?.dailyMissions?.examScores || {};
+        const _legacySteam2 = progress?.dailyMissions?.examScore; // legacy single-score para steam
+        const _getScore2 = id => id === 'steam' ? (scores[id] ?? _legacySteam2) : scores[id];
 
         list.innerHTML = `
             <button onclick="_selectedPathId=null;_renderCourseSelector()"
@@ -5415,7 +5419,7 @@ function _renderCourseSelector() {
                 const isOpen    = c.status === 'available';
                 const prereqMet = isCoursePrereqMet(c);
                 const clickable = isOpen && prereqMet;
-                const passed    = (scores[c.id] || 0) >= 70;
+                const passed    = (_getScore2(c.id) || 0) >= 70;
                 const prereqNames = (c.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
                 let statusBadge;
                 if (!isOpen)       statusBadge = '○ Próximamente';
