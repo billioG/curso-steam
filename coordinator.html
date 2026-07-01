@@ -143,6 +143,7 @@
             <option value="design-thinking">Design Thinking</option>
             <option value="evaluacion">Evaluación</option>
             <option value="tipos-estudiantes">Tipos de Estudiantes</option>
+            <option value="storytelling">Storytelling</option>
           </select>
         </div>
         <canvas id="moduleChart" height="200"></canvas>
@@ -191,18 +192,14 @@
       <div class="overflow-x-auto">
         <table>
           <thead>
-            <tr>
+            <tr id="teachersHeadRow">
               <th>Docente</th>
               <th>Centro educativo</th>
               <th>XP</th>
               <th>Tarjetas</th>
               <th>Racha</th>
               <th>Certificados</th>
-              <th>STEAM</th>
-              <th>ABP</th>
-              <th>D.Thinking</th>
-              <th>Evaluación</th>
-              <th>T.Estudiantes</th>
+              <!-- columnas de curso inyectadas por JS desde COURSES -->
               <th>Último acceso</th>
             </tr>
           </thead>
@@ -227,7 +224,27 @@ const COURSES = [
   { id:'design-thinking',  title:'Design Thinking',    modules:5, totalCards:45,  prefix:'dt-'   },
   { id:'evaluacion',       title:'Evaluación',         modules:5, totalCards:38,  prefix:'ev-'   },
   { id:'tipos-estudiantes',title:'Tipos Estudiantes',  modules:5, totalCards:60,  prefix:'te-'   },
+  { id:'storytelling',     title:'Storytelling',       modules:5, totalCards:50,  prefix:'st-'   },
+  // Cursos nuevos: sus tarjetas se guardan como '<courseId>-<n>' (ver normalización en app.js)
+  { id:'creatividad',       title:'Creatividad',        modules:5, totalCards:50, prefix:'creatividad-'       },
+  { id:'herramientas-tec',  title:'Herramientas Tec.',  modules:4, totalCards:45, prefix:'herramientas-tec-'  },
+  { id:'m-learning',        title:'Mobile Learning',    modules:4, totalCards:40, prefix:'m-learning-'        },
+  { id:'flipped-classroom', title:'Flipped Classroom',  modules:4, totalCards:40, prefix:'flipped-classroom-' },
+  { id:'abv',               title:'AB Videos',          modules:4, totalCards:35, prefix:'abv-'               },
+  { id:'micro-learning',    title:'Micro-learning',     modules:4, totalCards:35, prefix:'micro-learning-'    },
 ];
+
+// Inyectar columnas de curso en el encabezado de la tabla (antes de "Último acceso")
+(function () {
+    const row = document.getElementById('teachersHeadRow');
+    if (!row) return;
+    const last = row.querySelector('th:last-child');
+    COURSES.forEach(c => {
+        const th = document.createElement('th');
+        th.textContent = c.title;
+        row.insertBefore(th, last);
+    });
+})();
 
 let _allTeachers = [];   // cada item tiene ._schoolName
 let _coordSchools = [];
@@ -499,7 +516,7 @@ function renderEngagement() {
 // ── Teachers table ────────────────────────────────────────────
 function renderTeachers(list) {
     const tbody = document.getElementById('teachersBody');
-    const empty = '<tr><td colspan="12" class="text-center text-slate-400 py-8">No hay docentes asignados.<br><span class="text-xs">El administrador puede asignarlos desde el panel principal.</span></td></tr>';
+    const empty = `<tr><td colspan="${7 + COURSES.length}" class="text-center text-slate-400 py-8">No hay docentes asignados.<br><span class="text-xs">El administrador puede asignarlos desde el panel principal.</span></td></tr>`;
     if (!list.length) { tbody.innerHTML = empty; return; }
 
     tbody.innerHTML = list.map(p => {
