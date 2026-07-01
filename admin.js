@@ -29,6 +29,57 @@ const STATIC_COURSES = [
     { id:'micro-learning',    title:'Micro-learning · Aprender en Pequeñas Dosis', durationHours:3, totalCards:35, modules:4, ruta:'metodologias', masterCert:true  },
 ];
 
+// ────────────────────────────────────────────────────────────
+// DATOS REALES DESDE data.js (allCourses)
+// admin.html carga data.js, así que podemos calcular los IDs y
+// totales reales de tarjetas en vez de usar cifras hardcodeadas.
+// Replica la normalización de app.js: IDs numéricos de cursos
+// nuevos se prefijan con el id del curso (ej. 'creatividad-1').
+// ────────────────────────────────────────────────────────────
+const COURSE_CARD_IDS   = {};  // courseId -> Set de IDs de tarjeta
+const COURSE_MODULE_IDS = {};  // courseId -> [[ids módulo 1], [ids módulo 2], ...]
+const ALL_VALID_CARD_IDS = new Set();
+
+if (typeof allCourses !== 'undefined') {
+    allCourses.forEach(course => {
+        if (course.id !== 'steam') {
+            (course.modules || []).forEach(mod => (mod.cards || []).forEach(card => {
+                if (card.id != null && /^[0-9]+$/.test(String(card.id))) {
+                    card.id = `${course.id}-${card.id}`;
+                }
+            }));
+        }
+        const mods = (course.modules || []).map(m => (m.cards || []).map(c => String(c.id)));
+        COURSE_MODULE_IDS[course.id] = mods;
+        const ids = new Set(mods.flat());
+        COURSE_CARD_IDS[course.id] = ids;
+        ids.forEach(id => ALL_VALID_CARD_IDS.add(id));
+        // Sincronizar totales reales en STATIC_COURSES (los hardcodeados divergen de data.js)
+        const sc = STATIC_COURSES.find(s => s.id === course.id);
+        if (sc) { sc.totalCards = ids.size; sc.modules = mods.length; }
+    });
+}
+
+// ¿La tarjeta `id` pertenece al curso `courseId`? (con fallback por prefijo si data.js no cargó)
+const _LEGACY_PREFIX = { abp:'abp-', 'design-thinking':'dt-', evaluacion:'ev-', 'tipos-estudiantes':'te-', storytelling:'st-' };
+function _cardBelongsTo(courseId, id) {
+    const set = COURSE_CARD_IDS[courseId];
+    const s = String(id);
+    if (set && set.size) return set.has(s);
+    if (courseId === 'steam') return /^\d+$/.test(s);
+    return s.startsWith(_LEGACY_PREFIX[courseId] || (courseId + '-'));
+}
+
+// Tarjetas completadas VÁLIDAS de un usuario (únicas y existentes en el contenido actual)
+function _validCompletedSet(p) {
+    const out = new Set();
+    (p.completed_cards || []).forEach(id => {
+        const s = String(id);
+        if (!ALL_VALID_CARD_IDS.size || ALL_VALID_CARD_IDS.has(s)) out.add(s);
+    });
+    return out;
+}
+
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let _allProgress = [];   // cache global de progreso
@@ -125,29 +176,22 @@ function hasCertificate(p) {
     return Object.values(scores).some(s => s >= 70);
 }
 
-// Cuenta tarjetas completadas de UN curso específico (no mezcladas entre cursos)
+// Cuenta tarjetas completadas de UN curso específico (únicas, no mezcladas entre cursos)
 function _courseCardsCompleted(p, c) {
-    return (p.completed_cards || []).filter(id => {
-        const s = String(id);
-        if (c.id === 'steam') return /^\d+$/.test(s);
-        const px = c.id==='abp'?'abp-':c.id==='design-thinking'?'dt-':c.id==='evaluacion'?'ev-':c.id==='tipos-estudiantes'?'te-':'';
-        return px && s.startsWith(px);
-    }).length;
+    const done = new Set();
+    (p.completed_cards || []).forEach(id => { if (_cardBelongsTo(c.id, id)) done.add(String(id)); });
+    return done.size;
 }
 function hasCompletedAnyCourse(p) {
     return STATIC_COURSES.some(c => _courseCardsCompleted(p, c) >= c.totalCards);
 }
 
 function getProgressPct(p, courseId='steam') {
-    const completed = (p.completed_cards || []).filter(id => {
-        const s = String(id);
-        if (courseId === 'steam') return /^\d/.test(s) && !s.includes('-m');
-        const prefix = courseId === 'abp' ? 'abp-' : courseId === 'design-thinking' ? 'dt-' : courseId === 'evaluacion' ? 'ev-' : courseId === 'tipos-estudiantes' ? 'te-' : '';
-        return prefix ? s.startsWith(prefix) : false;
-    }).length;
-    const courseInfo = STATIC_COURSES.find(c => c.id === courseId);
-    const total = courseInfo?.totalCards || 73;
-    return Math.min(100, Math.round((completed / total) * 100));
+    const done = new Set();
+    (p.completed_cards || []).forEach(id => { if (_cardBelongsTo(courseId, id)) done.add(String(id)); });
+    const total = COURSE_CARD_IDS[courseId]?.size
+        || STATIC_COURSES.find(c => c.id === courseId)?.totalCards || 73;
+    return Math.min(100, Math.round((done.size / total) * 100));
 }
 
 function loader(id) {
@@ -219,44 +263,22 @@ async function fetchAllProgress() {
 // HELPER — módulos por curso
 // ────────────────────────────────────────────────────────────
 function getModuleCompletion(progress, courseId) {
-    const courseInfo = STATIC_COURSES.find(c => c.id === courseId);
-    if (!progress.length || !courseInfo) return { labels: [], data: [], enrolled: 0 };
+    // IDs reales por módulo desde data.js — funciona para los 12 cursos
+    const moduleIds = COURSE_MODULE_IDS[courseId];
+    if (!progress.length || !moduleIds || !moduleIds.length) return { labels: [], data: [], enrolled: 0 };
 
-    if (courseId === 'steam') {
-        const ranges = [[1,13],[14,27],[28,41],[42,55],[56,73]];
-        // denominador: solo usuarios que tienen al menos 1 tarjeta STEAM (inscritos)
-        const enrolled = progress.filter(p =>
-            (p.completed_cards||[]).some(id => /^\d+$/.test(String(id)) && !String(id).includes('-'))
-        );
-        const enrolledCount = enrolled.length || 1;
-        return {
-            labels: ranges.map((_,i) => `Módulo ${i+1}`),
-            data: ranges.map(([s,e]) => {
-                const modIds = Array.from({length: e-s+1}, (_,k) => s+k);
-                const c = enrolled.filter(p => {
-                    const done = new Set((p.completed_cards||[]).map(id => parseInt(id)));
-                    return modIds.every(id => done.has(id));
-                }).length;
-                return Math.round((c / enrolledCount) * 100);
-            }),
-            enrolled: enrolledCount
-        };
-    }
-
-    const prefix = courseId==='abp' ? 'abp-' : courseId==='design-thinking' ? 'dt-' : courseId==='evaluacion' ? 'ev-' : courseId==='tipos-estudiantes' ? 'te-' : '';
-    const numMods = courseInfo.modules || 5;
-    // denominador: solo usuarios con al menos 1 tarjeta del curso
+    // denominador: solo usuarios con al menos 1 tarjeta del curso (inscritos de facto)
     const enrolled = progress.filter(p =>
-        (p.completed_cards||[]).some(id => String(id).startsWith(prefix))
+        (p.completed_cards||[]).some(id => _cardBelongsTo(courseId, id))
     );
     const enrolledCount = enrolled.length || 1;
-    const perMod = Math.ceil((courseInfo.totalCards || 60) / numMods);
+
     return {
-        labels: Array.from({length: numMods}, (_,i) => `Módulo ${i+1}`),
-        data: Array.from({length: numMods}, (_,i) => {
+        labels: moduleIds.map((_, i) => `Módulo ${i+1}`),
+        data: moduleIds.map(ids => {
             const c = enrolled.filter(p => {
-                const doneCards = (p.completed_cards||[]).map(id => String(id)).filter(id => id.startsWith(`${prefix}m${i+1}-`));
-                return doneCards.length >= perMod;
+                const done = new Set((p.completed_cards||[]).map(id => String(id)));
+                return ids.length > 0 && ids.every(id => done.has(id));
             }).length;
             return Math.round((c / enrolledCount) * 100);
         }),
@@ -754,21 +776,17 @@ async function loadAnalytics() {
         options:{ plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}},cutout:'60%' }
     });
 
-    // Barras por curso
+    // Barras por curso — todos los cursos, con conteo real de tarjetas por curso
     const courseAvg = STATIC_COURSES.map(c => {
-        const enrolled = progress.filter(p=>(p.completed_cards||[]).some(id=>{
-            const s=String(id);
-            if(c.id==='steam') return /^\d/.test(s)&&!s.includes('-m');
-            const px=c.id==='abp'?'abp-':c.id==='design-thinking'?'dt-':c.id==='evaluacion'?'ev-':c.id==='tipos-estudiantes'?'te-':'';
-            return px && s.startsWith(px);
-        }));
+        const enrolled = progress.filter(p=>(p.completed_cards||[]).some(id=>_cardBelongsTo(c.id, id)));
         return enrolled.length ? Math.round(enrolled.reduce((a,p)=>a+getProgressPct(p,c.id),0)/enrolled.length) : 0;
     });
+    const _coursePalette = ['#07B0E4','#2563EB','#E83C8D','#E9A037','#7C3AED','#F59E0B','#EC4899','#8B5CF6','#10B981','#06B6D4','#6366F1','#F97316'];
     buildChart('analyticsCourseBar', document.getElementById('analyticsCourseBar')?.getContext('2d'), {
         type:'bar',
         data:{ labels: STATIC_COURSES.map(c=>c.title.substring(0,20)),
             datasets:[{label:'Progreso promedio %',data:courseAvg,
-                backgroundColor:['#07B0E4','#2563EB','#E83C8D','#E9A037','#7C3AED'],
+                backgroundColor: STATIC_COURSES.map((_,i)=>_coursePalette[i % _coursePalette.length]),
                 borderRadius:8,borderSkipped:false}]},
         options:{ indexAxis:'y', plugins:{legend:{display:false}},
             scales:{ x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%',font:{size:10}}},
@@ -913,8 +931,9 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
     if (!users.length) { cont.innerHTML='<div class="loader">Sin docentes registrados aún.</div>'; return; }
 
     const courses = _coursesList.length ? _coursesList : STATIC_COURSES;
-    // Total tarjetas únicas en toda la plataforma (suma de totalCards por curso único)
-    const _totalUniqueCards = STATIC_COURSES.reduce((a, c) => a + (c.totalCards || 0), 0) || 572;
+    // Total tarjetas únicas reales en la plataforma (desde data.js; fallback a suma hardcodeada)
+    const _totalUniqueCards = ALL_VALID_CARD_IDS.size
+        || STATIC_COURSES.reduce((a, c) => a + (c.totalCards || 0), 0) || 572;
 
     const thead = `<thead><tr>
         <th>Docente</th><th>Escuela</th><th>XP</th><th>Certificados</th><th title="Tarjetas completadas del total disponible en la plataforma">Avance global</th><th>Último acceso</th>
@@ -923,10 +942,11 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
     const rowHtml = p => {
             const activo = isActive7d(p);
             const certCount = courses.filter(c => hasCourseExamPassed(p, c.id)).length;
-        // Avance global: tarjetas únicas completadas / total tarjetas disponibles en la plataforma
-        // Es path-agnostic y no se ve afectado por cursos compartidos entre rutas
-        const completedCards = p.completed_cards || [];
-        const globalPct = Math.min(100, Math.round((completedCards.length / _totalUniqueCards) * 100));
+        // Avance global: tarjetas únicas VÁLIDAS completadas / total real de la plataforma.
+        // Filtra duplicados e IDs legacy que ya no existen (evita ver 605/572 = >100%)
+        const _validDone = _validCompletedSet(p);
+        const completedCount = _validDone.size;
+        const globalPct = Math.min(100, Math.round((completedCount / _totalUniqueCards) * 100));
         const role = roleMap[p.user_id] || 'student';
         const roleLabel = role === 'admin' ? '<span class="badge tag-violet" style="font-size:9px">Admin</span>'
             : role === 'coordinator' ? '<span class="badge tag-blue" style="font-size:9px">Coord.</span>' : '';
@@ -955,7 +975,7 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
                     </div>
                     <span class="text-xs font-bold text-slate-500">${globalPct}%</span>
                 </div>
-                <span class="text-[10px] text-slate-400">${completedCards.length}/${_totalUniqueCards} tarjetas</span>
+                <span class="text-[10px] text-slate-400">${completedCount}/${_totalUniqueCards} tarjetas</span>
             </td>
             <td class="text-slate-400 text-xs whitespace-nowrap">${fmtDateTime(p.updated_at)}</td>
         </tr>`;
@@ -1046,12 +1066,19 @@ function _applyUsersView() {
     }
 
     // Ordenar
+    const _lastAccess = p => p.updated_at ? new Date(p.updated_at).getTime() : 0;
     users = [...users].sort((a, b) => {
         if (_usersSort === 'xp')   return (b.xp||0) - (a.xp||0);
         if (_usersSort === 'cert') {
             const ca = courses.filter(c => hasCourseExamPassed(a, c.id)).length;
             const cb = courses.filter(c => hasCourseExamPassed(b, c.id)).length;
             return cb - ca || (b.xp||0) - (a.xp||0);
+        }
+        if (_usersSort === 'access') return _lastAccess(b) - _lastAccess(a);
+        if (_usersSort === 'active') {
+            // Activos (7d) primero, luego por acceso más reciente
+            const aa = isActive7d(a) ? 1 : 0, ab = isActive7d(b) ? 1 : 0;
+            return ab - aa || _lastAccess(b) - _lastAccess(a);
         }
         return getName(a).localeCompare(getName(b), 'es');
     });
@@ -1461,21 +1488,30 @@ async function loadFeedback() {
             options:{ plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}},cutout:'60%' }
         });
 
-        // Rating por módulo
+        // Rating por módulo — agrupa por module_name (título real, distingue el curso)
+        // con fallback a "Módulo N" para registros antiguos sin nombre
         const modRating = {};
         fb.forEach(f => {
-            const k = f.module_id ? `Módulo ${f.module_id}` : 'General';
+            const name = (f.module_name || '').trim();
+            const k = name || (f.module_id ? `Módulo ${f.module_id}` : 'General');
             if (!modRating[k]) modRating[k] = [];
             modRating[k].push(f.rating||0);
         });
-        const modKeys = Object.keys(modRating);
+        // Ordenar por cantidad de respuestas (los módulos con más feedback arriba)
+        const modKeys = Object.keys(modRating).sort((a,b) => modRating[b].length - modRating[a].length);
         const modAvg  = modKeys.map(k => (modRating[k].reduce((a,b)=>a+b,0)/modRating[k].length).toFixed(1));
+        const modN    = modKeys.map(k => modRating[k].length);
         buildChart('rating', document.getElementById('ratingChart')?.getContext('2d'), {
             type:'bar',
-            data:{ labels:modKeys,
+            data:{ labels:modKeys.map(k => k.length > 34 ? k.substring(0,32)+'…' : k),
                 datasets:[{label:'Rating promedio',data:modAvg,backgroundColor:'#fbbf24',borderRadius:8,borderSkipped:false}]},
-            options:{ plugins:{legend:{display:false}},
-                scales:{ y:{beginAtZero:true,max:5,ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10}}} } }
+            options:{ indexAxis:'y', plugins:{
+                    legend:{display:false},
+                    tooltip:{ callbacks:{
+                        title: items => modKeys[items[0].dataIndex],
+                        label: item => `Rating promedio: ${item.raw} · ${modN[item.dataIndex]} respuesta${modN[item.dataIndex]===1?'':'s'}`
+                    } } },
+                scales:{ x:{beginAtZero:true,max:5,ticks:{font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:9}}} } }
         });
     } else {
         ['fbNps','fbRating'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent='N/A'; });
