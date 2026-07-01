@@ -113,7 +113,7 @@ function buildChart(key, ctx, config) {
     return _charts[key];
 }
 
-function isActive30d(p) {
+function isActive7d(p) {
     if (!p.updated_at) return false;
     const d = new Date(p.updated_at);
     return (Date.now() - d.getTime()) < 7 * 86400000;
@@ -123,6 +123,19 @@ function hasCertificate(p) {
     const scores = p?.daily_missions?.examScores || {};
     if (p?.daily_missions?.examScore >= 70) return true;
     return Object.values(scores).some(s => s >= 70);
+}
+
+// Cuenta tarjetas completadas de UN curso específico (no mezcladas entre cursos)
+function _courseCardsCompleted(p, c) {
+    return (p.completed_cards || []).filter(id => {
+        const s = String(id);
+        if (c.id === 'steam') return /^\d+$/.test(s);
+        const px = c.id==='abp'?'abp-':c.id==='design-thinking'?'dt-':c.id==='evaluacion'?'ev-':c.id==='tipos-estudiantes'?'te-':'';
+        return px && s.startsWith(px);
+    }).length;
+}
+function hasCompletedAnyCourse(p) {
+    return STATIC_COURSES.some(c => _courseCardsCompleted(p, c) >= c.totalCards);
 }
 
 function getProgressPct(p, courseId='steam') {
@@ -275,7 +288,7 @@ function buildModuleChart(chartKey, canvasId, progress, courseId) {
 async function loadDashboard() {
     const progress = await fetchAllProgress();
     const total = progress.length;
-    const active30 = progress.filter(isActive30d).length;
+    const active30 = progress.filter(isActive7d).length;
     const totalCards = progress.reduce((a,p) => a + (p.completed_cards?.length||0), 0);
     // Total de certificados = misma lógica que la tabla de cursos (garantiza coincidencia)
     const totalCertificados = STATIC_COURSES.reduce((sum, c) => {
@@ -348,10 +361,12 @@ async function loadDashboard() {
         renderDeviceChart(mobileCount, sessions.length - mobileCount);
     }
 
-    // NPS
-    const { data: fb } = await sb.from('feedback').select('nps,rating');
+    // NPS (excluye admins)
+    const { data: fbRaw } = await sb.from('feedback').select('nps,rating,user_id');
+    const _nonAdminIds = new Set(progress.map(p => p.user_id));
+    const fb = (fbRaw || []).filter(f => _nonAdminIds.has(f.user_id));
     let npsText = 'N/A';
-    if (fb?.length) {
+    if (fb.length) {
         const promoters = fb.filter(f=>f.nps>=9).length;
         const detractors = fb.filter(f=>f.nps<=6).length;
         const nps = Math.round(((promoters-detractors)/fb.length)*100);
@@ -887,7 +902,7 @@ function hasCourseStarted(p, courseId) {
 
 function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
     const total = users.length;
-    const active = users.filter(isActive30d).length;
+    const active = users.filter(isActive7d).length;
     const certified = users.filter(hasCertificate).length;
     document.getElementById('uTotal').textContent = total;
     document.getElementById('uActive').textContent = active;
@@ -906,7 +921,7 @@ function renderUsersTable(users, roleMap = {}, groupBySchool = false) {
     </tr></thead>`;
 
     const rowHtml = p => {
-            const activo = isActive30d(p);
+            const activo = isActive7d(p);
             const certCount = courses.filter(c => hasCourseExamPassed(p, c.id)).length;
         // Avance global: tarjetas únicas completadas / total tarjetas disponibles en la plataforma
         // Es path-agnostic y no se ve afectado por cursos compartidos entre rutas
@@ -1068,7 +1083,7 @@ function openUserPanel(userId) {
     // Badges de estado
     const badgesEl = document.getElementById('panelBadges');
     if (badgesEl) {
-        const isActive = isActive30d(p);
+        const isActive = isActive7d(p);
         const role = _roleMapCache[userId] || 'student';
         const roleBadge = role==='admin' ? '<span class="badge tag-violet">Admin</span>'
             : role==='coordinator' ? '<span class="badge tag-blue">Coordinador</span>'
@@ -1416,8 +1431,16 @@ async function deleteAdminComment(commentId) {
 }
 
 async function loadFeedback() {
-    const { data:fb, error } = await sb.from('feedback').select('*').order('created_at',{ascending:false});
-    if (error || !fb) { empty('feedbackList','Error al cargar feedback.'); return; }
+    const { data:fbRaw, error } = await sb.from('feedback').select('*').order('created_at',{ascending:false});
+    if (error || !fbRaw) { empty('feedbackList','Error al cargar feedback.'); return; }
+
+    // Build name map from progress cache
+    const nameMap = {};
+    _allProgress.forEach(p => { if (p.user_id) nameMap[p.user_id] = { name: getName(p), email: getEmail(p) }; });
+
+    // Excluir admins de KPIs, gráficos y listado
+    const _adminSet = new Set(ADMIN_EMAILS.map(e => e.toLowerCase()));
+    const fb = fbRaw.filter(f => !_adminSet.has((nameMap[f.user_id]?.email || '').toLowerCase()));
 
     document.getElementById('fbTotal').textContent = fb.length || 0;
 
@@ -1462,16 +1485,9 @@ async function loadFeedback() {
     if (!list) return;
     if (!fb.length) { list.innerHTML='<div class="card text-center text-slate-400 py-8 text-sm">No hay feedback registrado aún.</div>'; return; }
 
-    // Build name map from progress cache
-    const nameMap = {};
-    _allProgress.forEach(p => { if (p.user_id) nameMap[p.user_id] = { name: getName(p), email: getEmail(p) }; });
-
-    // Group by user_id (excluir admins)
-    const _adminSet = new Set(ADMIN_EMAILS.map(e => e.toLowerCase()));
+    // Group by user_id (fb ya excluye admins)
     const byUser = {};
     fb.forEach(f => {
-        const fEmail = (nameMap[f.user_id]?.email || '').toLowerCase();
-        if (_adminSet.has(fEmail)) return; // ocultar admins de analytics
         const key = f.user_id || '__anon__';
         if (!byUser[key]) byUser[key] = { user_id: f.user_id, items: [] };
         byUser[key].items.push(f);
@@ -2002,15 +2018,17 @@ async function exportFullBackup() {
 async function generateExecutiveReport() {
     const progress = _allProgress.length ? _allProgress : await fetchAllProgress();
     const total     = progress.length;
-    const active30  = progress.filter(isActive30d).length;
+    const active30  = progress.filter(isActive7d).length;
     const certified = progress.filter(hasCertificate).length;
     const totalCards= progress.reduce((a,p)=>a+(p.completed_cards?.length||0),0);
     const horasForm = Math.round(totalCards*3/60);
-    const completedFull = progress.filter(p=>(p.completed_cards?.length||0)>=70).length;
+    const completedFull = progress.filter(hasCompletedAnyCourse).length;
     const tasaFin   = total ? Math.round((completedFull/total)*100) : 0;
-    const { data:fb } = await sb.from('feedback').select('nps');
+    const { data:fbRaw } = await sb.from('feedback').select('nps,user_id');
+    const _nonAdminIds = new Set(progress.map(p => p.user_id));
+    const fb = (fbRaw || []).filter(f => _nonAdminIds.has(f.user_id));
     let npsScore = 'N/A';
-    if (fb?.length) {
+    if (fb.length) {
         const p2=fb.filter(f=>f.nps>=9).length, d=fb.filter(f=>f.nps<=6).length;
         npsScore = Math.round(((p2-d)/fb.length)*100);
     }
@@ -2025,7 +2043,7 @@ async function generateExecutiveReport() {
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px">
             ${[
                 ['Docentes alcanzados', fmt(total),       'fas fa-chalkboard-teacher', '#4f46e5'],
-                ['Activos (30 días)',   fmt(active30),    'fas fa-user-check',         '#0891b2'],
+                ['Activos (7 días)',   fmt(active30),    'fas fa-user-check',         '#0891b2'],
                 ['Horas de formación', horasForm+'h',    'fas fa-clock',              '#d97706'],
                 ['Certificados emitidos', fmt(certified), 'fas fa-award',             '#16a34a'],
             ].map(([l,v,icon,color])=>`
@@ -2077,13 +2095,15 @@ async function generateMineduc() {
     const progress  = _allProgress.length ? _allProgress : await fetchAllProgress();
     const total     = progress.length;
     const certified = progress.filter(hasCertificate).length;
-    const active    = progress.filter(isActive30d).length;
+    const active    = progress.filter(isActive7d).length;
     const totalCards= progress.reduce((a,p)=>a+(p.completed_cards?.length||0),0);
     const horasForm = Math.round(totalCards*3/60);
-    const completedFull = progress.filter(p=>(p.completed_cards?.length||0)>=70).length;
-    const { data:fb } = await sb.from('feedback').select('nps,rating');
+    const completedFull = progress.filter(hasCompletedAnyCourse).length;
+    const { data:fbRaw } = await sb.from('feedback').select('nps,rating,user_id');
+    const _nonAdminIds = new Set(progress.map(p => p.user_id));
+    const fb = (fbRaw || []).filter(f => _nonAdminIds.has(f.user_id));
     let npsScore='N/A', avgRating='N/A';
-    if (fb?.length) {
+    if (fb.length) {
         const p2=fb.filter(f=>f.nps>=9).length, d=fb.filter(f=>f.nps<=6).length;
         npsScore = Math.round(((p2-d)/fb.length)*100);
         avgRating = (fb.reduce((a,f)=>a+(f.rating||0),0)/fb.length).toFixed(1);
@@ -2122,7 +2142,7 @@ async function generateMineduc() {
             <thead><tr style="background:#f0f4f8"><th style="text-align:left;padding:8px;border:1px solid #ddd">Indicador</th><th style="text-align:center;padding:8px;border:1px solid #ddd">Resultado</th></tr></thead>
             <tbody>
                 ${[['Docentes inscritos en la plataforma',fmt(total)],
-                   ['Docentes activos (últimos 30 días)',fmt(active)],
+                   ['Docentes activos (últimos 7 días)',fmt(active)],
                    ['Tasa de retención activa',total?Math.round(active/total*100)+'%':'—'],
                    ['Docentes que completaron al menos un curso',completedFull+' ('+( total?Math.round(completedFull/total*100):0 )+'%)'],
                    ['Certificados emitidos',fmt(certified)],
@@ -2168,7 +2188,7 @@ async function generateMineduc() {
             <thead><tr style="background:#f0f4f8">
                 <th style="text-align:left;padding:8px;border:1px solid #ddd">Departamento</th>
                 <th style="text-align:center;padding:8px;border:1px solid #ddd">Docentes</th>
-                <th style="text-align:center;padding:8px;border:1px solid #ddd">Activos (30d)</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Activos (7d)</th>
                 <th style="text-align:center;padding:8px;border:1px solid #ddd">Certificados</th>
                 <th style="text-align:center;padding:8px;border:1px solid #ddd">Tarjetas totales</th>
             </tr></thead>
@@ -2179,7 +2199,7 @@ async function generateMineduc() {
                         const dept = getDept(p);
                         if (!byDept[dept]) byDept[dept] = { count:0, active:0, certs:0, cards:0 };
                         byDept[dept].count++;
-                        if (isActive30d(p)) byDept[dept].active++;
+                        if (isActive7d(p)) byDept[dept].active++;
                         if (hasCertificate(p)) byDept[dept].certs++;
                         byDept[dept].cards += (p.completed_cards?.length || 0);
                     });
