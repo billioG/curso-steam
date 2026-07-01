@@ -2,12 +2,19 @@
 
 ## Paso 1 — Agregar el API Key de Resend como Secret
 
+> ⚠️ **SEGURIDAD:** Una versión anterior de este archivo contenía la API key de
+> Resend en texto plano y quedó en el historial de git. Esa key debe considerarse
+> comprometida: **revócala en https://resend.com/api-keys y genera una nueva.**
+> Nunca escribas el valor de un secret en este repositorio.
+
 1. Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/settings/functions
 2. En "Secrets", agrega:
    - Nombre: `RESEND_API_KEY`
-   - Valor: `re_2nxRvfzP_3wtgXVeX2BJuyNS46911jJnZ`
+   - Valor: *(la key nueva generada en resend.com — no la escribas aquí)*
    - Nombre: `FROM_EMAIL`
    - Valor: `onboarding@resend.dev`  ← cambiar por tu dominio verificado después
+   - Nombre: `APP_URL`
+   - Valor: la URL pública de la app (GitHub Pages), ej. `https://billiog.github.io/curso-steam`
 
 ## Paso 2 — Crear las 3 Edge Functions
 
