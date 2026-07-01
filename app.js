@@ -290,7 +290,7 @@ async function loadFromSupabase() {
 
 // ==================== AUTENTICACIÓN ====================
 function _friendlyAuthError(msg) {
-    if (!msg) return 'Error desconocido. Intenta de nuevo.';
+    if (typeof msg !== 'string' || !msg) return 'Error desconocido. Intenta de nuevo.';
     const m = msg.toLowerCase();
     if (m.includes('invalid login') || m.includes('invalid credentials')) return 'Email o contraseña incorrectos.';
     if (m.includes('email not confirmed'))  return 'Confirma tu email antes de ingresar.';
@@ -379,7 +379,8 @@ async function loginWithEmail(email, password) {
         await loadAppConfig();
         return true;
     } catch (error) {
-        showLoginError(_friendlyAuthError(error.message));
+        console.error('loginWithEmail error:', error);
+        showLoginError(_friendlyAuthError(error?.message));
         return false;
     }
 }
@@ -420,7 +421,8 @@ async function registerWithEmail(email, password) {
         showToast("¡Registro exitoso! Bienvenido al curso", "success");
         return true;
     } catch (error) {
-        showLoginError(_friendlyAuthError(error.message));
+        console.error('registerWithEmail error:', error);
+        showLoginError(_friendlyAuthError(error?.message));
         return false;
     }
 }
