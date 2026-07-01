@@ -4523,7 +4523,8 @@ function toggleDevMode() {
     }
     _updateDevModeBtn();
     _checkMasterCert();
-    renderProfileTab();
+    // renderProfileTab() nunca existió — updateUI() refresca perfil, certificados y botón dev
+    updateUI();
 }
 
 function _updateDevModeBtn() {
