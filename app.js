@@ -261,9 +261,9 @@ async function loadFromSupabase() {
             .from('progress')
             .select('*')
             .eq('user_id', currentUser.id)
-            .single();
+            .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error) throw error;
 
         if (data) {
             return {
@@ -450,10 +450,13 @@ async function checkUserAdminRole() {
 // ==================== SESSION TRACKING ====================
 let _sessionId = null;
 let _sessionStart = null;
+let _sessionInterval = null;
 const _SESSION_HEARTBEAT_MS = 60000; // actualiza duración cada 60s
 
 async function startSessionTracking() {
     if (!currentUser) return;
+    // Evitar heartbeats duplicados si hay varios login/logout sin recargar
+    if (_sessionInterval) { clearInterval(_sessionInterval); _sessionInterval = null; }
     _sessionId = crypto.randomUUID();
     _sessionStart = Date.now();
     const deviceInfo = {
@@ -470,7 +473,7 @@ async function startSessionTracking() {
         device_info: deviceInfo
     });
     // Heartbeat: actualiza duration_seconds cada minuto
-    setInterval(() => _updateSessionDuration(), _SESSION_HEARTBEAT_MS);
+    _sessionInterval = setInterval(() => _updateSessionDuration(), _SESSION_HEARTBEAT_MS);
 }
 
 async function _updateSessionDuration() {
@@ -485,11 +488,21 @@ async function _updateSessionDuration() {
 // Guardar al cerrar/cambiar de pestaña
 window.addEventListener('beforeunload', () => { if (_sessionId) _updateSessionDuration(); });
 document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') _updateSessionDuration();
+    if (document.visibilityState === 'hidden') {
+        _updateSessionDuration();
+        // Flush del sync pendiente para no perder el último avance al cerrar
+        if (_syncDebounceT) { clearTimeout(_syncDebounceT); _syncDebounceT = null; syncWithSupabase(); }
+    }
 });
 
 async function logout() {
+    // Flush de sincronización pendiente antes de cerrar sesión
+    if (_syncDebounceT) { clearTimeout(_syncDebounceT); _syncDebounceT = null; }
+    if (currentUser && progress) { try { await syncWithSupabase(); } catch (_) {} }
     await _updateSessionDuration();
+    if (_sessionInterval) { clearInterval(_sessionInterval); _sessionInterval = null; }
+    _sessionId = null;
+    _sessionStart = null;
     await supabase.auth.signOut();
     currentUser = null;
     progress = null;
@@ -562,7 +575,8 @@ function showLoginError(msg) {
 function showToast(message, type) {
     const toast = document.createElement('div');
     toast.className = 'toast-notification';
-    toast.innerHTML = message;
+    // textContent: ningún caller pasa HTML y evita XSS si el mensaje incluye datos de usuario
+    toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
 }
@@ -617,7 +631,8 @@ function updateUI() {
     const _examScores = progress?.dailyMissions?.examScores || {};
     const _examScore = _examScores[_activeCourseId] ?? (_activeCourseId === 'steam' ? progress?.dailyMissions?.examScore : undefined);
     const _examPassed = _examScore !== undefined && _examScore >= 70;
-    const _hasFinalExam = _activeCourse ? getCourseExam(_activeCourse) !== null : false;
+    // getCourseExam siempre retorna objeto — validar que tenga preguntas reales
+    const _hasFinalExam = _activeCourse ? (getCourseExam(_activeCourse).questions || []).length > 0 : false;
     if (coursePercent === 100 && _hasFinalExam && !_examPassed) {
         if (!_examBanner) {
             _examBanner = document.createElement('div');
@@ -841,11 +856,17 @@ function updateSyncStatus(status, message) {
     }
 }
 
+// Debounce del upsert a Supabase: una acción (tarjeta+XP+logro) dispara
+// saveProgress varias veces seguidas; agrupamos en un solo upsert.
+let _syncDebounceT = null;
+const _SYNC_DEBOUNCE_MS = 1000;
+
 function saveProgress() {
     if (!progress) return;
     localStorage.setItem("steamProgressBackup", JSON.stringify(progress));
     if (navigator.onLine && currentUser) {
-        syncWithSupabase();
+        clearTimeout(_syncDebounceT);
+        _syncDebounceT = setTimeout(() => { _syncDebounceT = null; syncWithSupabase(); }, _SYNC_DEBOUNCE_MS);
     } else if (currentUser) {
         saveToLocalCache(currentUser.id, progress);
     }
@@ -3322,11 +3343,15 @@ function startExam() {
         document.getElementById('mainApp').appendChild(detail);
         return;
     }
+    // Mezclar y tomar 20 preguntas del banco del curso ACTIVO (no siempre STEAM)
+    const allQ = _shuffleArray(getCourseExam(getActiveCourseData()).questions);
+    if (!allQ.length) {
+        showToast('Este curso aún no tiene examen final disponible', 'warning');
+        return;
+    }
     stopCardTracking();
     examActive = true;
     examCurrentQ = 0;
-    // Mezclar y tomar 20 preguntas del banco del curso ACTIVO (no siempre STEAM)
-    const allQ = _shuffleArray(getCourseExam(getActiveCourseData()).questions);
     examQuestions = allQ.slice(0, 20);
     examAnswers = new Array(examQuestions.length).fill(null);
     switchTab('home');
@@ -3712,7 +3737,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Certificado ${courseTitle} - ${nombre}</title>
+<title>Certificado ${esc(courseTitle)} - ${esc(nombre)}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -3760,7 +3785,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
   </div>
   <div class="cert-body">
     <p class="cert-otorga">Se otorga a</p>
-    <p class="cert-nombre">${nombre}</p>
+    <p class="cert-nombre">${esc(nombre)}</p>
     <p class="cert-desc">
       ${courseDesc}, con un puntaje de
       <strong>${Math.round(percentage)}% en el examen final</strong>.
@@ -4353,7 +4378,7 @@ async function generateMasterCertificate() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${esc(_pathLabel)} — ${nombre}</title>
+<title>${esc(_pathLabel)} — ${esc(nombre)}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -4408,7 +4433,7 @@ async function generateMasterCertificate() {
   </div>
   <div class="cert-body">
     <p class="cert-otorga">Se otorga con distinción máxima a</p>
-    <p class="cert-nombre">${nombre}</p>
+    <p class="cert-nombre">${esc(nombre)}</p>
     <p class="cert-desc">Por haber completado satisfactoriamente la ruta <strong>${esc(_pathLabel)}</strong>, acreditando los <strong>${availableCourses.length} cursos</strong> que la integran y aprobando el <strong>Examen Final Integrador</strong> con <strong>${masterScore}%</strong>, demostrando dominio integral de metodologías activas para el aula del siglo XXI.</p>
     <div class="cert-meta">
       <div class="meta-pill hi"><div class="label">Examen Final</div><div class="value">${masterScore}%</div></div>
@@ -5921,9 +5946,11 @@ async function submitPortfolio() {
     }
 
     try {
+        // La edge function valida el JWT del usuario — el anon key produce 401
+        const { data: { session: _pfSession } } = await supabase.auth.getSession();
         const res = await fetch(EVALUATE_PORTFOLIO_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_pfSession?.access_token || SUPABASE_ANON_KEY}` },
             body: JSON.stringify({ entregables, examScore50 }),
         });
 
@@ -6143,9 +6170,12 @@ async function sendChatMessage() {
             { role: 'system', content: CHAT_SYSTEM },
             ..._chatHistory
         ];
+        // Token del usuario autenticado — el proxy valida el JWT (no acepta anon key)
+        const { data: { session } } = await supabase.auth.getSession();
+        const _accessToken = session?.access_token || SUPABASE_ANON_KEY;
         const res = await fetch(GROQ_PROXY_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_accessToken}` },
             body: JSON.stringify({ messages, max_tokens: 600, temperature: 0.7 })
         });
         const data = await res.json();
