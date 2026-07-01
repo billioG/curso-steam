@@ -40,7 +40,7 @@ Al iniciar una sesión con cambios de código:
 - `data.js` — contenido de cursos (tarjetas, módulos, exámenes)
 - `diagnostico.js` — prueba diagnóstica inicial
 - `schools_gt.js` — base de datos de 35,136 centros educativos (carga lazy)
-- `ADMIN_EMAILS = ['billy@1bot.org']`
+- `ADMIN_EMAILS = ['billy@1bot.org', 'profebillio@gmail.com']` (definido en admin.js)
 
 ## Convenciones de código
 - IDs de tarjetas por curso: STEAM=numérico, ABP=`abp-`, DT=`dt-`, EV=`ev-`, TE=`te-`
