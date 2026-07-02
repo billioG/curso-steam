@@ -29,16 +29,19 @@ Deno.serve(async (req) => {
   // 1. Verificar que quien llama es un admin autenticado
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) return json({ error: 'Unauthorized' }, 401);
-  const token = authHeader.replace('Bearer ', '');
 
   const authedClient = createClient(SUPABASE_URL, SUPABASE_ANON, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
+    global: { headers: { Authorization: authHeader } },
   });
-  const { data: { user }, error: authErr } = await authedClient.auth.getUser(token);
-  if (authErr || !user) return json({ error: 'Invalid token' }, 401);
+  const { data: { user }, error: authErr } = await authedClient.auth.getUser();
+  if (authErr || !user) return json({ error: 'Invalid token', detail: authErr?.message }, 401);
 
-  const { data: isAdmin, error: roleErr } = await authedClient.rpc('is_admin');
-  if (roleErr || !isAdmin) return json({ error: 'Solo administradores pueden enviar notificaciones' }, 403);
+  const { data: roleRow } = await authedClient
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (roleRow?.role !== 'admin') return json({ error: 'Solo administradores pueden enviar notificaciones' }, 403);
 
   try {
     const { title, body, url, userIds } = await req.json();
