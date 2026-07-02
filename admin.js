@@ -13,6 +13,7 @@ const LEARNING_PATHS = [
     { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp'] },
     { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
     { id:'ia',            label:'Docente y la IA',        color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)',  courses:['ia-fundamentos','ia-tiempo','ia-herramientas','ia-inclusion','ia-ciudadania'] },
+    { id:'convivencia',   label:'Clima y Convivencia Escolar', color:'#0891B2', gradient:'linear-gradient(135deg,#155E75,#0891B2)',  courses:['manejo-conductas'] },
 ];
 
 const STATIC_COURSES = [
@@ -33,6 +34,7 @@ const STATIC_COURSES = [
     { id:'ia-herramientas',   title:'Herramientas de IA Gratuitas para el Aula',   durationHours:3, totalCards:19, modules:4, ruta:'ia', masterCert:true  },
     { id:'ia-inclusion',      title:'IA e Inclusión Educativa',                    durationHours:3, totalCards:18, modules:4, ruta:'ia', masterCert:true  },
     { id:'ia-ciudadania',     title:'Ciudadanía Digital con IA',                   durationHours:3, totalCards:17, modules:4, ruta:'ia', masterCert:true  },
+    { id:'manejo-conductas',  title:'Manejo de Conductas Desafiantes en el Aula',  durationHours:4, totalCards:31, modules:4, ruta:'convivencia', masterCert:true  },
 ];
 
 // ────────────────────────────────────────────────────────────
