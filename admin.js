@@ -12,6 +12,7 @@ const LEARNING_PATHS = [
     { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4', gradient:'#07B0E4',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
     { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp'] },
     { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
+    { id:'ia',            label:'Docente y la IA',        color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)',  courses:['ia-fundamentos','ia-tiempo','ia-herramientas','ia-inclusion','ia-ciudadania'] },
 ];
 
 const STATIC_COURSES = [
@@ -27,6 +28,11 @@ const STATIC_COURSES = [
     { id:'flipped-classroom', title:'Flipped Classroom · El Aula Invertida',   durationHours:3,  totalCards:40, modules:4, ruta:'metodologias', masterCert:true  },
     { id:'abv',               title:'Aprendizaje Basado en Videos',            durationHours:3,  totalCards:35, modules:4, ruta:'metodologias', masterCert:true  },
     { id:'micro-learning',    title:'Micro-learning · Aprender en Pequeñas Dosis', durationHours:3, totalCards:35, modules:4, ruta:'metodologias', masterCert:true  },
+    { id:'ia-fundamentos',    title:'Docente y la Inteligencia Artificial',        durationHours:4, totalCards:35, modules:4, ruta:'ia', masterCert:true  },
+    { id:'ia-tiempo',         title:'IA para Ahorrar Tiempo',                      durationHours:3, totalCards:22, modules:4, ruta:'ia', masterCert:true  },
+    { id:'ia-herramientas',   title:'Herramientas de IA Gratuitas para el Aula',   durationHours:3, totalCards:19, modules:4, ruta:'ia', masterCert:true  },
+    { id:'ia-inclusion',      title:'IA e Inclusión Educativa',                    durationHours:3, totalCards:18, modules:4, ruta:'ia', masterCert:true  },
+    { id:'ia-ciudadania',     title:'Ciudadanía Digital con IA',                   durationHours:3, totalCards:17, modules:4, ruta:'ia', masterCert:true  },
 ];
 
 // ────────────────────────────────────────────────────────────
