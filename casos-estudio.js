@@ -2291,6 +2291,338 @@ const CASE_STUDIES = [
         xpReward: 10
       }
     }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 10: "El profesor y el asistente invisible" — Docente y la IA
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs10',
+    title: 'El profesor y el asistente invisible',
+    course: 'Docente y la IA',
+    color: '#10B981',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><circle cx="12" cy="12" r="1.8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg>',
+    duration: '15-20 min',
+    description: 'Diego, docente rural, descubre el chat de IA de la plataforma la noche antes de un examen. Acompáñalo a decidir cómo usar esta herramienta nueva sin perder su criterio profesional.',
+    start: 'cs10_n1',
+    nodes: {
+
+      'cs10_n1': {
+        type: 'scenario',
+        text: 'Son las 9 de la noche. Diego enseña quinto grado en una escuela rural de Sololá y mañana debe entregar un examen de Ciencias Naturales que aún no ha preparado. Está exhausto — hoy tuvo reunión de padres, corrigió 30 cuadernos y todavía debe cocinar la cena. La semana pasada, un colega le mostró el chat de IA integrado en esta misma plataforma de formación docente.',
+        context: 'Diego nunca ha usado IA para preparar material de clase. Tiene el chat abierto en su teléfono, y el cursor parpadeando, esperando su primera instrucción.',
+        choices: [
+          {
+            text: 'Pedirle a la IA un banco de 15 preguntas sobre el tema, con la intención de revisar cada una antes de usarlas.',
+            next: 'cs10_n2a',
+            isCorrect: true
+          },
+          {
+            text: 'Pedirle a la IA el examen completo y usarlo tal cual, sin revisarlo — ya es tarde y necesita dormir.',
+            next: 'cs10_n2b',
+            isCorrect: false
+          },
+          {
+            text: 'Cerrar el chat por desconfianza y quedarse escribiendo el examen a mano hasta la medianoche.',
+            next: 'cs10_n2c',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs10_n2a': {
+        type: 'feedback_correct',
+        text: 'Buena decisión inicial. Diego trata a la IA como lo que es: un asistente que redacta un primer borrador rápido, no como una autoridad que decide por él. Pedir un banco de preguntas —en vez del examen "terminado"— deja espacio natural para la revisión que viene después.',
+        tip: 'Principio clave de esta ruta: la IA acelera el borrador, el docente conserva el criterio final. Diego está a punto de comprobar por qué ese criterio importa.',
+        next: 'cs10_n3a',
+        xp: 10
+      },
+      'cs10_n2b': {
+        type: 'feedback_wrong',
+        text: 'Usar el examen completo sin ninguna revisión es el riesgo más grande de este curso: la IA puede "alucinar" — inventar datos falsos con total seguridad — y nada en el proceso de Diego detectaría ese error antes de que llegue a sus 30 estudiantes.',
+        tip: 'Recuerda: fluidez no es lo mismo que exactitud. Un texto bien escrito puede estar objetivamente equivocado.',
+        next: 'cs10_n3b',
+        xp: 0
+      },
+      'cs10_n2c': {
+        type: 'feedback_wrong',
+        text: 'Descartar la IA por completo no es "más seguro" — es simplemente no aprovechar una herramienta que, usada con criterio, le habría devuelto horas de sueño a Diego. Además, quedarse hasta la medianoche tiene un costo real: llegará a clase agotado.',
+        tip: 'El miedo y la sobreconfianza son los dos extremos que más perjudican el buen uso de la IA. Ninguno de los dos protege realmente al docente ni a sus estudiantes.',
+        next: 'cs10_n3c',
+        xp: 0
+      },
+
+      // ── Rama A: revisó el banco de preguntas ──
+      'cs10_n3a': {
+        type: 'scenario',
+        text: 'Diego revisa las 15 preguntas generadas. La mayoría están bien, pero una dice: "El Volcán de Fuego, en Guatemala, es un volcán inactivo desde 1970." Diego sabe que eso es falso — el Volcán de Fuego es uno de los más activos de Centroamérica y ha tenido erupciones recientes.',
+        context: 'Son las 9:40pm. Diego está cansado y tentado a dejarlo pasar — es "solo una pregunta" de 15.',
+        choices: [
+          {
+            text: 'Corregir el dato antes de imprimir, y terminar de revisar las 14 preguntas restantes con el mismo cuidado.',
+            next: 'cs10_outcome_success',
+            isCorrect: true
+          },
+          {
+            text: 'Dejarlo así — es solo una pregunta, probablemente nadie lo note.',
+            next: 'cs10_outcome_partial',
+            isCorrect: false
+          },
+          {
+            text: 'Perder la confianza en todo el banco de preguntas y reescribir el examen completo desde cero, perdiendo el tiempo que había ganado.',
+            next: 'cs10_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      // ── Rama B: usó el examen sin revisar ──
+      'cs10_n3b': {
+        type: 'scenario',
+        text: 'Al día siguiente, en plena clase, una estudiante levanta la mano: "Profe, esta pregunta tiene dos respuestas correctas — no sé cuál marcar." Diego revisa en el momento y se da cuenta, frente a todo el grupo, de que nunca revisó el examen antes de imprimirlo.',
+        context: 'Veintinueve estudiantes más están esperando cómo responde su docente en este momento incómodo.',
+        choices: [
+          {
+            text: 'Reconocer el error con calma, anular esa pregunta para todos, y seguir adelante con el examen.',
+            next: 'cs10_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Ponerse a la defensiva y decirle a la estudiante que está equivocada, aunque Diego mismo no esté seguro.',
+            next: 'cs10_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Ignorar el comentario y decirle que responda "lo que le parezca mejor", sin aclarar nada al resto del grupo.',
+            next: 'cs10_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      // ── Rama C: rechazó la IA, se quedó hasta tarde ──
+      'cs10_n3c': {
+        type: 'scenario',
+        text: 'Diego llega a clase agotado tras dormir menos de cuatro horas. A media explicación sobre el ciclo del agua, confunde "evaporación" con "condensación" dos veces seguidas. Un estudiante, confundido, pregunta: "Profe, ¿cuál es cuál?"',
+        context: 'Diego siente el cansancio pesándole detrás de los ojos. Sabe que no está explicando con su claridad habitual.',
+        choices: [
+          {
+            text: 'Reconocer en voz alta que está muy cansado hoy, tomar un respiro, y retomar el concepto con calma usando un ejemplo simple.',
+            next: 'cs10_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Seguir adelante fingiendo que todo está bien, aunque sabe que está cometiendo errores.',
+            next: 'cs10_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Cancelar el resto de la clase de Ciencias y pasar a otra materia, evitando el tema por completo.',
+            next: 'cs10_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      // ── OUTCOMES ─────────────────────────────────────────────────────────
+
+      'cs10_outcome_success': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Diego: El criterio que hace la diferencia',
+        text: 'Diego usó la IA exactamente como esta ruta lo propone: como un asistente que acelera el primer borrador, nunca como un sustituto de su propio juicio profesional. Detectar y corregir el dato falso sobre el Volcán de Fuego —en vez de dejarlo pasar por cansancio— es la diferencia entre un docente que delega su criterio y uno que lo conserva mientras aprovecha la velocidad de la herramienta. Sus estudiantes presentaron un examen correcto, y Diego durmió más esa noche que si hubiera escrito todo a mano.',
+        badge: 'Docente y la IA con Criterio',
+        xpReward: 50
+      },
+      'cs10_outcome_partial': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 65,
+        title: 'Diego: El aprendizaje llegó tarde, pero llegó',
+        text: 'Diego cometió un error real en el camino, pero lo importante fue cómo respondió: con honestidad frente a sus estudiantes en vez de defensividad. Esa reacción —reconocer el error, corregirlo con calma, seguir adelante— es en sí misma una lección socioemocional valiosa que sus estudiantes observaron de cerca. La próxima vez, Diego sabe que la revisión no es un paso opcional: es la parte del proceso que sostiene la confianza de su aula.',
+        badge: 'Docente en Aprendizaje con IA',
+        xpReward: 25
+      },
+      'cs10_outcome_struggle': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 30,
+        title: 'Diego: La lección más cara',
+        text: 'Ya sea por confiar demasiado en la IA sin revisar, por rechazarla por completo y agotarse, o por no reconocer un error frente a su clase, Diego terminó esta experiencia con una lección incómoda pero valiosa: la herramienta no es el problema ni la solución por sí sola — es cómo se usa, con cuánto criterio, y con cuánta honestidad se enfrenta lo que sale mal. Ese aprendizaje, aunque doloroso, es exactamente el punto de partida que necesita para la próxima vez.',
+        badge: 'Docente ante el Umbral de la IA',
+        xpReward: 10
+      }
+    }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 11: "La clase de Kevin" — Clima y Convivencia Escolar
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs11',
+    title: 'La clase de Kevin',
+    course: 'Clima y Convivencia Escolar',
+    color: '#0891B2',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>',
+    duration: '20-25 min',
+    description: 'Kevin, un estudiante de sexto grado, explota en plena clase y empuja a un compañero. Acompaña a la maestra Julia a decidir cómo responder en el momento, y qué hacer después del incidente.',
+    start: 'cs11_n1',
+    nodes: {
+
+      'cs11_n1': {
+        type: 'scenario',
+        text: 'Julia enseña sexto grado en una escuela urbana de Escuintla. Kevin, uno de sus estudiantes, lleva toda la mañana tenso: llegó tarde, no trajo materiales, y ahora un compañero se burla de él por eso. De pronto, Kevin se levanta, grita "¡ya cállate!" y empuja al compañero, tirando su silla al piso. Toda el aula se queda en silencio, mirando a Julia.',
+        context: 'Julia sabe, por conversaciones anteriores, que la mamá de Kevin viajó a trabajar a otro departamento hace tres semanas y él quedó al cuidado de su abuela.',
+        choices: [
+          {
+            text: 'Respirar, bajar el tono de voz, y acercarse con calma a Kevin antes de decir nada.',
+            next: 'cs11_n2a',
+            isCorrect: true
+          },
+          {
+            text: 'Levantar la voz de inmediato: "¡Kevin, eso no se hace! ¡Discúlpate ahora mismo frente a todos!"',
+            next: 'cs11_n2b',
+            isCorrect: false
+          },
+          {
+            text: 'Ignorar el incidente y seguir la clase como si nada, para no "darle más atención" a la conducta.',
+            next: 'cs11_n2c',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs11_n2a': {
+        type: 'feedback_correct',
+        text: 'Excelente primer movimiento. Cuando un estudiante escala, el sistema nervioso del adulto también se activa — el impulso es responder con más volumen y tensión. Pero dos personas alteradas se alimentan mutuamente. Al regular su propia respuesta primero, Julia se convierte en la calma que Kevin necesita para empezar a bajar de intensidad: esto se llama co-regulación.',
+        tip: 'La primera herramienta de manejo de conducta nunca es sobre el estudiante — es la capacidad del docente de responder en vez de reaccionar.',
+        next: 'cs11_n3a',
+        xp: 10
+      },
+      'cs11_n2b': {
+        type: 'feedback_wrong',
+        text: 'Responder con el mismo tono elevado que Kevin —y exigir una disculpa pública inmediata— casi siempre escala la situación en vez de calmarla. Un estudiante ya desregulado no puede "razonar" en ese momento, y exigirle una disculpa frente a toda la clase agrega vergüenza pública a una situación que ya está fuera de control.',
+        tip: 'El espectáculo público activa la necesidad de "salvar la cara" — lo que era manejable se puede convertir en una batalla de orgullo frente a testigos.',
+        next: 'cs11_n3b',
+        xp: 0
+      },
+      'cs11_n2c': {
+        type: 'feedback_wrong',
+        text: 'Ignorar una conducta que involucró empujar a otro estudiante no es lo mismo que "no darle atención" — es dejar sin respuesta una agresión física real, lo cual deja al compañero afectado sin protección visible, y no le enseña a Kevin ningún límite claro sobre lo que acaba de suceder.',
+        tip: 'Ignorar (extinción) funciona para conductas menores que buscan atención — no para conductas que ponen en riesgo la seguridad de alguien más.',
+        next: 'cs11_n3c',
+        xp: 0
+      },
+
+      // ── Rama A: co-regulación correcta ──
+      'cs11_n3a': {
+        type: 'scenario',
+        text: 'Julia se acerca a Kevin en voz baja: "Estoy aquí, no hay prisa, cuando estés listo hablamos." Kevin, todavía tenso, cruza los brazos y no responde. El compañero empujado está en el piso, algo asustado, y el resto de la clase sigue observando en silencio.',
+        context: 'Julia tiene unos segundos para decidir el siguiente paso, con Kevin aún alterado y la clase esperando alguna dirección.',
+        choices: [
+          {
+            text: 'Ofrecer a Kevin dos opciones: sentarse un momento en el rincón de calma, o quedarse en su lugar respirando — su elección, dentro de ese límite.',
+            next: 'cs11_outcome_success',
+            isCorrect: true
+          },
+          {
+            text: 'Exigir que Kevin se siente inmediatamente sin darle ninguna opción, para "no perder autoridad" frente al grupo.',
+            next: 'cs11_outcome_partial',
+            isCorrect: false
+          },
+          {
+            text: 'Dejar a Kevin de pie sin ninguna indicación mientras Julia atiende al otro estudiante, sin volver a él en varios minutos.',
+            next: 'cs11_outcome_partial',
+            isCorrect: false
+          }
+        ]
+      },
+
+      // ── Rama B: subió el tono ──
+      'cs11_n3b': {
+        type: 'scenario',
+        text: 'Ante la exigencia de disculpa pública, Kevin grita "¡no fue mi culpa, él empezó!" y golpea su propio pupitre. La situación, en vez de calmarse, escaló. Julia tiene que decidir cómo continuar frente a una clase ahora visiblemente nerviosa.',
+        context: 'El compañero empujado sigue en el piso. Algunos estudiantes ya sacaron su teléfono, posiblemente para grabar.',
+        choices: [
+          {
+            text: 'Bajar el tono de inmediato, reconociendo que subir la voz no ayudó, y ofrecer a Kevin un momento para calmarse antes de seguir hablando.',
+            next: 'cs11_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Insistir en el mismo tono, repitiendo la exigencia de disculpa hasta que Kevin obedezca.',
+            next: 'cs11_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Enviar a Kevin a dirección de inmediato sin ninguna conversación previa, como forma de terminar la confrontación rápido.',
+            next: 'cs11_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      // ── Rama C: ignoró el incidente ──
+      'cs11_n3c': {
+        type: 'scenario',
+        text: 'Diez minutos después, el compañero empujado le dice en voz baja a Julia que le duele el brazo por la caída. Julia se da cuenta de que ignorar el incidente dejó una situación sin resolver — y ahora hay, además, una posible lesión que nadie atendió a tiempo.',
+        context: 'Los padres del estudiante empujado probablemente preguntarán qué pasó cuando su hijo llegue a casa.',
+        choices: [
+          {
+            text: 'Atender de inmediato al estudiante golpeado, y por separado, buscar un momento con Kevin para entender qué pasó antes de que Julia lo viera.',
+            next: 'cs11_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Restar importancia al dolor del estudiante, diciendo que seguramente no es nada grave.',
+            next: 'cs11_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Culpar públicamente a Kevin por el dolor del compañero sin haber verificado la situación con ninguno de los dos primero.',
+            next: 'cs11_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      // ── OUTCOMES ─────────────────────────────────────────────────────────
+
+      'cs11_outcome_success': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Julia: El límite que sostiene y no humilla',
+        text: 'Julia aplicó, en secuencia, tres herramientas centrales del manejo de conducta: reguló su propia calma antes de responder, ofreció opciones limitadas en vez de una orden absoluta, y evitó el espectáculo público. Kevin eligió el rincón de calma, se sentó unos minutos, y más tarde —ya tranquilo— pudo contarle a Julia, en privado, que había tenido una mañana muy difícil en casa. Esa conversación abrió la puerta a entender la causa real detrás de la conducta, no solo su síntoma visible.',
+        badge: 'Gestión de Aula con Calma y Límites',
+        xpReward: 50
+      },
+      'cs11_outcome_partial': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 60,
+        title: 'Julia: La corrección a mitad de camino',
+        text: 'El primer movimiento de Julia no fue el ideal, pero supo corregir el rumbo antes de que la situación empeorara más — bajando el tono, atendiendo lo que se había dejado sin resolver, o buscando una conversación privada con Kevin después del hecho. Ese ajuste, aunque tardío, evitó que un mal comienzo se convirtiera en un conflicto mayor, y es una habilidad tan real como acertar desde el primer momento.',
+        badge: 'Gestión de Aula en Ajuste',
+        xpReward: 25
+      },
+      'cs11_outcome_struggle': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 25,
+        title: 'Julia: La conversación pendiente',
+        text: 'Ya sea por escalar el tono, por dejar sin atención una lesión real, o por culpar sin verificar los hechos primero, esta situación con Kevin terminó sin resolverse bien — ni para él, ni para su compañero, ni para el clima general del aula. La buena noticia es que el manejo de conducta es una habilidad que se practica: la próxima vez que ocurra algo similar, Julia tiene ahora un mapa más claro de qué evitar y por dónde empezar.',
+        badge: 'Gestión de Aula en Camino',
+        xpReward: 10
+      }
+    }
   }
 
 ];
