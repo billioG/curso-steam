@@ -10,6 +10,7 @@ let LEARNING_PATHS = [
     { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
     { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp','storytelling'] },
     { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
+    { id:'ia',            label:'Docente y la IA',        color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)',  courses:['ia-fundamentos','ia-tiempo','ia-herramientas','ia-inclusion','ia-ciudadania'] },
 ];
 // IDs de cursos requeridos para el certificado maestro (ruta steam20)
 // Admin puede cambiarlos desde el panel → se guardan en Supabase tabla app_config
@@ -46,6 +47,42 @@ if (typeof allCourses !== 'undefined') {
             });
         });
     });
+}
+
+// ── Pertenencia de tarjeta a curso (IDs reales, no prefijos adivinados) ─────
+// Usar SIEMPRE esto en vez de mapas de prefijo hardcodeados: varios cursos
+// nuevos (creatividad, herramientas-tec, m-learning...) tenían mapas de
+// prefijo que no coincidían con el prefijo real ya normalizado arriba
+// (`${course.id}-`), dejando el badge "en progreso" del certificado maestro
+// roto en silencio para esos cursos.
+const _COURSE_CARD_ID_SETS = {};
+if (typeof allCourses !== 'undefined') {
+    allCourses.forEach(course => {
+        _COURSE_CARD_ID_SETS[course.id] = new Set(
+            (course.modules || []).flatMap(m => (m.cards || []).map(c => String(c.id)))
+        );
+    });
+}
+// Estadística de la pantalla de login (cursos/horas) calculada del contenido
+// real — evita que quede desactualizada cada vez que se agrega un curso.
+if (typeof allCourses !== 'undefined' && typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const _available = allCourses.filter(c => c.status === 'available');
+        const _totalHours = _available.reduce((a, c) => a + (c.durationHours || 0), 0);
+        const _elCourses = document.getElementById('loginStatCourses');
+        const _elHours = document.getElementById('loginStatHours');
+        if (_elCourses) _elCourses.textContent = _available.length;
+        if (_elHours) _elHours.textContent = `+${_totalHours}h`;
+    });
+}
+
+function _cardBelongsToCourse(courseId, cardId) {
+    const set = _COURSE_CARD_ID_SETS[courseId];
+    const s = String(cardId);
+    if (set && set.size) return set.has(s);
+    // Fallback si data.js no cargó todavía
+    if (courseId === 'steam') return /^\d+$/.test(s);
+    return s.startsWith(`${courseId}-`);
 }
 
 // Devuelve el examen final de un curso. Si el curso no define `finalExam`
@@ -608,19 +645,11 @@ function updateUI() {
     if (_cpPct) _cpPct.style.color = _courseColor;
 
     const totalAll = modulesData.reduce((acc, m) => acc + m.cards.length, 0);
-    // Filtrar tarjetas completadas del curso activo (por prefijo de ID o courseId guardado)
+    // Filtrar tarjetas completadas del curso activo, usando los IDs reales del curso
+    // (antes usaba un mapa de prefijos que solo cubría 5 cursos — el resto marcaba
+    // 0% de progreso mientras se estudiaban, porque nunca encontraba coincidencia)
     const _activeCourseId = (currentCourseId || 'steam');
-    // Map courseId to card ID prefix used in data.js
-    const _prefixMap = { 'steam': null, 'abp': 'abp-', 'design-thinking': 'dt-', 'evaluacion': 'ev-', 'tipos-estudiantes': 'te-' };
-    const _cardPrefix = _prefixMap[_activeCourseId];
-    const completedTotal = (progress.completedCards || []).filter(id => {
-        const s = String(id);
-        if (!_cardPrefix) {
-            // STEAM cards: numeric IDs ("1","2") or old module-index format ("1-0"), never prefixed
-            return /^\d/.test(s) && !s.includes('-m');
-        }
-        return s.startsWith(_cardPrefix);
-    }).length;
+    const completedTotal = (progress.completedCards || []).filter(id => _cardBelongsToCourse(_activeCourseId, id)).length;
     const coursePercent = Math.min(Math.round((completedTotal / totalAll) * 100), 100);
     const courseProgressBar = document.getElementById("courseProgressBar");
     if (courseProgressBar) courseProgressBar.style.width = `${coursePercent}%`;
@@ -921,11 +950,6 @@ function unlockBadge(badgeId) {
 function checkBadges() {
     if (!progress) return;
     if (progress.completedCards.length >= 1 && !progress.badges.includes("firstCard")) unlockBadge("firstCard");
-
-    // Determinar prefijo de IDs del curso activo
-    const _cid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
-    const _prefixMap = { 'steam': null, 'abp': 'abp-', 'design-thinking': 'dt-', 'evaluacion': 'ev-', 'tipos-estudiantes': 'te-' };
-    const _prefix = _prefixMap[_cid];
 
     let modulesCompleted = 0;
     for (let i = 1; i <= modulesData.length; i++) {
@@ -4074,8 +4098,7 @@ function _checkMasterCert() {
     // Estado por curso — mostrar rutas como secciones con sus cursos dentro
     const statusEl = document.getElementById('certCourseStatus');
     if (statusEl) {
-        const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', storytelling:'#F59E0B', creatividad:'#E83C8D', 'herramientas-tec':'#7C3AED', 'm-learning':'#F59E0B', 'flipped-classroom':'#10B981', abv:'#6366F1', 'micro-learning':'#F97316' };
-        const prefixMap = { abp:'abp-', 'design-thinking':'dt-', evaluacion:'ev-', 'tipos-estudiantes':'te-', creatividad:'crea-', 'herramientas-tec':'htec-', 'm-learning':'ml-', 'flipped-classroom':'fc-', abv:'abv-', 'micro-learning':'mlearn-' };
+        const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', storytelling:'#F59E0B', creatividad:'#E83C8D', 'herramientas-tec':'#7C3AED', 'm-learning':'#F59E0B', 'flipped-classroom':'#10B981', abv:'#6366F1', 'micro-learning':'#F97316', 'ia-fundamentos':'#10B981', 'ia-tiempo':'#F97316', 'ia-herramientas':'#8B5CF6', 'ia-inclusion':'#06B6D4', 'ia-ciudadania':'#EC4899' };
 
         statusEl.innerHTML = LEARNING_PATHS.map(path => {
             const pathCourses = (path.courses || [])
@@ -4091,12 +4114,7 @@ function _checkMasterCert() {
             const coursesHTML = pathCourses.map(c => {
                 const s      = c.id === 'steam' ? steamScore : scores[c.id];
                 const passed = s !== undefined && s >= 70;
-                const started = (progress?.completedCards || []).some(id => {
-                    const str = String(id);
-                    if (c.id === 'steam') return /^\d/.test(str) && !str.includes('-m');
-                    const px = prefixMap[c.id] || '';
-                    return px && str.startsWith(px);
-                });
+                const started = (progress?.completedCards || []).some(id => _cardBelongsToCourse(c.id, id));
                 const col = courseColors[c.id] || '#4f46e5';
                 if (passed) {
                     return `<div style="display:flex;align-items:center;gap:10px;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:12px;padding:8px 12px">
@@ -4358,7 +4376,7 @@ async function generateMasterCertificate() {
         return a + s;
     }, 0) / availableCourses.length) : 0;
 
-    const colors = { 'steam':'#07B0E4','abp':'#2563EB','design-thinking':'#E83C8D','evaluacion':'#E9A037','tipos-estudiantes':'#7C3AED','creatividad':'#E83C8D','herramientas-tec':'#7C3AED','m-learning':'#F59E0B','flipped-classroom':'#10B981','abv':'#6366F1','micro-learning':'#F97316' };
+    const colors = { 'steam':'#07B0E4','abp':'#2563EB','design-thinking':'#E83C8D','evaluacion':'#E9A037','tipos-estudiantes':'#7C3AED','creatividad':'#E83C8D','herramientas-tec':'#7C3AED','m-learning':'#F59E0B','flipped-classroom':'#10B981','abv':'#6366F1','micro-learning':'#F97316','ia-fundamentos':'#10B981','ia-tiempo':'#F97316','ia-herramientas':'#8B5CF6','ia-inclusion':'#06B6D4','ia-ciudadania':'#EC4899' };
     const courseBadges = availableCourses.map(c => {
         const s   = c.id === 'steam' ? steamScore : (scores[c.id] || 0);
         const col = colors[c.id] || '#1A6B68';
