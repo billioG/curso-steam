@@ -6,16 +6,16 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
 
-const SUPABASE_URL     = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_ANON    = Deno.env.get('SUPABASE_ANON_KEY')!;
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const VAPID_PUBLIC_KEY  = Deno.env.get('VAPID_PUBLIC_KEY')!;
+const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY')!;
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY')!;
 
 webpush.setVapidDetails('mailto:billy@1bot.org', VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
 const CORS = {
-  'Access-Control-Allow-Origin':  '*',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
@@ -29,16 +29,19 @@ Deno.serve(async (req) => {
   // 1. Verificar que quien llama es un admin autenticado
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) return json({ error: 'Unauthorized' }, 401);
-  const token = authHeader.replace('Bearer ', '');
 
   const authedClient = createClient(SUPABASE_URL, SUPABASE_ANON, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
+    global: { headers: { Authorization: authHeader } },
   });
-  const { data: { user }, error: authErr } = await authedClient.auth.getUser(token);
-  if (authErr || !user) return json({ error: 'Invalid token' }, 401);
+  const { data: { user }, error: authErr } = await authedClient.auth.getUser();
+  if (authErr || !user) return json({ error: 'Invalid token', detail: authErr?.message }, 401);
 
-  const { data: isAdmin, error: roleErr } = await authedClient.rpc('is_admin');
-  if (roleErr || !isAdmin) return json({ error: 'Solo administradores pueden enviar notificaciones' }, 403);
+  const { data: roleRow } = await authedClient
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (roleRow?.role !== 'admin') return json({ error: 'Solo administradores pueden enviar notificaciones' }, 403);
 
   try {
     const { title, body, url, userIds } = await req.json();
