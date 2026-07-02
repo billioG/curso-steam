@@ -4,9 +4,47 @@
 -- ============================================================
 
 -- ============================================================
--- 1. AVISOS — usa la tabla app_config ya existente (key/value)
--- No requiere tabla nueva. Solo se documenta y siembra la clave.
--- Estructura del value (jsonb):
+-- 0. DEPENDENCIAS BASE — user_roles + is_admin()
+-- Se crean aquí por si supabase_schema.sql aún no corrió completo en
+-- este proyecto. CREATE TABLE IF NOT EXISTS no pisa datos existentes;
+-- CREATE OR REPLACE FUNCTION es seguro de re-ejecutar.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.user_roles (
+    id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id     uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
+    role        text DEFAULT 'student' CHECK (role IN ('student', 'admin')),
+    created_at  timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "user_roles_read_own" ON public.user_roles;
+CREATE POLICY "user_roles_read_own" ON public.user_roles
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.user_roles
+        WHERE user_id = auth.uid() AND role = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Si tu cuenta admin (billy@1bot.org) todavía no tiene fila en
+-- user_roles, esto la crea/actualiza sin tocar las demás.
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'admin' FROM auth.users WHERE email = 'billy@1bot.org'
+ON CONFLICT (user_id) DO UPDATE SET role = 'admin';
+
+
+-- ============================================================
+-- 1. AVISOS — usa la tabla app_config (key/value genérica).
+-- Se crea aquí por si portfolio_schema.sql aún no se ha ejecutado
+-- en este proyecto (CREATE TABLE IF NOT EXISTS, no pisa la existente).
+-- Estructura del value (jsonb) para la clave 'announcement':
 --   {
 --     "id": 1234567890,          -- timestamp, cambia con cada aviso nuevo
 --     "active": true,
@@ -16,6 +54,26 @@
 --     "expiresAt": "2026-07-10T00:00:00.000Z" | null
 --   }
 -- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.app_config (
+  key   text PRIMARY KEY,
+  value jsonb NOT NULL
+);
+
+ALTER TABLE public.app_config ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Lectura pública de config" ON public.app_config;
+DROP POLICY IF EXISTS "Solo admin escribe config"  ON public.app_config;
+
+CREATE POLICY "Lectura pública de config"
+  ON public.app_config FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Solo admin escribe config"
+  ON public.app_config FOR ALL
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
 
 INSERT INTO public.app_config (key, value) VALUES (
   'announcement',
