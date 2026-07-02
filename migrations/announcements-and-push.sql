@@ -4,9 +4,10 @@
 -- ============================================================
 
 -- ============================================================
--- 1. AVISOS — usa la tabla app_config ya existente (key/value)
--- No requiere tabla nueva. Solo se documenta y siembra la clave.
--- Estructura del value (jsonb):
+-- 1. AVISOS — usa la tabla app_config (key/value genérica).
+-- Se crea aquí por si portfolio_schema.sql aún no se ha ejecutado
+-- en este proyecto (CREATE TABLE IF NOT EXISTS, no pisa la existente).
+-- Estructura del value (jsonb) para la clave 'announcement':
 --   {
 --     "id": 1234567890,          -- timestamp, cambia con cada aviso nuevo
 --     "active": true,
@@ -16,6 +17,26 @@
 --     "expiresAt": "2026-07-10T00:00:00.000Z" | null
 --   }
 -- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.app_config (
+  key   text PRIMARY KEY,
+  value jsonb NOT NULL
+);
+
+ALTER TABLE public.app_config ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Lectura pública de config" ON public.app_config;
+DROP POLICY IF EXISTS "Solo admin escribe config"  ON public.app_config;
+
+CREATE POLICY "Lectura pública de config"
+  ON public.app_config FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Solo admin escribe config"
+  ON public.app_config FOR ALL
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
 
 INSERT INTO public.app_config (key, value) VALUES (
   'announcement',
