@@ -4,6 +4,43 @@
 -- ============================================================
 
 -- ============================================================
+-- 0. DEPENDENCIAS BASE — user_roles + is_admin()
+-- Se crean aquí por si supabase_schema.sql aún no corrió completo en
+-- este proyecto. CREATE TABLE IF NOT EXISTS no pisa datos existentes;
+-- CREATE OR REPLACE FUNCTION es seguro de re-ejecutar.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.user_roles (
+    id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id     uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
+    role        text DEFAULT 'student' CHECK (role IN ('student', 'admin')),
+    created_at  timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "user_roles_read_own" ON public.user_roles;
+CREATE POLICY "user_roles_read_own" ON public.user_roles
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.user_roles
+        WHERE user_id = auth.uid() AND role = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Si tu cuenta admin (profebillio@gmail.com) todavía no tiene fila en
+-- user_roles, esto la crea/actualiza sin tocar las demás.
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'admin' FROM auth.users WHERE email = 'profebillio@gmail.com'
+ON CONFLICT (user_id) DO UPDATE SET role = 'admin';
+
+
+-- ============================================================
 -- 1. AVISOS — usa la tabla app_config (key/value genérica).
 -- Se crea aquí por si portfolio_schema.sql aún no se ha ejecutado
 -- en este proyecto (CREATE TABLE IF NOT EXISTS, no pisa la existente).
