@@ -3486,7 +3486,7 @@ const allCourses = [
     id: 'ia-fundamentos',
     title: 'Docente y la Inteligencia Artificial',
     subtitle: 'Fundamentos para entender y usar la IA con criterio pedagógico',
-    icon: '🤖',
+    icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="13" y="13" width="14" height="14" rx="2" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/><circle cx="20" cy="20" r="3" stroke-width="1.8"/><line x1="20" y1="5" x2="20" y2="13" stroke-width="1.8"/><line x1="20" y1="27" x2="20" y2="35" stroke-width="1.8"/><line x1="5" y1="20" x2="13" y2="20" stroke-width="1.8"/><line x1="27" y1="20" x2="35" y2="20" stroke-width="1.8"/></svg>',
     color: '#10B981',
     prerequisite: [],
     status: 'available',
@@ -3495,7 +3495,7 @@ const allCourses = [
     modules: [
         {
             id: 1,
-            title: '🧠 Módulo 1: ¿Qué es la IA, realmente?',
+            title: 'Módulo 1: ¿Qué es la IA, realmente?',
             cards: [
                 { id: 1, type: 'content', title: '¿Qué es la inteligencia artificial?', content: 'La inteligencia artificial (IA) es un conjunto de programas que reconocen patrones en grandes cantidades de datos y los usan para generar respuestas, predicciones o contenido nuevo. No "piensa" como una persona: calcula qué palabra, imagen o respuesta es más probable dado lo que le pediste. Es una herramienta poderosa de predicción, no una mente consciente.', extra: 'Entender esto cambia cómo la usas: no le preguntas a un oráculo, le das instrucciones a una calculadora de patrones muy sofisticada. Tú sigues siendo quien decide qué es correcto, útil o pedagógicamente válido.' },
                 { id: 2, type: 'content', title: 'De reglas fijas a aprendizaje de datos', content: 'Los programas tradicionales siguen reglas escritas por un humano ("si pasa esto, haz aquello"). La IA moderna aprende patrones a partir de millones de ejemplos de texto, imágenes o sonido, sin que nadie le escriba una regla explícita para cada caso. Por eso puede generar una respuesta a una pregunta que nunca vio exactamente igual antes.', extra: 'Esta diferencia explica por qué la IA a veces sorprende con respuestas muy buenas, y otras veces se equivoca con total seguridad: no verifica hechos, predice patrones probables.' },
@@ -3510,7 +3510,7 @@ const allCourses = [
         },
         {
             id: 2,
-            title: '💬 Módulo 2: Hablar con la IA — fundamentos de buenos prompts',
+            title: 'Módulo 2: Hablar con la IA — fundamentos de buenos prompts',
             cards: [
                 { id: 10, type: 'content', title: '¿Qué es un prompt?', content: 'Un prompt es la instrucción que le das a la IA para obtener una respuesta. La calidad de lo que recibes depende directamente de la claridad de lo que pides. Un prompt vago produce una respuesta genérica; un prompt específico produce algo que realmente puedes usar en tu clase de mañana.', extra: '"Escríbeme algo de matemáticas" es un prompt vago. "Escríbeme 5 problemas de suma para 2do primaria usando contexto de una tienda guatemalteca" es un prompt útil.' },
                 { id: 11, type: 'content', title: 'Los 4 elementos de un buen prompt', content: 'Un prompt efectivo suele incluir: (1) CONTEXTO — quién eres y para quién es (docente de 4to primaria, área rural); (2) TAREA — qué necesitas exactamente; (3) FORMATO — cómo quieres el resultado (lista, tabla, párrafo corto); (4) RESTRICCIONES — límites como duración, nivel de dificultad o materiales disponibles.', extra: 'No necesitas memorizar una fórmula rígida. Con la práctica, estos 4 elementos se vuelven naturales en cómo escribes tus instrucciones.' },
@@ -3525,7 +3525,7 @@ const allCourses = [
         },
         {
             id: 3,
-            title: '📋 Módulo 3: La IA como asistente pedagógico',
+            title: 'Módulo 3: La IA como asistente pedagógico',
             cards: [
                 { id: 19, type: 'content', title: 'Generar una planificación de clase, paso a paso', content: 'Puedes pedirle a la IA un borrador de planificación indicando: grado, tema, duración de la clase, y objetivo de aprendizaje. Ejemplo: "Genera una planificación de 45 minutos para 6to primaria sobre la Revolución de 1944 en Guatemala, con inicio, desarrollo y cierre, incluyendo una pregunta de reflexión final." El resultado es un borrador que tú ajustas con tu conocimiento del grupo.', extra: 'La planificación generada por IA nunca reemplaza tu criterio sobre qué tan rápido avanza tu grupo específico — eso solo lo sabes tú por experiencia directa con tus estudiantes.' },
                 { id: 20, type: 'content', title: 'Adaptar contenido a diferentes grados', content: 'Un mismo tema puede necesitar explicaciones muy distintas según la edad. Puedes pedirle a la IA: "Explica la fotosíntesis para un estudiante de 2do primaria" y luego, en la misma conversación, "ahora explícalo para un estudiante de 6to primaria" — comparando ambas versiones aprendes tú también a graduar el lenguaje según el nivel.', extra: 'Esta técnica es especialmente útil en escuelas multigrado, comunes en el área rural guatemalteca, donde un mismo docente atiende varios grados a la vez.' },
@@ -3539,7 +3539,7 @@ const allCourses = [
         },
         {
             id: 4,
-            title: '⚖️ Módulo 4: Ética, límites y mirada crítica',
+            title: 'Módulo 4: Ética, límites y mirada crítica',
             cards: [
                 { id: 27, type: 'content', title: 'Sesgos en la IA', content: 'Los modelos de IA aprenden de enormes cantidades de texto e imágenes producidas mayoritariamente en otros países e idiomas. Esto significa que pueden reflejar sesgos culturales: ejemplos centrados en contextos ajenos a Guatemala, suposiciones sobre familias "típicas" que no calzan con la diversidad real de tus estudiantes, o representaciones limitadas de la realidad indígena y rural del país.', extra: 'Ser consciente de este sesgo te permite corregirlo activamente: pide siempre ejemplos guatemaltecos y revisa si el material generado representa bien a tus estudiantes.' },
                 { id: 28, type: 'content', title: 'Privacidad: qué NO compartir con una IA', content: 'Nunca escribas en un chat de IA nombres completos de estudiantes, calificaciones específicas vinculadas a una identidad, direcciones, números de teléfono, ni ningún dato sensible de un menor de edad. Los chats de IA no son un espacio privado garantizado como el registro oficial de tu escuela.', extra: 'Regla simple: si no lo pondrías en una publicación pública, no lo escribas en un chat de IA. Usa descripciones generales ("un estudiante que tiene dificultad con la lectura") en vez de nombres reales.' },
@@ -3558,7 +3558,7 @@ const allCourses = [
     id: 'ia-tiempo',
     title: 'IA para Ahorrar Tiempo en tu Día a Día Docente',
     subtitle: 'Automatiza lo mecánico, conserva tu tiempo para lo que de verdad importa',
-    icon: '⏱️',
+    icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="22" r="12" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/><line x1="18" y1="22" x2="18" y2="14" stroke-width="2"/><line x1="18" y1="22" x2="24" y2="25" stroke-width="2"/><line x1="14" y1="4" x2="22" y2="4" stroke-width="2"/></svg>',
     color: '#F97316',
     prerequisite: [],
     status: 'available',
@@ -3567,7 +3567,7 @@ const allCourses = [
     modules: [
         {
             id: 1,
-            title: '⏳ Módulo 1: El problema del tiempo docente',
+            title: 'Módulo 1: El problema del tiempo docente',
             cards: [
                 { id: 1, type: 'content', title: 'Dónde se va realmente tu tiempo', content: 'Estudios sobre carga docente en Latinoamérica muestran que buena parte del tiempo semanal se destina a tareas administrativas y de preparación repetitiva —calificar, redactar, organizar—, no a la enseñanza directa ni a la relación con los estudiantes. Esa es precisamente el área donde la IA puede aportar más sin comprometer la calidad pedagógica.', extra: 'El objetivo de este curso no es "usar más tecnología": es recuperar horas de tu semana que hoy se van en tareas mecánicas repetitivas.' },
                 { id: 2, type: 'content', title: 'Las tareas que más tiempo consumen', content: 'Tres bloques concentran la mayor parte del tiempo "invisible" del docente: planificar (redactar desde cero cada clase), calificar y dar retroalimentación (leer y comentar trabajo por trabajo), y comunicar (redactar correos, circulares, mensajes a padres). Este curso trabaja los tres.', extra: 'Nota que ninguno de estos tres bloques es "dar clase". El tiempo frente a tus estudiantes casi nunca es el problema — es todo lo que rodea esa hora de clase.' },
@@ -3578,7 +3578,7 @@ const allCourses = [
         },
         {
             id: 2,
-            title: '📝 Módulo 2: Planificación más rápida',
+            title: 'Módulo 2: Planificación más rápida',
             cards: [
                 { id: 6, type: 'content', title: 'Un plan de clase base en minutos', content: 'En vez de partir de una hoja en blanco, pide a la IA un borrador con tu tema, grado y duración de clase. Ejemplo: "Genera un plan de clase de 40 minutos para 3ro básico sobre ecosistemas, con inicio, desarrollo y cierre." Tienes un punto de partida en menos de un minuto, listo para que tú lo ajustes a tu grupo real.', extra: 'El tiempo que antes usabas para estructurar la clase desde cero ahora lo usas para personalizarla — que es la parte que realmente requiere tu experiencia.' },
                 { id: 7, type: 'content', title: 'Adaptar una planificación existente a otro grado', content: 'Si ya tienes una planificación que funcionó bien con un grupo, puedes pedirle a la IA que la adapte a otro grado o nivel: "Toma esta planificación de 5to primaria y adáptala para 3ro primaria, simplificando el vocabulario y las actividades." Esto reutiliza tu trabajo previo en vez de empezar de nuevo cada vez.', extra: 'Especialmente valioso si enseñas la misma materia en varios grados o secciones a la vez.' },
@@ -3590,7 +3590,7 @@ const allCourses = [
         },
         {
             id: 3,
-            title: '✏️ Módulo 3: Calificación y retroalimentación más ágil',
+            title: 'Módulo 3: Calificación y retroalimentación más ágil',
             cards: [
                 { id: 12, type: 'content', title: 'Un banco de frases de retroalimentación', content: 'Pide a la IA un banco de 10-15 frases de retroalimentación variadas para distintos niveles de desempeño en una actividad específica (excelente, en proceso, necesita apoyo). Tener este banco te permite dar comentarios más ricos y variados en menos tiempo, en vez de repetir siempre "bien" o "revisar".', extra: 'Los estudiantes notan cuando la retroalimentación es genuina y específica versus genérica — este banco te ayuda a ser específico sin invertir el mismo tiempo de siempre en cada comentario.' },
                 { id: 13, type: 'content', title: 'Detectar patrones de error y generar refuerzo', content: 'Después de revisar varios trabajos, describe a la IA el error común que notaste ("varios estudiantes confunden multiplicación con suma al resolver problemas") y pide 2-3 ejercicios cortos enfocados específicamente en corregir ese error puntual. Esto convierte tu observación de calificación en una intervención pedagógica inmediata.', extra: 'Este flujo —calificar, detectar patrón, pedir refuerzo dirigido— es mucho más eficiente que revisar trabajo por trabajo sin sacar una conclusión de grupo.' },
@@ -3601,7 +3601,7 @@ const allCourses = [
         },
         {
             id: 4,
-            title: '📨 Módulo 4: Comunicación y organización',
+            title: 'Módulo 4: Comunicación y organización',
             cards: [
                 { id: 17, type: 'content', title: 'Redactar correos y circulares más rápido', content: 'Pide a la IA un borrador de correo o circular con los puntos clave que quieres comunicar: "Redacta una circular breve para padres de familia informando el cambio de horario de la reunión del viernes, en tono cordial y formal." Ajustas el borrador en segundos en vez de redactar desde cero cada comunicación.', extra: 'Guarda tus mejores plantillas de correos generados: con el tiempo tendrás una biblioteca personal de comunicaciones que solo necesitas actualizar con detalles específicos.' },
                 { id: 18, type: 'content', title: 'Resumir textos largos rápidamente', content: 'Cuando recibes un documento largo —una nueva política del MINEDUC, un artículo pedagógico, un manual— puedes pegar el texto y pedir a la IA un resumen de los puntos clave en pocas líneas. Esto te permite decidir rápido si necesitas leer el documento completo o si el resumen ya es suficiente para tu decisión.', extra: 'Cuidado con documentos con implicaciones legales o administrativas importantes: en esos casos, el resumen es un punto de partida, pero conviene leer el original completo antes de actuar.' },
@@ -3617,7 +3617,7 @@ const allCourses = [
     id: 'ia-herramientas',
     title: 'Herramientas de IA Gratuitas para el Aula',
     subtitle: 'Un recorrido práctico por las herramientas que puedes usar hoy, sin costo',
-    icon: '🧰',
+    icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 H34 V32 C34 33.5 33 34.5 31.5 34.5 H8.5 C7 34.5 6 33.5 6 32 Z" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/><path d="M13 18 V13 C13 11 14.5 9.5 16.5 9.5 H23.5 C25.5 9.5 27 11 27 13 V18" stroke-width="2.2"/><line x1="6" y1="24" x2="34" y2="24" stroke-width="1.8"/></svg>',
     color: '#8B5CF6',
     prerequisite: [],
     status: 'available',
@@ -3626,7 +3626,7 @@ const allCourses = [
     modules: [
         {
             id: 1,
-            title: '🗺️ Módulo 1: El panorama de herramientas gratuitas',
+            title: 'Módulo 1: El panorama de herramientas gratuitas',
             cards: [
                 { id: 1, type: 'content', title: 'Lo único que necesitas para empezar', content: 'La mayoría de herramientas de IA útiles para el aula funcionan directamente desde el navegador de tu teléfono o computadora, sin instalar ninguna aplicación. Solo necesitas conexión a internet y una cuenta gratuita en algunos casos. Esta misma plataforma ya incluye un chat de IA integrado, sin necesidad de salir de la app.', extra: 'No necesitas ser "bueno con la tecnología" para usar estas herramientas: si sabes escribir un mensaje de WhatsApp, ya tienes la habilidad técnica necesaria.' },
                 { id: 2, type: 'content', title: 'Cuatro categorías de herramientas', content: 'Para efectos de este curso, organizamos las herramientas de IA en cuatro categorías según lo que generan: TEXTO (redactar, resumir, explicar), IMAGEN (crear material visual), VOZ (convertir texto a audio o audio a texto) y ORGANIZACIÓN (estructurar ideas, tablas, planificación). Cada módulo de este curso cubre una categoría con ejemplos concretos.', extra: 'No necesitas dominar las cuatro categorías de inmediato. Empieza por la que resuelve tu necesidad más frecuente esta semana.' },
@@ -3636,7 +3636,7 @@ const allCourses = [
         },
         {
             id: 2,
-            title: '💬 Módulo 2: IA de texto (chat)',
+            title: 'Módulo 2: IA de texto (chat)',
             cards: [
                 { id: 5, type: 'content', title: 'Tu chat de IA ya integrado en esta plataforma', content: 'No necesitas buscar una herramienta externa para empezar: esta misma aplicación tiene un chat de IA integrado y gratuito, pensado específicamente para uso docente. Es el punto de partida ideal para practicar todo lo aprendido en el curso de Fundamentos de esta ruta.', extra: 'Usar una sola herramienta de confianza para empezar, en vez de saltar entre varias, te ayuda a desarrollar más rápido tu criterio de buenos prompts.' },
                 { id: 6, type: 'content', title: 'Generar preguntas de comprensión lectora', content: 'Pega un texto corto (un cuento, una noticia adaptada, un fragmento de lectura) y pide a la IA 5 preguntas de comprensión lectora de distintos niveles: literal, inferencial y crítica. Esto ahorra el tiempo de diseñar preguntas manualmente para cada lectura nueva que uses en clase.', extra: 'Verifica que las preguntas "inferenciales" realmente requieran inferir, y no sean literales disfrazadas — a veces la IA confunde ambos niveles.' },
@@ -3647,7 +3647,7 @@ const allCourses = [
         },
         {
             id: 3,
-            title: '🎨 Módulo 3: IA de imagen y diseño',
+            title: 'Módulo 3: IA de imagen y diseño',
             cards: [
                 { id: 10, type: 'content', title: 'Herramientas gratuitas de imagen', content: 'Existen herramientas gratuitas con funciones de IA integrada para crear material visual sin ser diseñador, como Canva (con su función de IA en la versión gratuita). Estas herramientas te permiten generar carteles, infografías simples o ilustraciones a partir de una descripción escrita.', extra: 'No necesitas una cuenta paga para empezar: la mayoría de estas herramientas ofrece funciones de IA básicas de forma gratuita, suficientes para material de aula.' },
                 { id: 11, type: 'content', title: 'Generar material visual sin ser diseñador', content: 'Describe con palabras lo que necesitas: "Un cartel colorido explicando las partes de una planta, con estilo amigable para niños de primaria" y la herramienta genera una propuesta visual. Ajustas colores, texto y elementos según necesites, sin partir de una hoja en blanco de diseño.', extra: 'El resultado no siempre es perfecto en el primer intento — igual que con el texto, describe con más detalle si el resultado no es lo que esperabas.' },
@@ -3657,7 +3657,7 @@ const allCourses = [
         },
         {
             id: 4,
-            title: '🔊 Módulo 4: IA de voz y flujo de trabajo completo',
+            title: 'Módulo 4: IA de voz y flujo de trabajo completo',
             cards: [
                 { id: 14, type: 'content', title: 'Texto a voz para material accesible', content: 'Herramientas de texto a voz convierten cualquier texto escrito en audio, útil para estudiantes con dificultades de lectura, para generar material que se pueda escuchar en el trayecto a casa, o para docentes que prefieren revisar contenido escuchándolo mientras hacen otra tarea.', extra: 'Esta función también es valiosa para familias donde algún adulto no lee con fluidez pero puede acompañar el aprendizaje de su hijo escuchando el material.' },
                 { id: 15, type: 'content', title: 'Voz a texto para notas rápidas', content: 'Si prefieres hablar en vez de escribir, muchas herramientas —incluido el teclado de tu propio teléfono— permiten dictar por voz y convertir automáticamente a texto. Útil para capturar rápido una idea de planificación mientras vas de camino a la escuela, sin tener que escribir en el momento.', extra: 'Esta función suele venir integrada en el teclado de tu teléfono sin necesidad de instalar nada adicional — revisa el ícono de micrófono en tu teclado actual.' },
@@ -3673,7 +3673,7 @@ const allCourses = [
     id: 'ia-inclusion',
     title: 'IA e Inclusión Educativa',
     subtitle: 'Usa la IA como herramienta de equidad en aulas diversas',
-    icon: '🤝',
+    icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><line x1="20" y1="6" x2="20" y2="29" stroke-width="2.2"/><line x1="9" y1="12" x2="31" y2="12" stroke-width="2"/><path d="M5 12 L9 12 L7 20 Q7 23 11 23 Q15 23 13 20 Z" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><path d="M27 12 L31 12 L29 20 Q29 23 33 23 Q37 23 35 20 Z" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><path d="M14 33 Q20 29 26 33" stroke-width="2"/></svg>',
     color: '#06B6D4',
     prerequisite: [],
     status: 'available',
@@ -3682,7 +3682,7 @@ const allCourses = [
     modules: [
         {
             id: 1,
-            title: '🌈 Módulo 1: La IA como herramienta de equidad',
+            title: 'Módulo 1: La IA como herramienta de equidad',
             cards: [
                 { id: 1, type: 'content', title: 'El reto real de un aula con 40 estudiantes distintos', content: 'En un aula típica guatemalteca conviven estudiantes con ritmos, estilos e intereses muy diferentes: algunos leen con fluidez, otros necesitan más tiempo; algunos dominan el tema rápido, otros requieren repaso constante. Diferenciar la enseñanza para cada uno, sin ayuda, exige un tiempo de preparación que pocas veces alcanza.', extra: 'Este curso no propone que la IA "resuelva" la diversidad del aula — propone que te ayude a preparar más rápido las múltiples versiones que la buena diferenciación pedagógica siempre ha requerido.' },
                 { id: 2, type: 'content', title: 'La IA como asistente de diferenciación', content: 'En vez de crear una sola versión de una actividad para todo el grupo, puedes pedir a la IA 2 o 3 versiones de la misma actividad con distintos niveles de dificultad o apoyo, en el tiempo que antes tomaba crear solo una. Esto convierte la diferenciación de "aspiración ideal" a "práctica semanal viable".', extra: 'Ejemplo de prompt: "Genera 3 versiones de este ejercicio de matemáticas: una básica con apoyo visual, una estándar, y una de reto adicional para quien termine rápido."' },
@@ -3692,7 +3692,7 @@ const allCourses = [
         },
         {
             id: 2,
-            title: '♿ Módulo 2: Accesibilidad práctica',
+            title: 'Módulo 2: Accesibilidad práctica',
             cards: [
                 { id: 5, type: 'content', title: 'Texto a voz para dificultades de lectura', content: 'Para estudiantes con dificultad lectora o dislexia, convertir el material escrito a audio (usando herramientas de texto a voz, vistas en el curso de Herramientas de esta ruta) les permite acceder al mismo contenido que sus compañeros sin que la lectura sea la barrera principal.', extra: 'Esta adaptación no "facilita" el contenido — solo cambia el canal de acceso, permitiendo que la dificultad de lectura no determine si el estudiante puede aprender el tema.' },
                 { id: 6, type: 'content', title: 'Simplificar lenguaje sin perder el contenido esencial', content: 'Existe una diferencia importante entre simplificar y empobrecer un contenido. Pide a la IA explícitamente: "Simplifica el vocabulario de este texto mantén todas las ideas importantes." Revisa siempre que la versión simplificada no haya perdido información esencial en el proceso.', extra: 'Esta verificación es tu responsabilidad como docente: la IA simplifica el lenguaje, pero solo tú puedes confirmar si el contenido pedagógico esencial sigue intacto.' },
@@ -3703,7 +3703,7 @@ const allCourses = [
         },
         {
             id: 3,
-            title: '🎯 Módulo 3: Diferenciación curricular con IA',
+            title: 'Módulo 3: Diferenciación curricular con IA',
             cards: [
                 { id: 10, type: 'content', title: 'Tres niveles de la misma actividad', content: 'Al planificar una actividad nueva, pide directamente a la IA las tres versiones desde el inicio: "Genera esta actividad en 3 niveles: apoyo (con pistas y ejemplos resueltos), estándar, y reto (mayor complejidad)." Esto te permite ofrecer opciones sin etiquetar públicamente a ningún estudiante por su nivel.', extra: 'Presentar las tres versiones como "opciones" en vez de "niveles asignados" preserva la dignidad y motivación de cada estudiante al elegir su propio desafío.' },
                 { id: 11, type: 'content', title: 'Adaptar evaluaciones para necesidades específicas', content: 'Si un estudiante necesita más tiempo, preguntas más cortas, o un formato distinto (oral en vez de escrito, por ejemplo) para demostrar lo que sabe, puedes pedir a la IA una versión adaptada de tu evaluación que respete el mismo contenido pero ajuste el formato de presentación.', extra: 'El objetivo de una evaluación adaptada nunca es bajar el estándar de aprendizaje esperado, sino cambiar la vía por la que el estudiante demuestra ese aprendizaje.' },
@@ -3713,7 +3713,7 @@ const allCourses = [
         },
         {
             id: 4,
-            title: '🌍 Módulo 4: Los límites — la brecha digital real',
+            title: 'Módulo 4: Los límites — la brecha digital real',
             cards: [
                 { id: 14, type: 'content', title: 'No todos los estudiantes tienen acceso', content: 'Es fundamental recordar que este curso trata sobre la IA como herramienta del DOCENTE para preparar material más inclusivo, no como algo que se asume disponible para cada estudiante en casa. La brecha digital en Guatemala es real y desigual entre zonas urbanas y rurales.', extra: 'Usar la IA para preparar mejor tus clases es accesible incluso en contextos de bajos recursos, porque el uso ocurre de tu lado, antes de llegar al aula.' },
                 { id: 15, type: 'content', title: 'Usar la IA para preparar, no para reemplazar la atención directa', content: 'La inclusión real no depende de la tecnología: depende de la atención humana, la paciencia y el conocimiento que tienes de cada estudiante. La IA ahorra tiempo en la preparación para que tengas MÁS tiempo disponible para la atención directa e individual que realmente hace la diferencia.', extra: 'Si usar estas herramientas te quita tiempo de calidad con tus estudiantes en vez de dártelo, algo en tu flujo de trabajo necesita ajustarse — el objetivo siempre es liberar tiempo, no ocuparlo.' },
@@ -3728,7 +3728,7 @@ const allCourses = [
     id: 'ia-ciudadania',
     title: 'Ciudadanía Digital con IA para tus Estudiantes',
     subtitle: 'Enseña a tus estudiantes a usar la IA con pensamiento crítico y responsabilidad',
-    icon: '🧭',
+    icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="15" stroke-width="2.2" fill="rgba(255,255,255,0.08)"/><path d="M26 13 L16 17 L14 27 L24 23 Z" fill="rgba(255,255,255,0.4)" stroke-width="1.6"/></svg>',
     color: '#EC4899',
     prerequisite: [],
     status: 'available',
@@ -3737,7 +3737,7 @@ const allCourses = [
     modules: [
         {
             id: 1,
-            title: '👀 Módulo 1: Por qué enseñar IA a tus estudiantes',
+            title: 'Módulo 1: Por qué enseñar IA a tus estudiantes',
             cards: [
                 { id: 1, type: 'content', title: 'Tus estudiantes ya usan IA, con o sin tu guía', content: 'Aunque no lo hayas enseñado en clase, muchos estudiantes con acceso a un teléfono ya han interactuado con algún chat de IA fuera de la escuela, para tareas, curiosidad o entretenimiento. Ignorar esta realidad no la elimina: solo significa que la están usando sin ninguna orientación pedagógica sobre cómo hacerlo bien.', extra: 'La pregunta relevante no es "¿debo dejar que mis estudiantes usen IA?", sino "¿voy a ser parte de cómo aprenden a usarla con criterio, o van a aprenderlo solos?"' },
                 { id: 2, type: 'content', title: 'El riesgo de prohibir vs. el valor de enseñar', content: 'Prohibir completamente el uso de IA en la vida de un estudiante es, en la práctica, casi imposible de hacer cumplir fuera del aula, y no le enseña a usarla bien cuando sí la use. Enseñar criterio —cuándo confiar, cuándo verificar, cuándo es trampa académica y cuándo es apoyo legítimo— es una habilidad que le sirve toda la vida.', extra: 'Este curso no promueve el uso sin límites de IA por parte de estudiantes: promueve que esos límites se enseñen explícitamente, en vez de asumir que se aprenden solos.' },
@@ -3747,7 +3747,7 @@ const allCourses = [
         },
         {
             id: 2,
-            title: '🔍 Módulo 2: Pensamiento crítico frente a la IA',
+            title: 'Módulo 2: Pensamiento crítico frente a la IA',
             cards: [
                 { id: 5, type: 'content', title: 'Enseñar a verificar información generada por IA', content: 'Una actividad simple y efectiva: pide a los estudiantes que hagan una pregunta a una IA sobre un tema que ya conocen bien de clase, y luego comparen la respuesta con lo que aprendieron en el libro de texto o contigo. Esta comparación directa les enseña, de forma vivencial, que la IA no siempre acierta.', extra: 'Esta actividad funciona mejor cuando el estudiante ya tiene un conocimiento sólido del tema para poder detectar el error — no la uses como primera introducción a un tema nuevo.' },
                 { id: 6, type: 'content', title: 'Detectar cuándo la IA "inventa" información', content: 'Enseña a tus estudiantes señales de alerta: una respuesta demasiado específica sobre un dato que sería difícil de verificar, una cita de una fuente que no pueden encontrar en ningún otro lugar, o una fecha o nombre que suena "demasiado perfecto" para la pregunta. Estas señales no garantizan un error, pero ameritan verificación adicional.', extra: 'El objetivo no es que los estudiantes desconfíen de todo lo que genera una IA, sino que desarrollen el hábito de verificar antes de repetir como un hecho comprobado.' },
@@ -3757,7 +3757,7 @@ const allCourses = [
         },
         {
             id: 3,
-            title: '🎓 Módulo 3: Integridad académica en la era de la IA',
+            title: 'Módulo 3: Integridad académica en la era de la IA',
             cards: [
                 { id: 9, type: 'content', title: 'Rediseñar evaluaciones a prueba de copiar y pegar', content: 'En vez de pedir tareas fácilmente respondibles con una sola pregunta a una IA ("escribe un ensayo sobre..."), diseña evaluaciones que requieran conexión con el contexto específico del estudiante: "explica este concepto usando un ejemplo de tu propia comunidad" o presentaciones orales donde deben defender y explicar su razonamiento en vivo.', extra: 'Este rediseño no es solo una defensa contra el uso indebido de IA: generalmente produce evaluaciones más auténticas y significativas para el estudiante en cualquier caso.' },
                 { id: 10, type: 'content', title: 'Enseñar uso ético: citar cuándo se usó IA', content: 'Así como enseñas a los estudiantes a citar un libro o una fuente de internet, puedes enseñarles a declarar cuándo usaron IA como apoyo en un trabajo, y de qué manera (para generar ideas, para revisar ortografía, para investigar). Esta transparencia normaliza el uso responsable en vez de esconderlo.', extra: 'Esta práctica también te da información valiosa como docente: entender cómo tus estudiantes están usando estas herramientas te ayuda a ajustar tu enseñanza sobre el tema.' },
@@ -3767,7 +3767,7 @@ const allCourses = [
         },
         {
             id: 4,
-            title: '🛡️ Módulo 4: Seguridad y bienestar digital',
+            title: 'Módulo 4: Seguridad y bienestar digital',
             cards: [
                 { id: 13, type: 'content', title: 'Qué no debe compartir un estudiante con una IA', content: 'Enseña explícitamente a tus estudiantes: nunca escribir su nombre completo, dirección, número de teléfono, nombre de su escuela, o fotos propias en un chat de IA. Esta es la misma regla básica de seguridad digital que aplicaría a cualquier plataforma en línea, adaptada al contexto de IA conversacional.', extra: 'Vale la pena repetir esta regla varias veces a lo largo del año escolar, no solo una vez — la seguridad digital se refuerza con repetición, igual que cualquier hábito.' },
                 { id: 14, type: 'content', title: 'Sesgos y desinformación: enseñar a cuestionar', content: 'Ayuda a tus estudiantes a entender, en un lenguaje apropiado a su edad, que una IA puede repetir sesgos o información incompleta porque aprendió de textos escritos por personas con sus propias limitaciones y perspectivas. Cuestionar una respuesta no es de mala educación: es una habilidad de pensamiento crítico valiosa.', extra: 'Esta lección conecta directamente con lo que ya enseñas sobre analizar fuentes de noticias y redes sociales — la IA es una fuente más que requiere el mismo pensamiento crítico.' },
@@ -3782,7 +3782,7 @@ const allCourses = [
     id: 'manejo-conductas',
     title: 'Manejo de Conductas Desafiantes en el Aula',
     subtitle: 'Herramientas prácticas para respeto, límites y motivación',
-    icon: '🧩',
+    icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10 L24 10 L27 17 L13 17 Z" stroke-width="1.8" fill="rgba(255,255,255,0.25)"/><line x1="6" y1="17" x2="34" y2="17" stroke-width="1.4" stroke="rgba(255,255,255,0.4)" stroke-dasharray="3 2"/><path d="M9 17 L31 17 L35 31 L5 31 Z" stroke-width="1.8" fill="rgba(255,255,255,0.1)"/></svg>',
     color: '#0891B2',
     prerequisite: [],
     status: 'available',
@@ -3791,7 +3791,7 @@ const allCourses = [
     modules: [
         {
             id: 1,
-            title: '🔍 Módulo 1: Entendiendo la conducta desafiante',
+            title: 'Módulo 1: Entendiendo la conducta desafiante',
             cards: [
                 { id: 1, type: 'content', title: '¿Qué es una conducta desafiante?', content: 'Una conducta desafiante es cualquier comportamiento que interrumpe el aprendizaje, irrespeta a otros o pone en riesgo la seguridad del aula: gritar, negarse a trabajar, agredir verbal o físicamente, interrumpir constantemente. No toda conducta incómoda es "desafiante" — un estudiante inquieto de 6 años no es lo mismo que un estudiante que agrede a un compañero. Distinguir el desarrollo normal de una señal de alerta real es el primer paso.', extra: 'Este curso no busca que "controles" a tus estudiantes: busca que entiendas por qué ocurre la conducta, para poder responder con eficacia real en vez de solo reaccionar con más tensión.' },
                 { id: 2, type: 'content', title: 'El iceberg de la conducta', content: 'La conducta que ves —el grito, el portazo, el insulto— es solo la punta del iceberg. Debajo hay una causa: frustración porque la tarea es muy difícil, hambre, cansancio, una pelea en casa esa mañana, o simplemente que el estudiante no tiene todavía la habilidad de regularse cuando algo le sale mal. Responder solo a la punta visible, sin ver qué hay debajo, resuelve el síntoma un momento y garantiza que la conducta regrese.', extra: 'La próxima vez que un estudiante "explote" sin razón aparente, pregúntate: ¿qué pasó ANTES de que yo lo viera? Esa pregunta cambia por completo cómo respondes.' },
@@ -3805,7 +3805,7 @@ const allCourses = [
         },
         {
             id: 2,
-            title: '🛡️ Módulo 2: Prevención — el aula que evita conflictos',
+            title: 'Módulo 2: Prevención — el aula que evita conflictos',
             cards: [
                 { id: 9, type: 'content', title: 'Normas construidas, no impuestas', content: 'Las normas de aula que los estudiantes ayudan a construir al inicio del año se respetan mucho más que las que llegan ya escritas en un cartel. Dedica una sesión a preguntar: "¿qué necesitamos para que este salón sea un buen lugar para aprender?" Las 4-5 normas que surjan de esa conversación —dichas en las propias palabras de tus estudiantes— generan un compromiso muy distinto al de una regla impuesta desde arriba.', extra: 'Revisita estas normas periódicamente, no solo el primer día. Un cartel olvidado en la pared pierde su fuerza; una norma que se recuerda en voz alta sigue viva.' },
                 { id: 10, type: 'content', title: 'Rutinas predecibles reducen conflictos', content: 'Gran parte de la conducta desafiante ocurre en momentos de transición sin estructura clara: entrar al aula, cambiar de actividad, terminar antes que los demás. Una rutina predecible —cómo entramos, qué hacemos si terminamos temprano, cómo pedimos ayuda— reduce la incertidumbre, y la incertidumbre es uno de los mayores disparadores de conducta desafiante en estudiantes que ya tienen dificultad para autorregularse.', extra: 'Ejemplo simple: define una señal visual fija (como una mano levantada) para "silencio en 5 segundos". Repetida consistentemente, se vuelve automática y reduce la necesidad de levantar la voz.' },
@@ -3818,7 +3818,7 @@ const allCourses = [
         },
         {
             id: 3,
-            title: '⚖️ Módulo 3: Intervención en el momento',
+            title: 'Módulo 3: Intervención en el momento',
             cards: [
                 { id: 16, type: 'content', title: 'Co-regulación: prestar tu calma', content: 'Cuando un estudiante está desregulado, no puede "razonar" en ese momento — su cerebro está en modo de alerta, no de reflexión. Lo que necesita primero no es una explicación lógica, sino la calma de un adulto cerca: tu tono de voz bajo, tu postura relajada, tu ritmo de respiración. Esto se llama co-regulación: prestas tu sistema nervioso calmado para ayudar al del estudiante a bajar de intensidad, antes de intentar cualquier conversación o consecuencia.', extra: 'Frase útil en el momento: "Estoy aquí, no hay prisa, cuando estés listo hablamos" — comunica calma y disponibilidad sin exigir una respuesta inmediata que el estudiante todavía no puede dar.' },
                 { id: 17, type: 'content', title: 'Límites firmes, respetuosos, sin humillar', content: 'Un límite efectivo es breve, claro y se dice sin gritar ni avergonzar: "No podemos golpear. Necesito que te sientes aquí conmigo" comunica el límite sin atacar a la persona. Comparado con "¿Otra vez tú? Siempre haces lo mismo, ya no aguanto más" —que ataca la identidad del estudiante en vez de la conducta específica— el primer enfoque mantiene el respeto mientras sostiene el límite con firmeza.', extra: 'Regla simple: nombra la CONDUCTA ("no podemos golpear"), nunca la PERSONA ("eres un problema"). Esta distinción evita que el estudiante internalice una identidad negativa de sí mismo.' },
@@ -3832,7 +3832,7 @@ const allCourses = [
         },
         {
             id: 4,
-            title: '🌱 Módulo 4: Después del incidente — reparación y consistencia',
+            title: 'Módulo 4: Después del incidente — reparación y consistencia',
             cards: [
                 { id: 24, type: 'content', title: 'La conversación de reparación', content: 'Una vez que el estudiante está calmado —nunca durante la crisis— vale la pena tener una conversación breve de reparación: qué pasó, cómo afectó a otros, y qué se puede hacer distinto la próxima vez. Esta conversación no es un sermón ni una humillación repetida: es una oportunidad genuina de reconexión con el estudiante y de aprendizaje real sobre la conducta, algo que la sola consecuencia rara vez logra por sí sola.', extra: 'Pregunta clave para esta conversación: "¿qué necesitabas en ese momento que no tuviste?" — casi siempre revela información útil para prevenir la próxima vez.' },
                 { id: 25, type: 'content', title: 'Consecuencias lógicas vs. castigos arbitrarios', content: 'Una consecuencia lógica está conectada directamente con la conducta: si un estudiante tiró material al piso con enojo, la consecuencia lógica es que ayude a recogerlo. Un castigo arbitrario —quitar el recreo por una semana por algo que ocurrió en un solo momento— no tiene relación directa con la conducta, y por eso enseña menos sobre qué hacer distinto la próxima vez. Las consecuencias lógicas enseñan responsabilidad; los castigos arbitrarios solo generan resentimiento.', extra: 'Antes de aplicar una consecuencia, pregúntate: "¿esto le enseña algo directamente relacionado con lo que pasó, o solo es un castigo que se me ocurrió en el momento?"' },
@@ -3850,7 +3850,7 @@ const allCourses = [
     id: 'sel-docentes',
     title: 'Aprendizaje Socioemocional (SEL) para Docentes',
     subtitle: 'Desarrolla la inteligencia emocional que sostiene el aprendizaje',
-    icon: '💗',
+    icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8 C12 8 8 14 8 20 C8 25 12 28 14 32 L26 32 C28 28 32 25 32 20 C32 14 28 8 20 8Z" stroke-width="2" fill="rgba(255,255,255,0.08)"/><path d="M20 20 C20 18 17 16.5 15.5 18.5 C14 20.5 15.5 22.5 20 26 C24.5 22.5 26 20.5 24.5 18.5 C23 16.5 20 18 20 20Z" fill="rgba(255,255,255,0.5)" stroke="none"/></svg>',
     color: '#DB2777',
     prerequisite: [],
     status: 'available',
@@ -3859,7 +3859,7 @@ const allCourses = [
     modules: [
         {
             id: 1,
-            title: '🌱 Módulo 1: Qué es el SEL y por qué importa',
+            title: 'Módulo 1: Qué es el SEL y por qué importa',
             cards: [
                 { id: 1, type: 'content', title: '¿Qué es el aprendizaje socioemocional?', content: 'El aprendizaje socioemocional (SEL, por sus siglas en inglés) es el proceso de desarrollar cinco competencias: autoconciencia (reconocer las propias emociones), autorregulación (manejarlas), conciencia social (entender a otros), habilidades relacionales (colaborar y comunicarse) y toma de decisiones responsable. No es una materia extra: es la base que sostiene todo el aprendizaje académico.', extra: 'El marco de CASEL (Collaborative for Academic, Social, and Emotional Learning) organiza estas cinco competencias y es referencia mundial en programas educativos de SEL.' },
                 { id: 2, type: 'content', title: 'El cerebro emocional antes que el cognitivo', content: 'Un estudiante que está ansioso, con miedo o desregulado no puede acceder plenamente a su capacidad de razonamiento: el cerebro prioriza la supervivencia emocional sobre el aprendizaje académico. Por eso, antes de enseñar contenido, muchas veces hace falta atender el estado emocional del grupo — no como una distracción del aprendizaje, sino como su condición previa.', extra: 'Esta es la razón científica detrás de una idea que probablemente ya intuyes: un aula tensa aprende menos, sin importar qué tan bien preparada esté la clase.' },
@@ -3872,7 +3872,7 @@ const allCourses = [
         },
         {
             id: 2,
-            title: '🧘 Módulo 2: Autoconciencia y autorregulación',
+            title: 'Módulo 2: Autoconciencia y autorregulación',
             cards: [
                 { id: 8, type: 'content', title: 'Enseñar vocabulario emocional', content: 'Muchos estudiantes solo tienen dos palabras para describir cómo se sienten: "bien" o "mal". Ampliar su vocabulario emocional —frustrado, ansioso, orgulloso, decepcionado, emocionado, avergonzado— les da herramientas más precisas para reconocer y comunicar lo que sienten, en vez de expresarlo solo a través de la conducta.', extra: 'Un "termómetro" o "rueda de emociones" visual en el aula, que los estudiantes puedan señalar, es una herramienta simple y efectiva para todas las edades, incluso quienes aún no leen con fluidez.' },
                 { id: 9, type: 'content', title: 'Técnicas simples de regulación para el aula', content: 'No necesitas entrenamiento clínico para enseñar regulación emocional básica: respiración de 4 tiempos (inhalar 4, sostener 4, exhalar 4), contar hasta 10 antes de reaccionar, o un breve movimiento físico (estirarse, caminar al rincón de agua) son técnicas simples que cualquier docente puede modelar y enseñar en minutos.', extra: 'Practica estas técnicas en momentos de calma, no solo cuando ya hay una crisis — así el estudiante las tiene disponibles automáticamente cuando realmente las necesita.' },
@@ -3885,7 +3885,7 @@ const allCourses = [
         },
         {
             id: 3,
-            title: '🤝 Módulo 3: Conciencia social y empatía',
+            title: 'Módulo 3: Conciencia social y empatía',
             cards: [
                 { id: 15, type: 'content', title: 'Enseñar a leer las emociones de otros', content: 'La conciencia social —entender lo que otra persona podría estar sintiendo— se puede practicar activamente: preguntar "¿cómo crees que se sintió tu compañero cuando eso pasó?" o analizar las emociones de un personaje en una lectura, entrena esta habilidad de forma concreta, en vez de asumir que se desarrolla sola con la edad.', extra: 'Esta habilidad no es automática para todos los estudiantes en el mismo momento del desarrollo — algunos necesitan más práctica explícita que otros, y eso es completamente normal.' },
                 { id: 16, type: 'content', title: 'Círculos y asambleas de aula', content: 'Reunir al grupo en círculo periódicamente para compartir cómo va la semana, celebrar algo positivo, o hablar de un problema colectivo del grupo, construye un sentido de comunidad que reduce el aislamiento y fortalece la conciencia social. No necesita ser largo: 10-15 minutos semanales ya generan un impacto notable en el clima del aula.', extra: 'La estructura del círculo —todos se ven, todos tienen oportunidad de hablar— comunica igualdad y pertenencia de una forma que una fila tradicional de pupitres no logra.' },
@@ -3897,7 +3897,7 @@ const allCourses = [
         },
         {
             id: 4,
-            title: '🎯 Módulo 4: Habilidades relacionales y decisiones responsables',
+            title: 'Módulo 4: Habilidades relacionales y decisiones responsables',
             cards: [
                 { id: 21, type: 'content', title: 'El trabajo colaborativo como práctica de SEL', content: 'Cada actividad grupal es una oportunidad de practicar habilidades relacionales reales: negociar roles, resolver desacuerdos sobre cómo hacer una tarea, escuchar una idea distinta a la propia. Diseñar el trabajo colaborativo con esta intención —no solo como forma de dividir el trabajo— convierte cada proyecto grupal en una lección de SEL en sí misma.', extra: 'Antes de una actividad grupal, dedica un minuto a preguntar: "¿qué necesitamos para trabajar bien juntos hoy?" — esa pregunta simple activa la intención relacional del grupo.' },
                 { id: 22, type: 'content', title: 'Toma de decisiones responsable: pensar antes de actuar', content: 'Enseñar a los estudiantes a hacer una pausa breve antes de decidir —"¿qué pasa si hago esto? ¿cómo afecta a otros? ¿hay una mejor opción?"— desarrolla la habilidad de toma de decisiones responsable. Esta pausa, practicada en decisiones pequeñas del día a día, se vuelve disponible también en momentos de mayor presión.', extra: 'Puedes practicar esto con decisiones simples y cotidianas del aula (cómo resolver un desacuerdo sobre turnos, qué hacer si alguien no trajo el material) antes de que se necesite en una situación de mayor conflicto.' },
@@ -3913,7 +3913,7 @@ const allCourses = [
     id: 'comunicacion-asertiva',
     title: 'Comunicación Asertiva y Resolución de Conflictos',
     subtitle: 'Media conflictos entre estudiantes y comunica límites sin agresión ni pasividad',
-    icon: '💬',
+    icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8 H34 V25 H22 L15 32 V25 H6 Z" stroke-width="2" fill="rgba(255,255,255,0.1)"/><path d="M14 16 L18 20 L27 11" stroke-width="2.2"/></svg>',
     color: '#7C3AED',
     prerequisite: [],
     status: 'available',
@@ -3922,7 +3922,7 @@ const allCourses = [
     modules: [
         {
             id: 1,
-            title: '🗣️ Módulo 1: Los tres estilos de comunicación',
+            title: 'Módulo 1: Los tres estilos de comunicación',
             cards: [
                 { id: 1, type: 'content', title: 'Pasivo, agresivo y asertivo', content: 'Existen tres estilos principales de comunicación frente a un conflicto. El pasivo evita expresar la propia necesidad para no generar tensión ("no importa, está bien" cuando en realidad no lo está). El agresivo impone la propia necesidad sin considerar al otro (gritar, culpar, amenazar). El asertivo expresa la propia necesidad con claridad y firmeza, respetando también al otro. De los tres, solo el asertivo sostiene relaciones sanas a largo plazo.', extra: 'Ningún docente elige conscientemente ser pasivo o agresivo — ambos suelen ser reacciones automáticas bajo estrés. Reconocer tu patrón habitual es el primer paso para cambiarlo.' },
                 { id: 2, type: 'content', title: 'Ejemplo de los tres estilos en el aula', content: 'Un estudiante interrumpe constantemente. Respuesta pasiva: el docente lo permite repetidamente sin decir nada, acumulando frustración en silencio. Respuesta agresiva: "¡Ya cállate, siempre haces lo mismo, me tienes cansado!". Respuesta asertiva: "Necesito que esperes tu turno para hablar. Cuando interrumpes, es difícil que todos aprendamos." La tercera comunica el límite con la misma firmeza que la segunda, pero sin atacar a la persona.', extra: 'Nota que la versión asertiva no es "más suave" que la agresiva — es igual de firme, pero dirigida a la conducta, no a la identidad del estudiante.' },
@@ -3935,7 +3935,7 @@ const allCourses = [
         },
         {
             id: 2,
-            title: '👂 Módulo 2: Escucha activa',
+            title: 'Módulo 2: Escucha activa',
             cards: [
                 { id: 8, type: 'content', title: '¿Qué es realmente escuchar activamente?', content: 'Escuchar activamente no es simplemente guardar silencio mientras el otro habla y esperar tu turno para responder. Es prestar atención genuina al contenido y a la emoción detrás de las palabras, con la intención real de entender antes de responder. La mayoría de los conflictos escalan porque ambas partes están más ocupadas preparando su respuesta que escuchando de verdad.', extra: 'Señal simple para saber si estás escuchando activamente: si ya sabes qué vas a decir antes de que la otra persona termine de hablar, probablemente no estás escuchando — estás esperando tu turno.' },
                 { id: 9, type: 'content', title: 'Parafrasear para confirmar comprensión', content: 'Repetir con tus propias palabras lo que escuchaste antes de responder —"entonces lo que me dices es que sentiste que no fue justo porque..."— confirma que entendiste correctamente y le muestra a la otra persona que fue realmente escuchada. Esta técnica simple reduce malentendidos y baja la tensión emocional del momento.', extra: 'Parafrasear también te da a ti un segundo extra para pensar tu respuesta con calma, en vez de reaccionar de inmediato.' },
@@ -3947,7 +3947,7 @@ const allCourses = [
         },
         {
             id: 3,
-            title: '⚖️ Módulo 3: Mediación de conflictos entre estudiantes',
+            title: 'Módulo 3: Mediación de conflictos entre estudiantes',
             cards: [
                 { id: 14, type: 'content', title: 'Los pasos de una mediación simple', content: 'Una mediación efectiva sigue un proceso simple: (1) separar a las partes brevemente si están muy alteradas, (2) escuchar a cada uno por separado o en presencia del otro sin interrupciones, (3) parafrasear lo que cada uno dijo para que ambos se sientan escuchados, (4) identificar juntos una solución o acuerdo, (5) hacer seguimiento días después para confirmar que el acuerdo se sostuvo.', extra: 'No necesitas resolver todo en la primera conversación. A veces, el primer paso es simplemente bajar la intensidad emocional; la solución concreta puede llegar en un segundo momento más calmado.' },
                 { id: 15, type: 'content', title: 'El rol del docente: facilitador, no juez', content: 'En una mediación, tu trabajo no es determinar quién tiene la razón y dictar sentencia — es ayudar a que ambas partes se escuchen y encuentren juntas una solución. Cuando el docente actúa como juez, una de las partes gana y la otra pierde, y el resentimiento entre estudiantes suele continuar por fuera de tu vista. Cuando facilita el proceso, ambos participan en la solución y es más probable que la sostengan.', extra: 'Esto no significa que no haya límites o consecuencias si hubo una agresión — significa que la CONVERSACIÓN de resolución del conflicto de fondo es distinta de la aplicación de una consecuencia por una conducta específica.' },
@@ -3959,7 +3959,7 @@ const allCourses = [
         },
         {
             id: 4,
-            title: '🤝 Módulo 4: Comunicación asertiva con padres y colegas',
+            title: 'Módulo 4: Comunicación asertiva con padres y colegas',
             cards: [
                 { id: 20, type: 'content', title: 'Los mismos principios, fuera del aula', content: 'La asertividad, la escucha activa y los mensajes en primera persona que trabajaste en los módulos anteriores para tus estudiantes se aplican exactamente igual en tus conversaciones con padres de familia y colegas. La diferencia no está en la técnica, sino en el contexto: con adultos, además esperas —y mereces— una comunicación igualmente respetuosa de vuelta.', extra: 'Practicar estas habilidades con estudiantes en realidad te prepara mejor para tus conversaciones más difíciles con adultos — es la misma competencia aplicada en distintos escenarios.' },
                 { id: 21, type: 'content', title: 'Dar retroalimentación difícil a un padre de familia', content: 'Comunicar una preocupación sobre el desempeño o conducta de un estudiante a su familia, sin generar defensividad inmediata, requiere estructura: empezar con algo positivo genuino sobre el estudiante, describir la conducta específica sin etiquetas ("gritó y empujó" en vez de "es un niño problemático"), y preguntar "¿cómo podemos apoyarlo juntos?" en vez de sonar acusatorio.', extra: 'Este mismo enfoque ya lo trabajaste en el curso de Manejo de Conductas Desafiantes de esta ruta — la comunicación asertiva es la habilidad técnica detrás de esa misma estrategia.' },
@@ -3975,7 +3975,7 @@ const allCourses = [
     id: 'disciplina-positiva',
     title: 'Disciplina Positiva y Motivación Intrínseca',
     subtitle: 'Motiva sin premios ni castigos que dejan de funcionar',
-    icon: '⭐',
+    icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M20 5 L23 15 L34 15 L25 21 L28 32 L20 25 L12 32 L15 21 L6 15 L17 15 Z" stroke-width="2" fill="rgba(255,255,255,0.15)"/></svg>',
     color: '#EA580C',
     prerequisite: [],
     status: 'available',
@@ -3984,7 +3984,7 @@ const allCourses = [
     modules: [
         {
             id: 1,
-            title: '🎁 Módulo 1: Los límites de premios y castigos',
+            title: 'Módulo 1: Los límites de premios y castigos',
             cards: [
                 { id: 1, type: 'content', title: 'Por qué los sistemas de puntos pierden efecto', content: 'Los sistemas de estrellas, fichas o puntos por buena conducta suelen funcionar al principio, pero con el tiempo requieren premios cada vez más grandes para el mismo efecto, y cuando el sistema se retira, la conducta deseada muchas veces desaparece con él. Esto ocurre porque el estudiante empieza a portarse bien por el premio, no por un valor interno hacia la conducta misma.', extra: 'Esto no significa que estos sistemas nunca sirvan — significa que funcionan mejor como impulso temporal para iniciar un hábito, no como estrategia permanente de motivación.' },
                 { id: 2, type: 'content', title: 'El efecto de sobrejustificación', content: 'La psicología ha documentado un fenómeno curioso: cuando premias con algo externo una actividad que un estudiante ya disfrutaba genuinamente (leer, dibujar, ayudar a un compañero), el interés genuino por esa actividad puede disminuir, porque el cerebro reinterpreta la razón de hacerlo: "lo hago por el premio", no "lo hago porque me gusta". Premiar lo que ya funciona bien puede, paradójicamente, debilitarlo.', extra: 'Este hallazgo, documentado desde los estudios clásicos de Deci y Ryan sobre motivación, es una de las razones por las que este curso prioriza la motivación intrínseca sobre los sistemas de recompensa constante.' },
@@ -3996,7 +3996,7 @@ const allCourses = [
         },
         {
             id: 2,
-            title: '🏛️ Módulo 2: Los tres pilares de la motivación intrínseca',
+            title: 'Módulo 2: Los tres pilares de la motivación intrínseca',
             cards: [
                 { id: 7, type: 'content', title: 'Autonomía: dar elección real dentro de límites', content: 'Sentir que se tiene algún control sobre las propias decisiones —incluso pequeñas, como elegir el orden de dos tareas o el formato de un trabajo— aumenta significativamente la motivación. Esto no significa eliminar toda estructura: significa ofrecer elecciones reales dentro de los límites que tú, como docente, ya definiste.', extra: 'Ejemplo simple: en vez de "hagan este ejercicio de esta forma", ofrece "pueden resolver este problema en pareja o individualmente, ustedes eligen" — la estructura se mantiene, la autonomía también.' },
                 { id: 8, type: 'content', title: 'Competencia: sentir que se progresa', content: 'Las personas se motivan cuando sienten que están mejorando en algo, no solo cuando ya lo dominan. Retroalimentación específica sobre el proceso ("mejoraste mucho en cómo organizas tus ideas desde la semana pasada") es más motivadora que solo calificar el resultado final, porque hace visible el progreso que de otra forma pasa desapercibido.', extra: 'Esto es especialmente poderoso con estudiantes que tienen dificultades académicas: mostrarles evidencia concreta de su propio progreso, aunque sea pequeño, sostiene la motivación mejor que compararlos con el desempeño de otros.' },
@@ -4008,7 +4008,7 @@ const allCourses = [
         },
         {
             id: 3,
-            title: '🌟 Módulo 3: Disciplina positiva en la práctica diaria',
+            title: 'Módulo 3: Disciplina positiva en la práctica diaria',
             cards: [
                 { id: 13, type: 'content', title: 'Firme y amable al mismo tiempo', content: 'La disciplina positiva —desarrollada por Jane Nelsen a partir del trabajo de Alfred Adler— se basa en la idea de que un docente puede ser firme (con límites claros y consistentes) y amable (con respeto y calidez) al mismo tiempo. No es un punto medio entre permisivo y autoritario: es la combinación simultánea de ambas cualidades, sin sacrificar ninguna.', extra: 'Un docente permisivo es amable pero no firme (los límites se diluyen). Un docente autoritario es firme pero no amable (el respeto se pierde). La disciplina positiva busca ambas cosas a la vez, no un promedio entre las dos.' },
                 { id: 14, type: 'content', title: 'Involucrar al estudiante en la solución', content: 'En vez de simplemente imponer una consecuencia, preguntar al estudiante "¿qué crees que podrías hacer para reparar esto?" o "¿qué necesitas para que esto no vuelva a pasar?" lo convierte de receptor pasivo de un castigo a participante activo en la solución — lo cual genera mayor compromiso genuino con el cambio de conducta.', extra: 'Esto no reemplaza tu criterio como docente: si la propuesta del estudiante no es adecuada, puedes guiarlo hacia una mejor, pero el proceso de pensar juntos ya tiene valor en sí mismo.' },
@@ -4020,7 +4020,7 @@ const allCourses = [
         },
         {
             id: 4,
-            title: '🔄 Módulo 4: Sostener la motivación a largo plazo',
+            title: 'Módulo 4: Sostener la motivación a largo plazo',
             cards: [
                 { id: 19, type: 'content', title: 'La fatiga de los sistemas de premios', content: 'Un sistema de fichas o estrellas que funcionó muy bien en septiembre suele perder su efecto para marzo, porque el estudiante se habitúa al estímulo y necesita algo cada vez mayor para el mismo nivel de motivación — el mismo patrón que ocurre con cualquier refuerzo externo repetido constantemente. Reconocer esta fatiga con anticipación te permite planificar la transición hacia motivadores más internos antes de que el sistema deje de funcionar por completo.', extra: 'Si notas que un sistema de premios que antes funcionaba ya no genera el mismo efecto, no es que "los estudiantes ya no responden a nada" — es una señal esperable de que es momento de evolucionar la estrategia.' },
                 { id: 20, type: 'content', title: 'Celebrar el proceso y el esfuerzo', content: 'Reconocer específicamente el esfuerzo y la estrategia usada ("seguiste intentando distintas formas de resolver esto hasta encontrar una que funcionó") en vez de solo el resultado final ("¡muy bien, sacaste buena nota!") enseña que el valor está en el proceso de aprender, no solo en el resultado — una mentalidad que sostiene la motivación incluso cuando el resultado no es perfecto.', extra: 'Esta idea conecta con la investigación de Carol Dweck sobre "mentalidad de crecimiento": los estudiantes que aprenden a valorar el esfuerzo y la estrategia, más que solo el talento o el resultado, persisten más ante la dificultad.' },
@@ -4036,7 +4036,7 @@ const allCourses = [
     id: 'bienestar-docente',
     title: 'Bienestar Docente: Prevención del Desgaste',
     subtitle: 'Cuida tu propia salud emocional para sostener tu vocación a largo plazo',
-    icon: '🌿',
+    icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="15" r="8" stroke-width="2" fill="rgba(255,255,255,0.12)"/><line x1="20" y1="22" x2="20" y2="32" stroke-width="2"/><path d="M20 32 L14 38 M20 32 L26 38" stroke-width="1.6" stroke="rgba(255,255,255,0.5)"/></svg>',
     color: '#16A34A',
     prerequisite: [],
     status: 'available',
@@ -4045,7 +4045,7 @@ const allCourses = [
     modules: [
         {
             id: 1,
-            title: '🔥 Módulo 1: Qué es el desgaste docente (burnout)',
+            title: 'Módulo 1: Qué es el desgaste docente (burnout)',
             cards: [
                 { id: 1, type: 'content', title: '¿Qué es el burnout docente?', content: 'El desgaste profesional o burnout se define por tres componentes: agotamiento emocional (sentirse exhausto incluso después de descansar), despersonalización (distanciarse emocionalmente de los estudiantes o volverse cínico), y baja realización personal (sentir que el propio trabajo ya no tiene impacto o sentido). No es simplemente "estar cansado" — es un síndrome reconocido que afecta la salud y la calidad de la enseñanza.', extra: 'Reconocer estos tres componentes te ayuda a identificar el burnout con precisión, en vez de solo etiquetarlo vagamente como "estrés" y minimizarlo.' },
                 { id: 2, type: 'content', title: 'Señales tempranas, antes de que sea grave', content: 'El burnout no aparece de un día para otro: empieza con señales sutiles —dormir mal aunque estés cansado, irritabilidad que antes no tenías, perder el disfrute en actividades que antes te gustaban, sentir que cada día es "uno más que sobrevivir"—. Detectar estas señales temprano permite intervenir antes de llegar a un agotamiento más severo y difícil de revertir.', extra: 'Haz una pausa honesta contigo mismo cada cierto tiempo: ¿alguna de estas señales te suena familiar en las últimas semanas? Esa honestidad temprana es la mejor prevención.' },
@@ -4057,7 +4057,7 @@ const allCourses = [
         },
         {
             id: 2,
-            title: '🧘‍♀️ Módulo 2: Estrategias de regulación emocional',
+            title: 'Módulo 2: Estrategias de regulación emocional',
             cards: [
                 { id: 7, type: 'content', title: 'Técnicas rápidas entre clases', content: 'No necesitas una hora libre para regularte: una respiración consciente de 30 segundos entre una clase y otra, un vaso de agua tomado con calma, o simplemente cerrar los ojos por 10 segundos antes de recibir al siguiente grupo, son micro-pausas que caben en el tiempo real que tienes disponible, y que acumuladas a lo largo del día marcan una diferencia genuina.', extra: 'La clave no es encontrar más tiempo — es usar mejor los pequeños espacios de tiempo que ya existen entre tus actividades diarias.' },
                 { id: 8, type: 'content', title: 'Separar lo que puedes controlar de lo que no', content: 'Gran parte del agotamiento emocional viene de intentar controlar cosas que están fuera de tu alcance: decisiones administrativas, la situación familiar de un estudiante, o el comportamiento de un colega. Identificar conscientemente qué SÍ está en tu control (tu preparación, tu respuesta, tu actitud) y soltar activamente lo que no, reduce una carga mental significativa que muchas veces pasa desapercibida.', extra: 'Ejercicio simple: al final del día, escribe una preocupación que tuviste. Pregúntate: "¿esto estaba en mi control directo?" Si la respuesta es no, practica conscientemente soltarla, aunque tome práctica repetida.' },
@@ -4069,7 +4069,7 @@ const allCourses = [
         },
         {
             id: 3,
-            title: '🛡️ Módulo 3: Límites y sostenibilidad profesional',
+            title: 'Módulo 3: Límites y sostenibilidad profesional',
             cards: [
                 { id: 13, type: 'content', title: 'Aprender a decir que no, sin culpa', content: 'Asumir cada responsabilidad adicional que se presenta —un comité más, una actividad extra, cubrir la clase de un colega repetidamente— sin evaluar tu propia capacidad real, es un camino directo al desgaste. Decir "no puedo asumir esto ahora" de forma clara y profesional, sin necesidad de justificarte excesivamente, es una habilidad que sostiene tu sostenibilidad a largo plazo.', extra: 'Esta es la misma habilidad de comunicación asertiva trabajada en otro curso de esta ruta — aplicada aquí específicamente a proteger tu propio bienestar profesional.' },
                 { id: 14, type: 'content', title: 'Separar tu identidad de los resultados de estudiantes específicos', content: 'Es natural que te importe el progreso de tus estudiantes, pero cargar tu propio valor como docente completamente sobre el desempeño de cada estudiante individual —especialmente aquellos con circunstancias muy difíciles fuera de tu control— es una fuente de desgaste emocional insostenible. Puedes esforzarte al máximo por un estudiante y aun así no controlar todos los factores que determinan su resultado final.', extra: 'Esta distinción no significa dejar de importarte — significa reconocer honestamente los límites reales de tu influencia, para poder sostener tu compromiso a largo plazo sin agotarte en el intento.' },
@@ -4081,7 +4081,7 @@ const allCourses = [
         },
         {
             id: 4,
-            title: '🌳 Módulo 4: Construir una práctica sostenible',
+            title: 'Módulo 4: Construir una práctica sostenible',
             cards: [
                 { id: 19, type: 'content', title: 'Reconectar con el propósito', content: 'En medio de la carga diaria, es fácil perder de vista por qué elegiste ser docente. Dedicar un momento periódico a recordar una historia concreta —un estudiante al que ayudaste a comprender algo, un momento donde sentiste que tu trabajo importaba genuinamente— reconecta con el sentido profundo de la profesión, más allá de la lista de tareas pendientes del día.', extra: 'Muchos docentes encuentran útil llevar un registro breve —un cuaderno, notas en el teléfono— de estos momentos significativos, para poder volver a ellos en los días más difíciles.' },
                 { id: 20, type: 'content', title: 'Celebrar tus propios logros, no solo los de tus estudiantes', content: 'Es común que los docentes celebren constantemente el progreso de sus estudiantes, pero rara vez se detengan a reconocer su propio crecimiento profesional: una estrategia nueva que implementaste con éxito, una conversación difícil que manejaste bien, un año en el que sostuviste tu compromiso a pesar de las dificultades. Reconocer tus propios logros, no solo los ajenos, es parte del bienestar sostenible.', extra: 'Este mismo curso que estás completando es, en sí mismo, un logro que vale la pena reconocer: invertiste tiempo en tu propio desarrollo profesional.' },
