@@ -417,6 +417,7 @@ async function loginWithEmail(email, password) {
         await syncWithSupabase();
         loadPortfolio();
         await loadAppConfig();
+        _updatePushToggleUI();
         return true;
     } catch (error) {
         console.error('loginWithEmail error:', error);
@@ -598,6 +599,7 @@ async function checkExistingSession() {
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
         await loadAppConfig();
+        _updatePushToggleUI();
         _checkOnboardingRequirements(() => showCourseSelector());
         return true;
     }
@@ -4786,6 +4788,12 @@ if ('serviceWorker' in navigator) {
         });
     });
 
+    // Aviso del admin: mismo ritmo que el chequeo de versión — cada 30 min y al volver a la pestaña
+    setInterval(() => { if (currentUser) loadAppConfig().catch(() => {}); }, 30 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && currentUser) loadAppConfig().catch(() => {});
+    });
+
     // Cuando el nuevo Service Worker toma control, NO recargamos de inmediato —
     // una recarga forzada a mitad de un login o de cualquier acción se siente como un error.
     // En vez de eso, esperamos un momento seguro: que la pestaña quede en segundo plano,
@@ -5706,7 +5714,7 @@ let _portfolioData = null; // Datos del portafolio cargado desde Supabase
 
 async function loadAppConfig() {
     try {
-        const { data } = await supabase.from('app_config').select('key,value').in('key', ['learning_paths','master_cert_courses']);
+        const { data } = await supabase.from('app_config').select('key,value').in('key', ['learning_paths','master_cert_courses','announcement']);
         if (!data) return;
         data.forEach(row => {
             if (row.key === 'learning_paths' && Array.isArray(row.value) && row.value.length > 0) {
@@ -5720,9 +5728,131 @@ async function loadAppConfig() {
                 // compatibilidad hacia atrás: si no existe la nueva clave learning_paths
                 MASTER_CERT_COURSES = row.value;
                 _checkMasterCert();
+            } else if (row.key === 'announcement' && row.value) {
+                _renderAnnouncementBanner(row.value);
             }
         });
     } catch(_) { /* tabla no existe aún, usa defaults */ }
+}
+
+// ==================== AVISO DEL ADMIN (banner) ====================
+const ANN_TYPES_CLIENT = {
+    maintenance: { color: '#DC2626', bg: '#FEE2E2', icon: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l5 5-7 7-5 1 1-5z"/></svg>' },
+    info:        { color: '#2563EB', bg: '#DBEAFE', icon: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><line x1="10" y1="9" x2="10" y2="14"/><circle cx="10" cy="6" r=".2" fill="currentColor"/></svg>' },
+    new_course:  { color: '#16A34A', bg: '#DCFCE7', icon: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4l7 3.5-7 3.5-7-3.5z"/><path d="M6 9.5v3c0 1.5 2 2.5 4 2.5s4-1 4-2.5v-3"/></svg>' },
+    event:       { color: '#7C3AED', bg: '#EDE9FE', icon: '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2.5" x2="7" y2="5.5"/><line x1="13" y1="2.5" x2="13" y2="5.5"/></svg>' },
+};
+
+function _renderAnnouncementBanner(ann) {
+    const existing = document.getElementById('adminAnnouncementBanner');
+    if (existing) existing.remove();
+    if (!ann.active) return;
+    if (ann.expiresAt && new Date(ann.expiresAt).getTime() < Date.now()) return;
+    if (!ann.title && !ann.message) return;
+    if (localStorage.getItem('dismissedAnnouncement') === String(ann.id)) return;
+
+    const t = ANN_TYPES_CLIENT[ann.type] || ANN_TYPES_CLIENT.info;
+    const banner = document.createElement('div');
+    banner.id = 'adminAnnouncementBanner';
+    banner.style.cssText = `position:sticky;top:0;z-index:60;background:${t.bg};color:${t.color};padding:10px 16px;display:flex;align-items:center;gap:10px;font-size:13px;border-bottom:1px solid ${t.color}33`;
+    banner.innerHTML = `
+        <span style="display:inline-flex;flex-shrink:0">${t.icon}</span>
+        <span style="flex:1;min-width:0">
+            ${ann.title ? `<strong>${_escHtml(ann.title)}</strong>` : ''}${ann.title && ann.message ? ' — ' : ''}${ann.message ? _escHtml(ann.message) : ''}
+        </span>
+        <button aria-label="Cerrar aviso" style="flex-shrink:0;background:none;border:none;color:${t.color};font-size:18px;line-height:1;cursor:pointer;padding:2px 4px" onclick="_dismissAnnouncement(${ann.id})">&times;</button>`;
+    const host = document.getElementById('mainApp') || document.body;
+    host.prepend(banner);
+}
+
+function _dismissAnnouncement(id) {
+    localStorage.setItem('dismissedAnnouncement', String(id));
+    document.getElementById('adminAnnouncementBanner')?.remove();
+}
+
+// ==================== NOTIFICACIONES PUSH (Web Push / VAPID) ====================
+// Clave pública VAPID — segura de exponer en el cliente (la privada vive solo en Supabase)
+const VAPID_PUBLIC_KEY = 'BBh5oCbg97EdQKAkW4O7ljYHK0l9oEGs3G7UHksP_xcFdOopyrDl3Gz5fQXUhnz2nvKGgjye-l7Hxq8kjH_kyAo';
+
+function _urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base64);
+    return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+function _pushSupported() {
+    return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
+
+async function _updatePushToggleUI() {
+    const btn = document.getElementById('pushToggleBtn');
+    const label = document.getElementById('pushToggleLabel');
+    const hint = document.getElementById('pushToggleHint');
+    if (!btn || !label) return;
+    if (!_pushSupported()) {
+        label.textContent = 'No disponible en este navegador';
+        btn.disabled = true;
+        btn.style.opacity = '.5';
+        return;
+    }
+    try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+            label.textContent = 'Notificaciones activas';
+            btn.style.cssText = 'background:#F0FDF4;border-color:#86EFAC;color:#15803D';
+            if (hint) hint.textContent = 'Ya recibirás avisos de mantenimiento, cursos nuevos y eventos en este dispositivo.';
+        } else {
+            label.textContent = 'Activar notificaciones';
+            btn.style.cssText = 'background:white;border-color:#E2E8F0;color:#475569';
+            if (hint) hint.textContent = 'Recibe un aviso en tu teléfono cuando haya mantenimiento, cursos nuevos o eventos — incluso con la app cerrada.';
+        }
+    } catch (_) { /* Service Worker aún no listo */ }
+}
+
+async function togglePushNotifications() {
+    if (!_pushSupported()) { showToast('Tu navegador no soporta notificaciones', 'warning'); return; }
+    if (!currentUser) { showToast('Inicia sesión primero', 'warning'); return; }
+    const btn = document.getElementById('pushToggleBtn');
+    if (btn) btn.disabled = true;
+    try {
+        const reg = await navigator.serviceWorker.ready;
+        const existing = await reg.pushManager.getSubscription();
+
+        if (existing) {
+            // Desactivar: borrar suscripción local y en Supabase
+            await supabase.from('push_subscriptions').delete().eq('user_id', currentUser.id).eq('endpoint', existing.endpoint);
+            await existing.unsubscribe();
+            showToast('Notificaciones desactivadas', 'info');
+        } else {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                showToast('Permiso de notificaciones no concedido', 'warning');
+                return;
+            }
+            const sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: _urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+            });
+            const json = sub.toJSON();
+            const { error } = await supabase.from('push_subscriptions').upsert({
+                user_id: currentUser.id,
+                endpoint: json.endpoint,
+                p256dh: json.keys.p256dh,
+                auth: json.keys.auth,
+                user_agent: navigator.userAgent.slice(0, 200),
+            }, { onConflict: 'user_id,endpoint' });
+            if (error) throw error;
+            showToast('✅ Notificaciones activadas', 'success');
+        }
+    } catch (e) {
+        console.error('Error con notificaciones push:', e);
+        showToast('No se pudo cambiar el estado de las notificaciones', 'warning');
+    } finally {
+        if (btn) btn.disabled = false;
+        _updatePushToggleUI();
+    }
 }
 
 let _portfolioByPathRow = {}; // { pathId: row } de Supabase

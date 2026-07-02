@@ -2275,6 +2275,124 @@ function showReportPreview(html) {
 // ────────────────────────────────────────────────────────────
 function saveConfig() { toast('Configuración guardada (solo en esta sesión).'); }
 
+// ── Avisos y anuncios ─────────────────────────────────────────
+// Reutiliza la tabla app_config (misma que learning_paths) con key='announcement'
+let _annState = { id: 0, active: false, type: 'info', title: '', message: '', expiresAt: null };
+
+const ANN_TYPES = {
+    maintenance: { label: 'Mantenimiento', color: '#DC2626', bg: '#FEE2E2', icon: 'fa-tools' },
+    info:        { label: 'Información',   color: '#2563EB', bg: '#DBEAFE', icon: 'fa-circle-info' },
+    new_course:  { label: 'Curso nuevo',   color: '#16A34A', bg: '#DCFCE7', icon: 'fa-graduation-cap' },
+    event:       { label: 'Evento',        color: '#7C3AED', bg: '#EDE9FE', icon: 'fa-calendar-star' },
+};
+
+async function loadAnnouncement() {
+    const container = document.getElementById('announcementPanel');
+    if (!container) return;
+    const { data } = await sb.from('app_config').select('key,value').eq('key', 'announcement');
+    _annState = data?.[0]?.value
+        ? { ...{ id: 0, active: false, type: 'info', title: '', message: '', expiresAt: null }, ...data[0].value }
+        : { id: 0, active: false, type: 'info', title: '', message: '', expiresAt: null };
+    _renderAnnouncementPanel();
+}
+
+function _renderAnnouncementPanel() {
+    const container = document.getElementById('announcementPanel');
+    if (!container) return;
+    const a = _annState;
+    const typeOptions = Object.entries(ANN_TYPES).map(([k, v]) =>
+        `<option value="${k}" ${a.type === k ? 'selected' : ''}>${v.label}</option>`
+    ).join('');
+    container.innerHTML = `
+        <div class="space-y-3">
+            <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 cursor-pointer">
+                <input type="checkbox" id="annActive" ${a.active ? 'checked' : ''} onchange="_annState.active=this.checked">
+                Aviso activo (visible para todos los docentes)
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-500 mb-1 block">Tipo</label>
+                    <select id="annType" class="input-field text-xs" onchange="_annState.type=this.value">${typeOptions}</select>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-500 mb-1 block">Expira (opcional)</label>
+                    <input type="date" id="annExpires" class="input-field text-xs" value="${a.expiresAt ? a.expiresAt.slice(0,10) : ''}" onchange="_annState.expiresAt=this.value?new Date(this.value+'T23:59:59').toISOString():null">
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-500 mb-1 block">Título corto</label>
+                <input id="annTitle" class="input-field text-sm" placeholder="Ej: Mantenimiento programado" value="${esc(a.title)}" oninput="_annState.title=this.value">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-500 mb-1 block">Mensaje</label>
+                <textarea id="annMessage" class="input-field text-sm" rows="3" placeholder="Ej: Estaremos en mantenimiento el sábado de 8pm a 10pm. Tu progreso está seguro." oninput="_annState.message=this.value">${esc(a.message)}</textarea>
+            </div>
+            <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
+                <input type="checkbox" id="annAlsoPush">
+                También enviar como notificación push a quienes la activaron
+            </label>
+            <button onclick="saveAnnouncement()" class="btn-primary text-xs w-full"><i class="fas fa-save mr-1"></i>Guardar aviso</button>
+        </div>`;
+}
+
+async function saveAnnouncement() {
+    if (_annState.active && !_annState.title.trim() && !_annState.message.trim()) {
+        toast('Escribe al menos un título o mensaje para activar el aviso', false);
+        return;
+    }
+    // Nuevo id solo si el contenido cambió — evita reabrir el mismo aviso para quien ya lo cerró
+    _annState.id = Date.now();
+    const { error } = await sb.from('app_config').upsert({ key: 'announcement', value: _annState }, { onConflict: 'key' });
+    if (error) { toast('Error al guardar: ' + error.message, false); return; }
+    toast('✓ Aviso guardado');
+    const alsoPush = document.getElementById('annAlsoPush')?.checked;
+    if (alsoPush && _annState.active) {
+        await sendPushBroadcast(_annState.title || 'Aviso', _annState.message || '');
+    }
+    await loadAnnouncement();
+}
+
+// ── Notificaciones push ───────────────────────────────────────
+async function loadPushPanel() {
+    const container = document.getElementById('pushPanel');
+    if (!container) return;
+    const { count } = await sb.from('push_subscriptions').select('id', { count: 'exact', head: true });
+    container.innerHTML = `
+        <div class="space-y-3">
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <i class="fas fa-mobile-screen-button"></i>
+                <span><strong class="text-slate-700">${count ?? 0}</strong> docente${count === 1 ? '' : 's'} con notificaciones activas en su dispositivo</span>
+            </div>
+            <input id="pushTitle" class="input-field text-sm" placeholder="Título de la notificación">
+            <textarea id="pushBody" class="input-field text-sm" rows="2" placeholder="Mensaje breve"></textarea>
+            <button onclick="sendPushBroadcast()" class="btn-primary text-xs w-full"><i class="fas fa-paper-plane mr-1"></i>Enviar a todos</button>
+            <p id="pushResult" class="text-xs text-center"></p>
+        </div>`;
+}
+
+async function sendPushBroadcast(titleOverride, bodyOverride) {
+    const title = titleOverride || document.getElementById('pushTitle')?.value?.trim();
+    const body  = bodyOverride  || document.getElementById('pushBody')?.value?.trim();
+    if (!title && !body) { toast('Escribe un título o mensaje', false); return; }
+    const resultEl = document.getElementById('pushResult');
+    if (resultEl) resultEl.textContent = 'Enviando…';
+    try {
+        const { data: { session } } = await sb.auth.getSession();
+        const res = await fetch(`${sb.supabaseUrl}/functions/v1/send-push`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+            body: JSON.stringify({ title: title || 'Formación Docente', body: body || '' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+        if (resultEl) resultEl.textContent = `Enviado a ${data.sent} de ${data.total} suscripciones.`;
+        toast(`✓ Notificación enviada (${data.sent}/${data.total})`);
+    } catch (e) {
+        if (resultEl) resultEl.textContent = 'Error: ' + e.message;
+        toast('Error al enviar: ' + e.message, false);
+    }
+}
+
 // ── Rutas de Aprendizaje / Certificado Maestro ───────────────
 let _lpState = []; // estado vivo de rutas, se modifica sin guardar hasta "Guardar todo"
 
@@ -2435,7 +2553,7 @@ let _signatures = [];
 let _schools    = [];
 
 async function loadSettings() {
-    await Promise.all([loadSignatures(), loadSchools(), loadCoordinators(), loadLearningPaths()]);
+    await Promise.all([loadSignatures(), loadSchools(), loadCoordinators(), loadLearningPaths(), loadAnnouncement(), loadPushPanel()]);
 }
 
 // ── Firmas ──────────────────────────────────────────────────

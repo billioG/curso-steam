@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v81';
+const CACHE_VERSION  = 'steam-v82';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -164,4 +164,39 @@ self.addEventListener('message', event => {
     if (event.data?.type === 'CLEAR_CACHE') {
         caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
     }
+});
+
+// ──────────────────────────────────────────────────────────
+// PUSH — mostrar notificación al recibir un mensaje del servidor
+// ──────────────────────────────────────────────────────────
+self.addEventListener('push', event => {
+    let data = {};
+    try { data = event.data ? event.data.json() : {}; } catch (_) {
+        data = { title: 'Formación Docente', body: event.data ? event.data.text() : '' };
+    }
+    const title = data.title || 'Formación Docente';
+    const options = {
+        body: data.body || '',
+        icon: './logo-1bot-edoo.png',
+        badge: './icon.svg',
+        data: { url: data.url || './index.html' },
+        tag: 'steam-notification',
+    };
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// ──────────────────────────────────────────────────────────
+// NOTIFICATIONCLICK — enfocar o abrir la app al tocar la notificación
+// ──────────────────────────────────────────────────────────
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    const url = event.notification.data?.url || './index.html';
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+            for (const c of list) {
+                if (c.url.includes(self.location.origin) && 'focus' in c) return c.focus();
+            }
+            if (clients.openWindow) return clients.openWindow(url);
+        })
+    );
 });
