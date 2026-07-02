@@ -4969,10 +4969,10 @@ const ONBOARDING_SLIDES = [
     {
         emoji: '🗺️', svgKey: 'books',
         bg: '#1A6B68',
-        title: 'Una ruta de 5 cursos, en orden',
-        desc: 'El programa tiene 5 cursos diseñados para tomarse en una <strong>secuencia lógica</strong>, no al azar. Algunos requieren haber aprobado el examen de otro curso primero.',
-        extra: 'Conoce a Quien Enseñas y Design Thinking están abiertos desde el inicio. ABP requiere Design Thinking. STEAM requiere ABP. Evaluación requiere ABP o STEAM. Así cada curso se construye sobre el anterior.',
-        _dynamicList: true  // lista se genera al renderizar desde allCourses
+        title: 'Rutas de aprendizaje',
+        desc: 'El programa está organizado en <strong>rutas de aprendizaje</strong>, cada una con varios cursos relacionados. Dentro de cada ruta, los cursos siguen un orden lógico — algunos requieren haber aprobado el examen del curso anterior.',
+        extra: null,
+        _dynamicPathList: true  // lista se genera al renderizar desde LEARNING_PATHS
     },
     {
         emoji: '🏅', svgKey: 'trophyLarge',
@@ -5079,14 +5079,8 @@ function renderOnboardingSlide() {
     // Extra o lista
     const extraEl = document.getElementById('onboardingExtra');
     let extraHtml = '';
-    const listItems = slide._dynamicList && typeof allCourses !== 'undefined'
-        ? allCourses.map(c => {
-            const icon = c.status !== 'available' ? '⏳' : (!c.prerequisite || !c.prerequisite.length) ? '🟢' : '🔒';
-            const prereqTxt = (c.prerequisite && c.prerequisite.length)
-                ? ` (requiere: ${c.prerequisite.map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ')})`
-                : '';
-            return `${icon} ${c.title}${prereqTxt}`;
-        })
+    const listItems = slide._dynamicPathList && typeof LEARNING_PATHS !== 'undefined'
+        ? LEARNING_PATHS.map(p => `🔹 ${p.label} · ${p.courses.length} cursos`)
         : slide.list;
     if (listItems) {
         extraHtml += '<ul class="mt-3 space-y-2">' +
