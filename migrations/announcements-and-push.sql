@@ -33,10 +33,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Si tu cuenta admin (profebillio@gmail.com) todavía no tiene fila en
+-- Si tu cuenta admin (billy@1bot.org) todavía no tiene fila en
 -- user_roles, esto la crea/actualiza sin tocar las demás.
 INSERT INTO public.user_roles (user_id, role)
-SELECT id, 'admin' FROM auth.users WHERE email = 'profebillio@gmail.com'
+SELECT id, 'admin' FROM auth.users WHERE email = 'billy@1bot.org'
 ON CONFLICT (user_id) DO UPDATE SET role = 'admin';
 
 
