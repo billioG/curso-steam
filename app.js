@@ -11,7 +11,7 @@ let LEARNING_PATHS = [
     { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp','storytelling'] },
     { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
     { id:'ia',            label:'Docente y la IA',        color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)',  courses:['ia-fundamentos','ia-tiempo','ia-herramientas','ia-inclusion','ia-ciudadania'] },
-    { id:'convivencia',   label:'Clima y Convivencia Escolar', color:'#0891B2', gradient:'linear-gradient(135deg,#155E75,#0891B2)',  courses:['manejo-conductas'] },
+    { id:'convivencia',   label:'Clima y Convivencia Escolar', color:'#0891B2', gradient:'linear-gradient(135deg,#155E75,#0891B2)',  courses:['manejo-conductas','sel-docentes','comunicacion-asertiva','disciplina-positiva','bienestar-docente'] },
 ];
 // IDs de cursos requeridos para el certificado maestro (ruta steam20)
 // Admin puede cambiarlos desde el panel → se guardan en Supabase tabla app_config
@@ -4099,7 +4099,7 @@ function _checkMasterCert() {
     // Estado por curso — mostrar rutas como secciones con sus cursos dentro
     const statusEl = document.getElementById('certCourseStatus');
     if (statusEl) {
-        const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', storytelling:'#F59E0B', creatividad:'#E83C8D', 'herramientas-tec':'#7C3AED', 'm-learning':'#F59E0B', 'flipped-classroom':'#10B981', abv:'#6366F1', 'micro-learning':'#F97316', 'ia-fundamentos':'#10B981', 'ia-tiempo':'#F97316', 'ia-herramientas':'#8B5CF6', 'ia-inclusion':'#06B6D4', 'ia-ciudadania':'#EC4899', 'manejo-conductas':'#0891B2' };
+        const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', storytelling:'#F59E0B', creatividad:'#E83C8D', 'herramientas-tec':'#7C3AED', 'm-learning':'#F59E0B', 'flipped-classroom':'#10B981', abv:'#6366F1', 'micro-learning':'#F97316', 'ia-fundamentos':'#10B981', 'ia-tiempo':'#F97316', 'ia-herramientas':'#8B5CF6', 'ia-inclusion':'#06B6D4', 'ia-ciudadania':'#EC4899', 'manejo-conductas':'#0891B2', 'sel-docentes':'#DB2777', 'comunicacion-asertiva':'#7C3AED', 'disciplina-positiva':'#EA580C', 'bienestar-docente':'#16A34A' };
 
         statusEl.innerHTML = LEARNING_PATHS.map(path => {
             const pathCourses = (path.courses || [])
@@ -4377,7 +4377,7 @@ async function generateMasterCertificate() {
         return a + s;
     }, 0) / availableCourses.length) : 0;
 
-    const colors = { 'steam':'#07B0E4','abp':'#2563EB','design-thinking':'#E83C8D','evaluacion':'#E9A037','tipos-estudiantes':'#7C3AED','creatividad':'#E83C8D','herramientas-tec':'#7C3AED','m-learning':'#F59E0B','flipped-classroom':'#10B981','abv':'#6366F1','micro-learning':'#F97316','ia-fundamentos':'#10B981','ia-tiempo':'#F97316','ia-herramientas':'#8B5CF6','ia-inclusion':'#06B6D4','ia-ciudadania':'#EC4899','manejo-conductas':'#0891B2' };
+    const colors = { 'steam':'#07B0E4','abp':'#2563EB','design-thinking':'#E83C8D','evaluacion':'#E9A037','tipos-estudiantes':'#7C3AED','creatividad':'#E83C8D','herramientas-tec':'#7C3AED','m-learning':'#F59E0B','flipped-classroom':'#10B981','abv':'#6366F1','micro-learning':'#F97316','ia-fundamentos':'#10B981','ia-tiempo':'#F97316','ia-herramientas':'#8B5CF6','ia-inclusion':'#06B6D4','ia-ciudadania':'#EC4899','manejo-conductas':'#0891B2','sel-docentes':'#DB2777','comunicacion-asertiva':'#7C3AED','disciplina-positiva':'#EA580C','bienestar-docente':'#16A34A' };
     const courseBadges = availableCourses.map(c => {
         const s   = c.id === 'steam' ? steamScore : (scores[c.id] || 0);
         const col = colors[c.id] || '#1A6B68';
