@@ -2058,6 +2058,24 @@
                 </div><!-- /perfil-section-body recursos -->
             </div>
 
+            <!-- ── Notificaciones ── -->
+            <div class="perfil-section">
+                <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
+                    <span class="perfil-section-label"><span class="perfil-section-label-title">Notificaciones</span><span class="perfil-section-label-sub">Avisos de mantenimiento, cursos nuevos y eventos</span></span>
+                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="perfil-section-body collapsed">
+                <div id="pushSettingsSection">
+                    <button id="pushToggleBtn" onclick="togglePushNotifications()"
+                        class="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border border-slate-200 bg-white text-slate-600">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                        <span id="pushToggleLabel">Activar notificaciones</span>
+                    </button>
+                    <p id="pushToggleHint" class="text-xs text-slate-400 mt-2 px-1">Recibe un aviso en tu teléfono cuando haya mantenimiento, cursos nuevos o eventos — incluso con la app cerrada.</p>
+                </div>
+                </div><!-- /perfil-section-body notificaciones -->
+            </div>
+
             <!-- ── Gana más XP ── -->
             <div class="perfil-section">
                 <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">

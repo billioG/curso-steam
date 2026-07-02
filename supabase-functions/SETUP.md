@@ -94,3 +94,57 @@ Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/database/webho
 5. Una vez verificado, cambia el Secret `FROM_EMAIL` a: `no-reply@1bot.org`
 
 Mientras tanto, los emails de prueba solo llegarán al correo de tu cuenta Resend.
+
+---
+
+# Configuración de Notificaciones Push (Web Push / VAPID)
+
+Gratis, sin servicio de terceros — usa el estándar Web Push nativo del navegador.
+
+## Paso 1 — Ejecutar la migración SQL
+
+Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/sql
+Ejecuta el contenido de `migrations/announcements-and-push.sql` (crea la tabla
+`push_subscriptions` y siembra la clave `announcement` en `app_config`).
+
+## Paso 2 — Agregar los secrets VAPID
+
+Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/settings/functions
+
+> ⚠️ Las llaves ya fueron generadas para este proyecto. La llave **pública** ya
+> está escrita en `app.js` (es segura de exponer). La llave **privada** debe
+> guardarse SOLO como secret aquí — nunca en el código.
+
+En "Secrets", agrega:
+- Nombre: `VAPID_PUBLIC_KEY`
+- Valor: `BBh5oCbg97EdQKAkW4O7ljYHK0l9oEGs3G7UHksP_xcFdOopyrDl3Gz5fQXUhnz2nvKGgjye-l7Hxq8kjH_kyAo`
+- Nombre: `VAPID_PRIVATE_KEY`
+- Valor: `gmM7oPSg9HY0PpO1R3gGvncA-f6EzN3Q-4w6o1aV_7Y`
+
+Si en algún momento sospechas que la llave privada se filtró (por ejemplo si
+quedó en un commit de git), genera un par nuevo con `npx web-push generate-vapid-keys`,
+actualiza este secret con la privada nueva, y reemplaza `VAPID_PUBLIC_KEY` en
+`app.js` con la pública nueva — los usuarios con suscripciones viejas tendrán
+que volver a activar las notificaciones.
+
+`SUPABASE_SERVICE_ROLE_KEY` normalmente ya existe como secret automático en
+todo proyecto de Supabase — no necesitas agregarlo a mano.
+
+## Paso 3 — Crear la Edge Function `send-push`
+
+Igual que las funciones de email: "New Function" → nombre exacto `send-push` →
+pega el código de `supabase-functions/send-push/index.ts` → Deploy.
+
+## Paso 4 — Probar
+
+1. En la app, como docente, entra a Perfil → Notificaciones → "Activar notificaciones"
+   y acepta el permiso del navegador.
+2. En el panel admin → Configuración → "Notificaciones push", escribe un título
+   y mensaje de prueba → "Enviar a todos".
+3. Deberías recibir la notificación en el dispositivo donde activaste el paso 1,
+   incluso con la pestaña de la app cerrada (con el navegador abierto en segundo plano).
+
+**Nota sobre iOS:** en iPhone, las notificaciones push solo funcionan si el
+docente agregó la app a su pantalla de inicio ("Agregar a inicio" desde Safari)
+Y tiene iOS 16.4 o superior. Es una limitación de Apple, no de esta app — en
+Android y escritorio funciona sin ese requisito.
