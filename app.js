@@ -5390,7 +5390,7 @@ function _renderCourseSelector() {
                      style="background:${path.color}22;border-color:${path.color}55">
                     <div class="flex items-center gap-3">
                         <div style="width:44px;height:44px;border-radius:14px;background:${path.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                            ${(typeof PATH_SVG !== 'undefined' && PATH_SVG[path.id]) ? PATH_SVG[path.id] : '<span style="font-size:20px">🎓</span>'}
+                            ${(typeof PATH_SVG !== 'undefined' && PATH_SVG[path.id]) ? PATH_SVG[path.id] : '<svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12 H32 V32 H12 Z" stroke-width="2"/><path d="M12 12 L22 20 L32 12" stroke-width="2"/></svg>'}
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
@@ -5442,18 +5442,19 @@ function _renderCourseSelector() {
                 const passed    = (_getScore2(c.id) || 0) >= 70;
                 const prereqNames = (c.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
                 let statusBadge;
+                const _lockSvg = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="12" height="8" rx="2" stroke-width="1.8"/><path d="M6.5 9V6.5a3.5 3.5 0 0 1 7 0V9" stroke-width="1.8"/></svg>';
                 if (!isOpen)       statusBadge = '○ Próximamente';
-                else if (!prereqMet) statusBadge = `🔒 Requiere: ${prereqNames}`;
+                else if (!prereqMet) statusBadge = `${_lockSvg.replace('width="20" height="20"','width="11" height="11" style="vertical-align:-1.5px;margin-right:2px"')} Requiere: ${prereqNames}`;
                 else               statusBadge = '● Disponible';
                 return `
-                <div onclick="${clickable ? `selectCourse('${c.id}')` : (isOpen && !prereqMet ? `showToast('🔒 Primero completa: ${prereqNames}','info')` : '')}"
+                <div onclick="${clickable ? `selectCourse('${c.id}')` : (isOpen && !prereqMet ? `showToast('Primero completa: ${prereqNames}','info')` : '')}"
                      class="backdrop-blur border rounded-2xl p-4 mb-3 ${clickable ? 'cursor-pointer active:scale-95' : 'opacity-55'} transition-all"
                      style="background:${clickable ? c.color+'33' : 'rgba(255,255,255,.06)'};border-color:${clickable ? c.color+'66' : 'rgba(255,255,255,.12)'}">
                     <div class="flex items-center gap-3">
                         <div style="position:relative;flex-shrink:0">
                             <div style="width:44px;height:44px;background:${clickable ? c.color : 'rgba(255,255,255,0.1)'};border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden">
                                 ${(!isOpen || !prereqMet)
-                                    ? '<span style="font-size:22px">🔒</span>'
+                                    ? _lockSvg
                                     : (() => { try { const t = getCourseThemeAndIllus(c.id, 1); return `<div style="width:34px;height:34px">${t.illus}</div>`; } catch(_){ return `<span style="font-size:22px">${c.icon||'📚'}</span>`; } })()
                                 }
                             </div>
@@ -5502,7 +5503,7 @@ function selectCourse(courseId) {
     if (!course || course.status !== 'available') return;
     if (!isCoursePrereqMet(course)) {
         const prereqNames = (course.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
-        showToast(`🔒 Primero completa: ${prereqNames}`, 'info');
+        showToast(`Primero completa: ${prereqNames}`, 'info');
         return;
     }
 

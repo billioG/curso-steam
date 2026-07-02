@@ -2623,6 +2623,650 @@ const CASE_STUDIES = [
         xpReward: 10
       }
     }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 12: "El aula de los tres niveles" — IA e Inclusión Educativa
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs12',
+    title: 'El aula de los tres niveles',
+    course: 'IA e Inclusión Educativa',
+    color: '#06B6D4',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7h14M4 12l3-4 3 4M14 12l3-4 3 4"/></svg>',
+    duration: '15-20 min',
+    description: 'Rosa tiene 32 estudiantes con niveles de lectura muy distintos en la misma aula. Acompáñala a decidir cómo usar IA para diferenciar una actividad sin perder tiempo que no tiene.',
+    start: 'cs12_n1',
+    nodes: {
+
+      'cs12_n1': {
+        type: 'scenario',
+        text: 'Rosa enseña cuarto grado en un instituto de Cobán con 32 estudiantes. En su aula hay de todo: Andrea lee con fluidez tres grados por encima de su nivel; Manuel apenas descifra palabras simples; la mayoría está en un punto intermedio. Rosa quiere que los 32 trabajen el mismo texto sobre el ciclo del agua, pero sabe que un solo nivel de dificultad dejará a unos aburridos y a otros perdidos.',
+        context: 'Rosa tiene 20 minutos antes de que empiece la clase. Recuerda el curso de IA e Inclusión que tomó hace poco.',
+        choices: [
+          {
+            text: 'Pedirle a la IA tres versiones del mismo texto —apoyo, estándar y reto— a partir de un solo texto base, y revisarlas antes de imprimir.',
+            next: 'cs12_n2a',
+            isCorrect: true
+          },
+          {
+            text: 'Usar un único texto de nivel medio para todos, como siempre, porque diferenciar toma demasiado tiempo.',
+            next: 'cs12_n2b',
+            isCorrect: false
+          },
+          {
+            text: 'Pedirle a la IA una sola versión "fácil" para todo el grupo, para asegurarse de que nadie se quede atrás.',
+            next: 'cs12_n2c',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs12_n2a': {
+        type: 'feedback_correct',
+        text: 'Excelente decisión. Rosa está usando la IA exactamente para lo que más rinde en un aula diversa: generar en minutos algo que a mano le habría tomado toda la tarde. Al partir de UN texto base y pedir tres niveles, mantiene el mismo tema y objetivo de aprendizaje para todo el grupo — solo cambia el nivel de acceso.',
+        tip: 'Diferenciar no significa enseñar cosas distintas: significa ofrecer distintos caminos hacia el mismo destino de aprendizaje.',
+        next: 'cs12_n3a',
+        xp: 10
+      },
+      'cs12_n2b': {
+        type: 'feedback_wrong',
+        text: 'Usar un solo nivel para los 32 estudiantes es la opción "más rápida" en el momento, pero tiene un costo real: Manuel probablemente no entenderá el texto, y Andrea probablemente terminará en cinco minutos y se aburrirá el resto de la clase. La diferenciación no es un lujo pedagógico — es lo que hace que el aprendizaje llegue a todos.',
+        tip: 'Antes del curso de IA e Inclusión, diferenciar exigía horas de trabajo manual. Ahora, generar tres versiones toma minutos — la barrera de tiempo ya no es una excusa válida.',
+        next: 'cs12_n3b',
+        xp: 0
+      },
+      'cs12_n2c': {
+        type: 'feedback_wrong',
+        text: 'Simplificar el texto para todos protege a Manuel, pero deja a Andrea y a buena parte del grupo intermedio sin ningún reto real. La inclusión no significa nivelar hacia abajo — significa que cada estudiante reciba el nivel de desafío que le corresponde, no el más bajo del salón.',
+        tip: 'Diferenciar hacia arriba es tan importante como diferenciar hacia abajo. Un aula "seguritariamente fácil" para todos no es inclusiva, solo es uniforme.',
+        next: 'cs12_n3c',
+        xp: 0
+      },
+
+      'cs12_n3a': {
+        type: 'scenario',
+        text: 'Rosa revisa las tres versiones. La de "apoyo" para Manuel está bien, pero todavía tiene una palabra técnica —"evaporación"— sin explicar, algo que sabe que él no reconocerá.',
+        context: 'Quedan diez minutos antes de que toque el timbre.',
+        choices: [
+          {
+            text: 'Volver a pedirle a la IA que simplifique esa palabra específica con una explicación de una línea, y luego imprimir las tres versiones.',
+            next: 'cs12_outcome_success',
+            isCorrect: true
+          },
+          {
+            text: 'Imprimir la versión tal cual está — probablemente Manuel pueda deducir la palabra por contexto.',
+            next: 'cs12_outcome_partial',
+            isCorrect: false
+          },
+          {
+            text: 'Descartar la versión de apoyo por completo y darle a Manuel la misma versión estándar que a los demás, sin ningún ajuste.',
+            next: 'cs12_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs12_n3b': {
+        type: 'scenario',
+        text: 'A mitad de la clase, Manuel levanta la mano por tercera vez sin entender una frase, y Andrea ya terminó el texto y está dibujando en su cuaderno, desconectada de la actividad.',
+        context: 'Rosa ve, en tiempo real, exactamente el problema que temía.',
+        choices: [
+          {
+            text: 'Reconocer en el momento que necesita ajustar, y usar los últimos minutos de la clase para al menos darle a Manuel una versión oral simplificada del texto.',
+            next: 'cs12_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Seguir adelante con la clase igual, asumiendo que "ya se pondrán al día".',
+            next: 'cs12_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Regañar a Andrea por no prestar atención sin ofrecerle ningún reto adicional.',
+            next: 'cs12_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs12_n3c': {
+        type: 'scenario',
+        text: 'Durante la actividad, un estudiante de nivel avanzado le pregunta a Rosa, algo decepcionado: "Profe, ¿esto es todo? Ya lo sabía." Rosa se da cuenta de que simplificar para todos dejó a varios estudiantes sin ningún crecimiento real ese día.',
+        context: 'La clase termina sin que Rosa haya podido reaccionar a tiempo.',
+        choices: [
+          {
+            text: 'Anotar la lección para la próxima clase: pedir a la IA una versión de reto adicional, y ofrecerla como opción desde el inicio la próxima vez.',
+            next: 'cs12_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Decidir que la diferenciación "no vale la pena" y seguir usando un único nivel de ahora en adelante.',
+            next: 'cs12_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Ignorar el comentario del estudiante y continuar sin ningún cambio.',
+            next: 'cs12_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs12_outcome_success': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Rosa: Los 32 caminos hacia el mismo destino',
+        text: 'Rosa demostró en tiempo récord lo que este curso propone: la IA como asistente de diferenciación, no como reemplazo del criterio docente. Detectar y corregir la palabra técnica antes de imprimir —en vez de asumir que "probablemente se entienda"— es la diferencia entre una adaptación real y una adaptación de apariencia. Manuel entendió el texto completo por primera vez en semanas, y Andrea tuvo un reto genuino que la mantuvo interesada.',
+        badge: 'Inclusión con Criterio y IA',
+        xpReward: 50
+      },
+      'cs12_outcome_partial': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 60,
+        title: 'Rosa: La corrección sobre la marcha',
+        text: 'El plan de Rosa no salió perfecto, pero supo reaccionar cuando vio la brecha en tiempo real, en vez de ignorarla. Esa capacidad de ajustar en el momento —aunque no sea ideal— es lo que separa a un docente que aprende de su práctica de uno que repite el mismo error. La próxima vez, Rosa sabe que revisar ANTES de imprimir le habría ahorrado ese ajuste de último minuto.',
+        badge: 'Diferenciación en Proceso',
+        xpReward: 25
+      },
+      'cs12_outcome_struggle': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 25,
+        title: 'Rosa: La lección sobre la uniformidad',
+        text: 'Ya sea por no diferenciar, por simplificar para todos, o por no reaccionar ante lo que vio en el aula, esta clase no llegó a todos los 32 estudiantes por igual. La buena noticia: Rosa ahora tiene evidencia concreta de por qué la diferenciación importa, y una herramienta —la IA usada con criterio— que puede convertir esa lección en una práctica distinta la próxima semana.',
+        badge: 'Inclusión ante el Umbral',
+        xpReward: 10
+      }
+    }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 13: "La tarea que se parecía demasiado" — Ciudadanía Digital con IA
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs13',
+    title: 'La tarea que se parecía demasiado',
+    course: 'Ciudadanía Digital con IA para tus Estudiantes',
+    color: '#EC4899',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>',
+    duration: '15-20 min',
+    description: 'Marco, docente de secundaria, sospecha que un estudiante entregó un ensayo generado por IA sin decirlo. Acompáñalo a decidir cómo abordar la integridad académica sin convertirlo en una cacería.',
+    start: 'cs13_n1',
+    nodes: {
+
+      'cs13_n1': {
+        type: 'scenario',
+        text: 'Marco enseña Estudios Sociales en un colegio de la capital. Al revisar el ensayo de Estefanía sobre la Reforma Liberal de 1871, algo le llama la atención: el vocabulario es notablemente más sofisticado que su trabajo habitual, la estructura es impecablemente ordenada, y el tono no suena como ella. Marco sospecha que usó IA generativa sin decirlo — algo que el colegio no prohíbe explícitamente, pero que tampoco fue declarado.',
+        context: 'Marco no tiene una prueba definitiva, solo una fuerte sospecha basada en el cambio de estilo.',
+        choices: [
+          {
+            text: 'Hablar con Estefanía en privado, con curiosidad genuina: pedirle que le explique con sus propias palabras dos ideas centrales del ensayo.',
+            next: 'cs13_n2a',
+            isCorrect: true
+          },
+          {
+            text: 'Confrontarla frente a la clase, acusándola directamente de haber usado IA para copiar.',
+            next: 'cs13_n2b',
+            isCorrect: false
+          },
+          {
+            text: 'Ignorar la sospecha y calificar el ensayo tal cual, para evitar un conflicto incómodo.',
+            next: 'cs13_n2c',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs13_n2a': {
+        type: 'feedback_correct',
+        text: 'Buen primer paso. En vez de asumir y acusar, Marco eligió verificar con una conversación directa y no punitiva. Pedirle a Estefanía que explique el contenido con sus propias palabras es una forma justa de distinguir entre "usó IA como apoyo y realmente entendió el tema" y "entregó algo que ni siquiera comprende".',
+        tip: 'La integridad académica no se resuelve solo con sospecha o con un detector automático — se resuelve verificando comprensión real, que es, después de todo, el objetivo de cualquier tarea.',
+        next: 'cs13_n3a',
+        xp: 10
+      },
+      'cs13_n2b': {
+        type: 'feedback_wrong',
+        text: 'Acusar públicamente sin prueba definitiva, frente a sus compañeros, es injusto incluso si la sospecha resulta cierta — y devastador para Estefanía si resulta ser una falsa alarma (el vocabulario "sofisticado" también puede venir de mucho estudio genuino). Además, la vergüenza pública rara vez genera una conversación honesta después.',
+        tip: 'Ninguna conversación sobre integridad académica debería empezar como un juicio público. La conversación siempre es primero privada, con la mente abierta a estar equivocado.',
+        next: 'cs13_n3b',
+        xp: 0
+      },
+      'cs13_n2c': {
+        type: 'feedback_wrong',
+        text: 'Ignorar la sospecha evita el conflicto hoy, pero no le enseña nada a Estefanía sobre uso responsable de IA, y deja sin abordar un patrón que probablemente se repita —con ella y con otros estudiantes que noten que "no pasa nada". El silencio no es neutral: también es una decisión con consecuencias.',
+        tip: 'Evitar la conversación incómoda de hoy casi siempre genera un problema más grande después, cuando el patrón ya está establecido en todo el grupo.',
+        next: 'cs13_n3c',
+        xp: 0
+      },
+
+      'cs13_n3a': {
+        type: 'scenario',
+        text: 'En la conversación privada, Estefanía admite, algo nerviosa, que usó un chat de IA para "ordenar sus ideas" porque no sabía cómo empezar, y luego copió gran parte de la respuesta sin cambiarla mucho. Cuando Marco le pide que explique el impacto de la Reforma Liberal en sus propias palabras, ella logra explicar solo una parte, con dificultad.',
+        context: 'Estefanía parece más aliviada que a la defensiva — agradece que la conversación no fue pública.',
+        choices: [
+          {
+            text: 'Explicarle la diferencia entre usar IA como apoyo para organizar ideas propias y entregar su output sin procesar, y darle la oportunidad de rehacer el ensayo con sus propias palabras, citando que usó IA como ayuda inicial.',
+            next: 'cs13_outcome_success',
+            isCorrect: true
+          },
+          {
+            text: 'Ponerle automáticamente la nota mínima sin ninguna oportunidad de reescribir ni ninguna conversación sobre cómo usar la herramienta correctamente.',
+            next: 'cs13_outcome_partial',
+            isCorrect: false
+          },
+          {
+            text: 'Dejarlo pasar ahora que ella lo admitió, sin ninguna consecuencia académica ni conversación sobre cómo hacerlo distinto la próxima vez.',
+            next: 'cs13_outcome_partial',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs13_n3b': {
+        type: 'scenario',
+        text: 'Tras la confrontación pública, Estefanía se pone a llorar y niega todo, visiblemente humillada frente a sus compañeros. El resto de la clase queda en silencio incómodo, y Marco se da cuenta de que, prueba o no, manejó mal el momento.',
+        context: 'Los padres de Estefanía probablemente se enterarán de lo ocurrido esa misma tarde.',
+        choices: [
+          {
+            text: 'Buscarla después de clase, disculparse por la forma en que lo manejó frente al grupo, y proponer retomar la conversación en privado.',
+            next: 'cs13_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'No decir nada más, asumiendo que ya se le pasará.',
+            next: 'cs13_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Reportar el incidente a dirección sin haber hablado nunca en privado con Estefanía sobre lo ocurrido.',
+            next: 'cs13_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs13_n3c': {
+        type: 'scenario',
+        text: 'Semanas después, Marco nota que varios ensayos del grupo tienen el mismo patrón sospechoso: vocabulario uniformemente sofisticado, estructuras casi idénticas entre estudiantes que normalmente escriben muy distinto entre sí.',
+        context: 'Lo que empezó como una sospecha aislada con Estefanía ahora parece ser una práctica extendida en el grupo.',
+        choices: [
+          {
+            text: 'Reconocer que ignorar el primer caso permitió que el patrón se extendiera, y ahora sí abrir una conversación honesta con todo el grupo sobre uso responsable de IA en las tareas.',
+            next: 'cs13_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Seguir sin decir nada, esperando que el problema se resuelva solo.',
+            next: 'cs13_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Prohibir sin ninguna explicación pedagógica el uso de cualquier dispositivo para las tareas de ahora en adelante.',
+            next: 'cs13_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs13_outcome_success': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Marco: La integridad académica como conversación, no como cacería',
+        text: 'Marco manejó esta situación exactamente como propone este curso: verificó con curiosidad en vez de acusar, distinguió entre uso de apoyo y entrega sin procesar, y ofreció una segunda oportunidad con expectativas claras en vez de solo castigar. Estefanía reescribió su ensayo —esta vez con sus propias palabras, citando que usó IA para organizar sus ideas iniciales— y entendió, quizás por primera vez, la diferencia entre apoyarse en una herramienta y delegarle el pensamiento completo.',
+        badge: 'Integridad Académica con Empatía',
+        xpReward: 50
+      },
+      'cs13_outcome_partial': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 55,
+        title: 'Marco: La conversación que llegó, aunque tarde',
+        text: 'El camino de Marco tuvo tropiezos —una confrontación pública que tuvo que reparar después, o una consecuencia aplicada sin suficiente conversación pedagógica— pero en algún punto logró abrir el diálogo que realmente importaba: qué significa usar IA con honestidad académica. Esa conversación, aunque llegó con algo de fricción, deja una lección más duradera que el silencio o el castigo solo.',
+        badge: 'Integridad Académica en Proceso',
+        xpReward: 25
+      },
+      'cs13_outcome_struggle': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 20,
+        title: 'Marco: La oportunidad que se dejó pasar',
+        text: 'Ya sea por evitar la conversación necesaria o por manejarla de forma punitiva sin diálogo real, esta situación con Estefanía —y potencialmente con el resto del grupo— no se convirtió en el momento de aprendizaje que pudo haber sido. La integridad académica en la era de la IA no se enseña con silencio ni con prohibiciones sin explicación: se enseña con conversaciones honestas y consistentes.',
+        badge: 'Integridad Académica ante el Umbral',
+        xpReward: 10
+      }
+    }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 14: "El círculo que nadie quería" — Aprendizaje Socioemocional (SEL)
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs14',
+    title: 'El círculo que nadie quería',
+    course: 'Aprendizaje Socioemocional (SEL) para Docentes',
+    color: '#DB2777',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>',
+    duration: '15-20 min',
+    description: 'Andrea quiere introducir un círculo semanal de check-in emocional en su aula de sexto grado, pero el grupo lo recibe con burlas e incomodidad. Acompáñala a decidir cómo sostener la práctica.',
+    start: 'cs14_n1',
+    nodes: {
+
+      'cs14_n1': {
+        type: 'scenario',
+        text: 'Andrea, docente de sexto grado en Huehuetenango, decide introducir un círculo semanal donde cada estudiante comparte brevemente cómo llega esa semana. En el primer intento, varios estudiantes se ríen nerviosamente, dos dicen "paso" de forma burlona, y uno murmura "esto es cosa de niños chiquitos".',
+        context: 'Andrea siente que el primer intento no salió como esperaba, y tiene que decidir si continúa la práctica la próxima semana.',
+        choices: [
+          {
+            text: 'Mantener el círculo la próxima semana, pero empezar modelando ella misma primero, compartiendo algo genuino y breve antes de pedirle al grupo.',
+            next: 'cs14_n2a',
+            isCorrect: true
+          },
+          {
+            text: 'Cancelar la práctica por completo — "si no funcionó la primera vez, no vale la pena insistir".',
+            next: 'cs14_n2b',
+            isCorrect: false
+          },
+          {
+            text: 'Hacer el círculo obligatorio con calificación, para que "se lo tomen en serio".',
+            next: 'cs14_n2c',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs14_n2a': {
+        type: 'feedback_correct',
+        text: 'Buena decisión. La resistencia inicial a compartir emociones en voz alta es completamente normal, especialmente en sexto grado donde la vulnerabilidad frente a compañeros se siente arriesgada. Modelar primero —mostrando que el adulto también comparte algo real, no solo pide a los estudiantes que lo hagan— construye la seguridad necesaria antes de esperar apertura genuina.',
+        tip: 'Los estudiantes calibran qué tan seguro es un espacio observando primero al adulto. Si Andrea comparte algo genuino sin exagerar ni minimizar, les está enseñando cómo se ve la práctica.',
+        next: 'cs14_n3a',
+        xp: 10
+      },
+      'cs14_n2b': {
+        type: 'feedback_wrong',
+        text: 'Cancelar tras el primer intento incómodo es entendible, pero pierde de vista algo importante: casi ninguna práctica de SEL nueva funciona bien la primera vez, precisamente porque requiere que el grupo construya confianza gradualmente. Abandonar al primer signo de resistencia le enseña al grupo que la incomodidad siempre gana.',
+        tip: 'La resistencia inicial no es evidencia de que la práctica esté mal diseñada — es la señal más común de que se está pidiendo algo nuevo y vulnerable.',
+        next: 'cs14_n3b',
+        xp: 0
+      },
+      'cs14_n2c': {
+        type: 'feedback_wrong',
+        text: 'Calificar el círculo introduce exactamente la presión equivocada: convierte un espacio que debería sentirse seguro en una obligación evaluada, lo cual generalmente produce respuestas performativas ("estoy bien, todo bien") en vez de honestidad genuina — lo opuesto al objetivo del ejercicio.',
+        tip: 'El SEL genuino no se puede forzar con calificación. La participación auténtica requiere sentirse segura, no obligatoria.',
+        next: 'cs14_n3c',
+        xp: 0
+      },
+
+      'cs14_n3a': {
+        type: 'scenario',
+        text: 'La segunda semana, Andrea comparte primero: "Esta semana llegué un poco cansada porque dormí mal, pero contenta porque es viernes." El grupo se queda en silencio un momento, y luego uno de los estudiantes que antes se burló dice, en voz baja: "Yo llegué enojado porque perdí mi lápiz favorito." Es un comienzo pequeño pero real.',
+        context: 'No todos participan todavía, pero el tono del grupo cambió notablemente.',
+        choices: [
+          {
+            text: 'Agradecer genuinamente la participación de ese estudiante sin forzar a los demás, y seguir sosteniendo la práctica de forma consistente cada semana.',
+            next: 'cs14_outcome_success',
+            isCorrect: true
+          },
+          {
+            text: 'Presionar a los estudiantes que no han hablado todavía a que compartan "porque ya casi todos lo hicieron".',
+            next: 'cs14_outcome_partial',
+            isCorrect: false
+          },
+          {
+            text: 'Suspender la práctica de nuevo, pensando que el progreso fue "muy poco" para valer la pena continuar.',
+            next: 'cs14_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs14_n3b': {
+        type: 'scenario',
+        text: 'Un mes después, sin la práctica del círculo, Andrea nota que dos estudiantes tienen un conflicto no resuelto que ha estado creciendo en silencio, y se pregunta si el círculo —de haber continuado— podría haber ofrecido un espacio para procesarlo antes de que escalara.',
+        context: 'Andrea reconsidera si canceló la práctica demasiado rápido.',
+        choices: [
+          {
+            text: 'Retomar el círculo, esta vez con más paciencia, empezando de nuevo con Andrea modelando primero.',
+            next: 'cs14_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Decidir definitivamente que "el SEL no funciona con este grupo" y no volver a intentarlo.',
+            next: 'cs14_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Esperar a que surja otro conflicto antes de decidir si retoma la práctica.',
+            next: 'cs14_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs14_n3c': {
+        type: 'scenario',
+        text: 'Con el círculo calificado, Andrea nota que las respuestas se volvieron uniformes y superficiales: casi todos dicen "bien" sin importar cómo llegaron realmente. Una estudiante que suele confiarle cosas personales a Andrea en otros momentos, en el círculo calificado solo dice lo mínimo necesario para la nota.',
+        context: 'La calificación logró que todos "participaran", pero perdió la honestidad que el ejercicio buscaba.',
+        choices: [
+          {
+            text: 'Quitar la calificación y volver a presentar el círculo como un espacio seguro y voluntario, aunque signifique menos participación inicial.',
+            next: 'cs14_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Mantener la calificación porque "al menos así todos participan".',
+            next: 'cs14_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Aumentar el peso de la calificación para "motivar más honestidad".',
+            next: 'cs14_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs14_outcome_success': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Andrea: La confianza que se construye semana a semana',
+        text: 'Andrea sostuvo la práctica con paciencia, modeló la vulnerabilidad que pedía de sus estudiantes, y respetó el ritmo de cada uno sin forzar la participación. Meses después, el círculo se convirtió en uno de los momentos más esperados de la semana — un espacio donde varios conflictos pequeños se resolvieron antes de crecer, simplemente porque el grupo tenía un lugar seguro y regular para nombrar lo que sentía.',
+        badge: 'SEL Sostenido con Paciencia',
+        xpReward: 50
+      },
+      'cs14_outcome_partial': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 55,
+        title: 'Andrea: El segundo intento, con más criterio',
+        text: 'El primer camino de Andrea no fue el ideal —ya sea por presionar demasiado, cancelar muy pronto, o calificar el proceso— pero en algún punto ajustó el rumbo con lo aprendido. Retomar una práctica de SEL después de un tropiezo, con más paciencia que la primera vez, es en sí mismo un ejercicio de la misma autorregulación que el curso enseña.',
+        badge: 'SEL en Ajuste',
+        xpReward: 25
+      },
+      'cs14_outcome_struggle': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 20,
+        title: 'Andrea: La práctica que no llegó a arraigar',
+        text: 'Ya sea por abandonar la práctica muy pronto, por forzarla con calificación, o por no retomarla tras un primer tropiezo, el círculo de Andrea no llegó a convertirse en el espacio de confianza que podría haber sido. La lección que queda es valiosa: el SEL genuino necesita consistencia y paciencia — no se construye ni se abandona en una sola sesión.',
+        badge: 'SEL ante el Umbral',
+        xpReward: 10
+      }
+    }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 15: "Las estrellas que dejaron de brillar" — Disciplina Positiva
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs15',
+    title: 'Las estrellas que dejaron de brillar',
+    course: 'Disciplina Positiva y Motivación Intrínseca',
+    color: '#EA580C',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>',
+    duration: '15-20 min',
+    description: 'El sistema de estrellas de Pablo funcionó de maravilla en septiembre. En marzo, ya no motiva a nadie. Acompáñalo a decidir cómo replantear la motivación de su grupo.',
+    start: 'cs15_n1',
+    nodes: {
+
+      'cs15_n1': {
+        type: 'scenario',
+        text: 'Pablo enseña tercer grado en Quetzaltenango. En septiembre, introdujo un sistema de estrellas por buena conducta y tareas completas, y funcionó muy bien las primeras semanas. Ahora, en marzo, los estudiantes apenas miran el cartel de estrellas, y la conducta que antes motivaba ya no genera ningún entusiasmo.',
+        context: 'Pablo se pregunta si necesita premios más grandes, o si algo más profundo dejó de funcionar.',
+        choices: [
+          {
+            text: 'Empezar a rediseñar actividades dando más autonomía real (elegir cómo presentar un trabajo) y reconociendo el esfuerzo y progreso en voz alta, en vez de subir el valor de los premios.',
+            next: 'cs15_n2a',
+            isCorrect: true
+          },
+          {
+            text: 'Aumentar el premio: ahora una estrella completa vale un dulce, para recuperar el entusiasmo inicial.',
+            next: 'cs15_n2b',
+            isCorrect: false
+          },
+          {
+            text: 'Eliminar el sistema de estrellas de golpe sin ningún reemplazo, asumiendo que "ya no sirve para nada".',
+            next: 'cs15_n2c',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs15_n2a': {
+        type: 'feedback_correct',
+        text: 'Buena decisión. Pablo identificó correctamente que el problema no es la "cantidad" de premio, sino el tipo de motivación que está cultivando. Dar autonomía real y reconocer el proceso —no solo el resultado— empieza a construir los pilares de motivación intrínseca (autonomía, competencia, conexión) que sostienen el interés genuino, algo que ningún premio externo logra por sí solo.',
+        tip: 'Aumentar el premio solo pospone el mismo problema: tarde o temprano, cualquier recompensa externa pierde su efecto si es la única razón para actuar.',
+        next: 'cs15_n3a',
+        xp: 10
+      },
+      'cs15_n2b': {
+        type: 'feedback_wrong',
+        text: 'Subir el valor del premio puede generar un repunte temporal de entusiasmo, pero es exactamente el patrón que llevó al problema actual: cada vez se necesita un premio más grande para el mismo efecto. Este camino no tiene un final sostenible — eventualmente ningún premio será "suficiente".',
+        tip: 'Este es el efecto clásico de la motivación extrínseca: escala hacia arriba indefinidamente y nunca construye interés genuino por la actividad misma.',
+        next: 'cs15_n3b',
+        xp: 0
+      },
+      'cs15_n2c': {
+        type: 'feedback_wrong',
+        text: 'Eliminar el sistema sin ningún reemplazo deja un vacío real: los estudiantes se acostumbraron a algún tipo de reconocimiento por su esfuerzo, y quitarlo de golpe sin construir motivación intrínseca en su lugar probablemente resulte en una caída aún mayor del interés por participar.',
+        tip: 'La transición de motivación extrínseca a intrínseca funciona mejor de forma gradual, construyendo los nuevos pilares antes de retirar por completo los antiguos.',
+        next: 'cs15_n3c',
+        xp: 0
+      },
+
+      'cs15_n3a': {
+        type: 'scenario',
+        text: 'Dos semanas después, Pablo nota que varios estudiantes eligieron voluntariamente presentar su proyecto de ciencias de una forma más elaborada de lo pedido —uno hizo un modelo 3D sin que se lo exigieran—, y sin ninguna estrella de por medio.',
+        context: 'El cambio es gradual, no dramático, pero es genuino.',
+        choices: [
+          {
+            text: 'Reconocer específicamente el esfuerzo y la iniciativa de esos estudiantes en voz alta frente al grupo, nombrando exactamente qué hicieron bien.',
+            next: 'cs15_outcome_success',
+            isCorrect: true
+          },
+          {
+            text: 'Darles una estrella extra por la iniciativa, volviendo al sistema de premios que Pablo intentaba dejar atrás.',
+            next: 'cs15_outcome_partial',
+            isCorrect: false
+          },
+          {
+            text: 'No decir nada al respecto, para "no hacerlo sentir como que se espera siempre ese nivel de esfuerzo".',
+            next: 'cs15_outcome_partial',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs15_n3b': {
+        type: 'scenario',
+        text: 'Un mes después del cambio a dulces, Pablo nota que ahora varios estudiantes preguntan "¿esto también da dulce?" antes de cualquier actividad, incluso las que antes disfrutaban genuinamente sin pedir nada a cambio.',
+        context: 'El interés genuino que antes existía en algunas actividades parece estar desapareciendo también.',
+        choices: [
+          {
+            text: 'Reconocer el patrón y empezar a retirar gradualmente los premios materiales, reemplazándolos con reconocimiento genuino del progreso.',
+            next: 'cs15_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Seguir subiendo el valor de los premios para mantener el interés.',
+            next: 'cs15_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Culpar a los estudiantes por "solo importarles el premio", sin reconocer el rol del propio sistema en crear ese patrón.',
+            next: 'cs15_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs15_n3c': {
+        type: 'scenario',
+        text: 'Sin el sistema de estrellas ni ningún reemplazo, la participación general del grupo baja notablemente en las siguientes dos semanas. Varios estudiantes preguntan "¿ya no hay estrellas? ¿entonces para qué hacemos las cosas bien?"',
+        context: 'Pablo se da cuenta de que quitar el sistema sin nada que lo sustituya dejó un vacío real.',
+        choices: [
+          {
+            text: 'Introducir gradualmente reconocimiento genuino del esfuerzo y mayor autonomía en las actividades, explicando el cambio al grupo.',
+            next: 'cs15_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Reinstalar el sistema de estrellas exactamente como estaba antes, sin ningún cambio.',
+            next: 'cs15_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Decidir que el grupo "simplemente necesita premios" y no intentar ningún otro enfoque.',
+            next: 'cs15_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs15_outcome_success': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Pablo: De las estrellas al interés genuino',
+        text: 'Pablo hizo la transición que este curso propone: de un sistema que dependía enteramente de premios externos, a uno que construye autonomía, reconocimiento de proceso y conexión genuina con el grupo. Reconocer en voz alta el esfuerzo específico de sus estudiantes —sin convertirlo de nuevo en una transacción de premios— reforzó exactamente el tipo de motivación que sostiene el interés incluso cuando nadie está calificando ni premiando.',
+        badge: 'Disciplina Positiva Sostenida',
+        xpReward: 50
+      },
+      'cs15_outcome_partial': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 55,
+        title: 'Pablo: La transición en marcha',
+        text: 'El camino de Pablo tuvo tropiezos —ya sea reforzando el mismo patrón de premios, o retirándolos sin suficiente reemplazo— pero en algún punto identificó lo que realmente necesitaba cambiar: no la cantidad de premio, sino el tipo de motivación que estaba cultivando. Esa transición, aunque gradual y con ajustes en el camino, va en la dirección correcta.',
+        badge: 'Motivación en Transición',
+        xpReward: 25
+      },
+      'cs15_outcome_struggle': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 20,
+        title: 'Pablo: El ciclo de premios sin salida',
+        text: 'Ya sea escalando premios indefinidamente, eliminándolos sin ningún reemplazo, o volviendo al mismo sistema que dejó de funcionar, Pablo no logró todavía romper el ciclo de dependencia en la motivación externa. La buena noticia: identificar este patrón es el primer paso — la próxima vez, construir autonomía y reconocimiento de proceso desde el inicio, no como reacción tardía, será la diferencia.',
+        badge: 'Motivación ante el Umbral',
+        xpReward: 10
+      }
+    }
   }
 
 ];
