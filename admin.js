@@ -2346,10 +2346,16 @@ async function saveAnnouncement() {
     if (error) { toast('Error al guardar: ' + error.message, false); return; }
     toast('✓ Aviso guardado');
     const alsoPush = document.getElementById('annAlsoPush')?.checked;
+    let pushStats = null;
     if (alsoPush && _annState.active) {
-        await sendPushBroadcast(_annState.title || 'Aviso', _annState.message || '');
+        pushStats = await sendPushBroadcast(_annState.title || 'Aviso', _annState.message || '', true);
     }
+    await _logBroadcast({
+        title: _annState.title, message: _annState.message, annType: _annState.type,
+        isAnnouncement: true, isPush: !!pushStats, pushStats,
+    });
     await loadAnnouncement();
+    await loadBroadcastHistory();
 }
 
 // ── Notificaciones push ───────────────────────────────────────
@@ -2370,10 +2376,10 @@ async function loadPushPanel() {
         </div>`;
 }
 
-async function sendPushBroadcast(titleOverride, bodyOverride) {
+async function sendPushBroadcast(titleOverride, bodyOverride, _skipLog) {
     const title = titleOverride || document.getElementById('pushTitle')?.value?.trim();
     const body  = bodyOverride  || document.getElementById('pushBody')?.value?.trim();
-    if (!title && !body) { toast('Escribe un título o mensaje', false); return; }
+    if (!title && !body) { toast('Escribe un título o mensaje', false); return null; }
     const resultEl = document.getElementById('pushResult');
     if (resultEl) resultEl.textContent = 'Enviando…';
     try {
@@ -2390,11 +2396,57 @@ async function sendPushBroadcast(titleOverride, bodyOverride) {
         }
         if (resultEl) resultEl.textContent = `Enviado a ${data.sent} de ${data.total} suscripciones.`;
         toast(`✓ Notificación enviada (${data.sent}/${data.total})`);
+        if (!_skipLog) {
+            await _logBroadcast({ title, message: body, isAnnouncement: false, isPush: true, pushStats: data });
+            await loadBroadcastHistory();
+        }
+        return data;
     } catch (e) {
         const msg = e?.message || String(e);
         if (resultEl) resultEl.textContent = 'Error: ' + msg;
         toast('Error al enviar: ' + msg, false);
+        return null;
     }
+}
+
+// ── Historial de avisos y push ────────────────────────────────
+async function _logBroadcast({ title, message, annType, isAnnouncement, isPush, pushStats }) {
+    const { data: { user } } = await sb.auth.getUser();
+    await sb.from('broadcast_log').insert({
+        title: title || '', message: message || '',
+        ann_type: annType || null,
+        is_announcement: !!isAnnouncement,
+        is_push: !!isPush,
+        push_sent: pushStats?.sent ?? null,
+        push_total: pushStats?.total ?? null,
+        push_expired: pushStats?.expired ?? null,
+        created_by: user?.email || null,
+    });
+}
+
+async function loadBroadcastHistory() {
+    const container = document.getElementById('broadcastHistoryPanel');
+    if (!container) return;
+    const { data, error } = await sb.from('broadcast_log').select('*').order('created_at', { ascending: false }).limit(20);
+    if (error) { container.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Error al cargar historial: ${esc(error.message)}</p>`; return; }
+    if (!data || !data.length) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Todavía no se ha enviado ningún aviso ni notificación.</p>`; return; }
+    container.innerHTML = data.map(row => {
+        const when = new Date(row.created_at).toLocaleString('es-GT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const tags = [];
+        if (row.is_announcement) tags.push(`<span class="badge tag-amber" style="font-size:9px">Aviso${row.ann_type ? ' · ' + esc(row.ann_type) : ''}</span>`);
+        if (row.is_push) {
+            const stats = (row.push_sent ?? null) !== null ? ` (${row.push_sent}/${row.push_total})` : '';
+            tags.push(`<span class="badge tag-blue" style="font-size:9px">Push${stats}</span>`);
+        }
+        return `<div style="padding:10px 0;border-bottom:1px solid #f1f5f9">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
+                ${tags.join('')}
+                <span style="font-size:10px;color:#94a3b8;margin-left:auto">${when}${row.created_by ? ' · ' + esc(row.created_by) : ''}</span>
+            </div>
+            <p style="font-size:12px;font-weight:700;color:#1e293b;margin:0">${esc(row.title || '(sin título)')}</p>
+            ${row.message ? `<p style="font-size:11px;color:#64748b;margin:2px 0 0">${esc(row.message)}</p>` : ''}
+        </div>`;
+    }).join('');
 }
 
 // ── Rutas de Aprendizaje / Certificado Maestro ───────────────
@@ -2557,7 +2609,7 @@ let _signatures = [];
 let _schools    = [];
 
 async function loadSettings() {
-    await Promise.all([loadSignatures(), loadSchools(), loadCoordinators(), loadLearningPaths(), loadAnnouncement(), loadPushPanel()]);
+    await Promise.all([loadSignatures(), loadSchools(), loadCoordinators(), loadLearningPaths(), loadAnnouncement(), loadPushPanel(), loadBroadcastHistory()]);
 }
 
 // ── Firmas ──────────────────────────────────────────────────
