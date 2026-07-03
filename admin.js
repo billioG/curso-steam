@@ -2384,12 +2384,16 @@ async function sendPushBroadcast(titleOverride, bodyOverride) {
             body: JSON.stringify({ title: title || 'Formación Docente', body: body || '' }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+        if (!res.ok) {
+            const msg = (typeof data?.error === 'string' && data.error) || data?.detail || data?.message || `HTTP ${res.status}`;
+            throw new Error(msg);
+        }
         if (resultEl) resultEl.textContent = `Enviado a ${data.sent} de ${data.total} suscripciones.`;
         toast(`✓ Notificación enviada (${data.sent}/${data.total})`);
     } catch (e) {
-        if (resultEl) resultEl.textContent = 'Error: ' + e.message;
-        toast('Error al enviar: ' + e.message, false);
+        const msg = e?.message || String(e);
+        if (resultEl) resultEl.textContent = 'Error: ' + msg;
+        toast('Error al enviar: ' + msg, false);
     }
 }
 
