@@ -3894,6 +3894,86 @@ const COURSE_RESOURCES = {
         { name: 'Plantillas de Historia',          desc: 'Story spine, viaje del héroe y otros formatos listos para usar', icon: '📝', url: 'recursos/st-plantillas-historia.html' },
         { name: 'Banco de Historias Guatemaltecas', desc: '20 historias y personajes locales para usar en clase',   icon: '🗺️', url: 'recursos/st-banco-historias.html' },
     ],
+    'creatividad': [
+        { name: 'Guía para Despertar la Creatividad en el Aula', desc: 'Fundamentos y estrategias paso a paso para una cultura creativa en el aula', icon: '🎨', url: 'recursos/cr-guia.html' },
+        { name: 'Banco de 20 Retos Creativos de Aula', desc: 'Retos cortos y largos, con materiales de bajo costo, listos para usar', icon: '💡', url: 'recursos/cr-retos.html' },
+        { name: '10 Casos de Creatividad Aplicada en Aulas de Guatemala', desc: '10 experiencias reales adaptadas al contexto de escuelas guatemaltecas', icon: '🗺️', url: 'recursos/cr-casos.html' },
+    ],
+    'herramientas-tec': [
+        { name: 'Guía de Herramientas Digitales Gratuitas para el Aula', desc: 'Catálogo de herramientas gratuitas organizadas por función pedagógica', icon: '🧰', url: 'recursos/ht-guia.html' },
+        { name: 'Plantilla: Ficha de Evaluación de una Herramienta Nueva', desc: 'Checklist imprimible para decidir si vale la pena adoptar una herramienta', icon: '📝', url: 'recursos/ht-plantilla.html' },
+        { name: 'Banco de 12 Actividades con Tecnología de Bajo Costo', desc: '12 actividades que solo requieren un dispositivo por equipo', icon: '📱', url: 'recursos/ht-actividades.html' },
+    ],
+    'm-learning': [
+        { name: 'Guía de Mobile Learning: el Celular como Aliado, no Enemigo', desc: 'Estrategia completa para convertir el celular en herramienta pedagógica', icon: '📲', url: 'recursos/ml-guia.html' },
+        { name: 'Plantilla: Contrato de Uso del Celular en el Aula', desc: 'Contrato imprimible para establecer reglas claras desde el día 1', icon: '📄', url: 'recursos/ml-contrato.html' },
+        { name: 'Banco de 10 Micro-actividades con Celular (5-10 minutos)', desc: '10 actividades cortas listas para aplicar entre temas o al inicio de clase', icon: '⏱️', url: 'recursos/ml-microactividades.html' },
+    ],
+    'flipped-classroom': [
+        { name: 'Guía de Aula Invertida (Flipped Classroom)', desc: 'Fundamentos y pasos para invertir tu clase tradicional', icon: '🔄', url: 'recursos/fc-guia.html' },
+        { name: 'Plantilla: Planificador de Clase Invertida', desc: 'Formato editable para planificar una sesión de aula invertida', icon: '🗓️', url: 'recursos/fc-planificador.html' },
+        { name: '8 Casos de Aula Invertida en Contextos con Poca Conectividad', desc: 'Adaptaciones reales para escuelas con acceso limitado a internet', icon: '📶', url: 'recursos/fc-casos.html' },
+    ],
+    'abv': [
+        { name: 'Guía de Aprendizaje Basado en Videos', desc: 'Principios y pasos para usar el video como herramienta de aprendizaje real', icon: '🎬', url: 'recursos/abv-guia.html' },
+        { name: 'Plantilla: Guía de Visualización Activa', desc: 'Formato imprimible para convertir cualquier video en aprendizaje activo', icon: '📋', url: 'recursos/abv-plantilla.html' },
+        { name: 'Banco de Canales de YouTube Educativo en Español', desc: 'Selección curada de canales confiables por área curricular', icon: '📺', url: 'recursos/abv-canales.html' },
+    ],
+    'micro-learning': [
+        { name: 'Guía de Micro-learning: Aprender en Pequeñas Dosis', desc: 'Fundamentos del aprendizaje en dosis pequeñas y cómo aplicarlo', icon: '⏳', url: 'recursos/mcl-guia.html' },
+        { name: 'Plantilla: Calendario de Repaso Espaciado', desc: 'Formato para planificar repasos espaciados de un concepto durante 2 semanas', icon: '📅', url: 'recursos/mcl-calendario.html' },
+        { name: 'Banco de 15 Micro-lecciones Listas para Usar', desc: '15 micro-lecciones modelo de distintas materias, listas para adaptar', icon: '🧩', url: 'recursos/mcl-banco.html' },
+    ],
+    'ia-fundamentos': [
+        { name: 'Guía de Fundamentos de IA para Docentes', desc: 'Conceptos base de IA explicados para uso pedagógico real', icon: '🤖', url: 'recursos/iaf-guia.html' },
+        { name: 'Plantilla: Mis Primeras 10 Instrucciones (Prompts) Útiles', desc: '10 instrucciones de IA probadas, listas para copiar y personalizar', icon: '✍️', url: 'recursos/iaf-prompts.html' },
+        { name: '8 Casos de Uso de IA en Aulas Guatemaltecas', desc: 'Casos concretos de uso responsable de IA en el contexto educativo local', icon: '🗺️', url: 'recursos/iaf-casos.html' },
+    ],
+    'ia-tiempo': [
+        { name: 'Guía: Recupera Horas de tu Semana con IA', desc: 'Estrategias concretas para reducir carga de trabajo administrativo docente', icon: '⏰', url: 'recursos/iat-guia.html' },
+        { name: 'Plantilla: Mi Rutina Semanal con Apoyo de IA', desc: 'Planificador semanal para distribuir tareas administrativas con apoyo de IA', icon: '🗂️', url: 'recursos/iat-rutina.html' },
+        { name: 'Banco de 12 Prompts para Tareas Administrativas Docentes', desc: '12 instrucciones probadas para planificación, evaluación y comunicación', icon: '📋', url: 'recursos/iat-prompts.html' },
+    ],
+    'ia-herramientas': [
+        { name: 'Guía de Herramientas de IA Gratuitas para Docentes', desc: 'Selección de herramientas de IA gratuitas organizadas por uso pedagógico', icon: '🧰', url: 'recursos/iah-guia.html' },
+        { name: 'Plantilla: Ficha de Prueba de Herramienta de IA', desc: 'Checklist de seguridad y utilidad antes de usar una herramienta de IA con estudiantes', icon: '✅', url: 'recursos/iah-ficha.html' },
+        { name: 'Banco de 10 Actividades con Herramientas de IA Gratuitas', desc: '10 actividades de aula que aprovechan herramientas de IA sin costo', icon: '💡', url: 'recursos/iah-actividades.html' },
+    ],
+    'ia-inclusion': [
+        { name: 'Guía: IA como Puente para la Inclusión Educativa', desc: 'Estrategias de uso de IA para diferenciar y apoyar la diversidad en el aula', icon: '🌈', url: 'recursos/iai-guia.html' },
+        { name: 'Plantilla: Diferenciación de una Actividad en 3 Niveles', desc: 'Planificador de diferenciación de actividades en 3 niveles de apoyo', icon: '📐', url: 'recursos/iai-plantilla.html' },
+        { name: '6 Casos de IA Apoyando la Inclusión en el Aula', desc: 'Casos reales de adaptación de material con apoyo de herramientas de IA', icon: '🗺️', url: 'recursos/iai-casos.html' },
+    ],
+    'ia-ciudadania': [
+        { name: 'Guía de Ciudadanía Digital en la Era de la IA', desc: 'Marco pedagógico para formar estudiantes críticos frente a la IA', icon: '🧭', url: 'recursos/iac-guia.html' },
+        { name: 'Plantilla: Acuerdo de Uso Ético de IA para el Aula', desc: 'Contrato de aula sobre uso responsable de inteligencia artificial', icon: '📜', url: 'recursos/iac-acuerdo.html' },
+        { name: 'Banco de 8 Actividades de Alfabetización en IA para Estudiantes', desc: '8 actividades listas para formar ciudadanía digital crítica', icon: '🔍', url: 'recursos/iac-actividades.html' },
+    ],
+    'manejo-conductas': [
+        { name: 'Guía de Manejo de Conductas Desafiantes', desc: 'Estrategias prácticas para responder a conductas desafiantes con calma y firmeza', icon: '🛡️', url: 'recursos/mc-guia.html' },
+        { name: 'Plantilla: Plan de Respuesta ante Conductas Recurrentes', desc: 'Planificador individual para anticipar y responder a conductas específicas', icon: '📋', url: 'recursos/mc-plan.html' },
+        { name: '8 Casos de Manejo de Conductas en Aulas Guatemaltecas', desc: 'Casos concretos de manejo efectivo de conductas desafiantes', icon: '🗺️', url: 'recursos/mc-casos.html' },
+    ],
+    'sel-docentes': [
+        { name: 'Guía de Aprendizaje Socioemocional (SEL) para Docentes', desc: 'Marco de competencias SEL aplicado a la práctica docente diaria', icon: '💗', url: 'recursos/sel-guia.html' },
+        { name: 'Plantilla: Mi Termómetro Emocional Diario', desc: 'Herramienta de auto-registro para practicar SEL como docente', icon: '🌡️', url: 'recursos/sel-termometro.html' },
+        { name: 'Banco de 10 Actividades SEL para el Aula (5-15 minutos)', desc: '10 actividades breves de aprendizaje socioemocional listas para aplicar', icon: '🤝', url: 'recursos/sel-actividades.html' },
+    ],
+    'comunicacion-asertiva': [
+        { name: 'Guía de Comunicación Asertiva para Docentes', desc: 'Fundamentos de comunicación asertiva aplicados al aula y a colegas/padres', icon: '🗣️', url: 'recursos/ca-guia.html' },
+        { name: 'Plantilla: Preparación de una Conversación Difícil', desc: 'Guía para preparar conversaciones difíciles con la fórmula DEEC', icon: '💬', url: 'recursos/ca-preparacion.html' },
+        { name: '6 Casos de Comunicación Asertiva en el Contexto Escolar', desc: 'Ejemplos reales de resolución de conflictos escolares con comunicación asertiva', icon: '🗺️', url: 'recursos/ca-casos.html' },
+    ],
+    'disciplina-positiva': [
+        { name: 'Guía de Disciplina Positiva', desc: 'Principios de disciplina positiva aplicados al manejo diario del aula', icon: '🌱', url: 'recursos/dp-guia.html' },
+        { name: 'Plantilla: Consecuencias Lógicas (no Castigos Arbitrarios)', desc: 'Guía práctica para diseñar consecuencias relacionadas y proporcionales', icon: '⚖️', url: 'recursos/dp-consecuencias.html' },
+        { name: '6 Casos de Disciplina Positiva Aplicada', desc: 'Ejemplos concretos de disciplina positiva en distintos niveles educativos', icon: '🗺️', url: 'recursos/dp-casos.html' },
+    ],
+    'bienestar-docente': [
+        { name: 'Guía de Bienestar Docente y Prevención del Desgaste (Burnout)', desc: 'Guía para identificar y prevenir el desgaste profesional docente', icon: '🌿', url: 'recursos/bd-guia.html' },
+        { name: 'Plantilla: Mi Chequeo Semanal de Bienestar', desc: 'Herramienta de auto-monitoreo semanal de bienestar docente', icon: '📊', url: 'recursos/bd-chequeo.html' },
+        { name: 'Banco de 8 Micro-prácticas de Autocuidado para el Día Escolar', desc: '8 micro-prácticas realistas de bienestar para docentes con poco tiempo', icon: '🍃', url: 'recursos/bd-micropracticas.html' },
+    ],
 };
 
 function renderCourseResources() {
