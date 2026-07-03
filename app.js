@@ -2347,7 +2347,11 @@ function showBadgesModal() {
             <div style="font-size:12px;font-weight:800;color:#0f172a;line-height:1.3;margin-bottom:3px">${badge.name}</div>
             <div style="font-size:10px;color:#64748b;line-height:1.4;margin-bottom:5px">${badge.desc}</div>
             ${unlocked
-                ? `<span style="font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;border-radius:20px;padding:2px 8px;display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:11px;height:11px">${ICONS?.check||'✓'}</span>Desbloqueado</span>`
+                ? `<span style="font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;border-radius:20px;padding:2px 8px;display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:11px;height:11px">${ICONS?.check||'✓'}</span>Desbloqueado</span>
+                  <button onclick="shareBadgeImage('${badge.id}')" title="Compartir como imagen"
+                    style="margin-top:6px;width:100%;display:flex;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:700;color:#4f46e5;background:#eef2ff;border:none;border-radius:20px;padding:4px 8px;cursor:pointer">
+                    <span style="display:inline-flex;width:11px;height:11px">${ICONS?.share||'↗'}</span>Compartir
+                  </button>`
                 : `<span style="font-size:10px;font-weight:700;color:#94a3b8;background:#f1f5f9;border-radius:20px;padding:2px 8px">+${badge.xpReward} XP</span>`}
         </div>`;
     });
@@ -2364,6 +2368,89 @@ function shareBadges() {
         navigator.clipboard.writeText(text);
         showToast("📋 Texto copiado al portapapeles", "info");
     }
+}
+
+// Genera una imagen PNG de una insignia individual (canvas) y la comparte o descarga.
+async function shareBadgeImage(badgeId) {
+    const badge = badges[badgeId];
+    if (!badge) return;
+    const svg = BADGE_SVG[badgeId] || `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#e2e8f0"/></svg>`;
+
+    const W = 640, H = 640;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo degradado de marca
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, '#1A6B68');
+    grad.addColorStop(1, '#07B0E4');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Círculo blanco de fondo para la insignia
+    ctx.fillStyle = 'rgba(255,255,255,.95)';
+    ctx.beginPath();
+    ctx.arc(W / 2, 250, 150, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Rasterizar el SVG de la insignia sobre el círculo
+    const img = new Image();
+    const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve; // seguir sin la insignia antes que romper el share
+        img.src = svgUrl;
+    });
+    if (img.complete && img.naturalWidth > 0) {
+        ctx.drawImage(img, W / 2 - 110, 140, 220, 220);
+    }
+
+    // Textos
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.font = '900 34px Arial, sans-serif';
+    _wrapCanvasText(ctx, badge.name, W / 2, 460, 560, 40);
+    ctx.font = '600 18px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    ctx.fillText(badge.desc || '', W / 2, 510, 560);
+    ctx.font = '700 16px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.7)';
+    ctx.fillText(`${getDisplayName()} · Formación Docente`, W / 2, 590);
+
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    if (!blob) { showToast('No se pudo generar la imagen', 'warning'); return; }
+    const file = new File([blob], `insignia-${badgeId}.png`, { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({ files: [file], title: badge.name, text: `¡Desbloqueé la insignia "${badge.name}" en Formación Docente!` });
+            return;
+        } catch (e) { /* usuario canceló el share nativo — cae al fallback de descarga */ }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `insignia-${badgeId}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    showToast('Imagen descargada — compártela donde quieras', 'success');
+}
+
+function _wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+    const words = String(text || '').split(' ');
+    let line = '';
+    const lines = [];
+    words.forEach(word => {
+        const test = line ? `${line} ${word}` : word;
+        if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = word; }
+        else line = test;
+    });
+    if (line) lines.push(line);
+    const startY = y - (lines.length - 1) * lineHeight / 2;
+    lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineHeight));
 }
 
 function showRedeemModal() {
@@ -3975,6 +4062,15 @@ const COURSE_RESOURCES = {
     ],
 };
 
+function _trackResourceDownload(courseId, resourceUrl) {
+    if (!currentUser) return;
+    supabase.from('user_events').insert({
+        user_id: currentUser.id,
+        event_type: 'resource_download',
+        metadata: { courseId, resourceUrl },
+    }).then(({ error }) => { if (error) console.log('Track download error:', error); });
+}
+
 function renderCourseResources() {
     const el = document.getElementById('courseResourcesSection');
     if (!el) return;
@@ -4012,6 +4108,7 @@ function renderCourseResources() {
                     </div>
                     ${hasUrl
                         ? `<a href="${r.url}" target="_blank" rel="noopener"
+                            onclick="_trackResourceDownload('${c.id}', '${esc(r.url)}')"
                             style="flex-shrink:0;background:#4f46e5;color:white;font-size:10px;font-weight:700;
                             padding:5px 10px;border-radius:8px;text-decoration:none;white-space:nowrap">
                             ⬇ Descargar</a>`
