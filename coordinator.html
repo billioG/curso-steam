@@ -18,7 +18,15 @@
   .badge-gray  { background:#f1f5f9;color:#64748b; }
   table { width:100%;border-collapse:collapse;font-size:13px; }
   th { text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;border-bottom:1.5px solid #f1f5f9; }
-  th.th-group { text-align:center;background:#f8fafc;color:#4f46e5;border-bottom:1.5px solid #e2e8f0;white-space:nowrap; }
+  th.th-group { text-align:center;background:#f8fafc;color:#4f46e5;border-bottom:1.5px solid #e2e8f0;white-space:nowrap;cursor:pointer;user-select:none; }
+  th.th-group:hover { background:#eef2ff; }
+  .th-group-arrow { display:inline-block;font-size:9px;transition:transform .15s ease; }
+  /* Oculta las columnas de curso de cada ruta mientras está colapsada */
+  table.collapsed-steam20 .grp-steam20,
+  table.collapsed-creativo .grp-creativo,
+  table.collapsed-metodologias .grp-metodologias,
+  table.collapsed-ia .grp-ia,
+  table.collapsed-convivencia .grp-convivencia { display:none; }
   td { padding:10px 12px;border-bottom:1px solid #f8fafc;color:#334155;vertical-align:middle; }
   tr:last-child td { border-bottom:none; }
   tr:hover td { background:#f8fafc; }
@@ -201,7 +209,7 @@
           class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200 w-40">
       </div>
       <div class="overflow-x-auto">
-        <table>
+        <table id="teachersTable">
           <thead>
             <tr id="teachersGroupRow">
               <th rowspan="2">Docente</th>
@@ -263,12 +271,15 @@ const COURSES = [
 // ruta de esta lista que lo contenga, para que cada columna aparezca una
 // sola vez agrupada bajo un encabezado de ruta.
 const ROUTE_GROUPS = [
-    { label: 'Docente STEAM 2.0',           courses: ['steam', 'abp', 'design-thinking', 'evaluacion', 'tipos-estudiantes'] },
-    { label: 'Docente Creativo',            courses: ['creatividad', 'herramientas-tec', 'storytelling'] },
-    { label: 'Metodologías Activas',        courses: ['m-learning', 'flipped-classroom', 'abv', 'micro-learning'] },
-    { label: 'Docente y la IA',             courses: ['ia-fundamentos', 'ia-tiempo', 'ia-herramientas', 'ia-inclusion', 'ia-ciudadania'] },
-    { label: 'Clima y Convivencia Escolar', courses: ['manejo-conductas', 'sel-docentes', 'comunicacion-asertiva', 'disciplina-positiva', 'bienestar-docente'] },
+    { id: 'steam20',      label: 'Docente STEAM 2.0',           courses: ['steam', 'abp', 'design-thinking', 'evaluacion', 'tipos-estudiantes'] },
+    { id: 'creativo',     label: 'Docente Creativo',            courses: ['creatividad', 'herramientas-tec', 'storytelling'] },
+    { id: 'metodologias', label: 'Metodologías Activas',        courses: ['m-learning', 'flipped-classroom', 'abv', 'micro-learning'] },
+    { id: 'ia',           label: 'Docente y la IA',             courses: ['ia-fundamentos', 'ia-tiempo', 'ia-herramientas', 'ia-inclusion', 'ia-ciudadania'] },
+    { id: 'convivencia',  label: 'Clima y Convivencia Escolar', courses: ['manejo-conductas', 'sel-docentes', 'comunicacion-asertiva', 'disciplina-positiva', 'bienestar-docente'] },
 ];
+
+// Empiezan todas colapsadas — el coordinador expande solo la ruta que le interesa.
+const _collapsedGroups = new Set(ROUTE_GROUPS.map(g => g.id));
 
 // Ordenar COURSES según el agrupamiento por ruta, para que las columnas de
 // datos (renderTeachers) y los encabezados queden en el mismo orden.
@@ -287,8 +298,16 @@ const COURSES_GROUPED = (() => {
     return ordered;
 })();
 
+// courseId -> groupId, para etiquetar cada celda de dato con su ruta
+const COURSE_TO_GROUP = (() => {
+    const map = {};
+    ROUTE_GROUPS.forEach(g => g.courses.forEach(cid => { if (!(cid in map)) map[cid] = g.id; }));
+    return map;
+})();
+
 // Inyectar encabezados de ruta (fila 1, con colspan) y de curso (fila 2),
-// agrupados por ruta, antes de la columna "Último acceso".
+// agrupados por ruta, antes de la columna "Último acceso". Empiezan
+// colapsadas: la fila de ruta ocupa 1 sola columna hasta que se hace clic.
 (function () {
     const groupRow = document.getElementById('teachersGroupRow');
     const courseRow = document.getElementById('teachersHeadRow');
@@ -303,17 +322,42 @@ const COURSES_GROUPED = (() => {
         if (!idsInGroup.length) return;
         const groupTh = document.createElement('th');
         groupTh.className = 'th-group';
-        groupTh.colSpan = idsInGroup.length;
-        groupTh.textContent = g.label;
+        groupTh.dataset.group = g.id;
+        groupTh.dataset.count = idsInGroup.length;
+        groupTh.colSpan = 1; // colapsado por defecto
+        groupTh.onclick = () => toggleRouteGroup(g.id);
+        groupTh.innerHTML = `<span class="th-group-arrow">▶</span> ${esc(g.label)}`;
         groupRow.insertBefore(groupTh, lastAccessTh);
     });
 
     COURSES_GROUPED.forEach(c => {
+        const groupId = COURSE_TO_GROUP[c.id];
         const th = document.createElement('th');
         th.textContent = c.title;
+        th.className = groupId ? `course-col grp-${groupId}` : 'course-col';
         courseRow.appendChild(th);
     });
+
+    document.getElementById('teachersTable')?.classList.add(...[...ROUTE_GROUPS.map(g => `collapsed-${g.id}`)]);
 })();
+
+function toggleRouteGroup(groupId) {
+    const table = document.getElementById('teachersTable');
+    const groupTh = document.querySelector(`.th-group[data-group="${groupId}"]`);
+    if (!table || !groupTh) return;
+    const isCollapsed = _collapsedGroups.has(groupId);
+    if (isCollapsed) {
+        _collapsedGroups.delete(groupId);
+        table.classList.remove(`collapsed-${groupId}`);
+        groupTh.colSpan = Number(groupTh.dataset.count);
+        groupTh.querySelector('.th-group-arrow').textContent = '▼';
+    } else {
+        _collapsedGroups.add(groupId);
+        table.classList.add(`collapsed-${groupId}`);
+        groupTh.colSpan = 1;
+        groupTh.querySelector('.th-group-arrow').textContent = '▶';
+    }
+}
 
 let _allTeachers = [];   // cada item tiene ._schoolName
 let _coordSchools = [];
@@ -591,9 +635,11 @@ function renderTeachers(list) {
     tbody.innerHTML = list.map(p => {
         const certs = countCerts(p);
         const courseCells = COURSES_GROUPED.map(c => {
-            if (hasCertPassed(p, c.id)) return `<td><span class="badge badge-green" style="font-size:9px">✓</span></td>`;
-            if (hasCourseStarted(p, c))  return `<td><span class="badge badge-blue" style="font-size:9px">${getCoursePct(p,c)}%</span></td>`;
-            return `<td><span class="text-slate-300 text-xs">—</span></td>`;
+            const groupId = COURSE_TO_GROUP[c.id];
+            const cls = groupId ? ` class="grp-${groupId}"` : '';
+            if (hasCertPassed(p, c.id)) return `<td${cls}><span class="badge badge-green" style="font-size:9px">✓</span></td>`;
+            if (hasCourseStarted(p, c))  return `<td${cls}><span class="badge badge-blue" style="font-size:9px">${getCoursePct(p,c)}%</span></td>`;
+            return `<td${cls}><span class="text-slate-300 text-xs">—</span></td>`;
         }).join('');
 
         return `<tr>
