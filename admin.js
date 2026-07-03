@@ -856,6 +856,49 @@ async function loadAnalytics() {
     }
 }
 
+// ── Recursos más descargados (user_events: resource_download) ──
+async function loadResourceDownloadsPanel() {
+    const container = document.getElementById('analyticsResourcesPanel');
+    if (!container) return;
+    const { data, error } = await sb.from('user_events')
+        .select('metadata')
+        .eq('event_type', 'resource_download')
+        .limit(5000);
+    if (error) { container.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Error: ${esc(error.message)}</p>`; return; }
+    if (!data || !data.length) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Todavía no hay descargas registradas.</p>`; return; }
+
+    const counts = {};
+    data.forEach(row => {
+        const url = row.metadata?.resourceUrl;
+        const courseId = row.metadata?.courseId;
+        if (!url) return;
+        const key = courseId + '|' + url;
+        counts[key] = (counts[key] || 0) + 1;
+    });
+
+    const ranked = Object.entries(counts)
+        .map(([key, count]) => {
+            const [courseId, url] = key.split('|');
+            const course = STATIC_COURSES.find(c => c.id === courseId);
+            const fileName = (url.split('/').pop() || url).replace('.html', '').replace(/-/g, ' ');
+            return { courseTitle: course?.title || courseId, fileName, count };
+        })
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+    const maxCount = ranked[0]?.count || 1;
+    container.innerHTML = ranked.map(r => `
+        <div style="padding:8px 0;border-bottom:1px solid #f8fafc">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+                <span style="font-size:12px;font-weight:600;color:#1e293b;text-transform:capitalize">${esc(r.fileName)}</span>
+                <span style="font-size:11px;color:#94a3b8;flex-shrink:0;margin-left:8px">${esc(r.courseTitle)} · <strong style="color:#4f46e5">${r.count}</strong></span>
+            </div>
+            <div style="background:#f1f5f9;border-radius:6px;height:6px;overflow:hidden">
+                <div style="background:#4f46e5;height:100%;width:${Math.round(r.count / maxCount * 100)}%"></div>
+            </div>
+        </div>`).join('');
+}
+
 // ────────────────────────────────────────────────────────────
 // USUARIOS
 // ────────────────────────────────────────────────────────────
@@ -2306,13 +2349,13 @@ function _renderAnnouncementPanel() {
     container.innerHTML = `
         <div class="space-y-3">
             <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 cursor-pointer">
-                <input type="checkbox" id="annActive" ${a.active ? 'checked' : ''} onchange="_annState.active=this.checked">
+                <input type="checkbox" id="annActive" ${a.active ? 'checked' : ''} onchange="_annState.active=this.checked; _updateAnnPreview()">
                 Aviso activo (visible para todos los docentes)
             </label>
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="text-xs font-semibold text-slate-500 mb-1 block">Tipo</label>
-                    <select id="annType" class="input-field text-xs" onchange="_annState.type=this.value">${typeOptions}</select>
+                    <select id="annType" class="input-field text-xs" onchange="_annState.type=this.value; _updateAnnPreview()">${typeOptions}</select>
                 </div>
                 <div>
                     <label class="text-xs font-semibold text-slate-500 mb-1 block">Expira (opcional)</label>
@@ -2321,17 +2364,41 @@ function _renderAnnouncementPanel() {
             </div>
             <div>
                 <label class="text-xs font-semibold text-slate-500 mb-1 block">Título corto</label>
-                <input id="annTitle" class="input-field text-sm" placeholder="Ej: Mantenimiento programado" value="${esc(a.title)}" oninput="_annState.title=this.value">
+                <input id="annTitle" class="input-field text-sm" placeholder="Ej: Mantenimiento programado" value="${esc(a.title)}" oninput="_annState.title=this.value; _updateAnnPreview()">
             </div>
             <div>
                 <label class="text-xs font-semibold text-slate-500 mb-1 block">Mensaje</label>
-                <textarea id="annMessage" class="input-field text-sm" rows="3" placeholder="Ej: Estaremos en mantenimiento el sábado de 8pm a 10pm. Tu progreso está seguro." oninput="_annState.message=this.value">${esc(a.message)}</textarea>
+                <textarea id="annMessage" class="input-field text-sm" rows="3" placeholder="Ej: Estaremos en mantenimiento el sábado de 8pm a 10pm. Tu progreso está seguro." oninput="_annState.message=this.value; _updateAnnPreview()">${esc(a.message)}</textarea>
             </div>
             <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
                 <input type="checkbox" id="annAlsoPush">
                 También enviar como notificación push a quienes la activaron
             </label>
             <button onclick="saveAnnouncement()" class="btn-primary text-xs w-full"><i class="fas fa-save mr-1"></i>Guardar aviso</button>
+            <div>
+                <p class="text-xs font-semibold text-slate-500 mb-1.5">Vista previa (así lo ven los docentes)</p>
+                <div id="annPreview"></div>
+            </div>
+        </div>`;
+    _updateAnnPreview();
+}
+
+function _updateAnnPreview() {
+    const el = document.getElementById('annPreview');
+    if (!el) return;
+    const a = _annState;
+    if (!a.active || (!a.title.trim() && !a.message.trim())) {
+        el.innerHTML = `<div class="text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl px-3 py-3 text-center">El banner no se muestra — actívalo y escribe un título o mensaje.</div>`;
+        return;
+    }
+    const t = ANN_TYPES[a.type] || ANN_TYPES.info;
+    el.innerHTML = `
+        <div style="background:${t.bg};color:${t.color};padding:10px 14px;border-radius:12px;display:flex;align-items:center;gap:10px;font-size:12px;border:1px solid ${t.color}33">
+            <i class="fas ${t.icon}" style="flex-shrink:0"></i>
+            <span style="flex:1;min-width:0">
+                ${a.title.trim() ? `<strong>${esc(a.title)}</strong>` : ''}${a.title.trim() && a.message.trim() ? ' — ' : ''}${a.message.trim() ? esc(a.message) : ''}
+            </span>
+            <span style="flex-shrink:0;font-size:16px;line-height:1;opacity:.6">&times;</span>
         </div>`;
 }
 
@@ -2350,10 +2417,15 @@ async function saveAnnouncement() {
     if (alsoPush && _annState.active) {
         pushStats = await sendPushBroadcast(_annState.title || 'Aviso', _annState.message || '', true);
     }
-    await _logBroadcast({
-        title: _annState.title, message: _annState.message, annType: _annState.type,
-        isAnnouncement: true, isPush: !!pushStats, pushStats,
-    });
+    // Solo queda registro en el historial cuando el aviso se activa con contenido real —
+    // guardar un borrador desactivado o simplemente apagarlo no ensucia el historial.
+    if (_annState.active && (_annState.title.trim() || _annState.message.trim())) {
+        await _logBroadcast({
+            title: _annState.title, message: _annState.message, annType: _annState.type,
+            isAnnouncement: true, isPush: !!pushStats, pushStats,
+        });
+        await loadBroadcastHistory();
+    }
     await loadAnnouncement();
     await loadBroadcastHistory();
 }
@@ -2956,7 +3028,7 @@ function switchView(view) {
     if (bEl) bEl.classList.add('active');
 
     if (view==='dashboard') loadDashboard();
-    if (view==='analytics') loadAnalytics();
+    if (view==='analytics') { loadAnalytics(); loadResourceDownloadsPanel(); }
     if (view==='users')     loadUsers();
     if (view==='feedback')  loadFeedback();
     if (view==='comments')  loadAdminComments();
