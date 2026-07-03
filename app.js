@@ -2453,6 +2453,111 @@ function _wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
     lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineHeight));
 }
 
+// ==================== BÚSQUEDA GLOBAL ====================
+function _stripHtml(html) {
+    return String(html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+let _globalSearchIndex = null;
+
+function _buildGlobalSearchIndex() {
+    const cards = [];
+    if (typeof allCourses !== 'undefined') {
+        allCourses.forEach(course => {
+            (course.modules || []).forEach((mod, mi) => {
+                (mod.cards || []).forEach(card => {
+                    if (card.type && card.type !== 'content') return; // solo tarjetas de contenido, no quizzes
+                    const text = _stripHtml((card.content || '') + ' ' + (card.extra || ''));
+                    cards.push({ courseId: course.id, courseTitle: course.title, moduleIndex: mi + 1, cardId: card.id, title: card.title || '', text });
+                });
+            });
+        });
+    }
+    const resources = [];
+    if (typeof COURSE_RESOURCES !== 'undefined') {
+        Object.entries(COURSE_RESOURCES).forEach(([courseId, list]) => {
+            const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === courseId) : null;
+            list.forEach(r => resources.push({ courseId, courseTitle: course?.title || courseId, name: r.name, desc: r.desc, url: r.url }));
+        });
+    }
+    return { cards, resources };
+}
+
+function openGlobalSearch() {
+    if (!_globalSearchIndex) _globalSearchIndex = _buildGlobalSearchIndex();
+    document.getElementById('globalSearchModal').classList.remove('hidden');
+    const input = document.getElementById('globalSearchInput');
+    input.value = '';
+    document.getElementById('globalSearchResults').innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Escribe al menos 3 letras para buscar.</p>`;
+    setTimeout(() => input.focus(), 150);
+}
+
+function _runGlobalSearch(query) {
+    const container = document.getElementById('globalSearchResults');
+    const q = query.trim().toLowerCase();
+    if (q.length < 3) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Escribe al menos 3 letras para buscar.</p>`; return; }
+    if (!_globalSearchIndex) _globalSearchIndex = _buildGlobalSearchIndex();
+
+    const cardMatches = _globalSearchIndex.cards
+        .filter(c => c.title.toLowerCase().includes(q) || c.text.toLowerCase().includes(q))
+        .slice(0, 8);
+    const resourceMatches = _globalSearchIndex.resources
+        .filter(r => r.name.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q))
+        .slice(0, 6);
+
+    let html = '';
+    if (cardMatches.length) {
+        html += `<p class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 mt-1">Tarjetas</p>`;
+        html += cardMatches.map(c => {
+            const idx = c.text.toLowerCase().indexOf(q);
+            const snippet = idx >= 0 ? '…' + c.text.slice(Math.max(0, idx - 30), idx + 60) + '…' : c.text.slice(0, 80);
+            return `<button onclick="_openSearchResultCard('${c.courseId}',${c.moduleIndex},'${String(c.cardId).replace(/'/g,"\\'")}')"
+                class="w-full text-left bg-white border border-slate-100 rounded-xl px-3 py-2.5 mb-2 hover:border-indigo-200 hover:bg-indigo-50/40 transition">
+                <p class="text-xs font-bold text-slate-800">${esc(c.title)}</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">${esc(c.courseTitle)} · Módulo ${c.moduleIndex}</p>
+                <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">${esc(snippet)}</p>
+            </button>`;
+        }).join('');
+    }
+    if (resourceMatches.length) {
+        html += `<p class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 mt-3">Recursos descargables</p>`;
+        html += resourceMatches.map(r => `
+            <a href="${r.url}" target="_blank" rel="noopener"
+                class="flex items-center justify-between gap-2 w-full text-left bg-white border border-slate-100 rounded-xl px-3 py-2.5 mb-2 hover:border-indigo-200 hover:bg-indigo-50/40 transition">
+                <div class="min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate">${esc(r.name)}</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">${esc(r.courseTitle)}</p>
+                </div>
+                <span class="text-[10px] font-bold text-indigo-600 flex-shrink-0">Abrir →</span>
+            </a>`).join('');
+    }
+    html += `<p class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 mt-3">Glosario</p>
+        <a href="glosario.html?q=${encodeURIComponent(query.trim())}" target="_blank"
+            class="flex items-center justify-between gap-2 w-full text-left bg-white border border-slate-100 rounded-xl px-3 py-2.5 mb-2 hover:border-indigo-200 hover:bg-indigo-50/40 transition">
+            <p class="text-xs font-bold text-slate-800">Buscar "${esc(query.trim())}" en el glosario</p>
+            <span class="text-[10px] font-bold text-indigo-600 flex-shrink-0">Abrir →</span>
+        </a>`;
+
+    if (!cardMatches.length && !resourceMatches.length) {
+        html = `<p class="text-xs text-slate-400 text-center py-4">Sin resultados en tarjetas ni recursos para "${esc(query.trim())}".</p>` + html;
+    }
+    container.innerHTML = html;
+}
+
+function _openSearchResultCard(courseId, moduleIndex, cardId) {
+    const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === courseId) : null;
+    if (!course) return;
+    currentCourseId = courseId;
+    modulesData = course.modules;
+    currentModule = moduleIndex;
+    const mod = modulesData[moduleIndex - 1];
+    const idx = mod ? mod.cards.findIndex(c => String(c.id) === String(cardId)) : -1;
+    currentCardIndex = idx >= 0 ? idx : 0;
+    document.getElementById('globalSearchModal').classList.add('hidden');
+    if (typeof switchTab === 'function') switchTab('home');
+    renderCard();
+}
+
 function showRedeemModal() {
     let prizesHtml = "";
     prizes.forEach(prize => {

@@ -1765,6 +1765,9 @@
                     </div>
                     <span id="courseProgressPercent" class="text-xs font-bold min-w-[30px] text-right"
                         style="color:var(--brand-blue);font-family:'Montserrat',sans-serif">0%</span>
+                    <button onclick="openGlobalSearch()" aria-label="Buscar" class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 transition flex-shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -2224,6 +2227,26 @@
         <!-- MODALES                                                       -->
         <!-- ============================================================ -->
 
+        <!-- Modal Búsqueda global -->
+        <div id="globalSearchModal" class="hidden modal-sheet" style="z-index:1100">
+            <div class="modal-inner">
+                <div class="modal-drag"></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        Buscar
+                    </h2>
+                    <button id="closeGlobalSearchBtn" onclick="document.getElementById('globalSearchModal').classList.add('hidden')"
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
+                </div>
+                <input id="globalSearchInput" type="text" placeholder="Busca en tarjetas, recursos y glosario…" oninput="_runGlobalSearch(this.value)"
+                    class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 mb-3">
+                <div id="globalSearchResults" style="max-height:60vh;overflow-y:auto">
+                    <p class="text-xs text-slate-400 text-center py-6">Escribe al menos 3 letras para buscar.</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal Logros -->
         <div id="badgesModal" class="hidden modal-sheet">
             <div class="modal-inner">
@@ -2622,6 +2645,10 @@
             </div>
             <!-- Acciones rápidas — solo visibles en sidebar de escritorio -->
             <div class="sidebar-actions">
+                <button onclick="openGlobalSearch()" class="sidebar-action-btn sidebar-action-search">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Buscar
+                </button>
                 <a href="glosario.html" target="_blank" class="sidebar-action-btn sidebar-action-glosario"
                     style="text-decoration:none;display:flex;align-items:center;gap:8px">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
