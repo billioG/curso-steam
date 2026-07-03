@@ -913,13 +913,6 @@
                 gap: 10px;
                 align-items: start;
             }
-            /* Desktop: secciones siempre abiertas, sin toggle */
-            #tabPerfil .perfil-section-body {
-                max-height: none !important;
-                opacity: 1 !important;
-            }
-            #tabPerfil .perfil-section-toggle-icon { display: none !important; }
-            #tabPerfil .perfil-section-toggle { cursor: default; }
         }
 
         /* ── Perfil: márgenes móvil ────────────────────────────────── */
@@ -2646,6 +2639,13 @@
                         <path d="M21 13v2a4 4 0 01-4 4H3" />
                     </svg>
                     Cambiar curso
+                </button>
+                <button onclick="localStorage.removeItem('onboardingDone'); startAppTour();" class="sidebar-action-btn sidebar-action-tutorial">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                    </svg>
+                    Tutorial
                 </button>
                 <button id="sidebarLogoutBtn" class="sidebar-action-btn sidebar-action-logout">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
