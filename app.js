@@ -5012,197 +5012,163 @@ function stopConfetti() {
     if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 }
 
-// ==================== ONBOARDING ====================
-const ONBOARDING_SVG_ICONS = ['wave','flashCards','puzzle','lightning','calendar','photoStar','personCheck','graduation','trophyLarge'];
-const ONBOARDING_SLIDES = [
+// ==================== TOUR GUIADO (driver.js) ====================
+// Reemplaza el modal-slideshow anterior por un tour con spotlight sobre
+// los elementos reales de la UI. Cada paso indica a qué pestaña saltar
+// (y qué sección de Perfil abrir, si aplica) antes de resaltar.
+const APP_TOUR_STEPS = [
     {
-        emoji: '👋', svgKey: 'wave',
-        bg: '#1A6B68',
-        title: '¡Bienvenido al Programa de Formación Docente!',
-        desc: 'Aprenderás metodologías activas a tu ritmo con tarjetas interactivas, quiz, logros y un <strong>certificado oficial</strong> al finalizar cada curso.',
-        extra: 'Este tutorial rápido te explicará todo lo que necesitas saber para aprovechar el programa al máximo. Puedes avanzar y también regresar con los botones de abajo.'
+        tab: 'home',
+        element: '#cardContainer',
+        title: '👋 ¡Bienvenido al programa!',
+        description: 'Aprenderás con <strong>tarjetas</strong> como esta. Lee cada una y avanza tocando <strong>Siguiente →</strong> o deslizando hacia la izquierda.',
+        side: 'bottom',
     },
     {
-        emoji: '📖', svgKey: 'flashCards',
-        bg: '#1A6B68',
-        title: 'Las tarjetas de aprendizaje',
-        desc: 'El contenido está organizado en <strong>tarjetas</strong>. Lee cada una y avanza tocando <strong>Siguiente →</strong> o deslizando la tarjeta hacia la izquierda.',
-        extra: 'Puedes volver atrás con <strong>← Anterior</strong>. Tu progreso se guarda automáticamente en la nube — puedes cerrar la app y continuar donde lo dejaste, incluso desde otro dispositivo.',
-        icon: '👆 Desliza ← para avanzar'
+        tab: 'home',
+        element: '#cardNavBar',
+        title: 'Avanza a tu ritmo',
+        description: 'Tu progreso se guarda en la nube automáticamente. Al final de cada módulo hay un <strong>quiz corto</strong> — no afecta tu nota, pero sí te da XP.',
+        side: 'top',
     },
     {
-        emoji: '🧩', svgKey: 'puzzle',
-        bg: '#1A6B68',
-        title: 'Quiz al finalizar cada módulo',
-        desc: 'Al terminar cada módulo habrá un <strong>quiz de práctica</strong> con preguntas de opción múltiple. Selecciona tu respuesta y toca para confirmar.',
-        extra: 'Si te equivocas, <strong>verás la respuesta correcta y una explicación</strong>. El quiz es formativo — no afecta tu calificación pero sí te da XP.',
-        list: ['✅ Respuesta correcta: +10 XP', '❌ Respuesta incorrecta: verás la explicación', '🔁 Puedes repasar el módulo antes de intentarlo']
+        tab: 'modulos',
+        element: '#modulesIndexList',
+        title: 'Módulos con desbloqueo progresivo',
+        description: 'Cada módulo se desbloquea <strong>24 horas</strong> después de completar el anterior, para darte tiempo de practicar en tu aula. También puedes desbloquear de inmediato gastando <strong>200 XP</strong>.',
+        side: 'top',
     },
     {
-        emoji: '🔒', svgKey: 'calendar',
-        bg: '#1A6B68',
-        title: 'Módulos y desbloqueo progresivo',
-        desc: 'Cada módulo se desbloquea <strong>24 horas</strong> después de completar el anterior, para darte tiempo de practicar en tu aula antes de seguir.',
-        extra: 'Verás un contador con el tiempo exacto que falta. Si no quieres esperar, puedes desbloquear el módulo de inmediato gastando XP acumulado.',
-        list: ['⏱️ El contador muestra horas, minutos y segundos exactos', '⚡ Desbloqueo anticipado: 200 XP', '🏁 El primer módulo de cada curso siempre está disponible']
+        tab: 'perfil',
+        element: '#perfilStatsRow',
+        title: 'Tu progreso en números',
+        description: 'XP, nivel, racha de días activos y tarjetas completadas — todo sincronizado en la nube, accesible desde cualquier dispositivo con tu cuenta.',
+        side: 'bottom',
     },
     {
-        emoji: '🗺️', svgKey: 'books',
-        bg: '#1A6B68',
+        tab: 'perfil',
+        element: '#perfilCourseProgressBlock',
         title: 'Rutas de aprendizaje',
-        desc: 'El programa está organizado en <strong>rutas de aprendizaje</strong>, cada una con varios cursos relacionados. Dentro de cada ruta, los cursos siguen un orden lógico — algunos requieren haber aprobado el examen del curso anterior.',
-        extra: null,
-        _dynamicPathList: true  // lista se genera al renderizar desde LEARNING_PATHS
+        description: 'El programa tiene varias <strong>rutas</strong>, cada una con varios cursos en secuencia lógica — algunos requieren aprobar el examen del curso anterior. Cambia de curso o ruta cuando quieras con "Cambiar curso".',
+        side: 'bottom',
     },
     {
-        emoji: '🏅', svgKey: 'trophyLarge',
-        bg: '#1A6B68',
-        title: 'Ranking por ligas',
-        desc: 'Compite de forma sana con otros docentes en el <strong>Ranking</strong>, organizado por ligas según tu nivel: Bronce, Plata, Oro, Platino y Diamante.',
-        extra: 'No solo importa cuánto XP tienes — también en qué liga estás. Sube de nivel para subir de liga y aparecer junto a docentes con tu mismo progreso.',
-        list: ['🥉 Liga Bronce: niveles 1-2', '🥈 Liga Plata: niveles 3-4', '🥇 Liga Oro: niveles 5-7', '🪙 Liga Platino: niveles 8-10', '💎 Liga Diamante: nivel 11+']
+        tab: 'perfil',
+        element: '.perfil-badges-wrap',
+        title: 'Logros y ranking por ligas',
+        description: 'Desbloquea insignias por tu desempeño y compite de forma sana en el <strong>Ranking</strong>, organizado por ligas según tu nivel.',
+        side: 'bottom',
     },
     {
-        emoji: '⚡', svgKey: 'lightning',
-        bg: '#1A6B68',
-        title: 'XP, retos diarios y misiones',
-        desc: 'Ganas puntos de experiencia (<strong>XP</strong>) con cada actividad. Sube de nivel y desbloquea logros especiales.',
-        extra: 'Cada día hay un <strong>Reto del día</strong> con una pregunta de cultura general — no se repite hasta agotar todo el banco de preguntas.',
-        list: ['📖 Completar una tarjeta: +10 XP', '✅ Quiz correcto: +10 XP', '⚡ Reto del día: +15 XP', '📝 Dar retroalimentación por módulo: +20 XP', '📸 Subir evidencia de práctica: +80 XP', '🏆 Completar un módulo: +100 XP o más']
+        tab: 'perfil',
+        openSection: 'Aprendizaje',
+        element: '#examBtn',
+        title: 'Examen final y certificado',
+        description: 'Al completar el <strong>80%</strong> de las tarjetas de un curso se activa el examen. Con <strong>70% o más</strong>, descargas tu certificado en PDF desde tu Perfil.',
+        side: 'top',
     },
     {
-        emoji: '📸', svgKey: 'photoStar',
-        bg: '#1A6B68',
-        title: 'Sube evidencias de tu práctica',
-        desc: 'Aplica lo aprendido en tu aula y sube una <strong>foto como evidencia</strong>. Ganarás <strong>80 XP</strong> por cada módulo que documentes.',
-        extra: 'Ve a <strong>Perfil → Gana más XP → Evidencia de práctica</strong>. Puedes subir hasta 5 fotos (una por módulo) para un total de 400 XP extra.',
-        list: ['📷 La foto puede ser de tu pizarrón, actividad con estudiantes o material creado', '✅ Se acepta JPG y PNG hasta 5 MB']
+        tab: 'perfil',
+        openSection: 'Gana más XP',
+        element: '#missionsToggle',
+        title: 'Más formas de ganar XP',
+        description: 'Retos diarios, retroalimentación por módulo y evidencia de tu práctica en el aula — hasta <strong>400 XP extra</strong> documentando lo aprendido.',
+        side: 'top',
     },
     {
-        emoji: '👤', svgKey: 'personCheck',
-        bg: '#1A6B68',
-        title: 'Tu perfil — complétalo antes de terminar',
-        desc: 'En la pestaña <strong>Perfil</strong> puedes ver tu XP, nivel, logros y racha de días activos.',
-        extra: '⚠️ <strong>Importante:</strong> antes de descargar tu certificado, toca <strong>✏️ Editar</strong> y completa tu <strong>nombre completo, escuela y departamento</strong>. El nombre aparecerá en tu diploma, y escuela/departamento nos ayudan a entender el impacto del programa en tu comunidad.',
-        list: ['✏️ Nombre completo (aparece en el diploma)', '🏫 Escuela o institución donde trabajas', '📍 Departamento de Guatemala', '📷 Foto de perfil — se sincroniza entre tus dispositivos']
+        tab: 'perfil',
+        element: '#editProfileBtn',
+        title: 'Completa tu perfil',
+        description: '⚠️ Antes de descargar tu certificado, agrega tu <strong>nombre completo, escuela y departamento</strong> — el nombre aparece tal cual en tu diploma.',
+        side: 'bottom',
     },
     {
-        emoji: '🎓', svgKey: 'graduation',
-        bg: '#1A6B68',
-        title: 'El Examen Final y tu Certificado',
-        desc: 'Cuando completes al menos el 80% de las tarjetas de un curso, el botón <strong>Examen Final</strong> se activará para ese curso. Son preguntas aleatorias del banco del curso.',
-        extra: null,
-        list: ['📊 Puntaje mínimo para aprobar: 70%', '🔁 Si no apruebas, puedes intentarlo de nuevo', '📄 Con nota aprobatoria, descarga tu certificado en PDF desde tu Perfil', '🏅 Las preguntas son aleatorias — cambian en cada intento']
+        tab: 'perfil',
+        element: 'nav.bottom-nav',
+        title: '¡Todo listo! 🚀',
+        description: 'Navega entre Inicio, Ranking, Módulos y Perfil desde aquí. Puedes repetir este tour cuando quieras con el botón "Tutorial".',
+        side: 'top',
     },
-    {
-        emoji: '💡', svgKey: 'puzzle',
-        bg: '#1A6B68',
-        title: 'Tu opinión construye el programa',
-        desc: 'En <strong>Perfil → Sugiere un curso</strong> puedes proponer nuevos cursos que te gustaría ver, y votar por las propuestas de otros docentes.',
-        extra: 'Las sugerencias con más votos son las próximas en desarrollarse. El programa crece según lo que la comunidad docente realmente necesita.',
-        list: ['💬 Escribe tu propuesta con una breve descripción', '❤️ Vota las propuestas que más te interesen', '🚀 Las más votadas se priorizan para desarrollo']
-    },
-    {
-        emoji: '🏆', svgKey: 'trophyLarge',
-        bg: '#1A6B68',
-        title: '¡Todo listo para empezar! 🚀',
-        desc: 'Recuerda que el progreso se guarda en la nube. Puedes acceder al programa desde tu celular, tablet o computadora con la misma cuenta.',
-        extra: '¿Tienes dudas durante el curso? Escríbele al administrador o usa el Asistente Pedagógico. ¡Mucho éxito y a aprender!',
-        list: ['💡 Tip: activa el curso como app en tu celular (busca "Instalar" en el banner)', '📶 Funciona sin conexión gracias al modo offline', '🔔 Entra todos los días para mantener tu racha de XP']
-    }
 ];
 
-let _onboardingStep = 0;
-
-function startOnboarding() {
-    _onboardingStep = 0;
-    renderOnboardingSlide();
-    document.getElementById('onboardingOverlay').classList.remove('hidden');
+function _ensurePerfilSectionOpen(labelTitle) {
+    document.querySelectorAll('.perfil-section-toggle').forEach(btn => {
+        const t = btn.querySelector('.perfil-section-label-title');
+        if (t && t.textContent.trim() === labelTitle) {
+            btn.classList.remove('collapsed');
+            const body = btn.nextElementSibling;
+            if (body) body.classList.remove('collapsed');
+        }
+    });
 }
 
-function closeOnboarding() {
-    document.getElementById('onboardingOverlay').classList.add('hidden');
+function _tourGoToStep(index) {
+    const step = APP_TOUR_STEPS[index];
+    if (!step) return;
+    if (typeof switchTab === 'function') switchTab(step.tab);
+    if (step.openSection) _ensurePerfilSectionOpen(step.openSection);
+}
+
+let _tourDriver = null;
+
+function startAppTour() {
+    const driverFactory = window.driver && window.driver.js && window.driver.js.driver;
+    if (!driverFactory) {
+        showToast('No se pudo cargar el tutorial, revisa tu conexión', 'warning');
+        return;
+    }
+    _tourGoToStep(0);
+    _tourDriver = driverFactory({
+        showProgress: true,
+        animate: true,
+        smoothScroll: true,
+        allowClose: true,
+        overlayColor: '#0f172a',
+        popoverClass: 'steam-tour-popover',
+        nextBtnText: 'Siguiente →',
+        prevBtnText: '← Atrás',
+        doneBtnText: '¡Empezar! 🚀',
+        onCloseClick: () => { _tourDriver.destroy(); },
+        onDestroyed: () => { _finishAppTour(); },
+        steps: APP_TOUR_STEPS.map((step, i) => ({
+            element: step.element,
+            popover: {
+                title: step.title,
+                description: step.description,
+                side: step.side || 'bottom',
+                align: 'center',
+                onNextClick: () => {
+                    if (i < APP_TOUR_STEPS.length - 1) {
+                        _tourGoToStep(i + 1);
+                        setTimeout(() => _tourDriver.moveNext(), 60);
+                    } else {
+                        _tourDriver.destroy();
+                    }
+                },
+                onPrevClick: () => {
+                    if (i > 0) {
+                        _tourGoToStep(i - 1);
+                        setTimeout(() => _tourDriver.movePrevious(), 60);
+                    }
+                },
+            },
+        })),
+    });
+    _tourDriver.drive();
+}
+
+function _finishAppTour() {
     localStorage.setItem('onboardingDone', '1');
-    // Persistir en Supabase para que no vuelva a aparecer en otros dispositivos/navegadores
     if (typeof progress !== 'undefined' && progress) {
         if (!progress.dailyMissions) progress.dailyMissions = {};
         progress.dailyMissions.onboardingDone = '1';
         if (typeof saveProgress === 'function') saveProgress();
     }
-    // Diagnóstico OBLIGATORIO tras el onboarding (solo si no lo ha hecho antes)
     const diagDone = localStorage.getItem('diagDone') || progress?.dailyMissions?.diagDone;
     if (!diagDone && typeof startDiagnostic === 'function') {
         setTimeout(startDiagnostic, 350);
-    } else {
-        showCourseSelector();
     }
 }
-
-function renderOnboardingSlide() {
-    const slide = ONBOARDING_SLIDES[_onboardingStep];
-    const total = ONBOARDING_SLIDES.length;
-    const isLast = _onboardingStep === total - 1;
-
-    // Fondo dinámico
-    const area = document.getElementById('onboardingSlideArea');
-    area.style.background = slide.bg;
-    const _emojiEl = document.getElementById('onboardingEmoji');
-    _emojiEl.style.cssText = 'width:80px;height:80px;display:flex;align-items:center;justify-content:center;margin:0 auto';
-    if (typeof ICONS !== 'undefined' && slide.svgKey && ICONS[slide.svgKey]) {
-        _emojiEl.innerHTML = ICONS[slide.svgKey];
-    } else {
-        _emojiEl.textContent = slide.emoji;
-    }
-    document.getElementById('onboardingTitle').textContent = slide.title;
-    document.getElementById('onboardingDesc').innerHTML = slide.desc;
-
-    // Extra o lista
-    const extraEl = document.getElementById('onboardingExtra');
-    let extraHtml = '';
-    const listItems = slide._dynamicPathList && typeof LEARNING_PATHS !== 'undefined'
-        ? LEARNING_PATHS.map(p => `🔹 ${p.label} · ${p.courses.length} cursos`)
-        : slide.list;
-    if (listItems) {
-        extraHtml += '<ul class="mt-3 space-y-2">' +
-            listItems.map(item => {
-                const parts = item.split(' ');
-                const icon = parts[0];
-                const text = parts.slice(1).join(' ');
-                return `<li class="flex items-start gap-2 text-sm text-slate-600"><span class="shrink-0 text-base">${icon}</span><span>${text}</span></li>`;
-            }).join('') + '</ul>';
-    }
-    if (slide.extra) {
-        extraHtml += `<div class="mt-3 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm text-slate-500 leading-relaxed">${slide.extra}</div>`;
-    }
-    extraEl.innerHTML = extraHtml;
-
-    // Puntos de progreso
-    document.getElementById('onboardingDots').innerHTML = Array.from({ length: total }, (_, i) =>
-        `<div class="h-2 rounded-full transition-all duration-300 ${i === _onboardingStep ? 'w-6 bg-cyan-500' : 'w-2 bg-slate-200'}"></div>`
-    ).join('');
-
-    // Botones
-    const btn = document.getElementById('onboardingNextBtn');
-    btn.textContent = isLast ? '¡Explorar cursos! 🚀' : 'Siguiente →';
-    const backBtn = document.getElementById('onboardingBackBtn');
-    if (backBtn) backBtn.classList.toggle('hidden', _onboardingStep === 0);
-}
-
-document.getElementById('onboardingNextBtn')?.addEventListener('click', () => {
-    if (_onboardingStep < ONBOARDING_SLIDES.length - 1) {
-        _onboardingStep++;
-        renderOnboardingSlide();
-    } else {
-        closeOnboarding();
-    }
-});
-document.getElementById('onboardingBackBtn')?.addEventListener('click', () => {
-    if (_onboardingStep > 0) {
-        _onboardingStep--;
-        renderOnboardingSlide();
-    }
-});
-document.getElementById('skipOnboardingBtn')?.addEventListener('click', closeOnboarding);
 
 // ==================== INSTALACIÓN PWA ====================
 let _deferredInstallPrompt = null;
@@ -5619,7 +5585,7 @@ function selectCourse(courseId) {
     checkBadges();
     displayReferralLink();
     checkReferrerReward();
-    if (!localStorage.getItem('onboardingDone')) setTimeout(startOnboarding, 600);
+    if (!localStorage.getItem('onboardingDone')) setTimeout(startAppTour, 600);
 }
 
 // ==================== RETO DIARIO ====================
