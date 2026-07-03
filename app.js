@@ -5856,6 +5856,13 @@ async function _updatePushToggleUI() {
         btn.style.opacity = '.5';
         return;
     }
+    if (Notification.permission === 'denied') {
+        label.textContent = 'Notificaciones bloqueadas';
+        btn.disabled = true;
+        btn.style.opacity = '.6';
+        if (hint) hint.textContent = 'Bloqueaste las notificaciones para este sitio. Para activarlas, permite las notificaciones en la configuración del navegador (candado junto a la dirección) y recarga la página.';
+        return;
+    }
     try {
         const reg = await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.getSubscription();
@@ -5887,6 +5894,10 @@ async function togglePushNotifications() {
             showToast('Notificaciones desactivadas', 'info');
         } else {
             const permission = await Notification.requestPermission();
+            if (permission === 'denied') {
+                showToast('Notificaciones bloqueadas — actívalas desde la configuración del navegador (candado junto a la dirección)', 'warning');
+                return;
+            }
             if (permission !== 'granted') {
                 showToast('Permiso de notificaciones no concedido', 'warning');
                 return;
