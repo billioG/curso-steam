@@ -2471,7 +2471,7 @@ function _renderPathCard(path, pi) {
                             <button onclick="_lp_move(${pi},${ci},-1)" ${ci===0?'disabled':''} style="background:none;border:none;cursor:pointer;color:${ci===0?'#cbd5e1':'#64748b'};padding:0;line-height:1;font-size:11px"><i class="fas fa-chevron-up"></i></button>
                             <button onclick="_lp_move(${pi},${ci},1)" ${ci===courseObjs.length-1?'disabled':''} style="background:none;border:none;cursor:pointer;color:${ci===courseObjs.length-1?'#cbd5e1':'#64748b'};padding:0;line-height:1;font-size:11px"><i class="fas fa-chevron-down"></i></button>
                         </div>
-                        <div style="width:28px;height:28px;border-radius:8px;background:${c.color||'#07B0E4'};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">${c.icon||'📚'}</div>
+                        <div style="width:32px;height:32px;border-radius:8px;background:${c.color||'#07B0E4'};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">${c.icon || '<svg width="20" height="20" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15 L20 8 L36 15 L20 22 Z" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><path d="M11 18 V27 Q11 31 20 31 Q29 31 29 27 V18" stroke-width="1.8"/></svg>'}</div>
                         <div style="flex:1;min-width:0">
                             <p style="font-size:13px;font-weight:600;color:#1e293b;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
                             <p style="font-size:11px;color:#64748b;margin:0">${c.durationHours||0}h · ${c.totalCards||0} tarjetas</p>
