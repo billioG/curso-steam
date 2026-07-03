@@ -86,7 +86,8 @@ Deno.serve(async (req) => {
 
     return json({ sent, total: subs?.length || 0, expired: expiredIds.length });
 
-  } catch (e) {
-    return json({ error: String(e) }, 500);
+  } catch (e: any) {
+    const detail = e?.message || e?.error_description || (() => { try { return JSON.stringify(e); } catch { return String(e); } })();
+    return json({ error: detail }, 500);
   }
 });
