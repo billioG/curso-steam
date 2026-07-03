@@ -148,3 +148,36 @@ pega el código de `supabase-functions/send-push/index.ts` → Deploy.
 docente agregó la app a su pantalla de inicio ("Agregar a inicio" desde Safari)
 Y tiene iOS 16.4 o superior. Es una limitación de Apple, no de esta app — en
 Android y escritorio funciona sin ese requisito.
+
+## Paso 5 — Recordatorio automático diario (3pm Guatemala)
+
+Push automático a quienes tienen notificaciones activas y todavía no han
+entrado a la plataforma ese día. Usa el mismo mecanismo que `weekly-stats`
+y `daily-reminders` (pg_cron + service role key), sin botón manual.
+
+1. Crea la Edge Function `daily-push-reminder` con el código de
+   `supabase-functions/daily-push-reminder/index.ts` → Deploy.
+2. En el SQL Editor, programa el cron (requiere pg_cron y pg_net activos,
+   ver Paso 3 de la sección de emails más arriba):
+
+```sql
+SELECT cron.schedule(
+  'daily-push-reminder',
+  '0 21 * * *',  -- 21:00 UTC = 15:00 (3pm) Guatemala, sin horario de verano
+  $$
+  SELECT net.http_post(
+    url := 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/daily-push-reminder',
+    headers := '{"Authorization": "Bearer ' || current_setting('app.service_role_key') || '", "Content-Type": "application/json"}'::jsonb,
+    body := '{}'::jsonb
+  );
+  $$
+);
+```
+
+3. Para probarlo sin esperar al cron, invócalo una vez a mano desde el SQL
+   Editor con el mismo `net.http_post` de arriba, o desde una pestaña de
+   terminal con `curl` usando la service role key.
+
+Solo les llega a docentes que ya activaron notificaciones (Perfil →
+Notificaciones) y que no tienen actividad registrada hoy — no es spam
+diario para quienes ya entraron.
