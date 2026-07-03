@@ -205,8 +205,14 @@
           <p class="font-bold text-slate-800">Docentes del centro</p>
           <p class="text-xs text-slate-400 mt-0.5">Progreso detallado por docente</p>
         </div>
-        <input id="searchTeacher" oninput="filterTeachers()" placeholder="Buscar…"
-          class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200 w-40">
+        <div class="flex items-center gap-2">
+          <input id="searchTeacher" oninput="filterTeachers()" placeholder="Buscar…"
+            class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200 w-40">
+          <button onclick="exportTeachersCSV()"
+            class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 whitespace-nowrap">
+            <i class="fas fa-file-csv"></i> Exportar CSV
+          </button>
+        </div>
       </div>
       <div class="overflow-x-auto">
         <table id="teachersTable">
@@ -663,11 +669,53 @@ function renderTeachers(list) {
 }
 
 function filterTeachers() {
-    const q = document.getElementById('searchTeacher').value.toLowerCase();
-    renderTeachers(_allTeachers.filter(p =>
+    renderTeachers(_visibleTeachers());
+}
+
+function _visibleTeachers() {
+    const q = (document.getElementById('searchTeacher')?.value || '').toLowerCase();
+    if (!q) return _allTeachers;
+    return _allTeachers.filter(p =>
         getName(p).toLowerCase().includes(q) ||
         (p._schoolName||'').toLowerCase().includes(q)
-    ));
+    );
+}
+
+function _csvCell(v) {
+    const s = String(v ?? '');
+    return `"${s.replace(/"/g, '""')}"`;
+}
+
+function exportTeachersCSV() {
+    const list = _visibleTeachers();
+    if (!list.length) { alert('No hay docentes para exportar.'); return; }
+
+    const headers = ['Docente', 'Centro educativo', 'XP', 'Tarjetas', 'Racha (días)', 'Certificados',
+        ...COURSES_GROUPED.map(c => c.title), 'Último acceso'];
+
+    const rows = list.map(p => {
+        const courseVals = COURSES_GROUPED.map(c => {
+            if (hasCertPassed(p, c.id)) return 'Aprobado';
+            if (hasCourseStarted(p, c)) return `${getCoursePct(p, c)}%`;
+            return '';
+        });
+        return [
+            getName(p), p._schoolName || '', p.xp || 0, p.completed_cards?.length || 0,
+            p.streak || 0, countCerts(p), ...courseVals, fmtDate(p.updated_at),
+        ];
+    });
+
+    const csv = [headers, ...rows].map(row => row.map(_csvCell).join(',')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }); // BOM para que Excel detecte UTF-8
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.download = `docentes_${stamp}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
 // ── Helpers ───────────────────────────────────────────────────
