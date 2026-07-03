@@ -18,6 +18,7 @@
   .badge-gray  { background:#f1f5f9;color:#64748b; }
   table { width:100%;border-collapse:collapse;font-size:13px; }
   th { text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;border-bottom:1.5px solid #f1f5f9; }
+  th.th-group { text-align:center;background:#f8fafc;color:#4f46e5;border-bottom:1.5px solid #e2e8f0;white-space:nowrap; }
   td { padding:10px 12px;border-bottom:1px solid #f8fafc;color:#334155;vertical-align:middle; }
   tr:last-child td { border-bottom:none; }
   tr:hover td { background:#f8fafc; }
@@ -202,15 +203,18 @@
       <div class="overflow-x-auto">
         <table>
           <thead>
+            <tr id="teachersGroupRow">
+              <th rowspan="2">Docente</th>
+              <th rowspan="2">Centro educativo</th>
+              <th rowspan="2">XP</th>
+              <th rowspan="2">Tarjetas</th>
+              <th rowspan="2">Racha</th>
+              <th rowspan="2">Certificados</th>
+              <!-- th de grupo por ruta inyectados por JS -->
+              <th rowspan="2">Último acceso</th>
+            </tr>
             <tr id="teachersHeadRow">
-              <th>Docente</th>
-              <th>Centro educativo</th>
-              <th>XP</th>
-              <th>Tarjetas</th>
-              <th>Racha</th>
-              <th>Certificados</th>
-              <!-- columnas de curso inyectadas por JS desde COURSES -->
-              <th>Último acceso</th>
+              <!-- columnas de curso inyectadas por JS, agrupadas por ruta -->
             </tr>
           </thead>
           <tbody id="teachersBody">
@@ -254,15 +258,60 @@ const COURSES = [
   { id:'bienestar-docente',     title:'Bienestar Docente',     modules:4, totalCards:24, prefix:'bienestar-docente-'     },
 ];
 
-// Inyectar columnas de curso en el encabezado de la tabla (antes de "Último acceso")
+// Rutas de aprendizaje — mismo agrupamiento que LEARNING_PATHS en app.js.
+// Un curso puede pertenecer a varias rutas ahí; aquí se asigna a la primera
+// ruta de esta lista que lo contenga, para que cada columna aparezca una
+// sola vez agrupada bajo un encabezado de ruta.
+const ROUTE_GROUPS = [
+    { label: 'Docente STEAM 2.0',           courses: ['steam', 'abp', 'design-thinking', 'evaluacion', 'tipos-estudiantes'] },
+    { label: 'Docente Creativo',            courses: ['creatividad', 'herramientas-tec', 'storytelling'] },
+    { label: 'Metodologías Activas',        courses: ['m-learning', 'flipped-classroom', 'abv', 'micro-learning'] },
+    { label: 'Docente y la IA',             courses: ['ia-fundamentos', 'ia-tiempo', 'ia-herramientas', 'ia-inclusion', 'ia-ciudadania'] },
+    { label: 'Clima y Convivencia Escolar', courses: ['manejo-conductas', 'sel-docentes', 'comunicacion-asertiva', 'disciplina-positiva', 'bienestar-docente'] },
+];
+
+// Ordenar COURSES según el agrupamiento por ruta, para que las columnas de
+// datos (renderTeachers) y los encabezados queden en el mismo orden.
+const COURSES_GROUPED = (() => {
+    const assigned = new Set();
+    const ordered = [];
+    ROUTE_GROUPS.forEach(g => {
+        g.courses.forEach(cid => {
+            const c = COURSES.find(x => x.id === cid);
+            if (c && !assigned.has(cid)) { ordered.push(c); assigned.add(cid); }
+        });
+    });
+    // Cualquier curso no listado en ninguna ruta (por si se agrega uno nuevo
+    // y se olvida actualizar ROUTE_GROUPS) va al final, sin grupo.
+    COURSES.forEach(c => { if (!assigned.has(c.id)) ordered.push(c); });
+    return ordered;
+})();
+
+// Inyectar encabezados de ruta (fila 1, con colspan) y de curso (fila 2),
+// agrupados por ruta, antes de la columna "Último acceso".
 (function () {
-    const row = document.getElementById('teachersHeadRow');
-    if (!row) return;
-    const last = row.querySelector('th:last-child');
-    COURSES.forEach(c => {
+    const groupRow = document.getElementById('teachersGroupRow');
+    const courseRow = document.getElementById('teachersHeadRow');
+    if (!groupRow || !courseRow) return;
+    const lastAccessTh = groupRow.querySelector('th:last-child');
+
+    const coursesById = {};
+    COURSES_GROUPED.forEach(c => { coursesById[c.id] = c; });
+
+    ROUTE_GROUPS.forEach(g => {
+        const idsInGroup = g.courses.filter(cid => coursesById[cid]);
+        if (!idsInGroup.length) return;
+        const groupTh = document.createElement('th');
+        groupTh.className = 'th-group';
+        groupTh.colSpan = idsInGroup.length;
+        groupTh.textContent = g.label;
+        groupRow.insertBefore(groupTh, lastAccessTh);
+    });
+
+    COURSES_GROUPED.forEach(c => {
         const th = document.createElement('th');
         th.textContent = c.title;
-        row.insertBefore(th, last);
+        courseRow.appendChild(th);
     });
 })();
 
@@ -541,7 +590,7 @@ function renderTeachers(list) {
 
     tbody.innerHTML = list.map(p => {
         const certs = countCerts(p);
-        const courseCells = COURSES.map(c => {
+        const courseCells = COURSES_GROUPED.map(c => {
             if (hasCertPassed(p, c.id)) return `<td><span class="badge badge-green" style="font-size:9px">✓</span></td>`;
             if (hasCourseStarted(p, c))  return `<td><span class="badge badge-blue" style="font-size:9px">${getCoursePct(p,c)}%</span></td>`;
             return `<td><span class="text-slate-300 text-xs">—</span></td>`;
