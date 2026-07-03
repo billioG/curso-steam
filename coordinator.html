@@ -136,6 +136,13 @@
       </div>
     </div>
 
+    <!-- Comparativa entre centros — solo visible con más de un centro asignado -->
+    <div id="schoolCompareCard" class="card hidden">
+      <p class="font-bold text-slate-800 text-sm mb-0.5">Comparativa entre centros</p>
+      <p class="text-xs text-slate-400 mb-3">Métricas clave lado a lado de cada centro que coordinas</p>
+      <div id="schoolCompareTable" class="overflow-x-auto"></div>
+    </div>
+
     <!-- Gráficos fila 1 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
@@ -487,6 +494,50 @@ function renderAll() {
     renderRecentActivity();
     renderEngagement();
     renderTeachers(_allTeachers);
+    renderSchoolComparison();
+}
+
+// ── Comparativa entre centros (solo con >1 centro asignado) ────
+function renderSchoolComparison() {
+    const card = document.getElementById('schoolCompareCard');
+    if (!card) return;
+    if (_coordSchools.length <= 1) { card.classList.add('hidden'); return; }
+    card.classList.remove('hidden');
+
+    const cutoff = Date.now() - 30 * 864e5;
+    const rows = _coordSchools.map(s => {
+        const teachers = _allTeachers.filter(p => p._schoolName === s.name);
+        const total = teachers.length;
+        const active = teachers.filter(p => p.updated_at && new Date(p.updated_at) >= cutoff).length;
+        const certs = teachers.reduce((sum, p) => sum + countCerts(p), 0);
+        const cards = teachers.reduce((a, p) => a + (p.completed_cards?.length || 0), 0);
+        const xp = teachers.reduce((a, p) => a + (p.xp || 0), 0);
+        return {
+            name: s.name, total, active,
+            retention: total ? Math.round(active / total * 100) : 0,
+            certs, avgCards: total ? Math.round(cards / total) : 0, avgXP: total ? Math.round(xp / total) : 0,
+        };
+    }).sort((a, b) => b.total - a.total);
+
+    const maxTotal = Math.max(1, ...rows.map(r => r.total));
+    document.getElementById('schoolCompareTable').innerHTML = `<table>
+        <thead><tr><th>Centro</th><th>Docentes</th><th>Activos (30d)</th><th>Retención</th><th>Certificados</th><th>XP prom.</th><th>Tarjetas prom.</th></tr></thead>
+        <tbody>${rows.map(r => `
+            <tr>
+                <td class="font-semibold text-slate-700">${esc(r.name)}</td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 bg-slate-100 rounded-full h-2 min-w-[60px]"><div class="bg-indigo-500 h-2 rounded-full" style="width:${Math.round(r.total / maxTotal * 100)}%"></div></div>
+                        <span class="text-xs font-bold text-slate-700">${r.total}</span>
+                    </div>
+                </td>
+                <td class="text-xs">${r.active}</td>
+                <td><span class="badge ${r.retention >= 50 ? 'badge-green' : 'badge-gray'}" style="font-size:9px">${r.retention}%</span></td>
+                <td class="text-xs">${r.certs}</td>
+                <td class="text-xs font-bold text-amber-600">${r.avgXP}</td>
+                <td class="text-xs">${r.avgCards}</td>
+            </tr>`).join('')}</tbody>
+    </table>`;
 }
 
 // ── KPIs ──────────────────────────────────────────────────────
