@@ -1099,6 +1099,17 @@ clearBtn.addEventListener('click', () => {
   renderTerms();
 });
 
+// Prellenar búsqueda desde ?q= (link directo desde la búsqueda global de la app)
+(function () {
+  const q = new URLSearchParams(location.search).get('q');
+  if (q) {
+    searchInput.value = q;
+    activeSearch = q;
+    clearBtn.classList.add('visible');
+    renderTerms();
+  }
+})();
+
 // Filter chips
 document.getElementById('filterRow').addEventListener('click', e => {
   const chip = e.target.closest('.chip');

@@ -2347,7 +2347,11 @@ function showBadgesModal() {
             <div style="font-size:12px;font-weight:800;color:#0f172a;line-height:1.3;margin-bottom:3px">${badge.name}</div>
             <div style="font-size:10px;color:#64748b;line-height:1.4;margin-bottom:5px">${badge.desc}</div>
             ${unlocked
-                ? `<span style="font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;border-radius:20px;padding:2px 8px;display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:11px;height:11px">${ICONS?.check||'✓'}</span>Desbloqueado</span>`
+                ? `<span style="font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;border-radius:20px;padding:2px 8px;display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:11px;height:11px">${ICONS?.check||'✓'}</span>Desbloqueado</span>
+                  <button onclick="shareBadgeImage('${badge.id}')" title="Compartir como imagen"
+                    style="margin-top:6px;width:100%;display:flex;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:700;color:#4f46e5;background:#eef2ff;border:none;border-radius:20px;padding:4px 8px;cursor:pointer">
+                    <span style="display:inline-flex;width:11px;height:11px">${ICONS?.share||'↗'}</span>Compartir
+                  </button>`
                 : `<span style="font-size:10px;font-weight:700;color:#94a3b8;background:#f1f5f9;border-radius:20px;padding:2px 8px">+${badge.xpReward} XP</span>`}
         </div>`;
     });
@@ -2364,6 +2368,194 @@ function shareBadges() {
         navigator.clipboard.writeText(text);
         showToast("📋 Texto copiado al portapapeles", "info");
     }
+}
+
+// Genera una imagen PNG de una insignia individual (canvas) y la comparte o descarga.
+async function shareBadgeImage(badgeId) {
+    const badge = badges[badgeId];
+    if (!badge) return;
+    const svg = BADGE_SVG[badgeId] || `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#e2e8f0"/></svg>`;
+
+    const W = 640, H = 640;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo degradado de marca
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, '#1A6B68');
+    grad.addColorStop(1, '#07B0E4');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Círculo blanco de fondo para la insignia
+    ctx.fillStyle = 'rgba(255,255,255,.95)';
+    ctx.beginPath();
+    ctx.arc(W / 2, 250, 150, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Rasterizar el SVG de la insignia sobre el círculo
+    const img = new Image();
+    const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve; // seguir sin la insignia antes que romper el share
+        img.src = svgUrl;
+    });
+    if (img.complete && img.naturalWidth > 0) {
+        ctx.drawImage(img, W / 2 - 110, 140, 220, 220);
+    }
+
+    // Textos
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.font = '900 34px Arial, sans-serif';
+    _wrapCanvasText(ctx, badge.name, W / 2, 460, 560, 40);
+    ctx.font = '600 18px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    ctx.fillText(badge.desc || '', W / 2, 510, 560);
+    ctx.font = '700 16px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,.7)';
+    ctx.fillText(`${getDisplayName()} · Formación Docente`, W / 2, 590);
+
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    if (!blob) { showToast('No se pudo generar la imagen', 'warning'); return; }
+    const file = new File([blob], `insignia-${badgeId}.png`, { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({ files: [file], title: badge.name, text: `¡Desbloqueé la insignia "${badge.name}" en Formación Docente!` });
+            return;
+        } catch (e) { /* usuario canceló el share nativo — cae al fallback de descarga */ }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `insignia-${badgeId}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    showToast('Imagen descargada — compártela donde quieras', 'success');
+}
+
+function _wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+    const words = String(text || '').split(' ');
+    let line = '';
+    const lines = [];
+    words.forEach(word => {
+        const test = line ? `${line} ${word}` : word;
+        if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = word; }
+        else line = test;
+    });
+    if (line) lines.push(line);
+    const startY = y - (lines.length - 1) * lineHeight / 2;
+    lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineHeight));
+}
+
+// ==================== BÚSQUEDA GLOBAL ====================
+function _stripHtml(html) {
+    return String(html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+let _globalSearchIndex = null;
+
+function _buildGlobalSearchIndex() {
+    const cards = [];
+    if (typeof allCourses !== 'undefined') {
+        allCourses.forEach(course => {
+            (course.modules || []).forEach((mod, mi) => {
+                (mod.cards || []).forEach(card => {
+                    if (card.type && card.type !== 'content') return; // solo tarjetas de contenido, no quizzes
+                    const text = _stripHtml((card.content || '') + ' ' + (card.extra || ''));
+                    cards.push({ courseId: course.id, courseTitle: course.title, moduleIndex: mi + 1, cardId: card.id, title: card.title || '', text });
+                });
+            });
+        });
+    }
+    const resources = [];
+    if (typeof COURSE_RESOURCES !== 'undefined') {
+        Object.entries(COURSE_RESOURCES).forEach(([courseId, list]) => {
+            const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === courseId) : null;
+            list.forEach(r => resources.push({ courseId, courseTitle: course?.title || courseId, name: r.name, desc: r.desc, url: r.url }));
+        });
+    }
+    return { cards, resources };
+}
+
+function openGlobalSearch() {
+    if (!_globalSearchIndex) _globalSearchIndex = _buildGlobalSearchIndex();
+    document.getElementById('globalSearchModal').classList.remove('hidden');
+    const input = document.getElementById('globalSearchInput');
+    input.value = '';
+    document.getElementById('globalSearchResults').innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Escribe al menos 3 letras para buscar.</p>`;
+    setTimeout(() => input.focus(), 150);
+}
+
+function _runGlobalSearch(query) {
+    const container = document.getElementById('globalSearchResults');
+    const q = query.trim().toLowerCase();
+    if (q.length < 3) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Escribe al menos 3 letras para buscar.</p>`; return; }
+    if (!_globalSearchIndex) _globalSearchIndex = _buildGlobalSearchIndex();
+
+    const cardMatches = _globalSearchIndex.cards
+        .filter(c => c.title.toLowerCase().includes(q) || c.text.toLowerCase().includes(q))
+        .slice(0, 8);
+    const resourceMatches = _globalSearchIndex.resources
+        .filter(r => r.name.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q))
+        .slice(0, 6);
+
+    let html = '';
+    if (cardMatches.length) {
+        html += `<p class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 mt-1">Tarjetas</p>`;
+        html += cardMatches.map(c => {
+            const idx = c.text.toLowerCase().indexOf(q);
+            const snippet = idx >= 0 ? '…' + c.text.slice(Math.max(0, idx - 30), idx + 60) + '…' : c.text.slice(0, 80);
+            return `<button onclick="_openSearchResultCard('${c.courseId}',${c.moduleIndex},'${String(c.cardId).replace(/'/g,"\\'")}')"
+                class="w-full text-left bg-white border border-slate-100 rounded-xl px-3 py-2.5 mb-2 hover:border-indigo-200 hover:bg-indigo-50/40 transition">
+                <p class="text-xs font-bold text-slate-800">${esc(c.title)}</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">${esc(c.courseTitle)} · Módulo ${c.moduleIndex}</p>
+                <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">${esc(snippet)}</p>
+            </button>`;
+        }).join('');
+    }
+    if (resourceMatches.length) {
+        html += `<p class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 mt-3">Recursos descargables</p>`;
+        html += resourceMatches.map(r => `
+            <a href="${r.url}" target="_blank" rel="noopener"
+                class="flex items-center justify-between gap-2 w-full text-left bg-white border border-slate-100 rounded-xl px-3 py-2.5 mb-2 hover:border-indigo-200 hover:bg-indigo-50/40 transition">
+                <div class="min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate">${esc(r.name)}</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">${esc(r.courseTitle)}</p>
+                </div>
+                <span class="text-[10px] font-bold text-indigo-600 flex-shrink-0">Abrir →</span>
+            </a>`).join('');
+    }
+    html += `<p class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 mt-3">Glosario</p>
+        <a href="glosario.html?q=${encodeURIComponent(query.trim())}" target="_blank"
+            class="flex items-center justify-between gap-2 w-full text-left bg-white border border-slate-100 rounded-xl px-3 py-2.5 mb-2 hover:border-indigo-200 hover:bg-indigo-50/40 transition">
+            <p class="text-xs font-bold text-slate-800">Buscar "${esc(query.trim())}" en el glosario</p>
+            <span class="text-[10px] font-bold text-indigo-600 flex-shrink-0">Abrir →</span>
+        </a>`;
+
+    if (!cardMatches.length && !resourceMatches.length) {
+        html = `<p class="text-xs text-slate-400 text-center py-4">Sin resultados en tarjetas ni recursos para "${esc(query.trim())}".</p>` + html;
+    }
+    container.innerHTML = html;
+}
+
+function _openSearchResultCard(courseId, moduleIndex, cardId) {
+    const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === courseId) : null;
+    if (!course) return;
+    currentCourseId = courseId;
+    modulesData = course.modules;
+    currentModule = moduleIndex;
+    const mod = modulesData[moduleIndex - 1];
+    const idx = mod ? mod.cards.findIndex(c => String(c.id) === String(cardId)) : -1;
+    currentCardIndex = idx >= 0 ? idx : 0;
+    document.getElementById('globalSearchModal').classList.add('hidden');
+    if (typeof switchTab === 'function') switchTab('home');
+    renderCard();
 }
 
 function showRedeemModal() {
@@ -3975,6 +4167,15 @@ const COURSE_RESOURCES = {
     ],
 };
 
+function _trackResourceDownload(courseId, resourceUrl) {
+    if (!currentUser) return;
+    supabase.from('user_events').insert({
+        user_id: currentUser.id,
+        event_type: 'resource_download',
+        metadata: { courseId, resourceUrl },
+    }).then(({ error }) => { if (error) console.log('Track download error:', error); });
+}
+
 function renderCourseResources() {
     const el = document.getElementById('courseResourcesSection');
     if (!el) return;
@@ -4012,6 +4213,7 @@ function renderCourseResources() {
                     </div>
                     ${hasUrl
                         ? `<a href="${r.url}" target="_blank" rel="noopener"
+                            onclick="_trackResourceDownload('${c.id}', '${esc(r.url)}')"
                             style="flex-shrink:0;background:#4f46e5;color:white;font-size:10px;font-weight:700;
                             padding:5px 10px;border-radius:8px;text-decoration:none;white-space:nowrap">
                             ⬇ Descargar</a>`
