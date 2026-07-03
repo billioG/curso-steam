@@ -1381,7 +1381,7 @@ function renderCard() {
                 </button>
             </div>` : ''}
             <!-- Botones "Lo apliqué" + "Mis notas" -->
-            <div class="px-4 pb-1 flex gap-2">
+            <div id="cardActionsRow" class="px-4 pb-1 flex gap-2">
                 ${(() => {
                     const cardKey = String(card.id ?? (currentModule+'-'+currentCardIndex));
                     const applied = (progress.dailyMissions?.appliedCards || []).includes(cardKey);
@@ -4041,7 +4041,7 @@ function renderCourseResources() {
         }
     }).join('');
 
-    el.parentElement?.classList.toggle('hidden', !anyPassed);
+    document.getElementById('resourcesSection')?.classList.toggle('hidden', !anyPassed);
 }
 
 // ==================== CERTIFICADO MAESTRO (por ruta) ====================
@@ -5023,6 +5023,27 @@ const APP_TOUR_STEPS = [
         title: '👋 ¡Bienvenido al programa!',
         description: 'Aprenderás con <strong>tarjetas</strong> como esta. Lee cada una y avanza tocando <strong>Siguiente →</strong> o deslizando hacia la izquierda.',
         side: 'bottom',
+    },
+    {
+        tab: 'home',
+        element: '.card-body',
+        title: 'El contenido de cada tarjeta',
+        description: 'Lee el texto principal con calma. Algunas tarjetas incluyen un recuadro <strong>💡 Dato clave</strong> con la idea más importante para recordar.',
+        side: 'bottom',
+    },
+    {
+        tab: 'home',
+        element: '#cardActionsRow',
+        title: 'Marca tu práctica',
+        description: '<strong>🍎 Lo apliqué en clase</strong> confirma que llevaste esto a tu aula. <strong>📝 Agregar nota</strong> guarda apuntes propios sobre la tarjeta, visibles solo para ti.',
+        side: 'top',
+    },
+    {
+        tab: 'home',
+        element: '#commentCountBtn',
+        title: 'Resuelve tus dudas',
+        description: '¿Algo no quedó claro? Escribe en <strong>Comentarios y dudas</strong> — el administrador o tus compañeros pueden responderte directo en esa tarjeta.',
+        side: 'top',
     },
     {
         tab: 'home',
