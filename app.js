@@ -3735,7 +3735,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
     const courseDuration = _course.durationHours ? `${_course.durationHours} horas` : '10 horas';
     const courseColor = _course.color || '#0097A7';
     const courseGradient = _course.color || '#1A6B68';
-    const courseIcon = _course.icon || '🔬';
+    const courseIcon = _course.icon || '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15 L20 8 L36 15 L20 22 Z" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><path d="M11 18 V27 Q11 31 20 31 Q29 31 29 27 V18" stroke-width="1.8"/><line x1="36" y1="15" x2="36" y2="25" stroke-width="1.8"/></svg>';
 
     // Descripción específica por curso
     const courseDescs = {
