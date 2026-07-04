@@ -378,6 +378,38 @@
                 </div>
             </div>
 
+            <div class="card mb-5">
+                <div class="flex items-center justify-between mb-0.5">
+                    <p class="font-bold text-slate-800">Mapa de calor · tiempo por tarjeta</p>
+                    <select id="heatmapCourseSel" onchange="renderCardHeatmap()" class="text-xs border border-slate-200 rounded-lg px-2 py-1 text-slate-600 outline-none">
+                        <option value="steam">STEAM 2.0</option>
+                        <option value="abp">ABP</option>
+                        <option value="design-thinking">Design Thinking</option>
+                        <option value="evaluacion">Evaluación Formativa</option>
+                        <option value="tipos-estudiantes">Conoce a Quien Enseñas</option>
+                        <option value="storytelling">Storytelling</option>
+                        <option value="creatividad">Despertando la Creatividad</option>
+                        <option value="herramientas-tec">Herramientas Tecnológicas</option>
+                        <option value="m-learning">Mobile Learning</option>
+                        <option value="flipped-classroom">Flipped Classroom</option>
+                        <option value="abv">Aprendizaje Basado en Videos</option>
+                        <option value="micro-learning">Micro-learning</option>
+                        <option value="ia-fundamentos">Docente y la IA</option>
+                        <option value="ia-tiempo">IA para Ahorrar Tiempo</option>
+                        <option value="ia-herramientas">Herramientas de IA</option>
+                        <option value="ia-inclusion">IA e Inclusión</option>
+                        <option value="ia-ciudadania">Ciudadanía Digital con IA</option>
+                        <option value="manejo-conductas">Manejo de Conductas Desafiantes</option>
+                        <option value="sel-docentes">SEL para Docentes</option>
+                        <option value="comunicacion-asertiva">Comunicación Asertiva</option>
+                        <option value="disciplina-positiva">Disciplina Positiva</option>
+                        <option value="bienestar-docente">Bienestar Docente</option>
+                    </select>
+                </div>
+                <p class="text-xs text-slate-400 mb-4">Cada cuadro es una tarjeta · más oscuro = más tiempo promedio real. Pasa el mouse para ver el detalle.</p>
+                <div id="cardHeatmap"></div>
+            </div>
+
             <div class="card">
                 <div class="flex items-center justify-between mb-4">
                     <div>
@@ -556,6 +588,13 @@
                 <p class="font-bold text-slate-800 mb-0.5">Engagement por docente</p>
                 <p class="text-xs text-slate-400 mb-4">Tiempo total de estudio acumulado · Top 15 más activos</p>
                 <div id="analyticsSessionsTable" class="overflow-x-auto"></div>
+            </div>
+            <div class="card mt-5">
+                <p class="font-bold text-slate-800 mb-0.5">Recursos más descargados</p>
+                <p class="text-xs text-slate-400 mb-4">Materiales de apoyo con más clics en "Descargar"</p>
+                <div id="analyticsResourcesPanel">
+                    <div class="text-xs text-slate-400 text-center py-4"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando…</div>
+                </div>
             </div>
         </div>
 

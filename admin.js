@@ -101,6 +101,7 @@ let _currentModuleIdx = -1;
 let _usersCache = [];
 let _dbCourses = [];     // cursos adicionales desde BD
 let _coursesList = [];   // STATIC_COURSES + _dbCourses (para columnas dinámicas)
+let _rvCardsCache = [];  // último resultado de get_card_time_aggregates(), para el mapa de calor
 
 // ────────────────────────────────────────────────────────────
 // HELPERS
@@ -414,9 +415,11 @@ async function loadDashboard() {
     // Departamentos
     renderDeptChart(progress);
 
-    // Tiempo por tarjeta — agregado en Postgres
+    // Tiempo por tarjeta — agregado en Postgres (se cachea para el mapa de calor)
     const { data: rvCards } = await sb.rpc('get_card_time_aggregates');
-    renderCardTimeTable(rvCards || []);
+    _rvCardsCache = rvCards || [];
+    renderCardTimeTable(_rvCardsCache);
+    renderCardHeatmap();
 
     // Gráfico XP top 10
     const top10 = progress.slice(0,10);
@@ -726,6 +729,64 @@ function renderCardTimeTable(rows) {
             </div>
         </div>`;
     }).join('');
+}
+
+// ── Mapa de calor: tiempo promedio por tarjeta, agrupado por módulo ──
+function renderCardHeatmap() {
+    const el = document.getElementById('cardHeatmap');
+    if (!el) return;
+    const courseId = document.getElementById('heatmapCourseSel')?.value || 'steam';
+    const moduleIds = COURSE_MODULE_IDS[courseId];
+    if (!moduleIds || !moduleIds.length) {
+        el.innerHTML = '<p class="text-slate-400 text-sm text-center py-8">No se pudo cargar la estructura de este curso.</p>';
+        return;
+    }
+
+    // avg_seconds por card_id, desde la cache del RPC get_card_time_aggregates
+    const avgById = {};
+    (_rvCardsCache || []).forEach(r => { avgById[String(r.card_id)] = { avg: Number(r.avg_seconds) || 0, count: Number(r.views_count) || 0 }; });
+
+    // Nombres de tarjeta, para el tooltip
+    const cardNames = {};
+    const courseObj = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === courseId) : null;
+    (courseObj?.modules || []).forEach(m => (m.cards || []).forEach(card => {
+        const clean = (card.title || '').replace(/^[\p{Emoji}\s]+/u, '').trim();
+        cardNames[String(card.id)] = clean || String(card.id);
+    }));
+
+    const allAvgs = moduleIds.flat().map(id => avgById[id]?.avg).filter(v => v > 0);
+    const maxAvg = Math.max(...allAvgs, 1);
+
+    const colorFor = (avg) => {
+        if (!avg) return '#f1f5f9'; // sin datos
+        const t = Math.min(1, avg / maxAvg); // 0..1
+        // Escala de azul claro a azul/índigo oscuro
+        const light = 92 - t * 55; // 92% -> 37% lightness
+        return `hsl(230, 70%, ${light}%)`;
+    };
+
+    el.innerHTML = moduleIds.map((cardIds, mi) => `
+        <div style="margin-bottom:12px">
+            <p style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px">Módulo ${mi + 1}</p>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+                ${cardIds.map((cid, ci) => {
+                    const data = avgById[cid];
+                    const avg = data?.avg || 0;
+                    const title = data
+                        ? `${esc(cardNames[cid] || cid)} — ${fmtTime(Math.round(avg))} promedio, ${data.count} vistas`
+                        : `${esc(cardNames[cid] || cid)} — sin datos aún`;
+                    const textColor = avg && avg / maxAvg > 0.55 ? '#fff' : '#475569';
+                    return `<div title="${title}" style="width:30px;height:30px;border-radius:6px;background:${colorFor(avg)};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${textColor};cursor:default">${ci + 1}</div>`;
+                }).join('')}
+            </div>
+        </div>`).join('') +
+        `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:10px;color:#94a3b8">
+            <span>Menos tiempo</span>
+            <div style="display:flex;gap:2px">${[0, .25, .5, .75, 1].map(t => `<div style="width:14px;height:10px;border-radius:2px;background:hsl(230,70%,${92 - t * 55}%)"></div>`).join('')}</div>
+            <span>Más tiempo</span>
+            <div style="width:14px;height:10px;border-radius:2px;background:#f1f5f9;margin-left:10px"></div>
+            <span>Sin datos</span>
+        </div>`;
 }
 
 // ── Cambio de rol via Edge Function ──
