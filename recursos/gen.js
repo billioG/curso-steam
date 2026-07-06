@@ -224,7 +224,7 @@ ul, ol { line-height: 1.7; }
 parts.push(`<div class="page cover-page">
   <div style="margin-bottom:24px;font-size:3rem;">🎓</div>
   <h1 style="font-size:2.8rem;margin-bottom:8px;">Formación Docente<br>en Pedagogía Innovadora</h1>
-  <p style="font-size:1.2rem;color:#64748b;margin-bottom:4px;">1bot · edoo Guatemala</p>
+  <p style="font-size:1.2rem;color:#64748b;margin-bottom:4px;">Guatemala</p>
   <p style="font-size:1rem;color:#94a3b8;margin-bottom:40px;">Compendio completo de contenidos para impresión</p>
   ${buildTOC()}
   <div class="footer">Generado el ${new Date().toLocaleDateString('es-GT', {year:'numeric',month:'long',day:'numeric'})} · Uso exclusivo docente</div>
@@ -257,7 +257,7 @@ courseOrder.forEach(cid => {
     });
   });
 
-  parts.push(`<div class="footer">Curso: ${esc(course.title)} · Formación Docente en Pedagogía Innovadora · 1bot edoo Guatemala</div>
+  parts.push(`<div class="footer">Curso: ${esc(course.title)} · Formación Docente en Pedagogía Innovadora · Guatemala</div>
 </div>`);
 });
 
@@ -290,7 +290,7 @@ Object.keys(DIAG_DOMAINS).forEach(domKey => {
   parts.push(`</div>`);
 });
 
-parts.push(`<div class="footer">Examen Diagnóstico · Formación Docente en Pedagogía Innovadora · 1bot edoo Guatemala</div>
+parts.push(`<div class="footer">Examen Diagnóstico · Formación Docente en Pedagogía Innovadora · Guatemala</div>
 </div>`);
 
 parts.push(`</body></html>`);

@@ -3940,15 +3940,12 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
     const courseDesc = courseDescs[_course.id] || courseDescs['steam'];
 
     // Intentar cargar imágenes reales; si no existen, usar fallback SVG
-    const [logoSrc, firmaSrc, certSigs] = await Promise.all([
-        _imgToBase64('logo-1bot-edoo.png'),
+    const [firmaSrc, certSigs] = await Promise.all([
         _imgToBase64('firma.png'),
         _loadCertSignaturesForUser()
     ]);
 
-    const logoHtml = logoSrc
-        ? `<img src="${logoSrc}" alt="Programa de Formación Docente" style="height:44px;object-fit:contain">`
-        : `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:${courseColor}">Formación Docente</span>`;
+    const logoHtml = `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:${courseColor}">Formación Docente</span>`;
 
     const certCode = await getOrCreateCertCode(_cid2, 'course', nombre, percentage);
     const { qrImg, verifyUrl } = buildVerifyQRHtml(certCode);
@@ -4024,7 +4021,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
       <div class="brand-area">
         ${logoHtml}
         <button class="print-btn" onclick="window.print()">⬇ Guardar PDF</button>
-        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle + ' · Formación Docente')}&organizationName=${encodeURIComponent('1bot - edoo')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
+        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle + ' · Formación Docente')}&organizationName=${encodeURIComponent('Formación Docente')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
       </div>
     </div>
   </div>
@@ -4640,14 +4637,11 @@ async function generateMasterCertificate() {
     const steamScore  = scores['steam'] ?? progress?.dailyMissions?.examScore ?? 0;
     const masterScore = progress?.dailyMissions?.masterExamScore ?? window._lastMasterExamScore ?? 0;
 
-    const [logoSrc, firmaSrc, masterSigs] = await Promise.all([
-        _imgToBase64('logo-1bot-edoo.png'),
+    const [firmaSrc, masterSigs] = await Promise.all([
         _imgToBase64('firma.png'),
         _loadCertSignaturesForUser()
     ]);
-    const logoHtml = logoSrc
-        ? `<img src="${logoSrc}" alt="Programa de Formación Docente" style="height:44px;object-fit:contain">`
-        : `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:#7C3AED">Formación Docente</span>`;
+    const logoHtml = `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:#7C3AED">Formación Docente</span>`;
 
     // Solo los cursos de la RUTA activa (no todo el catálogo)
     const _path = _activeMasterPath || LEARNING_PATHS[0];
@@ -4757,7 +4751,7 @@ async function generateMasterCertificate() {
       <div class="brand-area">
         ${logoHtml}
         <button class="print-btn" onclick="window.print()">⬇ Guardar PDF</button>
-        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(_pathLabel + ' · Certificación Maestra de Formación Docente')}&organizationName=${encodeURIComponent('1bot - edoo')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
+        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(_pathLabel + ' · Certificación Maestra de Formación Docente')}&organizationName=${encodeURIComponent('Formación Docente')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
       </div>
     </div>
   </div>
