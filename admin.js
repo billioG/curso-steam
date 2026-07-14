@@ -2157,6 +2157,10 @@ async function generateExecutiveReport() {
     const certified = progress.filter(hasCertificate).length;
     const totalCards= progress.reduce((a,p)=>a+(p.completed_cards?.length||0),0);
     const horasForm = Math.round(totalCards*3/60);
+    // Horas reales — tiempo promedio por tarjeta medido de verdad (resource_views), no el estimado de 3min/tarjeta
+    const { data: rvStatsExec } = await sb.rpc('get_resource_views_stats');
+    const avgSExec   = rvStatsExec?.[0]?.avg_seconds || 0;
+    const horasReales = avgSExec > 0 ? Math.round(totalCards * avgSExec / 3600) : horasForm;
     const completedFull = progress.filter(hasCompletedAnyCourse).length;
     const tasaFin   = total ? Math.round((completedFull/total)*100) : 0;
     const { data:fbRaw } = await sb.from('feedback').select('nps,user_id');
@@ -2179,7 +2183,7 @@ async function generateExecutiveReport() {
             ${[
                 ['Docentes alcanzados', fmt(total),       'fas fa-chalkboard-teacher', '#4f46e5'],
                 ['Activos (7 días)',   fmt(active30),    'fas fa-user-check',         '#0891b2'],
-                ['Horas de formación', horasForm+'h',    'fas fa-clock',              '#d97706'],
+                ['Horas de formación', horasReales+'h',  'fas fa-clock',              '#d97706'],
                 ['Certificados emitidos', fmt(certified), 'fas fa-award',             '#16a34a'],
             ].map(([l,v,icon,color])=>`
             <div style="background:#f8fafc;padding:20px;border-radius:12px;text-align:center">
@@ -2201,7 +2205,7 @@ async function generateExecutiveReport() {
                    ['Tasa de finalización',tasaFin+'%','70%'],
                    ['Tasa de certificación',total?Math.round(certified/total*100)+'%':'—','50%'],
                    ['NPS de satisfacción',npsScore,'≥ 30'],
-                   ['Horas de formación generadas',horasForm+'h','—'],
+                   ['Horas de formación (tiempo real medido)',horasReales+'h','—'],
                    ['Tarjetas de contenido completadas',fmt(totalCards),'—']].map(([l,v,m])=>`
                 <tr style="border-bottom:1px solid #f1f5f9">
                     <td style="padding:12px;font-size:14px">${l}</td>
@@ -2233,6 +2237,10 @@ async function generateMineduc() {
     const active    = progress.filter(isActive7d).length;
     const totalCards= progress.reduce((a,p)=>a+(p.completed_cards?.length||0),0);
     const horasForm = Math.round(totalCards*3/60);
+    // Horas reales — tiempo promedio por tarjeta medido de verdad (resource_views), no el estimado de 3min/tarjeta
+    const { data: rvStatsMin } = await sb.rpc('get_resource_views_stats');
+    const avgSMin   = rvStatsMin?.[0]?.avg_seconds || 0;
+    const horasReales = avgSMin > 0 ? Math.round(totalCards * avgSMin / 3600) : horasForm;
     const completedFull = progress.filter(hasCompletedAnyCourse).length;
     const { data:fbRaw } = await sb.from('feedback').select('nps,rating,user_id');
     const _nonAdminIds = new Set(progress.map(p => p.user_id));
@@ -2258,6 +2266,15 @@ async function generateMineduc() {
         return { ...c, enrolledCount: enrolled.length, passedCount: passed.length, rate };
     });
 
+    // Impacto agregado por ruta de aprendizaje (suma de inscritos/aprobados de sus cursos)
+    const routeCertRates = LEARNING_PATHS.map(route => {
+        const cursos = courseCertRates.filter(c => route.courses.includes(c.id));
+        const enrolledCount = cursos.reduce((a,c)=>a+c.enrolledCount,0);
+        const passedCount   = cursos.reduce((a,c)=>a+c.passedCount,0);
+        const rate = enrolledCount ? Math.round(passedCount / enrolledCount * 100) : 0;
+        return { ...route, courseCount: cursos.length, enrolledCount, passedCount, rate };
+    });
+
     const html = `<div style="font-family:Arial,sans-serif;max-width:800px;margin:0 auto;color:#000;font-size:13px">
         <div style="text-align:center;border-bottom:3px solid #1A6B68;padding-bottom:20px;margin-bottom:24px">
             <h1 style="font-size:20px;font-weight:900;margin:8px 0">INFORME DE AVANCE — PROGRAMA DE FORMACIÓN DOCENTE</h1>
@@ -2276,7 +2293,7 @@ async function generateMineduc() {
                    ['Tasa de retención activa',total?Math.round(active/total*100)+'%':'—'],
                    ['Docentes que completaron al menos un curso',completedFull+' ('+( total?Math.round(completedFull/total*100):0 )+'%)'],
                    ['Certificados emitidos',fmt(certified)],
-                   ['Horas de formación generadas',horasForm+' horas'],
+                   ['Horas de formación (tiempo real medido)',horasReales+' horas'],
                    ['Interacciones de aprendizaje (tarjetas)',fmt(totalCards)],
                    ['Satisfacción docente (NPS)',npsScore+' / 100'],
                    ['Rating promedio de módulos',avgRating+' / 5.0']].map(([l,v])=>`
@@ -2284,30 +2301,28 @@ async function generateMineduc() {
             </tbody>
         </table>
 
-        <h3 style="background:#1A6B68;color:white;padding:10px 16px;border-radius:6px;font-size:13px">2. CONTENIDO Y MÉTRICAS DE IMPACTO POR CURSO</h3>
-        <p>El programa está compuesto por los siguientes cursos en modalidad asincrónica de autoaprendizaje. La <strong>Tasa de certificación</strong> mide el porcentaje de docentes inscritos que aprobaron el examen final del curso (≥70%).</p>
+        <h3 style="background:#1A6B68;color:white;padding:10px 16px;border-radius:6px;font-size:13px">2. IMPACTO POR RUTA DE APRENDIZAJE</h3>
+        <p>El programa se organiza en rutas temáticas. La <strong>tasa de certificación</strong> mide el porcentaje de docentes inscritos en los cursos de esa ruta que aprobaron el examen final (≥70%) — base del Certificado Maestro de cada ruta.</p>
         <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px">
             <thead><tr style="background:#f0f4f8">
-                <th style="text-align:left;padding:8px;border:1px solid #ddd">Curso</th>
-                <th style="text-align:center;padding:8px;border:1px solid #ddd">Duración</th>
-                <th style="text-align:center;padding:8px;border:1px solid #ddd">Unidades</th>
-                <th style="text-align:center;padding:8px;border:1px solid #ddd">Inscritos</th>
+                <th style="text-align:left;padding:8px;border:1px solid #ddd">Ruta</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Cursos</th>
                 <th style="text-align:center;padding:8px;border:1px solid #ddd">Tasa de certificación</th>
             </tr></thead>
             <tbody>
-                ${courseCertRates.map((c,i)=>`<tr ${i%2===0?'style="background:#fafafa"':''}>
-                    <td style="padding:8px;border:1px solid #ddd">${c.title}</td>
-                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${c.durationHours}h</td>
-                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${c.totalCards} tarjetas · ${c.modules} módulos</td>
-                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${c.enrolledCount}</td>
-                    <td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:bold;color:${c.rate>=60?'#1A6B68':c.rate>=30?'#d97706':'#dc2626'}">${c.passedCount} / ${c.enrolledCount} (${c.rate}%)</td>
+                ${routeCertRates.map((r,i)=>`<tr ${i%2===0?'style="background:#fafafa"':''}>
+                    <td style="padding:8px;border:1px solid #ddd">${r.label}</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${r.courseCount}</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:bold;color:${r.rate>=60?'#1A6B68':r.rate>=30?'#d97706':'#dc2626'}">${r.rate}%</td>
                 </tr>`).join('')}
                 <tr style="font-weight:bold;background:#e8f5e9">
                     <td style="padding:8px;border:1px solid #ddd">TOTAL DEL PROGRAMA</td>
-                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${STATIC_COURSES.reduce((a,c)=>a+c.durationHours,0)}h</td>
-                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${STATIC_COURSES.reduce((a,c)=>a+c.totalCards,0)} tarjetas</td>
-                    <td style="padding:8px;border:1px solid #ddd;text-align:center">—</td>
-                    <td style="padding:8px;border:1px solid #ddd;text-align:center">—</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${STATIC_COURSES.length}</td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center">${(() => {
+                        const e = routeCertRates.reduce((a,r)=>a+r.enrolledCount,0);
+                        const p = routeCertRates.reduce((a,r)=>a+r.passedCount,0);
+                        return e ? Math.round(p/e*100)+'%' : '—';
+                    })()}</td>
                 </tr>
             </tbody>
         </table>
