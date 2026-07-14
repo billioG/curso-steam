@@ -35,6 +35,12 @@
   .view { display:none; }
   .view.active { display:block; }
   .kpi-card { background:white;border-radius:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  @media print {
+    .no-print { display:none !important; }
+    body { background:white; }
+    .card, .kpi-card { box-shadow:none; border:1px solid #e2e8f0; break-inside:avoid; }
+    #lockedBanner { display:none !important; }
+  }
 </style>
 </head>
 <body>
@@ -53,7 +59,7 @@
   <div id="schoolTagsWrap" class="hidden flex-wrap gap-1.5"></div>
   <div class="flex items-center gap-3">
     <span class="text-xs text-slate-400" id="coordName"></span>
-    <button onclick="signOut()" class="text-xs text-slate-500 hover:text-red-500 transition"><i class="fas fa-sign-out-alt mr-1"></i>Salir</button>
+    <button onclick="signOut()" class="no-print text-xs text-slate-500 hover:text-red-500 transition"><i class="fas fa-sign-out-alt mr-1"></i>Salir</button>
   </div>
 </div>
 
@@ -84,13 +90,35 @@
   </div>
 </div>
 
+<!-- Plan gratuito: sin reportería -->
+<div id="planLockedScreen" class="hidden min-h-screen flex items-center justify-center p-6">
+  <div class="card max-w-sm w-full text-center">
+    <i class="fas fa-chart-line text-4xl text-amber-300 mb-4"></i>
+    <h2 class="font-bold text-slate-700 mb-2">Reportería no activada</h2>
+    <p class="text-sm text-slate-400" id="lockedSchoolsMsg">Tu(s) centro(s) educativo(s) no tienen activado el plan con reportería de coordinación.</p>
+    <p class="text-xs text-slate-400 mt-3">Contacta al administrador del programa para activar el plan pagado en tu centro.</p>
+    <button onclick="signOut()" class="mt-4 text-sm text-indigo-500 hover:underline">Cerrar sesión</button>
+  </div>
+</div>
+
 <!-- Dashboard principal -->
 <div id="mainDash" class="hidden max-w-6xl mx-auto px-4 py-5">
 
+  <!-- Aviso: algunos centros del coordinador no tienen plan pagado -->
+  <div id="lockedBanner" class="hidden mb-4 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-xl px-4 py-2.5 flex items-center gap-2">
+    <i class="fas fa-triangle-exclamation"></i>
+    <span id="lockedBannerText"></span>
+  </div>
+
   <!-- Tabs -->
-  <div class="flex gap-2 mb-5">
-    <button class="nav-tab active" onclick="showTab('tabDash',this)"><i class="fas fa-chart-bar mr-1.5"></i>Dashboard</button>
-    <button class="nav-tab" onclick="showTab('tabTeachers',this)"><i class="fas fa-users mr-1.5"></i>Docentes</button>
+  <div class="flex items-center justify-between gap-2 mb-5">
+    <div class="flex gap-2">
+      <button class="nav-tab active" onclick="showTab('tabDash',this)"><i class="fas fa-chart-bar mr-1.5"></i>Dashboard</button>
+      <button class="nav-tab" onclick="showTab('tabTeachers',this)"><i class="fas fa-users mr-1.5"></i>Docentes</button>
+    </div>
+    <button onclick="window.print()" class="no-print border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 whitespace-nowrap">
+      <i class="fas fa-file-pdf"></i> Guardar PDF de esta vista
+    </button>
   </div>
 
   <!-- ═══ TAB DASHBOARD ═══ -->
@@ -214,9 +242,9 @@
         </div>
         <div class="flex items-center gap-2">
           <input id="searchTeacher" oninput="filterTeachers()" placeholder="Buscar…"
-            class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200 w-40">
+            class="no-print border border-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200 w-40">
           <button onclick="exportTeachersCSV()"
-            class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 whitespace-nowrap">
+            class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 whitespace-nowrap no-print">
             <i class="fas fa-file-csv"></i> Exportar CSV
           </button>
         </div>
@@ -374,6 +402,7 @@ function toggleRouteGroup(groupId) {
 
 let _allTeachers = [];   // cada item tiene ._schoolName
 let _coordSchools = [];
+let _lockedSchools = []; // centros del coordinador en plan free — sin reportería
 let _charts = {};
 
 const _params     = new URLSearchParams(location.search);
@@ -388,7 +417,7 @@ async function init() {
 }
 
 function show(id) {
-    ['loginScreen','noAccessScreen','mainDash'].forEach(x => {
+    ['loginScreen','noAccessScreen','planLockedScreen','mainDash'].forEach(x => {
         document.getElementById(x).classList.toggle('hidden', x !== id);
     });
 }
@@ -420,21 +449,40 @@ async function loadDashboard(user) {
     const lookupId = _urlCoordId || user.id;
 
     const { data: coordRows } = await sb.from('coordinators')
-        .select('*, schools(id, name)')
+        .select('*, schools(id, name, plan)')
         .eq('user_id', lookupId);
 
-    _coordSchools = (coordRows || []).map(r => ({ id: r.school_id, name: r.schools?.name || r.school_id }));
+    let allSchools = (coordRows || []).map(r => ({ id: r.school_id, name: r.schools?.name || r.school_id, plan: r.schools?.plan || 'free' }));
 
-    if (!_coordSchools.length && isAdmin && _urlSchoolId) {
-        const { data: school } = await sb.from('schools').select('id,name').eq('id', _urlSchoolId).maybeSingle();
-        if (school) _coordSchools = [{ id: school.id, name: school.name }];
+    if (!allSchools.length && isAdmin && _urlSchoolId) {
+        const { data: school } = await sb.from('schools').select('id,name,plan').eq('id', _urlSchoolId).maybeSingle();
+        if (school) allSchools = [{ id: school.id, name: school.name, plan: school.plan || 'free' }];
     }
 
-    if (!_coordSchools.length && !isAdmin) { show('noAccessScreen'); return; }
-    if (!_coordSchools.length) { show('noAccessScreen'); return; }
+    if (!allSchools.length) { show('noAccessScreen'); return; }
+
+    // Reportería es beneficio de plan pagado — admin ve todo sin restricción
+    _coordSchools  = isAdmin ? allSchools : allSchools.filter(s => s.plan === 'paid');
+    _lockedSchools = isAdmin ? [] : allSchools.filter(s => s.plan !== 'paid');
+
+    if (!_coordSchools.length) {
+        document.getElementById('lockedSchoolsMsg').textContent =
+            `${_lockedSchools.map(s => s.name).join(', ')} no ${_lockedSchools.length > 1 ? 'tienen' : 'tiene'} activado el plan con reportería de coordinación.`;
+        show('planLockedScreen');
+        return;
+    }
 
     document.getElementById('coordName').textContent = coordRows?.[0]?.name || user.email;
     show('mainDash');
+
+    const bannerEl = document.getElementById('lockedBanner');
+    if (_lockedSchools.length) {
+        document.getElementById('lockedBannerText').textContent =
+            `${_lockedSchools.map(s => s.name).join(', ')} no ${_lockedSchools.length > 1 ? 'tienen' : 'tiene'} plan pagado — se muestra solo la reportería de los centros activos.`;
+        bannerEl.classList.remove('hidden');
+    } else {
+        bannerEl.classList.add('hidden');
+    }
 
     // Mostrar tags de centros en el header
     const tagsWrap = document.getElementById('schoolTagsWrap');

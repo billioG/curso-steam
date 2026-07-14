@@ -3875,11 +3875,12 @@ async function _loadCertSignaturesForUser() {
             if (schoolName) {
                 const { data: schoolRows } = await supabase
                     .from('schools')
-                    .select('director_name, director_role, director_signature_url')
+                    .select('plan, director_name, director_role, director_signature_url')
                     .eq('name', schoolName)
                     .limit(1);
                 const s = schoolRows?.[0];
-                _cachedUserSchoolSig = (s?.director_name || s?.director_signature_url)
+                // Firma de director es beneficio de plan pagado — free se queda con la firma genérica del programa
+                _cachedUserSchoolSig = (s?.plan === 'paid' && (s?.director_name || s?.director_signature_url))
                     ? { signer_name: s.director_name || '', signer_role: s.director_role || 'Directora / Director', signature_url: s.director_signature_url || null }
                     : null;
             } else {
