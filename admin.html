@@ -904,6 +904,33 @@
                     </div>
                 </div>
 
+                <!-- IMPORTAR DOCENTES (CSV) -->
+                <div class="card">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-9 h-9 bg-sky-50 rounded-xl flex items-center justify-center shrink-0"><i class="fas fa-file-import text-sky-500"></i></div>
+                        <div>
+                            <p class="font-bold text-slate-800">Importar docentes (CSV)</p>
+                            <p class="text-xs text-slate-500">Sube la lista de docentes de un centro y quedan invitados y asignados de una vez — sin hacerlo uno por uno.</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <select id="bulkImportSchool" class="input-field text-sm">
+                            <option value="">Selecciona el centro educativo…</option>
+                        </select>
+                        <div>
+                            <input type="file" id="bulkImportFile" accept=".csv,text/csv" onchange="onBulkImportFile(this)" class="text-xs w-full">
+                            <p class="text-xs text-slate-400 mt-1">Formato: una línea por docente — <code>correo,nombre</code> (nombre es opcional). Ej: <code>maria@escuela.edu.gt,María López</code></p>
+                        </div>
+                        <div id="bulkImportPreview" class="bg-slate-50 rounded-xl p-3">
+                            <p class="text-xs text-slate-400">Sube un CSV para ver la vista previa.</p>
+                        </div>
+                        <button id="bulkImportBtn" onclick="runBulkImport()" disabled class="btn-primary text-xs w-full disabled:opacity-40 disabled:cursor-not-allowed">
+                            <i class="fas fa-file-import mr-1"></i>Importar
+                        </button>
+                        <div id="bulkImportResults" class="space-y-1"></div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <p class="font-semibold text-slate-800 mb-1">Exportar backup completo</p>
                     <p class="text-xs text-slate-500 mb-3">Descarga todos los datos en JSON. Incluye progreso, feedback, cursos y sesiones.</p>
