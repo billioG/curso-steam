@@ -85,13 +85,13 @@ Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/database/webho
    - Function: `new-user-alert`
 3. Guardar
 
-## Verificar dominio 1bot.org en Resend (para enviar a todos los usuarios)
+## Verificar tu dominio en Resend (para enviar a todos los usuarios)
 
 1. Ve a: https://resend.com/domains
-2. Agrega `1bot.org`
+2. Agrega tu dominio propio (no un dominio de terceros)
 3. Copia los registros DNS que te da Resend
 4. Agrégalos en donde administras tu dominio
-5. Una vez verificado, cambia el Secret `FROM_EMAIL` a: `no-reply@1bot.org`
+5. Una vez verificado, cambia el Secret `FROM_EMAIL` a: `no-reply@tu-dominio.com`
 
 Mientras tanto, los emails de prueba solo llegarán al correo de tu cuenta Resend.
 
