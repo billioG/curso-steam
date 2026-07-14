@@ -77,6 +77,62 @@ serve(async (req) => {
       return json({ ok: true, email, role })
     }
 
+    // ── Importar docentes en lote (CSV) + asignar a un centro ─
+    if (action === 'bulkImportTeachers') {
+      const { schoolId, teachers } = body
+      if (!schoolId) return json({ error: 'schoolId es requerido' }, 400)
+      if (!Array.isArray(teachers) || !teachers.length) return json({ error: 'teachers debe ser un array no vacío' }, 400)
+      if (teachers.length > 500) return json({ error: 'Máximo 500 docentes por importación' }, 400)
+
+      // Mapa email → userId de cuentas ya existentes (una sola pasada, evita N búsquedas)
+      const emailToId: Record<string, string> = {}
+      for (let page = 1; ; page++) {
+        const { data: listData, error: listErr } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
+        if (listErr) return json({ error: listErr.message }, 500)
+        for (const u of listData.users) if (u.email) emailToId[u.email.toLowerCase()] = u.id
+        if (listData.users.length < 1000) break
+      }
+
+      const results: Array<{ email: string, status: string, message?: string }> = []
+
+      for (const row of teachers) {
+        const email = String(row?.email || '').trim().toLowerCase()
+        const name = String(row?.name || '').trim()
+
+        if (!email || !email.includes('@')) {
+          results.push({ email: row?.email || '(vacío)', status: 'error', message: 'Correo inválido' })
+          continue
+        }
+
+        try {
+          let userId = emailToId[email]
+          let status = 'linked'
+
+          if (!userId) {
+            const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(email, {
+              data: { invited_by: user.email, ...(name ? { name } : {}) }
+            })
+            if (invErr) { results.push({ email, status: 'error', message: invErr.message }); continue }
+            userId = invited.user.id
+            emailToId[email] = userId
+            status = 'invited'
+            await admin.from('user_roles').upsert({ user_id: userId, role: 'student' }, { onConflict: 'user_id' })
+          }
+
+          const { error: linkErr } = await admin
+            .from('user_schools')
+            .upsert({ user_id: userId, school_id: schoolId }, { onConflict: 'user_id,school_id' })
+          if (linkErr) { results.push({ email, status: 'error', message: linkErr.message }); continue }
+
+          results.push({ email, status })
+        } catch (e) {
+          results.push({ email, status: 'error', message: String(e) })
+        }
+      }
+
+      return json({ ok: true, results })
+    }
+
     // ── Eliminar usuario ─────────────────────────────────────
     if (action === 'deleteUser') {
       const { userId } = body
