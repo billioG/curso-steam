@@ -2741,10 +2741,6 @@ async function saveAllLearningPaths() {
 let _signatures = [];
 let _schools    = [];
 
-async function loadSettings() {
-    await Promise.all([loadSignatures(), loadSchools(), loadCoordinators(), loadLearningPaths(), loadAnnouncement(), loadPushPanel(), loadBroadcastHistory()]);
-}
-
 // ── Firmas ──────────────────────────────────────────────────
 async function loadSignatures() {
     const { data } = await sb.from('cert_signatures').select('*').order('slot');
@@ -3199,13 +3195,16 @@ function switchView(view) {
     const bEl = document.querySelector(`.nav-btn[data-view="${view}"]`);
     if (bEl) bEl.classList.add('active');
 
-    if (view==='dashboard') loadDashboard();
-    if (view==='analytics') { loadAnalytics(); loadResourceDownloadsPanel(); }
-    if (view==='users')     loadUsers();
-    if (view==='feedback')  loadFeedback();
-    if (view==='comments')  loadAdminComments();
-    if (view==='cms')       loadCMS();
-    if (view==='settings')  loadSettings();
+    if (view==='dashboard')       loadDashboard();
+    if (view==='analytics')       { loadAnalytics(); loadResourceDownloadsPanel(); }
+    if (view==='users')           loadUsers();
+    if (view==='feedback')        loadFeedback();
+    if (view==='comments')        loadAdminComments();
+    if (view==='cms')             loadCMS();
+    if (view==='rutas')           loadLearningPaths();
+    if (view==='centros')         { loadSchools(); loadCoordinators(); }
+    if (view==='notificaciones')  { loadAnnouncement(); loadPushPanel(); loadBroadcastHistory(); }
+    if (view==='firmas')          loadSignatures();
 }
 
 function closeSidebar() {
