@@ -1,6 +1,6 @@
 // casos-estudio.js
 // Branching Case Studies — Formación Docente en Pedagogía Innovadora
-// 1bot - edoo · Guatemala 2026
+// Guatemala 2026
 
 const CASE_STUDIES = [
 

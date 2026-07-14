@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v83';
+const CACHE_VERSION  = 'steam-v84';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -19,7 +19,6 @@ const CRITICAL_ASSETS = [
     './manifest.json',
     './robot.png',
     './mbot.png',
-    './logo-1bot-edoo.png',
     './firma.png',
 ];
 
@@ -184,7 +183,7 @@ self.addEventListener('push', event => {
     const title = data.title || 'Formación Docente';
     const options = {
         body: data.body || '',
-        icon: './logo-1bot-edoo.png',
+        icon: './icon.svg',
         badge: './icon.svg',
         data: { url: data.url || './index.html' },
         tag: 'steam-notification',

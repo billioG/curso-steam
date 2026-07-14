@@ -2837,6 +2837,14 @@ async function loadSchools() {
         sel.innerHTML = '<option value="">Selecciona centro educativo…</option>' +
             _schools.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
     }
+    // Poblar select de importación masiva de docentes
+    const bulkSel = document.getElementById('bulkImportSchool');
+    if (bulkSel) {
+        const prev = bulkSel.value;
+        bulkSel.innerHTML = '<option value="">Selecciona el centro educativo…</option>' +
+            _schools.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+        if (prev) bulkSel.value = prev;
+    }
 }
 
 function renderSchools() {
@@ -2846,11 +2854,17 @@ function renderSchools() {
     el.innerHTML = _schools.map(s => `
     <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
         <div>
-            <p class="text-sm font-semibold text-slate-700">${esc(s.name)}</p>
+            <div class="flex items-center gap-2">
+                <p class="text-sm font-semibold text-slate-700">${esc(s.name)}</p>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${s.plan === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}">${s.plan === 'paid' ? 'PAGADO' : 'GRATIS'}</span>
+            </div>
             ${s.code ? `<p class="text-xs text-slate-400">Código: ${esc(s.code)}</p>` : ''}
             ${s.director_name ? `<p class="text-xs text-indigo-500 mt-0.5"><i class="fas fa-signature mr-1"></i>${esc(s.director_name)}</p>` : ''}
         </div>
         <div class="flex items-center gap-2 ml-3">
+            <button onclick="toggleSchoolPlan('${s.id}','${s.plan || 'free'}')" class="text-xs font-semibold ${s.plan === 'paid' ? 'text-amber-500 hover:text-amber-600' : 'text-emerald-500 hover:text-emerald-600'}" title="${s.plan === 'paid' ? 'Pasar a plan gratuito' : 'Activar plan pagado'}">
+                <i class="fas ${s.plan === 'paid' ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+            </button>
             <button onclick="openDirectorSigModal('${s.id}')" class="text-indigo-400 hover:text-indigo-600 text-xs" title="Firma del director"><i class="fas fa-signature"></i></button>
             <button onclick="deleteSchool('${s.id}')" class="text-red-400 hover:text-red-600 text-xs"><i class="fas fa-trash"></i></button>
         </div>
@@ -2891,6 +2905,103 @@ async function deleteSchool(id) {
     await sb.from('schools').delete().eq('id', id);
     toast('Centro eliminado.', 'success');
     await loadSchools();
+}
+
+async function toggleSchoolPlan(id, currentPlan) {
+    const newPlan = currentPlan === 'paid' ? 'free' : 'paid';
+    if (newPlan === 'free' && !confirm('¿Pasar este centro a plan gratuito? Perderá acceso a la reportería de coordinación y a la firma del director en los diplomas.')) return;
+    const { error } = await sb.from('schools').update({ plan: newPlan }).eq('id', id);
+    if (error) { toast('Error: ' + error.message, 'error'); return; }
+    toast(newPlan === 'paid' ? 'Centro activado como PAGADO — ya tiene reportería y firma de director.' : 'Centro pasado a plan gratuito.', 'success');
+    await loadSchools();
+}
+
+// ── Importación masiva de docentes (CSV) ───────────────────────
+let _bulkImportRows = [];
+
+function parseTeachersCSV(text) {
+    return text.split(/\r?\n/)
+        .map(l => l.trim())
+        .filter(Boolean)
+        .map(line => {
+            const parts = line.split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+            return { email: parts[0] || '', name: parts[1] || '' };
+        })
+        .filter(r => r.email && !['correo', 'email', 'correo electrónico'].includes(r.email.toLowerCase()));
+}
+
+function onBulkImportFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        _bulkImportRows = parseTeachersCSV(String(reader.result || ''));
+        renderBulkImportPreview();
+    };
+    reader.readAsText(file, 'utf-8');
+}
+
+function renderBulkImportPreview() {
+    const el = document.getElementById('bulkImportPreview');
+    const btn = document.getElementById('bulkImportBtn');
+    if (!el || !btn) return;
+    if (!_bulkImportRows.length) {
+        el.innerHTML = '<p class="text-xs text-slate-400">Sube un CSV para ver la vista previa.</p>';
+        btn.disabled = true;
+        return;
+    }
+    const preview = _bulkImportRows.slice(0, 50)
+        .map(r => `<div>${esc(r.email)}${r.name ? ' · ' + esc(r.name) : ''}</div>`).join('');
+    const more = _bulkImportRows.length > 50 ? `<div class="text-slate-400 mt-1">…y ${_bulkImportRows.length - 50} más</div>` : '';
+    el.innerHTML = `<p class="text-xs text-slate-500 font-semibold mb-1">${_bulkImportRows.length} docente(s) detectados</p>
+        <div class="max-h-32 overflow-y-auto text-xs text-slate-600 space-y-0.5">${preview}${more}</div>`;
+    btn.disabled = false;
+}
+
+async function runBulkImport() {
+    const schoolId = document.getElementById('bulkImportSchool').value;
+    if (!schoolId) { toast('Selecciona un centro educativo.', 'error'); return; }
+    if (!_bulkImportRows.length) { toast('Sube un CSV primero.', 'error'); return; }
+
+    const btn = document.getElementById('bulkImportBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Importando…';
+
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    if (!token) { toast('No autenticado', 'error'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-file-import mr-1"></i>Importar'; return; }
+
+    const EDGE_URL = `${sb.supabaseUrl}/functions/v1/admin-users`;
+    let json;
+    try {
+        const res = await fetch(EDGE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ action: 'bulkImportTeachers', schoolId, teachers: _bulkImportRows })
+        });
+        json = await res.json();
+        if (!res.ok) { toast('Error: ' + (json.error || res.status), 'error'); return; }
+    } catch (e) {
+        toast('Error de red: ' + e.message, 'error'); return;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-file-import mr-1"></i>Importar';
+    }
+
+    const results = json.results || [];
+    const errors = results.filter(r => r.status === 'error');
+    toast(`${results.length - errors.length} docente(s) importados/asignados${errors.length ? `, ${errors.length} con error` : ''}.`, errors.length ? 'warning' : 'success');
+
+    document.getElementById('bulkImportResults').innerHTML = results.map(r => `
+        <div class="flex items-center justify-between text-xs px-2.5 py-1.5 rounded-lg ${r.status === 'error' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}">
+            <span>${esc(r.email)}</span>
+            <span>${r.status === 'error' ? '❌ ' + esc(r.message || 'error') : (r.status === 'invited' ? '✅ Invitado' : '✅ Ya existía, asignado')}</span>
+        </div>`).join('');
+
+    _bulkImportRows = [];
+    document.getElementById('bulkImportFile').value = '';
+    renderBulkImportPreview();
+    await loadUsers();
 }
 
 // ── Firma de director por escuela ─────────────────────────────
