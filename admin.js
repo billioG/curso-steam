@@ -2846,11 +2846,17 @@ function renderSchools() {
     el.innerHTML = _schools.map(s => `
     <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
         <div>
-            <p class="text-sm font-semibold text-slate-700">${esc(s.name)}</p>
+            <div class="flex items-center gap-2">
+                <p class="text-sm font-semibold text-slate-700">${esc(s.name)}</p>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${s.plan === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}">${s.plan === 'paid' ? 'PAGADO' : 'GRATIS'}</span>
+            </div>
             ${s.code ? `<p class="text-xs text-slate-400">Código: ${esc(s.code)}</p>` : ''}
             ${s.director_name ? `<p class="text-xs text-indigo-500 mt-0.5"><i class="fas fa-signature mr-1"></i>${esc(s.director_name)}</p>` : ''}
         </div>
         <div class="flex items-center gap-2 ml-3">
+            <button onclick="toggleSchoolPlan('${s.id}','${s.plan || 'free'}')" class="text-xs font-semibold ${s.plan === 'paid' ? 'text-amber-500 hover:text-amber-600' : 'text-emerald-500 hover:text-emerald-600'}" title="${s.plan === 'paid' ? 'Pasar a plan gratuito' : 'Activar plan pagado'}">
+                <i class="fas ${s.plan === 'paid' ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+            </button>
             <button onclick="openDirectorSigModal('${s.id}')" class="text-indigo-400 hover:text-indigo-600 text-xs" title="Firma del director"><i class="fas fa-signature"></i></button>
             <button onclick="deleteSchool('${s.id}')" class="text-red-400 hover:text-red-600 text-xs"><i class="fas fa-trash"></i></button>
         </div>
@@ -2890,6 +2896,15 @@ async function deleteSchool(id) {
     if (!confirm('¿Eliminar este centro educativo?')) return;
     await sb.from('schools').delete().eq('id', id);
     toast('Centro eliminado.', 'success');
+    await loadSchools();
+}
+
+async function toggleSchoolPlan(id, currentPlan) {
+    const newPlan = currentPlan === 'paid' ? 'free' : 'paid';
+    if (newPlan === 'free' && !confirm('¿Pasar este centro a plan gratuito? Perderá acceso a la reportería de coordinación y a la firma del director en los diplomas.')) return;
+    const { error } = await sb.from('schools').update({ plan: newPlan }).eq('id', id);
+    if (error) { toast('Error: ' + error.message, 'error'); return; }
+    toast(newPlan === 'paid' ? 'Centro activado como PAGADO — ya tiene reportería y firma de director.' : 'Centro pasado a plan gratuito.', 'success');
     await loadSchools();
 }
 
