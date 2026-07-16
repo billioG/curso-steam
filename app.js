@@ -897,11 +897,10 @@ const _SYNC_DEBOUNCE_MS = 1000;
 function saveProgress() {
     if (!progress) return;
     localStorage.setItem("steamProgressBackup", JSON.stringify(progress));
+    if (currentUser) saveToLocalCache(currentUser.id, progress);
     if (navigator.onLine && currentUser) {
         clearTimeout(_syncDebounceT);
         _syncDebounceT = setTimeout(() => { _syncDebounceT = null; syncWithSupabase(); }, _SYNC_DEBOUNCE_MS);
-    } else if (currentUser) {
-        saveToLocalCache(currentUser.id, progress);
     }
     updateUI();
     checkBadges();
