@@ -57,6 +57,11 @@
 
   <script>
     const EVALUATE_CANDIDATE_URL = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/evaluate-candidate';
+    // El gateway de Supabase exige un JWT válido en Authorization antes de
+    // que corra el código de la función, aunque la función misma no lo
+    // valide (el candidato se identifica con access_token, no con JWT).
+    // El anon key es un JWT válido y satisface ese chequeo de plataforma.
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
 
     // Casos de estudio del proceso de selección — uno por ruta de formación
     // (steam20 / convivencia / ia / creativo / metodologias) para que la IA
@@ -144,7 +149,7 @@
       try {
         const res = await fetch(EVALUATE_CANDIDATE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
           body: JSON.stringify({ access_token: token, responses }),
         });
         const data = await res.json();
@@ -201,7 +206,7 @@
       try {
         const res = await fetch(EVALUATE_CANDIDATE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
           body: JSON.stringify({ access_token: token, decision }),
         });
         const data = await res.json();
