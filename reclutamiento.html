@@ -35,6 +35,28 @@
   button.hire:disabled { opacity:.5; cursor:not-allowed; }
   .loader, .empty { text-align:center; padding:40px; color:#94A3B8; font-size:13px; }
   .weak { font-size:11px; color:#64748B; }
+  tr.candidate-row { cursor:pointer; }
+  tr.candidate-row:hover { background:#F8FAFC; }
+  .modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(15,23,42,.55);
+    align-items:center; justify-content:center; padding:20px; z-index:100;
+  }
+  .modal-card {
+    background:white; border-radius:16px; max-width:520px; width:100%;
+    max-height:85vh; overflow-y:auto; padding:28px; position:relative;
+  }
+  .modal-close {
+    position:absolute; top:16px; right:16px; border:none; background:#F1F5F9;
+    width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:14px; color:#64748B;
+  }
+  .modal-card h2 { font-size:17px; margin-bottom:6px; }
+  .modal-card .sub { font-size:12px; color:#64748B; margin-bottom:18px; }
+  .score-row { display:flex; gap:10px; margin-bottom:14px; }
+  .score-box { flex:1; text-align:center; padding:14px 8px; background:#F8FAFC; border-radius:10px; }
+  .score-box .num { font-size:22px; font-weight:800; color:#07B0E4; }
+  .score-box .lbl { font-size:10.5px; color:#64748B; margin-top:2px; }
+  .feedback { font-size:12.5px; color:#334155; line-height:1.6; padding:12px; background:#F8FAFC; border-radius:10px; margin-bottom:8px; }
+  .roadmap-item { padding:8px 12px; background:#EFF6FF; border-radius:8px; margin-bottom:6px; font-size:12px; color:#1E3A8A; }
 </style>
 </head>
 <body>
@@ -56,6 +78,13 @@
     </div>
     <div id="tableWrap"><div class="loader">Cargando candidatos…</div></div>
   </main>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeDetail()">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="reclutamiento.js"></script>

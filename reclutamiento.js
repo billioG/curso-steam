@@ -11,6 +11,15 @@ let currentUser = null;
 let candidatesCache = [];
 let activeFilter = 'all';
 
+// Espejo de LEARNING_PATHS (admin.js:11-17 / evaluate-candidate) — mismos ids.
+const LEARNING_PATHS = {
+    steam20:      { label: 'Docente STEAM 2.0' },
+    creativo:     { label: 'Docente Creativo' },
+    metodologias: { label: 'Metodologías Activas' },
+    ia:           { label: 'Docente y la IA' },
+    convivencia:  { label: 'Clima y Convivencia Escolar' },
+};
+
 const STATUS_LABELS = {
     aplicado: 'Aplicado',
     rechazado_filtro: 'Rechazado (filtro)',
@@ -94,7 +103,7 @@ function renderTable() {
         const reasonNote = c.rejection_reason === 'salario' ? '<br><span class="weak">Rechazado por salario</span>' : '';
 
         return `
-          <tr>
+          <tr class="candidate-row" data-id="${c.id}">
             <td class="name">${escapeHtml(c.full_name)}${c.interes_mineduc ? ' <span title="En proceso o interesado en plaza MINEDUC">🏛️</span>' : ''}</td>
             <td>${escapeHtml(c.email)}<br><span class="weak">${escapeHtml(c.phone || '')}</span></td>
             <td>${escapeHtml(c.jornada_disponible || '—')}</td>
@@ -102,7 +111,7 @@ function renderTable() {
             <td><span class="badge ${escapeHtml(c.status)}">${escapeHtml(STATUS_LABELS[c.status] || c.status)}</span>${reasonNote}</td>
             <td>${score != null ? `<span class="score">${score}</span>` : '—'}${weak ? `<br><span class="weak">Débil: ${escapeHtml(weak)}</span>` : ''}</td>
             <td>${fecha}</td>
-            <td>${canHire ? `<button class="hire" data-id="${c.id}">Contratar</button>` : ''}</td>
+            <td><button class="hire" data-id="${c.id}" ${canHire ? '' : 'style="display:none"'}>Contratar</button></td>
           </tr>`;
     }).join('');
 
@@ -113,8 +122,53 @@ function renderTable() {
       </table>`;
 
     document.querySelectorAll('button.hire').forEach(btn => {
-        btn.addEventListener('click', () => hireCandidate(btn.dataset.id, btn));
+        btn.addEventListener('click', (e) => { e.stopPropagation(); hireCandidate(btn.dataset.id, btn); });
     });
+    document.querySelectorAll('tr.candidate-row').forEach(row => {
+        row.addEventListener('click', () => showDetail(row.dataset.id));
+    });
+}
+
+function showDetail(candidateId) {
+    const c = candidatesCache.find(x => x.id === candidateId);
+    if (!c) return;
+    const evalRow = Array.isArray(c.candidate_evaluations) ? c.candidate_evaluations[0] : c.candidate_evaluations;
+    const salario = c.pretension_salarial != null ? `Q${Number(c.pretension_salarial).toLocaleString('es-GT')}` : '—';
+
+    let body;
+    if (!evalRow || evalRow.overall_score == null) {
+        body = `<p class="empty" style="padding:20px 0">Este candidato todavía no tiene evaluación de casos de estudio.</p>`;
+    } else {
+        const paths = (evalRow.weak_areas || []).map(id => LEARNING_PATHS[id]?.label || id);
+        const decisionLabel = evalRow.candidate_decision === 'continuar' ? '✅ Decidió continuar'
+            : evalRow.candidate_decision === 'retirar' ? '👋 Decidió no continuar'
+            : '⏳ Aún no decide';
+
+        body = `
+          <div class="score-row">
+            <div class="score-box"><div class="num">${evalRow.technical_score}</div><div class="lbl">Técnica</div></div>
+            <div class="score-box"><div class="num">${evalRow.soft_score}</div><div class="lbl">Blandas</div></div>
+            <div class="score-box"><div class="num">${evalRow.overall_score}</div><div class="lbl">General</div></div>
+          </div>
+          <div class="feedback">
+            <strong>Técnica:</strong> ${escapeHtml(evalRow.feedback?.technical || '')}<br><br>
+            <strong>Blandas:</strong> ${escapeHtml(evalRow.feedback?.soft || '')}<br><br>
+            <strong>Resumen:</strong> ${escapeHtml(evalRow.feedback?.summary || '')}
+          </div>
+          <p style="font-size:12px;font-weight:700;color:#0F172A;margin:14px 0 6px">Ruta de formación sugerida</p>
+          ${paths.length ? paths.map(p => `<div class="roadmap-item">📚 ${escapeHtml(p)}</div>`).join('') : '<div class="roadmap-item">Sin áreas débiles específicas.</div>'}
+          <p style="font-size:12px;color:#475569;margin-top:14px">${decisionLabel}</p>`;
+    }
+
+    document.getElementById('modalBody').innerHTML = `
+        <h2>${escapeHtml(c.full_name)}</h2>
+        <p class="sub">${escapeHtml(c.email)} · ${escapeHtml(c.phone || '—')} · Jornada: ${escapeHtml(c.jornada_disponible || '—')} · Pretensión: ${salario}</p>
+        ${body}`;
+    document.getElementById('modalOverlay').style.display = 'flex';
+}
+
+function closeDetail() {
+    document.getElementById('modalOverlay').style.display = 'none';
 }
 
 async function hireCandidate(candidateId, btn) {
