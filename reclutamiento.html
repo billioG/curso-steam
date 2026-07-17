@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reclutamiento — Panel Administrativo · Formación Docente</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI', Arial, sans-serif; background:#F1F5F9; color:#0F172A; }
+  header {
+    background:#0F172A; color:white; padding:16px 24px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  }
+  header h1 { font-size:16px; }
+  header .email { font-size:12px; color:#94A3B8; }
+  header a { color:#07B0E4; text-decoration:none; font-size:12.5px; font-weight:600; }
+  main { max-width:1100px; margin:0 auto; padding:24px; }
+  .filters { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .filters button {
+    padding:7px 14px; border-radius:20px; border:1.5px solid #E2E8F0; background:white;
+    font-size:12px; font-weight:600; color:#475569; cursor:pointer;
+  }
+  .filters button.active { background:#07B0E4; color:white; border-color:#07B0E4; }
+  table { width:100%; border-collapse:collapse; background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+  th, td { padding:12px 14px; text-align:left; font-size:12.5px; border-bottom:1px solid #F1F5F9; }
+  th { background:#F8FAFC; color:#64748B; font-weight:700; text-transform:uppercase; font-size:10.5px; letter-spacing:.03em; }
+  td.name { font-weight:700; }
+  .badge { padding:4px 10px; border-radius:12px; font-size:10.5px; font-weight:700; display:inline-block; }
+  .badge.aplicado, .badge.evaluacion_pendiente { background:#FEF3C7; color:#92400E; }
+  .badge.rechazado_filtro, .badge.rechazado, .badge.desertado { background:#FEE2E2; color:#991B1B; }
+  .badge.evaluado { background:#DBEAFE; color:#1E40AF; }
+  .badge.contratado { background:#DCFCE7; color:#166534; }
+  .score { font-weight:800; color:#07B0E4; }
+  button.hire { padding:6px 12px; border:none; border-radius:8px; background:#07B0E4; color:white; font-weight:700; font-size:11.5px; cursor:pointer; }
+  button.hire:disabled { opacity:.5; cursor:not-allowed; }
+  .loader, .empty { text-align:center; padding:40px; color:#94A3B8; font-size:13px; }
+  .weak { font-size:11px; color:#64748B; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>🎯 Reclutamiento STEEAM</h1>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span class="email" id="adminEmail"></span>
+      <a href="admin.html">← Panel Administrativo</a>
+    </div>
+  </header>
+  <main>
+    <div class="filters" id="filters">
+      <button data-status="all" class="active">Todos</button>
+      <button data-status="evaluacion_pendiente">Pendientes</button>
+      <button data-status="evaluado">Evaluados</button>
+      <button data-status="contratado">Contratados</button>
+      <button data-status="rechazado_filtro">Rechazados (filtro)</button>
+      <button data-status="desertado">Desertaron</button>
+    </div>
+    <div id="tableWrap"><div class="loader">Cargando candidatos…</div></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="reclutamiento.js"></script>
+</body>
+</html>
