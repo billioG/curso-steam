@@ -24,14 +24,14 @@
   .icon { font-size:42px; text-align:center; margin-bottom:8px; }
   h1 { font-size:19px; text-align:center; color:#0F172A; margin-bottom:4px; }
   .sub { font-size:12.5px; text-align:center; color:#94A3B8; margin-bottom:24px; }
-  .case { margin-bottom:22px; padding:16px; background:#F8FAFC; border-radius:12px; border-left:4px solid #07B0E4; }
+  .case { margin-bottom:22px; padding:16px; background:#F8FAFC; border-radius:12px; border-left:4px solid var(--brand-primary,#07B0E4); }
   .case h3 { font-size:13.5px; color:#0F172A; margin-bottom:8px; }
   .case p { font-size:13px; color:#475569; line-height:1.5; margin-bottom:10px; }
   textarea {
     width:100%; min-height:90px; padding:11px 13px; border:1.5px solid #E2E8F0; border-radius:10px;
     font-size:13.5px; font-family:inherit; resize:vertical;
   }
-  button { width:100%; padding:13px; border:none; border-radius:10px; background:#07B0E4; color:white; font-weight:700; font-size:14px; cursor:pointer; margin-top:10px; }
+  button { width:100%; padding:13px; border:none; border-radius:10px; background:var(--brand-primary,#07B0E4); color:white; font-weight:700; font-size:14px; cursor:pointer; margin-top:10px; }
   button:disabled { opacity:.6; cursor:not-allowed; }
   button.secondary { background:#E2E8F0; color:#334155; }
   .err { color:#DC2626; font-size:12px; margin-top:10px; text-align:center; min-height:16px; }
@@ -40,7 +40,7 @@
   .status.invalid { background:#FEE2E2; color:#991B1B; }
   .score-row { display:flex; gap:12px; margin-bottom:16px; }
   .score-box { flex:1; text-align:center; padding:16px 10px; background:#F8FAFC; border-radius:12px; }
-  .score-box .num { font-size:26px; font-weight:800; color:#07B0E4; }
+  .score-box .num { font-size:26px; font-weight:800; color:var(--brand-primary,#07B0E4); }
   .score-box .lbl { font-size:11px; color:#64748B; margin-top:2px; }
   .feedback { font-size:13px; color:#334155; line-height:1.6; margin-bottom:14px; padding:14px; background:#F8FAFC; border-radius:10px; }
   .feedback strong { color:#0F172A; }
@@ -55,6 +55,7 @@
     <div class="loader" id="loader">Cargando...</div>
   </div>
 
+  <script src="tenant.js"></script>
   <script>
     const EVALUATE_CANDIDATE_URL = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/evaluate-candidate';
     // El gateway de Supabase exige un JWT válido en Authorization antes de
@@ -159,7 +160,7 @@
         ${casesHtml}
         <button id="submitBtn">Enviar evaluación</button>
         <p class="err" id="errMsg"></p>
-        <p class="footer">Programa STEEAM · 1bot · Guatemala</p>
+        <p class="footer">Programa STEEAM · ${window.TENANT?.name || '1bot'} · Guatemala</p>
       `;
 
       document.getElementById('submitBtn').addEventListener('click', () => submitEvaluation(token));
@@ -231,7 +232,7 @@
         <button id="continuarBtn">Deseo continuar el proceso</button>
         <button id="retirarBtn" class="secondary">Ya no deseo continuar</button>
         <p class="err" id="errMsg2"></p>
-        <p class="footer">Programa STEEAM · 1bot · Guatemala</p>
+        <p class="footer">Programa STEEAM · ${window.TENANT?.name || '1bot'} · Guatemala</p>
       `;
 
       document.getElementById('continuarBtn').addEventListener('click', () => submitDecision(token, 'continuar'));
@@ -256,7 +257,7 @@
           <p class="sub" style="margin-bottom:20px">${decision === 'continuar'
             ? 'Gracias por continuar en el proceso. El equipo de reclutamiento revisará tu evaluación y se pondrá en contacto contigo.'
             : 'Gracias por tu tiempo. Te deseamos éxito en tu búsqueda.'}</p>
-          <p class="footer">Programa STEEAM · 1bot · Guatemala</p>`;
+          <p class="footer">Programa STEEAM · ${window.TENANT?.name || '1bot'} · Guatemala</p>`;
       } catch (networkErr) {
         errMsg2.textContent = 'No se pudo conectar. Intenta de nuevo.';
       }
@@ -264,7 +265,10 @@
 
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
-    if (!token) renderNoToken(); else renderForm(token);
+    (async () => {
+      await window.TENANT_READY;
+      if (!token) renderNoToken(); else renderForm(token);
+    })();
   </script>
 </body>
 </html>

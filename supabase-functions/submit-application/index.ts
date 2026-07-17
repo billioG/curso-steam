@@ -3,7 +3,10 @@
 // el filtro duro de elegibilidad. Pública — el candidato aún no tiene
 // cuenta, no requiere JWT.
 // Recibe: { full_name, email, phone, jornada_disponible, pretension_salarial,
-//           acepta_jornada, interes_mineduc, compromiso_finalizar_programa }
+//           acepta_jornada, interes_mineduc, compromiso_finalizar_programa, tenant_id }
+// `tenant_id` (uuid|null) viene de window.TENANT.id en el HTML — null para
+// candidatos del 1bot original. Se valida por la propia FK a `tenants`:
+// un tenant_id inexistente hace fallar el insert, no hay que revalidarlo aquí.
 // Devuelve: { ok: true, passed_filter: boolean, rejection_reason: 'salario'|'jornada_compromiso'|null, access_token: string | null }
 //
 // El cliente NUNCA decide el resultado del filtro ni el status — los
@@ -84,6 +87,7 @@ Deno.serve(async (req) => {
         compromiso_finalizar_programa,
         status: passedFilter ? 'evaluacion_pendiente' : 'rechazado_filtro',
         rejection_reason,
+        tenant_id: body.tenant_id || null,
       })
       .select('access_token')
       .single();

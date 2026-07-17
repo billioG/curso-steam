@@ -13,14 +13,16 @@
   }
   header h1 { font-size:16px; }
   header .email { font-size:12px; color:#94A3B8; }
-  header a { color:#07B0E4; text-decoration:none; font-size:12.5px; font-weight:600; }
+  header a { color:var(--brand-primary,#07B0E4); text-decoration:none; font-size:12.5px; font-weight:600; }
+  header .tenant-badge { font-weight:700; font-size:12.5px; color:var(--brand-primary,#07B0E4); background:rgba(255,255,255,.08); padding:4px 10px; border-radius:20px; }
+  header .tenant-badge:empty { display:none; }
   main { max-width:1100px; margin:0 auto; padding:24px; }
   .filters { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
   .filters button {
     padding:7px 14px; border-radius:20px; border:1.5px solid #E2E8F0; background:white;
     font-size:12px; font-weight:600; color:#475569; cursor:pointer;
   }
-  .filters button.active { background:#07B0E4; color:white; border-color:#07B0E4; }
+  .filters button.active { background:var(--brand-primary,#07B0E4); color:white; border-color:var(--brand-primary,#07B0E4); }
   table { width:100%; border-collapse:collapse; background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.05); }
   th, td { padding:12px 14px; text-align:left; font-size:12.5px; border-bottom:1px solid #F1F5F9; }
   th { background:#F8FAFC; color:#64748B; font-weight:700; text-transform:uppercase; font-size:10.5px; letter-spacing:.03em; }
@@ -30,8 +32,8 @@
   .badge.rechazado_filtro, .badge.rechazado, .badge.desertado { background:#FEE2E2; color:#991B1B; }
   .badge.evaluado { background:#DBEAFE; color:#1E40AF; }
   .badge.contratado { background:#DCFCE7; color:#166534; }
-  .score { font-weight:800; color:#07B0E4; }
-  button.hire { padding:6px 12px; border:none; border-radius:8px; background:#07B0E4; color:white; font-weight:700; font-size:11.5px; cursor:pointer; }
+  .score { font-weight:800; color:var(--brand-primary,#07B0E4); }
+  button.hire { padding:6px 12px; border:none; border-radius:8px; background:var(--brand-primary,#07B0E4); color:white; font-weight:700; font-size:11.5px; cursor:pointer; }
   button.hire:disabled { opacity:.5; cursor:not-allowed; }
   .loader, .empty { text-align:center; padding:40px; color:#94A3B8; font-size:13px; }
   .weak { font-size:11px; color:#64748B; }
@@ -53,7 +55,7 @@
   .modal-card .sub { font-size:12px; color:#64748B; margin-bottom:18px; }
   .score-row { display:flex; gap:10px; margin-bottom:14px; }
   .score-box { flex:1; text-align:center; padding:14px 8px; background:#F8FAFC; border-radius:10px; }
-  .score-box .num { font-size:22px; font-weight:800; color:#07B0E4; }
+  .score-box .num { font-size:22px; font-weight:800; color:var(--brand-primary,#07B0E4); }
   .score-box .lbl { font-size:10.5px; color:#64748B; margin-top:2px; }
   .feedback { font-size:12.5px; color:#334155; line-height:1.6; padding:12px; background:#F8FAFC; border-radius:10px; margin-bottom:8px; }
   .roadmap-item { padding:8px 12px; background:#EFF6FF; border-radius:8px; margin-bottom:6px; font-size:12px; color:#1E3A8A; }
@@ -61,10 +63,13 @@
 </head>
 <body>
   <header>
-    <h1>🎯 Reclutamiento STEEAM</h1>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <h1>🎯 Reclutamiento STEEAM</h1>
+      <span class="tenant-badge" id="tenantBadge" data-tenant="name"></span>
+    </div>
     <div style="display:flex;align-items:center;gap:16px;">
       <span class="email" id="adminEmail"></span>
-      <a href="admin.html">← Panel Administrativo</a>
+      <a href="admin.html" id="adminHomeLink">← Panel Administrativo</a>
     </div>
   </header>
   <main>
@@ -87,6 +92,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="tenant.js"></script>
   <script src="reclutamiento.js"></script>
 </body>
 </html>
