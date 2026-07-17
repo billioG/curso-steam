@@ -181,3 +181,58 @@ SELECT cron.schedule(
 Solo les llega a docentes que ya activaron notificaciones (Perfil →
 Notificaciones) y que no tienen actividad registrada hoy — no es spam
 diario para quienes ya entraron.
+
+---
+
+# Configuración del Módulo de Reclutamiento
+
+Postulación pública → filtro duro → evaluación de casos de estudio con IA (Groq)
+→ el candidato decide continuar → admin contrata desde `reclutamiento.html`.
+
+## Paso 1 — Ejecutar la migración SQL
+
+Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/sql
+Ejecuta el contenido de `migrations/recruitment-schema.sql` (crea las tablas
+`candidates` y `candidate_evaluations`, con RLS habilitado y **sin políticas**
+— todo el acceso pasa por Edge Functions con el service-role key).
+
+## Paso 2 — Crear las 2 Edge Functions nuevas
+
+Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/functions
+
+| Nombre de la función  | Archivo                                     |
+|------------------------|---------------------------------------------|
+| `submit-application`   | supabase-functions/submit-application/index.ts |
+| `evaluate-candidate`   | supabase-functions/evaluate-candidate/index.ts |
+
+No requieren secrets nuevos — reutilizan `GROQ_API_KEY` y
+`SUPABASE_SERVICE_ROLE_KEY`, que ya existen como secrets del proyecto
+(usados por `groq-proxy` y `evaluate-portfolio`).
+
+## Paso 3 — Re-desplegar `admin-users`
+
+Este archivo existente (`supabase/functions/admin-users/index.ts`) se
+modificó para agregar las acciones `listCandidates` y `provisionCandidate`.
+Ve a la función `admin-users` en el Dashboard, pega el código actualizado
+y clic en "Deploy" — si no se re-despliega, el panel de reclutamiento no
+podrá listar candidatos ni contratarlos.
+
+## Paso 4 — Probar el flujo completo
+
+1. Abre `postulacion.html`, llena el formulario con los 3 checkboxes
+   marcados → debe redirigir a `evaluacion.html?token=...`.
+2. Responde los 4 casos de estudio (contenido placeholder, editar en
+   `evaluacion.html` antes de publicar el enlace real a candidatos) →
+   debe mostrar puntaje técnico/blandas real generado por Groq.
+3. Intenta recargar `evaluacion.html` con el mismo `token` y reenviar —
+   debe rechazar con error (una sola evaluación por candidato).
+4. Entra a `reclutamiento.html` como `billy@1bot.org`, verifica que el
+   candidato evaluado aparece, clic en "Contratar" → confirma que llega
+   el correo de invitación y que el candidato pasa a `status=contratado`.
+
+## Nota de seguridad
+
+`candidates` y `candidate_evaluations` contienen PII (nombre, correo,
+teléfono, respuestas de evaluación) — **no agregar una política RLS de
+lectura permisiva** a estas tablas por costumbre al copiar el patrón de
+otras tablas del schema. Todo acceso debe pasar por una Edge Function.
