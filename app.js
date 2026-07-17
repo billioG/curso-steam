@@ -894,6 +894,23 @@ function updateSyncStatus(status, message) {
     }
 }
 
+// Banner persistente de "sin conexión" — independiente del ícono de sync,
+// visible mientras dure la desconexión (no un toast que desaparece solo)
+function _showOfflineBanner() {
+    if (document.getElementById('offlineBanner')) return;
+    const el = document.createElement('div');
+    el.id = 'offlineBanner';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:300;background:#78716c;color:white;text-align:center;padding:6px 12px;font-size:12px;font-weight:600;font-family:inherit';
+    el.textContent = '📴 Sin conexión — tu progreso se guarda localmente';
+    document.body.appendChild(el);
+}
+function _hideOfflineBanner() {
+    document.getElementById('offlineBanner')?.remove();
+}
+window.addEventListener('offline', _showOfflineBanner);
+window.addEventListener('online', _hideOfflineBanner);
+if (!navigator.onLine) _showOfflineBanner();
+
 // Debounce del upsert a Supabase: una acción (tarjeta+XP+logro) dispara
 // saveProgress varias veces seguidas; agrupamos en un solo upsert.
 let _syncDebounceT = null;
