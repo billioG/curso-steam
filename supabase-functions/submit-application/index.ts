@@ -2,7 +2,8 @@
 // Recibe la postulación de un candidato al programa STEEAM y aplica
 // el filtro duro de elegibilidad. Pública — el candidato aún no tiene
 // cuenta, no requiere JWT.
-// Recibe: { full_name, email, phone, jornada_disponible, pretension_salarial, acepta_jornada, compromiso_no_mineduc }
+// Recibe: { full_name, email, phone, jornada_disponible, pretension_salarial,
+//           acepta_jornada, interes_mineduc, compromiso_finalizar_programa }
 // Devuelve: { ok: true, passed_filter: boolean, rejection_reason: 'salario'|'jornada_compromiso'|null, access_token: string | null }
 //
 // El cliente NUNCA decide el resultado del filtro ni el status — los
@@ -12,6 +13,11 @@
 // Presupuesto del programa: Q3,100/mes. Se acepta pretensión salarial
 // hasta Q3,200 (margen de negociación); por encima de eso se rechaza
 // con un mensaje específico de desajuste salarial, no el genérico.
+//
+// `interes_mineduc` es SOLO informativo — estar en proceso de optar una
+// plaza MINEDUC no descalifica al candidato, se guarda para que el admin
+// lo vea en el panel. El filtro real es `compromiso_finalizar_programa`
+// (finalizar el programa aunque surja otra oportunidad).
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -53,10 +59,12 @@ Deno.serve(async (req) => {
     }
 
     // Filtro duro — revalidado server-side, el cliente solo declara intención.
-    const acepta_jornada        = body.acepta_jornada === true;
-    const compromiso_no_mineduc = body.compromiso_no_mineduc === true;
+    // interes_mineduc NO participa del filtro (ver nota arriba).
+    const acepta_jornada                 = body.acepta_jornada === true;
+    const interes_mineduc                = body.interes_mineduc === true;
+    const compromiso_finalizar_programa  = body.compromiso_finalizar_programa === true;
     const salarioOk = pretension_salarial <= SALARIO_MAXIMO;
-    const passedFilter = salarioOk && acepta_jornada && compromiso_no_mineduc;
+    const passedFilter = salarioOk && acepta_jornada && compromiso_finalizar_programa;
 
     let rejection_reason: string | null = null;
     if (!passedFilter) rejection_reason = !salarioOk ? 'salario' : 'jornada_compromiso';
@@ -72,7 +80,8 @@ Deno.serve(async (req) => {
         jornada_disponible,
         pretension_salarial,
         acepta_jornada,
-        compromiso_no_mineduc,
+        interes_mineduc,
+        compromiso_finalizar_programa,
         status: passedFilter ? 'evaluacion_pendiente' : 'rechazado_filtro',
         rejection_reason,
       })

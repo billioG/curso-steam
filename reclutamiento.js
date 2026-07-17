@@ -95,7 +95,7 @@ function renderTable() {
 
         return `
           <tr>
-            <td class="name">${escapeHtml(c.full_name)}</td>
+            <td class="name">${escapeHtml(c.full_name)}${c.interes_mineduc ? ' <span title="En proceso o interesado en plaza MINEDUC">🏛️</span>' : ''}</td>
             <td>${escapeHtml(c.email)}<br><span class="weak">${escapeHtml(c.phone || '')}</span></td>
             <td>${escapeHtml(c.jornada_disponible || '—')}</td>
             <td>${salario}</td>
