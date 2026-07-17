@@ -90,12 +90,16 @@ function renderTable() {
         const canHire = c.status === 'evaluado';
         const fecha = c.applied_at ? new Date(c.applied_at).toLocaleDateString('es-GT', { day:'numeric', month:'short', year:'numeric' }) : '—';
 
+        const salario = c.pretension_salarial != null ? `Q${Number(c.pretension_salarial).toLocaleString('es-GT')}` : '—';
+        const reasonNote = c.rejection_reason === 'salario' ? '<br><span class="weak">Rechazado por salario</span>' : '';
+
         return `
           <tr>
             <td class="name">${escapeHtml(c.full_name)}</td>
             <td>${escapeHtml(c.email)}<br><span class="weak">${escapeHtml(c.phone || '')}</span></td>
             <td>${escapeHtml(c.jornada_disponible || '—')}</td>
-            <td><span class="badge ${escapeHtml(c.status)}">${escapeHtml(STATUS_LABELS[c.status] || c.status)}</span></td>
+            <td>${salario}</td>
+            <td><span class="badge ${escapeHtml(c.status)}">${escapeHtml(STATUS_LABELS[c.status] || c.status)}</span>${reasonNote}</td>
             <td>${score != null ? `<span class="score">${score}</span>` : '—'}${weak ? `<br><span class="weak">Débil: ${escapeHtml(weak)}</span>` : ''}</td>
             <td>${fecha}</td>
             <td>${canHire ? `<button class="hire" data-id="${c.id}">Contratar</button>` : ''}</td>
@@ -104,7 +108,7 @@ function renderTable() {
 
     document.getElementById('tableWrap').innerHTML = `
       <table>
-        <thead><tr><th>Nombre</th><th>Contacto</th><th>Jornada</th><th>Estado</th><th>Puntaje</th><th>Postuló</th><th></th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Contacto</th><th>Jornada</th><th>Pretensión</th><th>Estado</th><th>Puntaje</th><th>Postuló</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
 

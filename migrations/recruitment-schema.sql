@@ -9,12 +9,13 @@ CREATE TABLE IF NOT EXISTS public.candidates (
     email                     text NOT NULL,
     phone                     text,
     jornada_disponible        text,   -- 'matutina' | 'vespertina' | 'ambas'
-    acepta_salario            boolean NOT NULL DEFAULT false,
+    pretension_salarial       numeric NOT NULL,   -- Q mensuales declarados por el candidato
     acepta_jornada            boolean NOT NULL DEFAULT false,
     compromiso_no_mineduc     boolean NOT NULL DEFAULT false,
     status                    text NOT NULL DEFAULT 'aplicado'
         CHECK (status IN ('aplicado','rechazado_filtro','evaluacion_pendiente',
                            'evaluado','contratado','desertado','rechazado')),
+    rejection_reason          text,   -- 'salario' | 'jornada_compromiso' | null — por qué no pasó el filtro
     access_token              uuid NOT NULL DEFAULT gen_random_uuid() UNIQUE,
     applied_at                timestamptz DEFAULT now(),
     updated_at                timestamptz DEFAULT now()

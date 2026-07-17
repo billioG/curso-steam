@@ -27,9 +27,10 @@
   h1 { font-size:19px; text-align:center; color:#0F172A; margin-bottom:4px; }
   .sub { font-size:12.5px; text-align:center; color:#94A3B8; margin-bottom:24px; }
   label { display:block; font-size:12.5px; font-weight:700; color:#334155; margin:14px 0 5px; }
-  input[type=text], input[type=email], input[type=tel], select {
+  input[type=text], input[type=email], input[type=tel], input[type=number], select {
     width:100%; padding:11px 13px; border:1.5px solid #E2E8F0; border-radius:10px; font-size:13.5px; font-family:inherit;
   }
+  .hint { font-size:11px; color:#94A3B8; margin-top:4px; }
   .check-row { display:flex; align-items:flex-start; gap:10px; margin:14px 0; padding:12px; background:#F8FAFC; border-radius:10px; }
   .check-row input { margin-top:2px; width:16px; height:16px; flex-shrink:0; }
   .check-row span { font-size:12.5px; color:#334155; line-height:1.4; }
@@ -58,6 +59,10 @@
       <label for="phone">Teléfono</label>
       <input type="tel" id="phone" required maxlength="40">
 
+      <label for="pretension_salarial">¿Cuál es tu pretensión salarial mensual? (Q)</label>
+      <input type="number" id="pretension_salarial" required min="1" max="100000" step="1" placeholder="Ej: 3100">
+      <p class="hint">El presupuesto del programa es de Q3,100 mensuales.</p>
+
       <label for="jornada">Jornada disponible</label>
       <select id="jornada" required>
         <option value="">Selecciona...</option>
@@ -66,10 +71,6 @@
         <option value="ambas">Ambas</option>
       </select>
 
-      <div class="check-row">
-        <input type="checkbox" id="acepta_salario">
-        <span>Acepto el salario del programa: <strong>Q3,100.00 mensuales</strong>.</span>
-      </div>
       <div class="check-row">
         <input type="checkbox" id="acepta_jornada">
         <span>Acepto trabajar dentro del horario/jornada del establecimiento educativo asignado.</span>
@@ -105,7 +106,7 @@
         email: document.getElementById('email').value.trim(),
         phone: document.getElementById('phone').value.trim(),
         jornada_disponible: document.getElementById('jornada').value,
-        acepta_salario: document.getElementById('acepta_salario').checked,
+        pretension_salarial: Number(document.getElementById('pretension_salarial').value),
         acepta_jornada: document.getElementById('acepta_jornada').checked,
         compromiso_no_mineduc: document.getElementById('compromiso_no_mineduc').checked,
       };
@@ -137,11 +138,17 @@
           setTimeout(() => {
             location.href = 'evaluacion.html?token=' + encodeURIComponent(data.access_token);
           }, 2200);
+        } else if (data.rejection_reason === 'salario') {
+          document.getElementById('card').innerHTML = `
+            <div class="icon">🙏</div>
+            <div class="status invalid">Gracias por tu interés</div>
+            <p class="sub" style="margin-bottom:20px">Agradecemos mucho tu interés en el programa STEEAM. En este momento tu pretensión salarial supera el presupuesto disponible para esta posición, así que no logramos llenar tus expectativas. Si tu situación cambia, con gusto puedes postular de nuevo.</p>
+            <p class="footer">Programa STEEAM · 1bot · Guatemala</p>`;
         } else {
           document.getElementById('card').innerHTML = `
             <div class="icon">📋</div>
             <div class="status invalid">No cumples los requisitos actuales</div>
-            <p class="sub" style="margin-bottom:20px">Gracias por tu interés en el programa STEEAM. En este momento tu postulación no cumple con los requisitos de elegibilidad (salario, jornada o compromiso de permanencia). Puedes escribirnos si tu situación cambia.</p>
+            <p class="sub" style="margin-bottom:20px">Gracias por tu interés en el programa STEEAM. En este momento tu postulación no cumple con los requisitos de elegibilidad (jornada o compromiso de permanencia). Puedes escribirnos si tu situación cambia.</p>
             <p class="footer">Programa STEEAM · 1bot · Guatemala</p>`;
         }
       } catch (networkErr) {
