@@ -614,6 +614,11 @@ function showLoginError(msg) {
 }
 
 // ==================== FUNCIONES DE GAMIFICACIÓN ====================
+// Vibración táctil breve — no-op silencioso en navegadores/dispositivos sin soporte (ej. desktop)
+function _haptic(pattern) {
+    try { navigator.vibrate?.(pattern); } catch (_) {}
+}
+
 function showToast(message, type) {
     const toast = document.createElement('div');
     toast.className = 'toast-notification';
@@ -889,6 +894,23 @@ function updateSyncStatus(status, message) {
     }
 }
 
+// Banner persistente de "sin conexión" — independiente del ícono de sync,
+// visible mientras dure la desconexión (no un toast que desaparece solo)
+function _showOfflineBanner() {
+    if (document.getElementById('offlineBanner')) return;
+    const el = document.createElement('div');
+    el.id = 'offlineBanner';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:300;background:#78716c;color:white;text-align:center;padding:calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;font-size:12px;font-weight:600;font-family:inherit';
+    el.textContent = '📴 Sin conexión — tu progreso se guarda localmente';
+    document.body.appendChild(el);
+}
+function _hideOfflineBanner() {
+    document.getElementById('offlineBanner')?.remove();
+}
+window.addEventListener('offline', _showOfflineBanner);
+window.addEventListener('online', _hideOfflineBanner);
+if (!navigator.onLine) _showOfflineBanner();
+
 // Debounce del upsert a Supabase: una acción (tarjeta+XP+logro) dispara
 // saveProgress varias veces seguidas; agrupamos en un solo upsert.
 let _syncDebounceT = null;
@@ -927,6 +949,7 @@ function addXP(amount, reason) {
     const newLevel = Math.floor(progress.xp / 200) + 1;
     if (newLevel > progress.level) {
         progress.level = newLevel;
+        _haptic([30, 50, 30, 50, 30]);
         showToast(`🎉 ¡SUBISTE AL NIVEL ${newLevel}!`, "levelup");
         if (newLevel === 5 && !progress.badges.includes("level5")) unlockBadge("level5");
         if (newLevel === 10 && !progress.badges.includes("level10")) unlockBadge("level10");
@@ -945,6 +968,7 @@ function unlockBadge(badgeId) {
     progress.badges.push(badgeId);
     addXP(badge.xpReward, `Logro: ${badge.name}`);
     saveProgress();
+    _haptic([20, 30, 20, 30, 60]);
     showBadgeUnlockAnimation(badge);
 }
 
@@ -1473,6 +1497,7 @@ function renderCard() {
 
                 const selected = parseInt(btn.dataset.opt);
                 const isCorrect = (selected === _correctShuffled);
+                _haptic(isCorrect ? 15 : [20, 40, 20]);
                 const feedbackDiv = document.getElementById('quizFeedback');
                 const hint = document.getElementById('quizHint');
                 if (hint) hint.classList.add('hidden');

@@ -37,10 +37,26 @@
             background: var(--brand-light);
             min-height: 100vh;
             line-height: 1.45;
+            overscroll-behavior-y: contain;
         }
 
         .hidden {
             display: none !important;
+        }
+
+        /* Transición de entrada para las pantallas principales — se dispara sola
+           al quitar .hidden, ya que las animaciones CSS no corren en display:none */
+        @keyframes screenFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        #loginScreen:not(.hidden),
+        #courseSelector:not(.hidden),
+        #mainApp:not(.hidden) {
+            animation: screenFadeIn .3s ease;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #loginScreen, #courseSelector, #mainApp { animation: none !important; }
         }
 
         /* ── Tour guiado (driver.js) ── */
