@@ -58,30 +58,36 @@
   <script>
     const EVALUATE_CANDIDATE_URL = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/evaluate-candidate';
 
-    // ── EDITABLE: reemplazar con casos de estudio reales del programa ──
+    // Casos de estudio del proceso de selección — uno por ruta de formación
+    // (steam20 / convivencia / ia / creativo / metodologias) para que la IA
+    // tenga señal clara de en qué ruta ubicar al candidato si continúa.
     const CASES = [
       {
         id: 'caso1',
-        title: 'Caso 1 · Lógica y robótica en el aula',
-        prompt: 'Un grupo de estudiantes arma un robot con el kit STEEAM pero no logra que el sensor siga la línea correctamente después de varios intentos. Están frustrados y quieren que les des la respuesta directa. ¿Cómo conduces la sesión?'
+        title: 'Caso 1 · Metodología STEAM y pensamiento de proyecto',
+        prompt: 'Tu grupo de 5º primaria arma un robot con el kit 1bot para resolver el reto "sacar la pelota del laberinto". Después de tres intentos fallidos, un subgrupo quiere abandonar y otro insiste en copiar el código de otro equipo en vez de seguir probando. No puedes darles la solución directa — es una evaluación del programa STEAM. ¿Cómo conduces la sesión para que ambos subgrupos sigan el ciclo de "diseñar → probar → mejorar" sin perder la motivación ni saltarse el proceso?'
       },
       {
         id: 'caso2',
-        title: 'Caso 2 · Manejo de aula',
-        prompt: 'Dos estudiantes discuten fuerte por quién controla el mando del robot durante la actividad y la tensión sube frente al resto del grupo. ¿Qué haces en ese momento?'
+        title: 'Caso 2 · Manejo de aula y convivencia',
+        prompt: 'Durante la actividad de robótica, dos estudiantes empiezan a discutir fuerte por quién controla el mando — uno le arrebata el robot al otro frente al resto del grupo y la tensión sube. El resto de la clase se distrae y algunos empiezan a grabar con el celular. Tienes que resolver el conflicto, retomar el control del grupo y continuar la actividad en los siguientes 5 minutos. ¿Qué haces, en qué orden, y qué le dices a cada estudiante involucrado?'
       },
       {
         id: 'caso3',
-        title: 'Caso 3 · Planificación con recursos limitados',
-        prompt: 'Tienes 40 minutos de clase, 5 kits de robótica y 25 estudiantes. ¿Cómo organizas la actividad para que todos participen activamente, no solo unos pocos?'
+        title: 'Caso 3 · Herramientas de inteligencia artificial en el aula',
+        prompt: 'Tienes que preparar en dos días una clase sobre "qué es la inteligencia artificial" para estudiantes de 6º primaria que nunca han tocado el tema, sin acceso a internet dentro del salón. ¿Qué herramientas de IA usarías FUERA del aula para preparar el material (actividades, ejemplos, imágenes), y cómo explicarías el concepto de IA de forma simple y sin tecnicismos dentro del salón, sin conexión?'
       },
       {
         id: 'caso4',
-        title: 'Caso 4 · Comunicación con la comunidad educativa',
-        prompt: 'Un padre de familia te dice que su hijo/a "solo juega con robots" en tu clase y no le ve utilidad real. ¿Qué le respondes?'
+        title: 'Caso 4 · Creatividad con recursos limitados',
+        prompt: 'Tienes 40 minutos de clase, solo 5 kits de robótica y 25 estudiantes — no alcanza un kit por persona ni por pareja. Algunos estudiantes ya saben usar el kit de clases anteriores y otros nunca lo han tocado. ¿Cómo organizas la actividad de forma creativa para que los 25 participen activamente (no solo los 5 que tienen el kit en la mano), aprovechando la diferencia de experiencia entre ellos en vez de que sea un obstáculo?'
+      },
+      {
+        id: 'caso5',
+        title: 'Caso 5 · Comunicación con la comunidad educativa',
+        prompt: 'Un padre de familia te aborda a la salida y te dice, molesto, que su hijo "solo juega con robots" en tu clase y que eso no le va a servir para nada en la vida real — quiere que en vez de eso le enseñes matemática "de verdad". Tienes menos de 3 minutos porque él tiene prisa. ¿Qué le respondes para que entienda el valor real de la metodología STEAM sin sonar a discurso memorizado, y qué harías después con ese padre a mediano plazo?'
       },
     ];
-    // ── FIN EDITABLE ──
 
     function escapeHtml(s) {
       return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
