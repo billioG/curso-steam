@@ -900,7 +900,7 @@ function _showOfflineBanner() {
     if (document.getElementById('offlineBanner')) return;
     const el = document.createElement('div');
     el.id = 'offlineBanner';
-    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:300;background:#78716c;color:white;text-align:center;padding:6px 12px;font-size:12px;font-weight:600;font-family:inherit';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:300;background:#78716c;color:white;text-align:center;padding:calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;font-size:12px;font-weight:600;font-family:inherit';
     el.textContent = '📴 Sin conexión — tu progreso se guarda localmente';
     document.body.appendChild(el);
 }
