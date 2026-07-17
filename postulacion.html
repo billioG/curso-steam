@@ -75,9 +75,18 @@
         <input type="checkbox" id="acepta_jornada">
         <span>Acepto trabajar dentro del horario/jornada del establecimiento educativo asignado.</span>
       </div>
+
+      <label for="interes_mineduc">¿Actualmente estás en proceso de optar a una plaza del Ministerio de Educación (MINEDUC), o te interesa una a futuro?</label>
+      <select id="interes_mineduc" required>
+        <option value="">Selecciona...</option>
+        <option value="no">No</option>
+        <option value="si">Sí</option>
+      </select>
+      <p class="hint">Esta respuesta no te descarta del proceso — solo nos ayuda a conocer tu situación.</p>
+
       <div class="check-row">
-        <input type="checkbox" id="compromiso_no_mineduc">
-        <span>Me comprometo a completar el ciclo del programa y no abandonarlo por una plaza del Ministerio de Educación u otro empleo durante el periodo acordado.</span>
+        <input type="checkbox" id="compromiso_finalizar_programa">
+        <span>Si soy seleccionado/a, me comprometo a finalizar la duración completa del programa aunque durante ese periodo me surja otra oportunidad laboral (incluyendo una plaza en MINEDUC).</span>
       </div>
 
       <button type="submit" id="submitBtn">Enviar postulación</button>
@@ -108,7 +117,8 @@
         jornada_disponible: document.getElementById('jornada').value,
         pretension_salarial: Number(document.getElementById('pretension_salarial').value),
         acepta_jornada: document.getElementById('acepta_jornada').checked,
-        compromiso_no_mineduc: document.getElementById('compromiso_no_mineduc').checked,
+        interes_mineduc: document.getElementById('interes_mineduc').value === 'si',
+        compromiso_finalizar_programa: document.getElementById('compromiso_finalizar_programa').checked,
       };
 
       submitBtn.disabled = true;

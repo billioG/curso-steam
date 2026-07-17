@@ -154,7 +154,7 @@ serve(async (req) => {
     if (action === 'listCandidates') {
       const { data, error } = await admin
         .from('candidates')
-        .select('id, full_name, email, phone, jornada_disponible, pretension_salarial, status, rejection_reason, applied_at, candidate_evaluations(technical_score, soft_score, overall_score, passed, feedback, weak_areas, candidate_decision)')
+        .select('id, full_name, email, phone, jornada_disponible, pretension_salarial, interes_mineduc, status, rejection_reason, applied_at, candidate_evaluations(technical_score, soft_score, overall_score, passed, feedback, weak_areas, candidate_decision)')
         .order('applied_at', { ascending: false })
 
       if (error) return json({ error: error.message }, 500)

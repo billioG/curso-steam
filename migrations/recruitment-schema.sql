@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS public.candidates (
     jornada_disponible        text,   -- 'matutina' | 'vespertina' | 'ambas'
     pretension_salarial       numeric NOT NULL,   -- Q mensuales declarados por el candidato
     acepta_jornada            boolean NOT NULL DEFAULT false,
-    compromiso_no_mineduc     boolean NOT NULL DEFAULT false,
+    interes_mineduc           boolean NOT NULL DEFAULT false,  -- informativo, NO filtra
+    compromiso_finalizar_programa boolean NOT NULL DEFAULT false,
     status                    text NOT NULL DEFAULT 'aplicado'
         CHECK (status IN ('aplicado','rechazado_filtro','evaluacion_pendiente',
                            'evaluado','contratado','desertado','rechazado')),
