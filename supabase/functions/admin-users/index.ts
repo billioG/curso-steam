@@ -150,6 +150,53 @@ serve(async (req) => {
       return json({ ok: true, userId })
     }
 
+    // ── Listar candidatos de reclutamiento ───────────────────
+    if (action === 'listCandidates') {
+      const { data, error } = await admin
+        .from('candidates')
+        .select('id, full_name, email, phone, jornada_disponible, status, applied_at, candidate_evaluations(technical_score, soft_score, overall_score, passed, feedback, weak_areas, candidate_decision)')
+        .order('applied_at', { ascending: false })
+
+      if (error) return json({ error: error.message }, 500)
+      return json({ ok: true, candidates: data })
+    }
+
+    // ── Contratar candidato: crea cuenta real + rol student ──
+    if (action === 'provisionCandidate') {
+      const { candidateId } = body
+      if (!candidateId) return json({ error: 'candidateId es requerido' }, 400)
+
+      const { data: candidate, error: candErr } = await admin
+        .from('candidates')
+        .select('id, full_name, email, status')
+        .eq('id', candidateId)
+        .maybeSingle()
+
+      if (candErr) return json({ error: candErr.message }, 500)
+      if (!candidate) return json({ error: 'Candidato no encontrado' }, 404)
+      if (candidate.status !== 'evaluado') return json({ error: 'El candidato debe estar evaluado antes de contratar' }, 409)
+
+      const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(candidate.email, {
+        data: { invited_by: user.email, name: candidate.full_name, source: 'reclutamiento' }
+      })
+      if (invErr) return json({ error: invErr.message }, 500)
+
+      if (invited?.user?.id) {
+        await admin.from('user_roles').upsert(
+          { user_id: invited.user.id, role: 'student' },
+          { onConflict: 'user_id' }
+        )
+      }
+
+      const { error: statusErr } = await admin
+        .from('candidates')
+        .update({ status: 'contratado', updated_at: new Date().toISOString() })
+        .eq('id', candidateId)
+      if (statusErr) return json({ error: statusErr.message }, 500)
+
+      return json({ ok: true, candidateId, email: candidate.email })
+    }
+
     return json({ error: 'Acción desconocida' }, 400)
 
   } catch (e) {

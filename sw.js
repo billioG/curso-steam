@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v84';
+const CACHE_VERSION  = 'steam-v85';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -36,6 +36,11 @@ const SECONDARY_ASSETS = [
     './casos-estudio.js',
     './coordinator.html',
     './recursos/_shared.css',
+    // Módulo de reclutamiento
+    './postulacion.html',
+    './evaluacion.html',
+    './reclutamiento.html',
+    './reclutamiento.js',
 ];
 
 // ──────────────────────────────────────────────────────────
