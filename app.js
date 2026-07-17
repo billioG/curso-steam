@@ -614,6 +614,11 @@ function showLoginError(msg) {
 }
 
 // ==================== FUNCIONES DE GAMIFICACIÓN ====================
+// Vibración táctil breve — no-op silencioso en navegadores/dispositivos sin soporte (ej. desktop)
+function _haptic(pattern) {
+    try { navigator.vibrate?.(pattern); } catch (_) {}
+}
+
 function showToast(message, type) {
     const toast = document.createElement('div');
     toast.className = 'toast-notification';
@@ -927,6 +932,7 @@ function addXP(amount, reason) {
     const newLevel = Math.floor(progress.xp / 200) + 1;
     if (newLevel > progress.level) {
         progress.level = newLevel;
+        _haptic([30, 50, 30, 50, 30]);
         showToast(`🎉 ¡SUBISTE AL NIVEL ${newLevel}!`, "levelup");
         if (newLevel === 5 && !progress.badges.includes("level5")) unlockBadge("level5");
         if (newLevel === 10 && !progress.badges.includes("level10")) unlockBadge("level10");
@@ -945,6 +951,7 @@ function unlockBadge(badgeId) {
     progress.badges.push(badgeId);
     addXP(badge.xpReward, `Logro: ${badge.name}`);
     saveProgress();
+    _haptic([20, 30, 20, 30, 60]);
     showBadgeUnlockAnimation(badge);
 }
 
@@ -1473,6 +1480,7 @@ function renderCard() {
 
                 const selected = parseInt(btn.dataset.opt);
                 const isCorrect = (selected === _correctShuffled);
+                _haptic(isCorrect ? 15 : [20, 40, 20]);
                 const feedbackDiv = document.getElementById('quizFeedback');
                 const hint = document.getElementById('quizHint');
                 if (hint) hint.classList.add('hidden');
