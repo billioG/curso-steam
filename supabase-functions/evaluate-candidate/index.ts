@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
 
     const { data: candidate, error: findErr } = await admin
       .from('candidates')
-      .select('id, full_name, status')
+      .select('id, full_name, status, tenant_id')
       .eq('access_token', access_token)
       .maybeSingle();
 
@@ -181,6 +181,7 @@ Responde ÚNICAMENTE con este JSON (sin texto antes ni después):
       // Se guarda un registro con puntaje 0 para que el admin pueda revisar/re-evaluar manualmente.
       await admin.from('candidate_evaluations').insert({
         candidate_id: candidate.id,
+        tenant_id: candidate.tenant_id,
         technical_score: 0, soft_score: 0, overall_score: 0, passed: false,
         feedback: { error: 'parse_error', raw },
         raw_responses: Object.fromEntries(safeResponses.map(r => [r.case_id, r.answer_text])),
@@ -208,6 +209,7 @@ Responde ÚNICAMENTE con este JSON (sin texto antes ni después):
 
     const { error: insErr } = await admin.from('candidate_evaluations').insert({
       candidate_id: candidate.id,
+      tenant_id: candidate.tenant_id,
       technical_score,
       soft_score,
       overall_score,

@@ -38,15 +38,37 @@ function toast(msg, type = 'info') {
     alert(msg); // panel simple — sin sistema de toasts propio en esta página
 }
 
-// NOTA: este gate del lado cliente (ADMIN_EMAILS) es solo UX/redirección.
-// El límite de seguridad real está en admin-users/index.ts, que valida
-// user_roles.role === 'admin' del lado servidor con el JWT del caller.
+// NOTA: este gate del lado cliente es solo UX/redirección. El límite de
+// seguridad real está en admin-users/index.ts, que valida server-side.
+// Sin tenant (1bot, comportamiento actual): ADMIN_EMAILS. Con tenant: se
+// exige una fila en user_roles con ese tenant_id Y role='admin' — cada
+// colegio administra solo sus propios admins, sin tocar ADMIN_EMAILS.
 async function checkAdminAuth() {
+    await window.TENANT_READY;
+    const tenant = window.TENANT;
+
+    if (tenant) {
+        document.getElementById('adminHomeLink').style.display = 'none'; // el admin de un tenant no entra al panel de 1bot
+    }
+
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) { window.location.href = 'admin-login.html'; return false; }
+    if (!session) {
+        const params = new URLSearchParams({ redirect: 'reclutamiento.html' });
+        if (tenant?.slug) params.set('tenant', tenant.slug);
+        window.location.href = 'admin-login.html?' + params.toString();
+        return false;
+    }
     currentUser = session.user;
 
-    if (!ADMIN_EMAILS.includes(currentUser.email)) {
+    let isAdmin;
+    if (tenant) {
+        const { data: roleRow } = await sb.from('user_roles').select('role').eq('user_id', currentUser.id).eq('tenant_id', tenant.id).maybeSingle();
+        isAdmin = roleRow?.role === 'admin';
+    } else {
+        isAdmin = ADMIN_EMAILS.includes(currentUser.email);
+    }
+
+    if (!isAdmin) {
         alert('Acceso denegado. Solo administradores pueden entrar.');
         await sb.auth.signOut();
         window.location.href = 'admin-login.html';
@@ -64,7 +86,7 @@ async function callAdminUsers(body) {
     const res = await fetch(EDGE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ tenantId: window.TENANT?.id || null, ...body }),
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || `Error ${res.status}`);

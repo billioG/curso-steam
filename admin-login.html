@@ -43,7 +43,10 @@
                     : error.message;
                 errEl.classList.remove('hidden');
             } else {
-                window.location.href = 'admin.html';
+                const params = new URLSearchParams(location.search);
+                const redirect = params.get('redirect') || 'admin.html';
+                const tenant = params.get('tenant');
+                window.location.href = redirect + (tenant ? '?tenant=' + encodeURIComponent(tenant) : '');
             }
         }
         document.getElementById('adminLoginBtn').addEventListener('click', doLogin);

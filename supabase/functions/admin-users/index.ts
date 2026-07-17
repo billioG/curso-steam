@@ -24,23 +24,35 @@ serve(async (req) => {
     const { data: { user }, error: authErr } = await userClient.auth.getUser()
     if (authErr || !user) return json({ error: 'No autenticado' }, 401)
 
-    // 2. Verificar que el caller es admin en user_roles
-    const { data: roleRow } = await userClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .maybeSingle()
+    const body = await req.json()
+    const { action, tenantId } = body
 
-    if (roleRow?.role !== 'admin') return json({ error: 'Acceso denegado — solo admins' }, 403)
+    // 2. Verificar rol del caller — un mismo usuario puede tener una fila
+    // por tenant en user_roles (composite unique tenant_id+user_id).
+    // - "super admin" = fila con tenant_id NULL y role='admin' (1bot,
+    //   billy@1bot.org como hoy) — puede actuar sobre CUALQUIER tenant.
+    // - "admin de tenant" = fila con tenant_id = ese colegio y role='admin'
+    //   — SOLO puede usar las acciones de reclutamiento para SU tenant, no
+    //   las acciones de la plataforma de cursos (fuera de alcance Fase 1).
+    const { data: roleRows, error: roleErr } = await userClient
+      .from('user_roles')
+      .select('role, tenant_id')
+      .eq('user_id', user.id)
+
+    if (roleErr) return json({ error: roleErr.message }, 500)
+
+    const isSuperAdmin = (roleRows || []).some(r => r.tenant_id === null && r.role === 'admin')
+    const isTenantAdminForRequest = !!tenantId && (roleRows || []).some(r => r.tenant_id === tenantId && r.role === 'admin')
+    const TENANT_ADMIN_ACTIONS = ['listCandidates', 'provisionCandidate']
+    const allowed = isSuperAdmin || (TENANT_ADMIN_ACTIONS.includes(action) && isTenantAdminForRequest)
+
+    if (!allowed) return json({ error: 'Acceso denegado — solo admins' }, 403)
 
     // 3. Cliente con service role (puede modificar auth.users y user_roles)
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
-
-    const body = await req.json()
-    const { action } = body
 
     // ── Cambiar rol ──────────────────────────────────────────
     if (action === 'setRole') {
@@ -51,13 +63,16 @@ serve(async (req) => {
 
       const { error } = await admin
         .from('user_roles')
-        .upsert({ user_id: userId, role }, { onConflict: 'user_id' })
+        .upsert({ user_id: userId, role, tenant_id: null }, { onConflict: 'tenant_id,user_id' })
 
       if (error) return json({ error: error.message }, 500)
       return json({ ok: true, userId, role })
     }
 
     // ── Invitar usuario ──────────────────────────────────────
+    // tenantId opcional: onboarding manual del primer admin de un colegio
+    // nuevo (solo super admin puede pasarlo — invite no está en
+    // TENANT_ADMIN_ACTIONS, así que un admin de tenant nunca llega aquí).
     if (action === 'invite') {
       const { email, role = 'student' } = body
       if (!email) return json({ error: 'email es requerido' }, 400)
@@ -70,8 +85,8 @@ serve(async (req) => {
       // Asignar rol inicial
       if (invited?.user?.id) {
         await admin.from('user_roles').upsert(
-          { user_id: invited.user.id, role },
-          { onConflict: 'user_id' }
+          { user_id: invited.user.id, role, tenant_id: tenantId || null },
+          { onConflict: 'tenant_id,user_id' }
         )
       }
       return json({ ok: true, email, role })
@@ -116,7 +131,7 @@ serve(async (req) => {
             userId = invited.user.id
             emailToId[email] = userId
             status = 'invited'
-            await admin.from('user_roles').upsert({ user_id: userId, role: 'student' }, { onConflict: 'user_id' })
+            await admin.from('user_roles').upsert({ user_id: userId, role: 'student', tenant_id: null }, { onConflict: 'tenant_id,user_id' })
           }
 
           const { error: linkErr } = await admin
@@ -151,11 +166,14 @@ serve(async (req) => {
     }
 
     // ── Listar candidatos de reclutamiento ───────────────────
+    // tenantId null/omitido = candidatos del 1bot original.
     if (action === 'listCandidates') {
-      const { data, error } = await admin
+      let query = admin
         .from('candidates')
         .select('id, full_name, email, phone, jornada_disponible, pretension_salarial, interes_mineduc, status, rejection_reason, applied_at, candidate_evaluations(technical_score, soft_score, overall_score, passed, feedback, weak_areas, candidate_decision)')
-        .order('applied_at', { ascending: false })
+      query = tenantId ? query.eq('tenant_id', tenantId) : query.is('tenant_id', null)
+
+      const { data, error } = await query.order('applied_at', { ascending: false })
 
       if (error) return json({ error: error.message }, 500)
       return json({ ok: true, candidates: data })
@@ -168,12 +186,17 @@ serve(async (req) => {
 
       const { data: candidate, error: candErr } = await admin
         .from('candidates')
-        .select('id, full_name, email, status')
+        .select('id, full_name, email, status, tenant_id')
         .eq('id', candidateId)
         .maybeSingle()
 
       if (candErr) return json({ error: candErr.message }, 500)
       if (!candidate) return json({ error: 'Candidato no encontrado' }, 404)
+      // Defensa en profundidad: un admin de tenant no puede contratar un
+      // candidato de OTRO tenant aunque adivine su candidateId.
+      if (candidate.tenant_id !== (tenantId || null) && !isSuperAdmin) {
+        return json({ error: 'Este candidato no pertenece a tu institución' }, 403)
+      }
       if (candidate.status !== 'evaluado') return json({ error: 'El candidato debe estar evaluado antes de contratar' }, 409)
 
       const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(candidate.email, {
@@ -183,8 +206,8 @@ serve(async (req) => {
 
       if (invited?.user?.id) {
         await admin.from('user_roles').upsert(
-          { user_id: invited.user.id, role: 'student' },
-          { onConflict: 'user_id' }
+          { user_id: invited.user.id, role: 'student', tenant_id: candidate.tenant_id },
+          { onConflict: 'tenant_id,user_id' }
         )
       }
 
