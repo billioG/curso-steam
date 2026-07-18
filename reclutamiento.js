@@ -126,7 +126,7 @@ function renderTable() {
 
         return `
           <tr class="candidate-row" data-id="${c.id}">
-            <td class="name">${escapeHtml(c.full_name)}${c.interes_mineduc ? ' <span title="En proceso o interesado en plaza MINEDUC">🏛️</span>' : ''}</td>
+            <td class="name">${escapeHtml(c.full_name)}${c.interes_mineduc ? ` <span title="En proceso o interesado en plaza MINEDUC">${window.svgIcon('bank', 14)}</span>` : ''}</td>
             <td>${escapeHtml(c.email)}<br><span class="weak">${escapeHtml(c.phone || '')}</span></td>
             <td>${escapeHtml(c.jornada_disponible || '—')}</td>
             <td>${salario}</td>
@@ -162,9 +162,9 @@ function showDetail(candidateId) {
         body = `<p class="empty" style="padding:20px 0">Este candidato todavía no tiene evaluación de casos de estudio.</p>`;
     } else {
         const paths = (evalRow.weak_areas || []).map(id => LEARNING_PATHS[id]?.label || id);
-        const decisionLabel = evalRow.candidate_decision === 'continuar' ? '✅ Decidió continuar'
-            : evalRow.candidate_decision === 'retirar' ? '👋 Decidió no continuar'
-            : '⏳ Aún no decide';
+        const decisionLabel = evalRow.candidate_decision === 'continuar' ? `${window.svgIcon('check', 14)} Decidió continuar`
+            : evalRow.candidate_decision === 'retirar' ? `${window.svgIcon('exit', 14)} Decidió no continuar`
+            : `${window.svgIcon('clock', 14)} Aún no decide`;
 
         body = `
           <div class="score-row">
@@ -178,7 +178,7 @@ function showDetail(candidateId) {
             <strong>Resumen:</strong> ${escapeHtml(evalRow.feedback?.summary || '')}
           </div>
           <p style="font-size:12px;font-weight:700;color:#0F172A;margin:14px 0 6px">Ruta de formación sugerida</p>
-          ${paths.length ? paths.map(p => `<div class="roadmap-item">📚 ${escapeHtml(p)}</div>`).join('') : '<div class="roadmap-item">Sin áreas débiles específicas.</div>'}
+          ${paths.length ? paths.map(p => `<div class="roadmap-item">${window.svgIcon('book', 14)} ${escapeHtml(p)}</div>`).join('') : '<div class="roadmap-item">Sin áreas débiles específicas.</div>'}
           <p style="font-size:12px;color:#475569;margin-top:14px">${decisionLabel}</p>`;
     }
 

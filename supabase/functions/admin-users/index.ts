@@ -152,7 +152,7 @@ serve(async (req) => {
     if (action === 'listTenants') {
       const { data, error } = await admin
         .from('tenants')
-        .select('id, slug, name, program_name, primary_color, secondary_color, logo_url, active, created_at')
+        .select('id, slug, name, program_name, primary_color, secondary_color, tertiary_color, logo_url, active, created_at')
         .order('created_at', { ascending: false })
 
       if (error) return json({ error: error.message }, 500)
@@ -161,7 +161,7 @@ serve(async (req) => {
 
     // ── Crear colegio (tenant) — solo super admin ────────────
     if (action === 'createTenant') {
-      const { name, slug, program_name, primary_color, secondary_color, logo_url } = body
+      const { name, slug, program_name, primary_color, secondary_color, tertiary_color, logo_url } = body
       if (!name || !String(name).trim()) return json({ error: 'name es requerido' }, 400)
 
       const cleanSlug = String(slug || '').trim().toLowerCase()
@@ -179,6 +179,7 @@ serve(async (req) => {
           program_name: (program_name && String(program_name).trim()) || 'Programa STEEAM',
           primary_color: primary_color || '#07B0E4',
           secondary_color: secondary_color || null,
+          tertiary_color: tertiary_color || null,
           logo_url: logo_url || null,
         })
         .select()
