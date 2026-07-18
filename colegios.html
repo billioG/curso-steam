@@ -64,7 +64,7 @@
   </header>
   <main>
     <div class="card">
-      <h2>Nuevo colegio</h2>
+      <h2 id="formTitle">Nuevo colegio</h2>
       <form id="form">
         <div class="grid">
           <div>
@@ -74,13 +74,13 @@
           <div>
             <label for="slug">Slug (parte de la URL)</label>
             <input type="text" id="slug" required maxlength="40" placeholder="vdf" pattern="[a-z0-9\-]+">
-            <p class="hint">yoaprendo.online/<span id="slugPreview">slug</span>/postulacion.html</p>
+            <p class="hint">yoaprendo.online/<span id="slugPreview">slug</span>/postulacion.html — cambiarlo rompe enlaces ya compartidos con ese colegio</p>
           </div>
         </div>
         <div class="grid" style="margin-top:14px">
           <div>
             <label for="program_name">Nombre del programa</label>
-            <input type="text" id="program_name" maxlength="100" placeholder="Programa STEEAM VDF">
+            <input type="text" id="program_name" maxlength="100" placeholder="Programa de Reclutamiento Docente 4.0">
           </div>
           <div>
             <label>Colores de marca</label>
@@ -97,6 +97,7 @@
           <input type="url" id="logo_url" placeholder="https://...">
         </div>
         <button type="submit" class="primary" id="submitBtn">Crear colegio</button>
+        <button type="button" id="cancelEditBtn" class="small" style="display:none">Cancelar edición</button>
         <p class="err" id="errMsg"></p>
         <p class="msg" id="okMsg"></p>
       </form>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Evaluación de Casos — Facilitador STEEAM</title>
+<title>Evaluación de Casos — Postulación Docente</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -52,7 +52,7 @@
 </style>
 </head>
 <body>
-  <img class="tenant-logo" data-tenant="logo" src="icon.svg" alt="Logo">
+  <img class="tenant-logo" data-tenant="logo" src="default-logo.svg" alt="Logo">
   <div class="card" id="card">
     <div class="loader" id="loader">Cargando...</div>
   </div>
@@ -162,7 +162,7 @@
         ${casesHtml}
         <button id="submitBtn">Enviar evaluación</button>
         <p class="err" id="errMsg"></p>
-        <p class="footer">Programa STEEAM · ${window.TENANT?.name || '1bot'} · Guatemala</p>
+        <p class="footer">${window.TENANT?.name || '1bot'} · Guatemala</p>
       `;
 
       document.getElementById('submitBtn').addEventListener('click', () => submitEvaluation(token));
@@ -234,7 +234,7 @@
         <button id="continuarBtn">Deseo continuar el proceso</button>
         <button id="retirarBtn" class="secondary">Ya no deseo continuar</button>
         <p class="err" id="errMsg2"></p>
-        <p class="footer">Programa STEEAM · ${window.TENANT?.name || '1bot'} · Guatemala</p>
+        <p class="footer">${window.TENANT?.name || '1bot'} · Guatemala</p>
       `;
 
       document.getElementById('continuarBtn').addEventListener('click', () => submitDecision(token, 'continuar'));
@@ -259,7 +259,7 @@
           <p class="sub" style="margin-bottom:20px">${decision === 'continuar'
             ? 'Gracias por continuar en el proceso. El equipo de reclutamiento revisará tu evaluación y se pondrá en contacto contigo.'
             : 'Gracias por tu tiempo. Te deseamos éxito en tu búsqueda.'}</p>
-          <p class="footer">Programa STEEAM · ${window.TENANT?.name || '1bot'} · Guatemala</p>`;
+          <p class="footer">${window.TENANT?.name || '1bot'} · Guatemala</p>`;
       } catch (networkErr) {
         errMsg2.textContent = 'No se pudo conectar. Intenta de nuevo.';
       }
