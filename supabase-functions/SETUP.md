@@ -330,22 +330,21 @@ tabla `tenants` en vez de usar un valor fijo; `admin-users` acepta/
 devuelve los campos nuevos en `createTenant`/`updateTenant`/`listTenants`.
 Pega el código actualizado de cada una y Deploy.
 
-## Paso 4 — Configurar un colegio desde `colegios.html`
+## Paso 4 — Configurar un colegio
 
-En el formulario (crear o editar un colegio) ahora aparecen:
-- **Presupuesto mensual (Q)** y **Pretensión salarial máxima aceptada (Q)**
-  — si se dejan vacíos, se usan los defaults actuales (Q3,100 / Q3,200).
-- **Áreas a evaluar**: casillas Didáctica / Pedagogía / Manejo de grupo /
-  Tecnología. Ninguna marcada = mezcla general de las 4.
+⚠️ **Actualizado** — ver la sección "Configuración por el admin del colegio
+(no el super admin)" más abajo: el presupuesto/salario y las áreas ya NO
+se configuran desde `colegios.html`, se movieron al panel del propio
+admin del colegio en `reclutamiento.html`.
 
 ## Paso 5 — Probar
 
-1. Configura un colegio con `salario_maximo = 2500` → postular con
-   pretensión Q3,000 debe rechazar por salario (antes hubiera pasado).
-2. Configura solo el área "Manejo de grupo" → entra a
-   `evaluacion.html?token=...` de un candidato de ese colegio → los 5
-   casos generados deben girar en torno a manejo de aula/conflictos, no
-   mezclados con otras áreas.
+1. Configura un colegio (desde su propio panel, ver abajo) con
+   `salario_maximo = 2500` → postular con pretensión Q3,000 debe rechazar
+   por salario (antes hubiera pasado).
+2. Entra a `evaluacion.html?token=...` de un candidato de ese colegio →
+   los 5 casos generados deben cubrir didáctica/pedagogía/manejo de
+   grupo/tecnología (siempre las 4, ya no configurable).
 3. Recarga `evaluacion.html` con el mismo token ANTES de enviar
    respuestas → deben aparecer los MISMOS casos (cache en
    `candidates.generated_cases`, no se regeneran ni se gasta otra
@@ -353,3 +352,57 @@ En el formulario (crear o editar un colegio) ahora aparecen:
 4. Corta la conexión a internet antes de cargar `evaluacion.html` (o
    simula que `generate-cases` fallara) → deben aparecer los 5 casos de
    `FALLBACK_CASES` (genéricos, sin robótica) en vez de un error.
+
+---
+
+# Configuración por el admin del colegio (no el super admin)
+
+El super admin (`colegios.html`) solo crea la identidad del colegio
+(nombre, slug, colores, logo). El salario y las áreas de evaluación las
+configura el propio admin del colegio, desde su panel de reclutamiento —
+separa "quién onboarda el colegio" de "quién opera el reclutamiento".
+
+## Paso 1 — Ejecutar la migración SQL
+
+Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/sql
+Ejecuta `migrations/multi-tenant-cnb-areas.sql` (agrega `cnb_areas` a
+`tenants` — las columnas `salario_presupuesto`/`salario_maximo` ya
+existían de un paso anterior).
+
+## Paso 2 — Re-desplegar `admin-users` y `generate-cases`
+
+- `admin-users`: `createTenant`/`updateTenant` ya NO aceptan salario ni
+  áreas (solo identidad). Nuevas acciones `getTenantSettings` /
+  `updateTenantSettings` — el admin de un colegio solo puede leer/editar
+  la configuración de SU PROPIO tenant (verificado server-side, igual
+  que `listCandidates`/`provisionCandidate`).
+- `generate-cases`: las 4 áreas base ya no se leen de configuración
+  (siempre las 4). Ahora lee `tenants.cnb_areas` para ambientar los
+  casos dentro de una materia del CNB si el colegio la configuró.
+
+Pega el código actualizado de ambas y Deploy.
+
+## Paso 3 — Cómo lo usa el admin del colegio
+
+1. Login en `yoaprendo.online/<slug>/reclutamiento.html`.
+2. Botón **"⚙️ Configuración"** (arriba a la derecha, solo visible para
+   admins de colegio, no para el super admin en su vista sin slug).
+3. Ahí configura: Presupuesto mensual, Pretensión máxima aceptada, y
+   opcionalmente una o más materias del CNB (Comunicación y Lenguaje,
+   Matemáticas, Medio Social y Natural, Expresión Artística, Educación
+   Física, Formación Ciudadana, Emprendimiento, Tecnología/TAC) para que
+   la IA ambiente los casos de estudio en esas materias.
+
+## Paso 4 — Probar
+
+1. Como admin de un colegio, abre "Configuración", guarda un
+   `salario_maximo` bajo y una materia del CNB (ej. Matemáticas).
+2. Postula con una pretensión salarial por encima de ese tope → debe
+   rechazar por salario.
+3. Entra a `evaluacion.html?token=...` de un candidato evaluado de ese
+   colegio → los casos deben mencionar situaciones de una clase de
+   Matemáticas, evaluando igual didáctica/pedagogía/manejo de grupo/
+   tecnología (no contenido matemático en sí).
+4. Como super admin en `colegios.html`, confirma que el formulario de
+   crear/editar colegio YA NO tiene campos de salario ni áreas — solo
+   nombre/slug/programa/colores/logo.

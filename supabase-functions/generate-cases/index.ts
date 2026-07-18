@@ -1,9 +1,13 @@
 // Edge Function: generate-cases
 // Genera (vía Groq) los casos de estudio que un candidato va a responder
-// en evaluacion.html, según las áreas que el colegio configuró en
-// `tenants.evaluation_areas` (didáctica / pedagogía / manejo de grupo /
-// tecnología — vacío/null = mezcla de las 4). Pública — se identifica
-// con el `access_token` del candidato, igual que evaluate-candidate.
+// en evaluacion.html. Pública — se identifica con el `access_token` del
+// candidato, igual que evaluate-candidate.
+//
+// Las 4 áreas pedagógicas base (didáctica/pedagogía/manejo de grupo/
+// tecnología) SIEMPRE se evalúan — no son configurables. Si el colegio
+// configuró `tenants.cnb_areas` (una o más materias del Currículo
+// Nacional Base de Guatemala), los casos se ambientan dentro de esas
+// materias sin dejar de evaluar las 4 áreas base.
 //
 // Recibe: { access_token }
 // Devuelve: { ok:true, cases:[{id,title,prompt}, ...] }
@@ -29,6 +33,7 @@ const CORS = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...CORS, 'Content-Type': 'application/json' } });
 
+// Áreas pedagógicas base — SIEMPRE se evalúan las 4, no son configurables.
 const AREA_LABELS: Record<string, string> = {
   didactica:     'Didáctica (estrategias de enseñanza, planificación de clase, materiales)',
   pedagogia:     'Pedagogía (enfoque educativo, evaluación formativa, atención a la diversidad)',
@@ -36,6 +41,20 @@ const AREA_LABELS: Record<string, string> = {
   tecnologia:    'Tecnología en el aula (herramientas digitales, IA educativa, recursos con o sin conexión)',
 };
 const ALL_AREAS = Object.keys(AREA_LABELS);
+
+// Materias del CNB (Guatemala) — opcional, contextualiza los casos dentro
+// de una materia concreta sin reemplazar las 4 áreas pedagógicas base.
+const CNB_LABELS: Record<string, string> = {
+  comunicacion_lenguaje:  'Comunicación y Lenguaje',
+  matematicas:            'Matemáticas',
+  medio_social_natural:   'Medio Social y Natural',
+  expresion_artistica:    'Expresión Artística',
+  educacion_fisica:       'Educación Física',
+  formacion_ciudadana:    'Formación Ciudadana',
+  emprendimiento:         'Emprendimiento para la Productividad',
+  tecnologia_aprendizaje: 'Tecnología del Aprendizaje y la Comunicación (TAC)',
+};
+
 const CASES_TO_GENERATE = 5;
 
 // Fallback si Groq falla o responde algo no parseable — genérico, no
@@ -72,31 +91,38 @@ Deno.serve(async (req) => {
       return json({ ok: true, cases: candidate.generated_cases });
     }
 
-    let areas: string[] = ALL_AREAS;
+    // Las 4 áreas base siempre se evalúan — no se leen de configuración.
+    const areas = ALL_AREAS;
+    const areasText = areas.map((a) => `- ${AREA_LABELS[a]}`).join('\n');
+
+    // cnb_areas es opcional: si el colegio lo configuró, se usa solo para
+    // ambientar los casos en esa(s) materia(s) del CNB, sin reemplazar las
+    // 4 áreas base de arriba.
+    let cnbAreas: string[] = [];
     if (candidate.tenant_id) {
       const { data: tenantRow } = await admin
         .from('tenants')
-        .select('evaluation_areas')
+        .select('cnb_areas')
         .eq('id', candidate.tenant_id)
         .maybeSingle();
-      if (Array.isArray(tenantRow?.evaluation_areas) && tenantRow.evaluation_areas.length > 0) {
-        areas = tenantRow.evaluation_areas.filter((a: string) => ALL_AREAS.includes(a));
+      if (Array.isArray(tenantRow?.cnb_areas)) {
+        cnbAreas = tenantRow.cnb_areas.filter((a: string) => CNB_LABELS[a]);
       }
     }
-    if (areas.length === 0) areas = ALL_AREAS;
+    const cnbText = cnbAreas.length > 0
+      ? `\n\nAmbienta los casos dentro de estas materias del Currículo Nacional Base de Guatemala (repártelas entre los casos, puedes combinar más de una): ${cnbAreas.map((a) => CNB_LABELS[a]).join(', ')}. La situación debe ocurrir en una clase de esa materia, pero lo que se evalúa sigue siendo la práctica docente (las 4 áreas de arriba), no el contenido académico de la materia.`
+      : '';
 
-    const areasText = areas.map((a) => `- ${AREA_LABELS[a]}`).join('\n');
-
-    const systemPrompt = `Eres un especialista en selección de personal docente. Diseñas casos de estudio realistas de aula para evaluar candidatos a un puesto de facilitador/docente. Los casos deben ser generales de la práctica docente (didáctica, pedagogía, manejo de grupo, tecnología educativa) — NUNCA específicos de una materia, kit, marca o tecnología concreta (nada de robots ni marcas comerciales), para que apliquen a cualquier aula. Siempre respondes ÚNICAMENTE con JSON válido, sin texto adicional, sin bloques de código markdown.`;
+    const systemPrompt = `Eres un especialista en selección de personal docente. Diseñas casos de estudio realistas de aula para evaluar candidatos a un puesto de facilitador/docente. Los casos evalúan siempre práctica docente general (didáctica, pedagogía, manejo de grupo, tecnología educativa) — nunca menciones marcas comerciales, kits o robots específicos. Siempre respondes ÚNICAMENTE con JSON válido, sin texto adicional, sin bloques de código markdown.`;
 
     const userPrompt = `Genera ${CASES_TO_GENERATE} casos de estudio cortos (una situación de aula realista + una pregunta abierta) para evaluar a un candidato a facilitador docente. Reparte los casos entre estas áreas (puede repetirse un área si hacen falta más casos que áreas):
 
-${areasText}
+${areasText}${cnbText}
 
 Cada caso debe tener:
 - Una situación concreta y realista de aula (3-5 oraciones)
 - Una pregunta abierta que invite a explicar CÓMO actuaría el candidato
-- Nada de tecnicismos de una materia específica, ni menciones a marcas, kits o robots — general para cualquier docente
+- Nada de menciones a marcas, kits o robots — general para cualquier docente
 
 Responde ÚNICAMENTE con este JSON (array de exactamente ${CASES_TO_GENERATE} objetos, sin texto antes ni después):
 [
