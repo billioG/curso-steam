@@ -6,6 +6,15 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Áreas seleccionables para los casos de estudio generados por IA (ver
+// generate-cases). Vacío/no configurado = mezcla de las 4.
+const VALID_EVALUATION_AREAS = ['didactica', 'pedagogia', 'manejo_grupo', 'tecnologia']
+
+function cleanEvaluationAreas(areas: unknown): string[] {
+  if (!Array.isArray(areas)) return []
+  return areas.filter((a) => VALID_EVALUATION_AREAS.includes(a))
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
@@ -152,7 +161,7 @@ serve(async (req) => {
     if (action === 'listTenants') {
       const { data, error } = await admin
         .from('tenants')
-        .select('id, slug, name, program_name, primary_color, secondary_color, tertiary_color, logo_url, active, created_at')
+        .select('id, slug, name, program_name, primary_color, secondary_color, tertiary_color, logo_url, active, created_at, salario_presupuesto, salario_maximo, evaluation_areas')
         .order('created_at', { ascending: false })
 
       if (error) return json({ error: error.message }, 500)
@@ -161,7 +170,8 @@ serve(async (req) => {
 
     // ── Crear colegio (tenant) — solo super admin ────────────
     if (action === 'createTenant') {
-      const { name, slug, program_name, primary_color, secondary_color, tertiary_color, logo_url } = body
+      const { name, slug, program_name, primary_color, secondary_color, tertiary_color, logo_url,
+              salario_presupuesto, salario_maximo, evaluation_areas } = body
       if (!name || !String(name).trim()) return json({ error: 'name es requerido' }, 400)
 
       const cleanSlug = String(slug || '').trim().toLowerCase()
@@ -181,6 +191,9 @@ serve(async (req) => {
           secondary_color: secondary_color || null,
           tertiary_color: tertiary_color || null,
           logo_url: logo_url || null,
+          salario_presupuesto: salario_presupuesto || null,
+          salario_maximo: salario_maximo || null,
+          evaluation_areas: cleanEvaluationAreas(evaluation_areas),
         })
         .select()
         .single()
@@ -194,7 +207,8 @@ serve(async (req) => {
 
     // ── Editar colegio — solo super admin ────────────────────
     if (action === 'updateTenant') {
-      const { targetTenantId, name, slug, program_name, primary_color, secondary_color, tertiary_color, logo_url } = body
+      const { targetTenantId, name, slug, program_name, primary_color, secondary_color, tertiary_color, logo_url,
+              salario_presupuesto, salario_maximo, evaluation_areas } = body
       if (!targetTenantId) return json({ error: 'targetTenantId es requerido' }, 400)
       if (!name || !String(name).trim()) return json({ error: 'name es requerido' }, 400)
 
@@ -215,6 +229,9 @@ serve(async (req) => {
           secondary_color: secondary_color || null,
           tertiary_color: tertiary_color || null,
           logo_url: logo_url || null,
+          salario_presupuesto: salario_presupuesto || null,
+          salario_maximo: salario_maximo || null,
+          evaluation_areas: cleanEvaluationAreas(evaluation_areas),
         })
         .eq('id', targetTenantId)
         .select()

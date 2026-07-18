@@ -13,9 +13,11 @@
 // valores que envía son solo la intención declarada; el server los
 // revalida y es la única fuente de verdad para `status`.
 //
-// Presupuesto del programa: Q3,100/mes. Se acepta pretensión salarial
-// hasta Q3,200 (margen de negociación); por encima de eso se rechaza
-// con un mensaje específico de desajuste salarial, no el genérico.
+// Presupuesto default: Q3,100/mes, tope default Q3,200 — usado cuando el
+// tenant no configuró su propio `salario_maximo` en la tabla `tenants`
+// (o para el 1bot original, tenant_id null). Si lo configuró, ESE valor
+// (leído server-side, nunca del body) es el que manda. Por encima del
+// tope se rechaza con un mensaje específico de desajuste salarial.
 //
 // `interes_mineduc` es SOLO informativo — estar en proceso de optar una
 // plaza MINEDUC no descalifica al candidato, se guarda para que el admin
@@ -38,7 +40,7 @@ const json = (body: unknown, status = 200) =>
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const JORNADAS_VALIDAS = ['matutina', 'vespertina', 'ambas'];
-const SALARIO_MAXIMO = 3200;
+const SALARIO_MAXIMO_DEFAULT = 3200;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
@@ -61,18 +63,32 @@ Deno.serve(async (req) => {
       return json({ error: 'pretension_salarial inválida' }, 400);
     }
 
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const tenant_id = body.tenant_id || null;
+
+    // El tope de salario SIEMPRE se lee de la tabla `tenants` (nunca del
+    // body) — si el cliente mandara su propio salario_maximo podría
+    // inflarlo para colarse por encima del presupuesto real del colegio.
+    let salarioMaximo = SALARIO_MAXIMO_DEFAULT;
+    if (tenant_id) {
+      const { data: tenantRow } = await admin
+        .from('tenants')
+        .select('salario_maximo')
+        .eq('id', tenant_id)
+        .maybeSingle();
+      if (tenantRow?.salario_maximo) salarioMaximo = Number(tenantRow.salario_maximo);
+    }
+
     // Filtro duro — revalidado server-side, el cliente solo declara intención.
     // interes_mineduc NO participa del filtro (ver nota arriba).
     const acepta_jornada                 = body.acepta_jornada === true;
     const interes_mineduc                = body.interes_mineduc === true;
     const compromiso_finalizar_programa  = body.compromiso_finalizar_programa === true;
-    const salarioOk = pretension_salarial <= SALARIO_MAXIMO;
+    const salarioOk = pretension_salarial <= salarioMaximo;
     const passedFilter = salarioOk && acepta_jornada && compromiso_finalizar_programa;
 
     let rejection_reason: string | null = null;
     if (!passedFilter) rejection_reason = !salarioOk ? 'salario' : 'jornada_compromiso';
-
-    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
     const { data: inserted, error } = await admin
       .from('candidates')
@@ -87,7 +103,7 @@ Deno.serve(async (req) => {
         compromiso_finalizar_programa,
         status: passedFilter ? 'evaluacion_pendiente' : 'rechazado_filtro',
         rejection_reason,
-        tenant_id: body.tenant_id || null,
+        tenant_id,
       })
       .select('access_token')
       .single();
