@@ -17,7 +17,7 @@
     gap:14px;
     padding:1.5rem;
   }
-  .tenant-logo { width:56px; height:56px; border-radius:14px; object-fit:cover; box-shadow:0 8px 20px rgba(0,0,0,.35); }
+  .tenant-logo { display:block; width:56px; height:56px; border-radius:14px; object-fit:cover; margin:0 auto 12px; }
   .card {
     background:white;
     border-radius:20px;
@@ -47,9 +47,9 @@
 </style>
 </head>
 <body>
-  <img class="tenant-logo" data-tenant="logo" src="default-logo.svg" alt="Logo">
-  <div class="card" id="card">
-    <div class="icon" id="topIcon"></div>
+  <div class="card">
+    <img class="tenant-logo" data-tenant="logo" src="default-logo.svg" alt="Logo">
+    <div id="card">
     <h1>Postulación Docente · <span data-tenant="name">1bot</span></h1>
     <p class="sub" data-tenant="program">Programa de Reclutamiento Docente 4.0</p>
 
@@ -65,7 +65,6 @@
 
       <label for="pretension_salarial">¿Cuál es tu pretensión salarial mensual? (Q)</label>
       <input type="number" id="pretension_salarial" required min="1" max="100000" step="1" placeholder="Ej: 3100">
-      <p class="hint" id="presupuestoHint">El presupuesto del programa es de Q3,100 mensuales.</p>
 
       <label for="jornada">Jornada disponible</label>
       <select id="jornada" required>
@@ -98,6 +97,7 @@
     </form>
 
     <p class="footer"><span data-tenant="name">1bot</span> · Guatemala</p>
+    </div>
   </div>
 
   <script src="tenant.js"></script>
@@ -108,15 +108,6 @@
     function escapeHtml(s) {
       return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
-
-    document.getElementById('topIcon').innerHTML = window.svgIcon('plane', 40);
-
-    window.TENANT_READY.then(() => {
-      const presupuesto = window.TENANT?.salario_presupuesto;
-      if (presupuesto) {
-        document.getElementById('presupuestoHint').textContent = `El presupuesto del programa es de Q${Number(presupuesto).toLocaleString('es-GT')} mensuales.`;
-      }
-    });
 
     document.getElementById('form').addEventListener('submit', async (e) => {
       e.preventDefault();
