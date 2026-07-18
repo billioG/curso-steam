@@ -24,14 +24,14 @@
   .icon { font-size:42px; text-align:center; margin-bottom:8px; }
   h1 { font-size:19px; text-align:center; color:#0F172A; margin-bottom:4px; }
   .sub { font-size:12.5px; text-align:center; color:#94A3B8; margin-bottom:24px; }
-  .case { margin-bottom:22px; padding:16px; background:#F8FAFC; border-radius:12px; border-left:4px solid #07B0E4; }
+  .case { margin-bottom:22px; padding:16px; background:#F8FAFC; border-radius:12px; border-left:4px solid var(--brand-primary,#07B0E4); }
   .case h3 { font-size:13.5px; color:#0F172A; margin-bottom:8px; }
   .case p { font-size:13px; color:#475569; line-height:1.5; margin-bottom:10px; }
   textarea {
     width:100%; min-height:90px; padding:11px 13px; border:1.5px solid #E2E8F0; border-radius:10px;
     font-size:13.5px; font-family:inherit; resize:vertical;
   }
-  button { width:100%; padding:13px; border:none; border-radius:10px; background:#07B0E4; color:white; font-weight:700; font-size:14px; cursor:pointer; margin-top:10px; }
+  button { width:100%; padding:13px; border:none; border-radius:10px; background:var(--brand-primary,#07B0E4); color:white; font-weight:700; font-size:14px; cursor:pointer; margin-top:10px; }
   button:disabled { opacity:.6; cursor:not-allowed; }
   button.secondary { background:#E2E8F0; color:#334155; }
   .err { color:#DC2626; font-size:12px; margin-top:10px; text-align:center; min-height:16px; }
@@ -40,7 +40,7 @@
   .status.invalid { background:#FEE2E2; color:#991B1B; }
   .score-row { display:flex; gap:12px; margin-bottom:16px; }
   .score-box { flex:1; text-align:center; padding:16px 10px; background:#F8FAFC; border-radius:12px; }
-  .score-box .num { font-size:26px; font-weight:800; color:#07B0E4; }
+  .score-box .num { font-size:26px; font-weight:800; color:var(--brand-primary,#07B0E4); }
   .score-box .lbl { font-size:11px; color:#64748B; margin-top:2px; }
   .feedback { font-size:13px; color:#334155; line-height:1.6; margin-bottom:14px; padding:14px; background:#F8FAFC; border-radius:10px; }
   .feedback strong { color:#0F172A; }
@@ -55,39 +55,82 @@
     <div class="loader" id="loader">Cargando...</div>
   </div>
 
+  <script src="tenant.js"></script>
   <script>
     const EVALUATE_CANDIDATE_URL = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/evaluate-candidate';
+    // El gateway de Supabase exige un JWT válido en Authorization antes de
+    // que corra el código de la función, aunque la función misma no lo
+    // valide (el candidato se identifica con access_token, no con JWT).
+    // El anon key es un JWT válido y satisface ese chequeo de plataforma.
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
 
-    // Casos de estudio del proceso de selección — uno por ruta de formación
-    // (steam20 / convivencia / ia / creativo / metodologias) para que la IA
-    // tenga señal clara de en qué ruta ubicar al candidato si continúa.
-    const CASES = [
+    // Banco de casos de estudio — general (no ligado a un grado específico,
+    // aplica igual si el facilitador atiende primaria o básicos), cubre las
+    // 5 rutas de formación (steam20/convivencia/ia/creativo/comunicación).
+    // Cada candidato recibe 5 casos elegidos al azar de este banco, en orden
+    // aleatorio — así dos personas que postulan por separado no ven
+    // exactamente los mismos casos ni en el mismo orden, y compartir
+    // respuestas de memoria con un conocido que postule después sirve de
+    // mucho menos.
+    const CASE_BANK = [
       {
-        id: 'caso1',
-        title: 'Caso 1 · Metodología STEAM y pensamiento de proyecto',
-        prompt: 'Tu grupo de 5º primaria arma un robot con el kit 1bot para resolver el reto "sacar la pelota del laberinto". Después de tres intentos fallidos, un subgrupo quiere abandonar y otro insiste en copiar el código de otro equipo en vez de seguir probando. No puedes darles la solución directa — es una evaluación del programa STEAM. ¿Cómo conduces la sesión para que ambos subgrupos sigan el ciclo de "diseñar → probar → mejorar" sin perder la motivación ni saltarse el proceso?'
+        id: 'logica-laberinto',
+        title: 'Metodología STEAM y pensamiento de proyecto',
+        prompt: 'Un grupo de estudiantes arma un robot con el kit STEAM para resolver un reto de recorrido (sacar un objeto de un laberinto). Después de tres intentos fallidos, un subgrupo quiere abandonar y otro insiste en copiar la solución de otro equipo en vez de seguir probando. No puedes darles la respuesta directa — es una evaluación del programa. ¿Cómo conduces la sesión para que ambos subgrupos sigan el ciclo de "diseñar → probar → mejorar" sin perder la motivación ni saltarse el proceso?'
       },
       {
-        id: 'caso2',
-        title: 'Caso 2 · Manejo de aula y convivencia',
+        id: 'logica-atajo',
+        title: 'Pensamiento computacional vs. copiar la solución',
+        prompt: 'Un equipo de estudiantes encuentra en internet un tutorial con el código exacto para resolver el reto de robótica del día y lo copia sin entenderlo, sin haber intentado su propia solución. Terminan primero y presumen frente al resto del grupo. ¿Cómo manejas la situación de forma que aprendan algo real del proceso, sin simplemente descalificar su entrega ni permitir que la actividad pierda sentido para el resto?'
+      },
+      {
+        id: 'convivencia-control',
+        title: 'Manejo de aula y convivencia',
         prompt: 'Durante la actividad de robótica, dos estudiantes empiezan a discutir fuerte por quién controla el mando — uno le arrebata el robot al otro frente al resto del grupo y la tensión sube. El resto de la clase se distrae y algunos empiezan a grabar con el celular. Tienes que resolver el conflicto, retomar el control del grupo y continuar la actividad en los siguientes 5 minutos. ¿Qué haces, en qué orden, y qué le dices a cada estudiante involucrado?'
       },
       {
-        id: 'caso3',
-        title: 'Caso 3 · Herramientas de inteligencia artificial en el aula',
-        prompt: 'Tienes que preparar en dos días una clase sobre "qué es la inteligencia artificial" para estudiantes de 6º primaria que nunca han tocado el tema, sin acceso a internet dentro del salón. ¿Qué herramientas de IA usarías FUERA del aula para preparar el material (actividades, ejemplos, imágenes), y cómo explicarías el concepto de IA de forma simple y sin tecnicismos dentro del salón, sin conexión?'
+        id: 'convivencia-burla',
+        title: 'Manejo de aula y trato entre estudiantes',
+        prompt: 'El robot de un estudiante falla frente a todo el grupo y varios compañeros se ríen y lo molestan. El estudiante se cierra, deja de participar y no quiere volver a intentarlo el resto de la sesión. ¿Qué haces en ese momento con el grupo y con el estudiante afectado, y qué harías después de esa clase para que no se repita?'
       },
       {
-        id: 'caso4',
-        title: 'Caso 4 · Creatividad con recursos limitados',
-        prompt: 'Tienes 40 minutos de clase, solo 5 kits de robótica y 25 estudiantes — no alcanza un kit por persona ni por pareja. Algunos estudiantes ya saben usar el kit de clases anteriores y otros nunca lo han tocado. ¿Cómo organizas la actividad de forma creativa para que los 25 participen activamente (no solo los 5 que tienen el kit en la mano), aprovechando la diferencia de experiencia entre ellos en vez de que sea un obstáculo?'
+        id: 'ia-sin-conexion',
+        title: 'Herramientas de inteligencia artificial en el aula',
+        prompt: 'Tienes que preparar en dos días una clase introductoria sobre "qué es la inteligencia artificial" para estudiantes que nunca han tocado el tema, sin acceso a internet dentro del salón el día de la clase. ¿Qué herramientas de IA usarías FUERA del aula para preparar el material (actividades, ejemplos, imágenes), y cómo explicarías el concepto de IA de forma simple y sin tecnicismos dentro del salón, sin conexión?'
       },
       {
-        id: 'caso5',
-        title: 'Caso 5 · Comunicación con la comunidad educativa',
-        prompt: 'Un padre de familia te aborda a la salida y te dice, molesto, que su hijo "solo juega con robots" en tu clase y que eso no le va a servir para nada en la vida real — quiere que en vez de eso le enseñes matemática "de verdad". Tienes menos de 3 minutos porque él tiene prisa. ¿Qué le respondes para que entienda el valor real de la metodología STEAM sin sonar a discurso memorizado, y qué harías después con ese padre a mediano plazo?'
+        id: 'ia-uso-responsable',
+        title: 'Uso responsable de la inteligencia artificial',
+        prompt: 'Un estudiante entrega una actividad donde claramente usó una aplicación de inteligencia artificial para generar todas las respuestas sin pensar ni un momento el problema por su cuenta. ¿Cómo abordas la situación con ese estudiante y con el grupo en general, sin prohibir la IA de tajo pero dejando claro qué es un uso responsable de la herramienta?'
+      },
+      {
+        id: 'creatividad-recursos',
+        title: 'Creatividad con recursos limitados',
+        prompt: 'Tienes 40 minutos de clase, solo 5 kits de robótica disponibles y 25 estudiantes — no alcanza un kit por persona ni por pareja. Algunos estudiantes ya saben usar el kit de clases anteriores y otros nunca lo han tocado. ¿Cómo organizas la actividad de forma creativa para que los 25 participen activamente (no solo los 5 que tienen el kit en la mano), aprovechando la diferencia de experiencia entre ellos en vez de que sea un obstáculo?'
+      },
+      {
+        id: 'creatividad-imprevisto',
+        title: 'Adaptarse a un imprevisto con recursos',
+        prompt: 'El día del taller descubres que a 2 de tus 5 kits de robótica les faltan piezas o llegaron dañados, y no tienes forma de conseguir repuestos antes de empezar. Cancelar la sesión no es opción. ¿Cómo adaptas la actividad planeada con lo que sí tienes disponible, sin que los estudiantes noten que todo se improvisó de último momento?'
+      },
+      {
+        id: 'comunicacion-padres',
+        title: 'Comunicación con la comunidad educativa',
+        prompt: 'Un padre de familia te aborda a la salida y te dice, molesto, que su hijo/a "solo juega con robots" en tu clase y que eso no le va a servir para nada en la vida real — quiere que en vez de eso le enseñes matemática "de verdad". Tienes menos de 3 minutos porque él tiene prisa. ¿Qué le respondes para que entienda el valor real de la metodología STEAM sin sonar a discurso memorizado, y qué harías después con ese padre a mediano plazo?'
       },
     ];
+
+    const CASES_PER_CANDIDATE = 5;
+    let CASES = [];
+
+    function pickRandomCases(n) {
+      const pool = [...CASE_BANK];
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      return pool.slice(0, n);
+    }
 
     function escapeHtml(s) {
       return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -101,6 +144,7 @@
     }
 
     function renderForm(token) {
+      CASES = pickRandomCases(CASES_PER_CANDIDATE);
       const casesHtml = CASES.map(c => `
         <div class="case">
           <h3>${escapeHtml(c.title)}</h3>
@@ -116,7 +160,7 @@
         ${casesHtml}
         <button id="submitBtn">Enviar evaluación</button>
         <p class="err" id="errMsg"></p>
-        <p class="footer">Programa STEEAM · 1bot · Guatemala</p>
+        <p class="footer">Programa STEEAM · ${window.TENANT?.name || '1bot'} · Guatemala</p>
       `;
 
       document.getElementById('submitBtn').addEventListener('click', () => submitEvaluation(token));
@@ -144,7 +188,7 @@
       try {
         const res = await fetch(EVALUATE_CANDIDATE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
           body: JSON.stringify({ access_token: token, responses }),
         });
         const data = await res.json();
@@ -188,7 +232,7 @@
         <button id="continuarBtn">Deseo continuar el proceso</button>
         <button id="retirarBtn" class="secondary">Ya no deseo continuar</button>
         <p class="err" id="errMsg2"></p>
-        <p class="footer">Programa STEEAM · 1bot · Guatemala</p>
+        <p class="footer">Programa STEEAM · ${window.TENANT?.name || '1bot'} · Guatemala</p>
       `;
 
       document.getElementById('continuarBtn').addEventListener('click', () => submitDecision(token, 'continuar'));
@@ -201,7 +245,7 @@
       try {
         const res = await fetch(EVALUATE_CANDIDATE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
           body: JSON.stringify({ access_token: token, decision }),
         });
         const data = await res.json();
@@ -213,7 +257,7 @@
           <p class="sub" style="margin-bottom:20px">${decision === 'continuar'
             ? 'Gracias por continuar en el proceso. El equipo de reclutamiento revisará tu evaluación y se pondrá en contacto contigo.'
             : 'Gracias por tu tiempo. Te deseamos éxito en tu búsqueda.'}</p>
-          <p class="footer">Programa STEEAM · 1bot · Guatemala</p>`;
+          <p class="footer">Programa STEEAM · ${window.TENANT?.name || '1bot'} · Guatemala</p>`;
       } catch (networkErr) {
         errMsg2.textContent = 'No se pudo conectar. Intenta de nuevo.';
       }
@@ -221,7 +265,10 @@
 
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
-    if (!token) renderNoToken(); else renderForm(token);
+    (async () => {
+      await window.TENANT_READY;
+      if (!token) renderNoToken(); else renderForm(token);
+    })();
   </script>
 </body>
 </html>
