@@ -65,7 +65,7 @@
 
       <label for="pretension_salarial">¿Cuál es tu pretensión salarial mensual? (Q)</label>
       <input type="number" id="pretension_salarial" required min="1" max="100000" step="1" placeholder="Ej: 3100">
-      <p class="hint">El presupuesto del programa es de Q3,100 mensuales.</p>
+      <p class="hint" id="presupuestoHint">El presupuesto del programa es de Q3,100 mensuales.</p>
 
       <label for="jornada">Jornada disponible</label>
       <select id="jornada" required>
@@ -110,6 +110,13 @@
     }
 
     document.getElementById('topIcon').innerHTML = window.svgIcon('plane', 40);
+
+    window.TENANT_READY.then(() => {
+      const presupuesto = window.TENANT?.salario_presupuesto;
+      if (presupuesto) {
+        document.getElementById('presupuestoHint').textContent = `El presupuesto del programa es de Q${Number(presupuesto).toLocaleString('es-GT')} mensuales.`;
+      }
+    });
 
     document.getElementById('form').addEventListener('submit', async (e) => {
       e.preventDefault();

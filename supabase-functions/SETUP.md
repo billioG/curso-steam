@@ -299,3 +299,57 @@ temporal en algún panel — no hay UI para esto en Fase 1, es proceso manual.)
    panel es solo de 1bot en Fase 1).
 4. `yoaprendo.online/postulacion.html` (sin slug) → debe seguir viéndose
    exactamente como antes, cero cambios para 1bot.
+
+---
+
+# Salario configurable + casos de estudio generados por IA
+
+Cada colegio ahora puede configurar su propio presupuesto/tope salarial y
+qué áreas evaluar (didáctica, pedagogía, manejo de grupo, tecnología) —
+antes eran valores fijos (Q3,100/Q3,200) y casos de estudio fijos con
+enfoque en robótica STEAM.
+
+## Paso 1 — Ejecutar la migración SQL
+
+Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/sql
+Ejecuta `migrations/multi-tenant-salario-y-casos-ia.sql` (agrega
+`salario_presupuesto`, `salario_maximo`, `evaluation_areas` a `tenants`,
+y `generated_cases` a `candidates`).
+
+## Paso 2 — Crear la Edge Function nueva `generate-cases`
+
+Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/functions
+→ "New Function" → nombre exacto `generate-cases` → pega el código de
+`supabase-functions/generate-cases/index.ts` → Deploy. Sin secrets
+nuevos — reutiliza `GROQ_API_KEY` y `SUPABASE_SERVICE_ROLE_KEY`.
+
+## Paso 3 — Re-desplegar `submit-application` y `admin-users`
+
+Ambas cambiaron: `submit-application` ahora lee `salario_maximo` de la
+tabla `tenants` en vez de usar un valor fijo; `admin-users` acepta/
+devuelve los campos nuevos en `createTenant`/`updateTenant`/`listTenants`.
+Pega el código actualizado de cada una y Deploy.
+
+## Paso 4 — Configurar un colegio desde `colegios.html`
+
+En el formulario (crear o editar un colegio) ahora aparecen:
+- **Presupuesto mensual (Q)** y **Pretensión salarial máxima aceptada (Q)**
+  — si se dejan vacíos, se usan los defaults actuales (Q3,100 / Q3,200).
+- **Áreas a evaluar**: casillas Didáctica / Pedagogía / Manejo de grupo /
+  Tecnología. Ninguna marcada = mezcla general de las 4.
+
+## Paso 5 — Probar
+
+1. Configura un colegio con `salario_maximo = 2500` → postular con
+   pretensión Q3,000 debe rechazar por salario (antes hubiera pasado).
+2. Configura solo el área "Manejo de grupo" → entra a
+   `evaluacion.html?token=...` de un candidato de ese colegio → los 5
+   casos generados deben girar en torno a manejo de aula/conflictos, no
+   mezclados con otras áreas.
+3. Recarga `evaluacion.html` con el mismo token ANTES de enviar
+   respuestas → deben aparecer los MISMOS casos (cache en
+   `candidates.generated_cases`, no se regeneran ni se gasta otra
+   llamada a Groq).
+4. Corta la conexión a internet antes de cargar `evaluacion.html` (o
+   simula que `generate-cases` fallara) → deben aparecer los 5 casos de
+   `FALLBACK_CASES` (genéricos, sin robótica) en vez de un error.
