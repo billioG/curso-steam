@@ -20,9 +20,15 @@
   .card h2 { font-size:14px; margin-bottom:16px; }
   .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   label { display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:5px; }
-  input[type=text], input[type=url] {
+  input[type=text], input[type=url], input[type=number] {
     width:100%; padding:10px 12px; border:1.5px solid #E2E8F0; border-radius:8px; font-size:13px; font-family:inherit;
   }
+  .checkbox-group { display:flex; flex-wrap:wrap; gap:10px; }
+  .checkbox-chip {
+    display:flex; align-items:center; gap:6px; padding:8px 12px; border:1.5px solid #E2E8F0;
+    border-radius:8px; font-size:12.5px; color:#334155; cursor:pointer; background:#F8FAFC;
+  }
+  .checkbox-chip input { width:14px; height:14px; cursor:pointer; }
   input[type=color] { width:60px; height:38px; border:1.5px solid #E2E8F0; border-radius:8px; padding:2px; cursor:pointer; }
   .color-row { display:flex; align-items:center; gap:10px; }
   .hint { font-size:11px; color:#94A3B8; margin-top:4px; }
@@ -95,6 +101,28 @@
         <div style="margin-top:14px">
           <label for="logo_url">URL del logo (opcional)</label>
           <input type="url" id="logo_url" placeholder="https://...">
+        </div>
+        <div class="grid" style="margin-top:14px">
+          <div>
+            <label for="salario_presupuesto">Presupuesto mensual (Q)</label>
+            <input type="number" id="salario_presupuesto" min="1" max="100000" placeholder="3100">
+            <p class="hint">Se muestra al candidato como referencia.</p>
+          </div>
+          <div>
+            <label for="salario_maximo">Pretensión salarial máxima aceptada (Q)</label>
+            <input type="number" id="salario_maximo" min="1" max="100000" placeholder="3200">
+            <p class="hint">Por encima de este monto, la postulación se rechaza automáticamente.</p>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <label>Áreas a evaluar en los casos de estudio (la IA genera los casos según esto)</label>
+          <div class="checkbox-group">
+            <label class="checkbox-chip"><input type="checkbox" name="evaluation_areas" value="didactica"> Didáctica</label>
+            <label class="checkbox-chip"><input type="checkbox" name="evaluation_areas" value="pedagogia"> Pedagogía</label>
+            <label class="checkbox-chip"><input type="checkbox" name="evaluation_areas" value="manejo_grupo"> Manejo de grupo</label>
+            <label class="checkbox-chip"><input type="checkbox" name="evaluation_areas" value="tecnologia"> Tecnología</label>
+          </div>
+          <p class="hint">Sin ninguna marcada, se evalúa una mezcla general de las 4 áreas.</p>
         </div>
         <button type="submit" class="primary" id="submitBtn">Crear colegio</button>
         <button type="button" id="cancelEditBtn" class="small" style="display:none">Cancelar edición</button>
