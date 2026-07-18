@@ -9,6 +9,7 @@ const ADMIN_EMAILS  = ['billy@1bot.org'];
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let tenantsCache = [];
+let editingTenantId = null;
 
 function escapeHtml(s) {
     return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -77,6 +78,7 @@ function renderTenants() {
             </td>
             <td><span class="badge ${t.active ? 'active' : 'inactive'}">${t.active ? 'Activo' : 'Inactivo'}</span></td>
             <td>
+              <button class="small" data-action="edit" data-id="${t.id}">Editar</button>
               <button class="small hire" data-action="invite" data-id="${t.id}" data-name="${escapeHtml(t.name)}">Invitar admin</button>
               <button class="small" data-action="toggle" data-id="${t.id}" data-active="${t.active}">${t.active ? 'Desactivar' : 'Activar'}</button>
             </td>
@@ -89,6 +91,9 @@ function renderTenants() {
         <tbody>${rows}</tbody>
       </table>`;
 
+    document.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+        btn.addEventListener('click', () => startEdit(btn.dataset.id));
+    });
     document.querySelectorAll('button[data-action="invite"]').forEach(btn => {
         btn.addEventListener('click', () => inviteTenantAdmin(btn.dataset.id, btn.dataset.name));
     });
@@ -96,6 +101,42 @@ function renderTenants() {
         btn.addEventListener('click', () => toggleTenantActive(btn.dataset.id, btn.dataset.active === 'true'));
     });
 }
+
+function startEdit(tenantId) {
+    const t = tenantsCache.find(x => x.id === tenantId);
+    if (!t) return;
+
+    editingTenantId = tenantId;
+    document.getElementById('name').value = t.name || '';
+    document.getElementById('slug').value = t.slug || '';
+    document.getElementById('slug').dataset.touched = 'true'; // no re-generar el slug al editar el nombre
+    document.getElementById('slugPreview').textContent = t.slug || 'slug';
+    document.getElementById('program_name').value = t.program_name || '';
+    document.getElementById('primary_color').value = t.primary_color || '#07B0E4';
+    document.getElementById('secondary_color').value = t.secondary_color || t.primary_color || '#07B0E4';
+    document.getElementById('tertiary_color').value = t.tertiary_color || t.primary_color || '#07B0E4';
+    document.getElementById('logo_url').value = t.logo_url || '';
+
+    document.getElementById('formTitle').textContent = `Editando "${t.name}"`;
+    document.getElementById('submitBtn').textContent = 'Guardar cambios';
+    document.getElementById('cancelEditBtn').style.display = '';
+    document.getElementById('errMsg').textContent = '';
+    document.getElementById('okMsg').textContent = '';
+    document.getElementById('form').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelEdit() {
+    editingTenantId = null;
+    document.getElementById('form').reset();
+    document.getElementById('slug').dataset.touched = '';
+    document.getElementById('slugPreview').textContent = 'slug';
+    document.getElementById('formTitle').textContent = 'Nuevo colegio';
+    document.getElementById('submitBtn').textContent = 'Crear colegio';
+    document.getElementById('cancelEditBtn').style.display = 'none';
+    document.getElementById('errMsg').textContent = '';
+    document.getElementById('okMsg').textContent = '';
+}
+document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
 
 async function inviteTenantAdmin(tenantId, tenantName) {
     const email = prompt(`Correo del primer admin de "${tenantName}":`);
@@ -139,8 +180,10 @@ document.getElementById('form').addEventListener('submit', async (e) => {
     errMsg.textContent = '';
     okMsg.textContent = '';
 
+    const isEditing = !!editingTenantId;
     const payload = {
-        action: 'createTenant',
+        action: isEditing ? 'updateTenant' : 'createTenant',
+        targetTenantId: editingTenantId,
         name: document.getElementById('name').value.trim(),
         slug: document.getElementById('slug').value.trim(),
         program_name: document.getElementById('program_name').value.trim(),
@@ -151,19 +194,20 @@ document.getElementById('form').addEventListener('submit', async (e) => {
     };
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Creando...';
+    submitBtn.textContent = isEditing ? 'Guardando...' : 'Creando...';
     try {
         await callAdminUsers(payload);
-        okMsg.textContent = `Colegio "${payload.name}" creado. Usa "Invitar admin" en la tabla de abajo para darle acceso a alguien.`;
-        e.target.reset();
-        document.getElementById('slug').dataset.touched = '';
-        document.getElementById('slugPreview').textContent = 'slug';
+        const successMsg = isEditing
+            ? `Colegio "${payload.name}" actualizado.`
+            : `Colegio "${payload.name}" creado. Usa "Invitar admin" en la tabla de abajo para darle acceso a alguien.`;
+        cancelEdit();
+        okMsg.textContent = successMsg;
         await loadTenants();
     } catch (err) {
         errMsg.textContent = err.message;
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Crear colegio';
+        submitBtn.textContent = isEditing ? 'Guardar cambios' : 'Crear colegio';
     }
 });
 
