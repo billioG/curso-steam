@@ -41,16 +41,12 @@ function toast(msg, type = 'info') {
 // NOTA: este gate del lado cliente es solo UX/redirección. El límite de
 // seguridad real está en admin-users/index.ts, que valida server-side.
 // Sin tenant (1bot, comportamiento actual): ADMIN_EMAILS. Con tenant: se
-// exige una fila en user_roles con ese tenant_id Y role='admin' — cada
-// colegio administra solo sus propios admins, sin tocar ADMIN_EMAILS.
+// permite si el usuario es admin de ESE tenant, O si es super admin
+// (tenant_id NULL + role='admin', ej. billy@1bot.org) — el super admin
+// puede entrar a cualquier colegio, igual que en admin-users.
 async function checkAdminAuth() {
     await window.TENANT_READY;
     const tenant = window.TENANT;
-
-    if (tenant) {
-        document.getElementById('adminHomeLink').style.display = 'none'; // el admin de un tenant no entra al panel de 1bot
-        document.getElementById('settingsBtn').style.display = 'flex'; // salario/áreas CNB son configuración propia del colegio
-    }
 
     const { data: { session } } = await sb.auth.getSession();
     if (!session) {
@@ -62,11 +58,15 @@ async function checkAdminAuth() {
     currentUser = session.user;
 
     let isAdmin;
+    let isSuperAdmin;
     if (tenant) {
-        const { data: roleRow } = await sb.from('user_roles').select('role').eq('user_id', currentUser.id).eq('tenant_id', tenant.id).maybeSingle();
-        isAdmin = roleRow?.role === 'admin';
+        const { data: roleRows } = await sb.from('user_roles').select('role, tenant_id').eq('user_id', currentUser.id);
+        isSuperAdmin = (roleRows || []).some(r => r.tenant_id === null && r.role === 'admin');
+        const isTenantAdmin = (roleRows || []).some(r => r.tenant_id === tenant.id && r.role === 'admin');
+        isAdmin = isSuperAdmin || isTenantAdmin;
     } else {
-        isAdmin = ADMIN_EMAILS.includes(currentUser.email);
+        isSuperAdmin = ADMIN_EMAILS.includes(currentUser.email);
+        isAdmin = isSuperAdmin;
     }
 
     if (!isAdmin) {
@@ -75,6 +75,14 @@ async function checkAdminAuth() {
         window.location.href = 'admin-login.html';
         return false;
     }
+
+    if (tenant && !isSuperAdmin) {
+        document.getElementById('adminHomeLink').style.display = 'none'; // el admin de un tenant no entra al panel de 1bot
+    }
+    if (tenant) {
+        document.getElementById('settingsBtn').style.display = 'flex'; // salario/áreas CNB son configuración propia del colegio
+    }
+
     document.getElementById('adminEmail').textContent = currentUser.email;
     return true;
 }
