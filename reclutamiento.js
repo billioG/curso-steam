@@ -49,6 +49,7 @@ async function checkAdminAuth() {
 
     if (tenant) {
         document.getElementById('adminHomeLink').style.display = 'none'; // el admin de un tenant no entra al panel de 1bot
+        document.getElementById('settingsBtn').style.display = 'flex'; // salario/áreas CNB son configuración propia del colegio
     }
 
     const { data: { session } } = await sb.auth.getSession();
@@ -192,6 +193,60 @@ function showDetail(candidateId) {
 function closeDetail() {
     document.getElementById('modalOverlay').style.display = 'none';
 }
+
+function getCnbAreas() {
+    return Array.from(document.querySelectorAll('input[name="cnb_areas"]:checked')).map(el => el.value);
+}
+function setCnbAreas(areas) {
+    const set = new Set(areas || []);
+    document.querySelectorAll('input[name="cnb_areas"]').forEach(el => { el.checked = set.has(el.value); });
+}
+
+async function openSettings() {
+    document.getElementById('settingsErrMsg').textContent = '';
+    document.getElementById('settingsOkMsg').textContent = '';
+    document.getElementById('settingsOverlay').style.display = 'flex';
+    try {
+        const { settings } = await callAdminUsers({ action: 'getTenantSettings' });
+        document.getElementById('cfgPresupuesto').value = settings?.salario_presupuesto || '';
+        document.getElementById('cfgMaximo').value = settings?.salario_maximo || '';
+        setCnbAreas(settings?.cnb_areas);
+    } catch (e) {
+        document.getElementById('settingsErrMsg').textContent = 'Error al cargar configuración: ' + e.message;
+    }
+}
+
+function closeSettings() {
+    document.getElementById('settingsOverlay').style.display = 'none';
+}
+
+document.getElementById('settingsBtn').addEventListener('click', openSettings);
+
+document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errMsg = document.getElementById('settingsErrMsg');
+    const okMsg = document.getElementById('settingsOkMsg');
+    const submitBtn = document.getElementById('settingsSubmitBtn');
+    errMsg.textContent = '';
+    okMsg.textContent = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Guardando...';
+
+    try {
+        await callAdminUsers({
+            action: 'updateTenantSettings',
+            salario_presupuesto: Number(document.getElementById('cfgPresupuesto').value) || null,
+            salario_maximo: Number(document.getElementById('cfgMaximo').value) || null,
+            cnb_areas: getCnbAreas(),
+        });
+        okMsg.textContent = 'Configuración guardada.';
+    } catch (err) {
+        errMsg.textContent = err.message;
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Guardar configuración';
+    }
+});
 
 async function hireCandidate(candidateId, btn) {
     const candidate = candidatesCache.find(c => c.id === candidateId);

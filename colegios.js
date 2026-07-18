@@ -15,14 +15,6 @@ function escapeHtml(s) {
     return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function getSelectedAreas() {
-    return Array.from(document.querySelectorAll('input[name="evaluation_areas"]:checked')).map(el => el.value);
-}
-function setSelectedAreas(areas) {
-    const set = new Set(areas || []);
-    document.querySelectorAll('input[name="evaluation_areas"]').forEach(el => { el.checked = set.has(el.value); });
-}
-
 // Gestionar colegios es una acción de plataforma — SIEMPRE super admin
 // (billy@1bot.org), nunca un admin de tenant. Este gate cliente es solo
 // UX; admin-users valida server-side que la fila de user_roles del
@@ -124,9 +116,6 @@ function startEdit(tenantId) {
     document.getElementById('secondary_color').value = t.secondary_color || t.primary_color || '#07B0E4';
     document.getElementById('tertiary_color').value = t.tertiary_color || t.primary_color || '#07B0E4';
     document.getElementById('logo_url').value = t.logo_url || '';
-    document.getElementById('salario_presupuesto').value = t.salario_presupuesto || '';
-    document.getElementById('salario_maximo').value = t.salario_maximo || '';
-    setSelectedAreas(t.evaluation_areas);
 
     document.getElementById('formTitle').textContent = `Editando "${t.name}"`;
     document.getElementById('submitBtn').textContent = 'Guardar cambios';
@@ -202,9 +191,6 @@ document.getElementById('form').addEventListener('submit', async (e) => {
         secondary_color: document.getElementById('secondary_color').value,
         tertiary_color: document.getElementById('tertiary_color').value,
         logo_url: document.getElementById('logo_url').value.trim(),
-        salario_presupuesto: Number(document.getElementById('salario_presupuesto').value) || null,
-        salario_maximo: Number(document.getElementById('salario_maximo').value) || null,
-        evaluation_areas: getSelectedAreas(),
     };
 
     submitBtn.disabled = true;
