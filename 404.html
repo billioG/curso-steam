@@ -15,7 +15,7 @@
   // Cualquier otra ruta rota cae de vuelta a postulacion.html — es un 404
   // real, no hay nada mejor que mostrar en un sitio estático sin servidor.
   (function () {
-    var KNOWN_PAGES = ['postulacion.html', 'evaluacion.html', 'reclutamiento.html'];
+    var KNOWN_PAGES = ['postulacion.html', 'evaluacion.html', 'reclutamiento.html', 'admin-login.html'];
     var EXCLUDED_PREFIXES = ['recursos', 'supabase', 'migrations', '.github'];
 
     var segments = location.pathname.split('/').filter(Boolean);
