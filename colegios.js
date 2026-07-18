@@ -73,6 +73,7 @@ function renderTenants() {
             <td>
               <span class="swatch" style="background:${escapeHtml(t.primary_color)}"></span>
               <span class="swatch" style="background:${escapeHtml(t.secondary_color || t.primary_color)}"></span>
+              <span class="swatch" style="background:${escapeHtml(t.tertiary_color || t.primary_color)}"></span>
             </td>
             <td><span class="badge ${t.active ? 'active' : 'inactive'}">${t.active ? 'Activo' : 'Inactivo'}</span></td>
             <td>
@@ -145,6 +146,7 @@ document.getElementById('form').addEventListener('submit', async (e) => {
         program_name: document.getElementById('program_name').value.trim(),
         primary_color: document.getElementById('primary_color').value,
         secondary_color: document.getElementById('secondary_color').value,
+        tertiary_color: document.getElementById('tertiary_color').value,
         logo_url: document.getElementById('logo_url').value.trim(),
     };
 
