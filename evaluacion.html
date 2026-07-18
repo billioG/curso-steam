@@ -12,6 +12,7 @@
     min-height:100vh;
     padding:2rem 1.5rem;
   }
+  .tenant-logo { display:block; width:56px; height:56px; border-radius:14px; object-fit:cover; box-shadow:0 8px 20px rgba(0,0,0,.35); margin:0 auto 14px; }
   .card {
     background:white;
     border-radius:20px;
@@ -21,7 +22,7 @@
     padding:32px 28px;
     box-shadow:0 25px 60px rgba(0,0,0,.35);
   }
-  .icon { font-size:42px; text-align:center; margin-bottom:8px; }
+  .icon { text-align:center; margin-bottom:8px; color:var(--brand-primary,#07B0E4); }
   h1 { font-size:19px; text-align:center; color:#0F172A; margin-bottom:4px; }
   .sub { font-size:12.5px; text-align:center; color:#94A3B8; margin-bottom:24px; }
   .case { margin-bottom:22px; padding:16px; background:#F8FAFC; border-radius:12px; border-left:4px solid var(--brand-primary,#07B0E4); }
@@ -45,12 +46,13 @@
   .feedback { font-size:13px; color:#334155; line-height:1.6; margin-bottom:14px; padding:14px; background:#F8FAFC; border-radius:10px; }
   .feedback strong { color:#0F172A; }
   .roadmap { margin:14px 0; }
-  .roadmap-item { padding:10px 14px; background:#EFF6FF; border-radius:10px; margin-bottom:8px; font-size:12.5px; color:#1E3A8A; }
+  .roadmap-item { display:flex; align-items:center; gap:8px; padding:10px 14px; background:color-mix(in srgb, var(--brand-tertiary,#07B0E4) 10%, #F8FAFC); border-radius:10px; margin-bottom:8px; font-size:12.5px; color:#1E3A8A; }
   .footer { text-align:center; font-size:11px; color:#CBD5E1; margin-top:20px; }
   .loader { text-align:center; color:#94A3B8; font-size:13px; padding:30px 0; }
 </style>
 </head>
 <body>
+  <img class="tenant-logo" data-tenant="logo" src="icon.svg" alt="Logo">
   <div class="card" id="card">
     <div class="loader" id="loader">Cargando...</div>
   </div>
@@ -138,7 +140,7 @@
 
     function renderNoToken() {
       document.getElementById('card').innerHTML = `
-        <div class="icon">🔒</div>
+        <div class="icon">${window.svgIcon('lock', 40)}</div>
         <div class="status invalid">Enlace inválido</div>
         <p class="sub" style="margin-bottom:20px">Este enlace de evaluación no es válido o ya fue utilizado. Si crees que esto es un error, contacta al equipo de reclutamiento.</p>`;
     }
@@ -154,7 +156,7 @@
       `).join('');
 
       document.getElementById('card').innerHTML = `
-        <div class="icon">📝</div>
+        <div class="icon">${window.svgIcon('document', 40)}</div>
         <h1>Evaluación de casos de estudio</h1>
         <p class="sub">Responde con tus propias palabras — no hay una única respuesta correcta, queremos conocer tu forma de pensar.</p>
         ${casesHtml}
@@ -210,11 +212,11 @@
 
     function renderResult(token, data) {
       const roadmapHtml = (data.recommended_paths || []).map(p => `
-        <div class="roadmap-item">📚 <strong>${escapeHtml(p.label)}</strong></div>
+        <div class="roadmap-item">${window.svgIcon('book', 16)} <strong>${escapeHtml(p.label)}</strong></div>
       `).join('') || '<div class="roadmap-item">No se identificaron áreas débiles específicas — buen desempeño general.</div>';
 
       document.getElementById('card').innerHTML = `
-        <div class="icon">${data.passed ? '🎉' : '📊'}</div>
+        <div class="icon">${window.svgIcon(data.passed ? 'star' : 'chart', 40)}</div>
         <div class="status ${data.passed ? 'valid' : 'invalid'}">${data.passed ? '¡Buen resultado!' : 'Resultado obtenido'}</div>
         <div class="score-row">
           <div class="score-box"><div class="num">${data.technical_score}</div><div class="lbl">Técnica</div></div>
@@ -252,7 +254,7 @@
         if (!res.ok) { errMsg2.textContent = data.error || 'Error al registrar tu decisión.'; return; }
 
         document.getElementById('card').innerHTML = `
-          <div class="icon">${decision === 'continuar' ? '✅' : '👋'}</div>
+          <div class="icon">${window.svgIcon(decision === 'continuar' ? 'check' : 'exit', 40)}</div>
           <div class="status valid">Decisión registrada</div>
           <p class="sub" style="margin-bottom:20px">${decision === 'continuar'
             ? 'Gracias por continuar en el proceso. El equipo de reclutamiento revisará tu evaluación y se pondrá en contacto contigo.'

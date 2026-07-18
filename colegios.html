@@ -11,7 +11,8 @@
     background:#0F172A; color:white; padding:16px 24px;
     display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
   }
-  header h1 { font-size:16px; }
+  header h1 { font-size:16px; display:flex; align-items:center; gap:10px; }
+  header h1 svg { width:20px; height:20px; flex-shrink:0; }
   header .email { font-size:12px; color:#94A3B8; }
   header a { color:#07B0E4; text-decoration:none; font-size:12.5px; font-weight:600; }
   main { max-width:1000px; margin:0 auto; padding:24px; }
@@ -50,7 +51,12 @@
 </head>
 <body>
   <header>
-    <h1>🏫 Colegios</h1>
+    <h1>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 21V9l8-5 8 5v12"/><path d="M4 21h16"/><path d="M9 21v-6h6v6"/><path d="M9 12h.01M15 12h.01M9 9h.01M15 9h.01"/>
+      </svg>
+      Colegios
+    </h1>
     <div style="display:flex;align-items:center;gap:16px;">
       <span class="email" id="adminEmail"></span>
       <a href="admin.html">← Panel Administrativo</a>
@@ -79,9 +85,10 @@
           <div>
             <label>Colores de marca</label>
             <div class="color-row">
-              <input type="color" id="primary_color" value="#07B0E4">
-              <input type="color" id="secondary_color" value="#07B0E4">
-              <span class="hint">primario / secundario</span>
+              <input type="color" id="primary_color" value="#07B0E4" title="Color primario">
+              <input type="color" id="secondary_color" value="#07B0E4" title="Color secundario">
+              <input type="color" id="tertiary_color" value="#07B0E4" title="Color terciario">
+              <span class="hint">primario / secundario / terciario</span>
             </div>
           </div>
         </div>
