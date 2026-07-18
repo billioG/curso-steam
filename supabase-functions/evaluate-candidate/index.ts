@@ -1,7 +1,9 @@
 // Edge Function: evaluate-candidate
-// Evalúa los casos de estudio de un candidato al programa STEEAM usando
-// Groq (Llama 3.3) — rúbrica técnica + habilidades blandas, estilo Hurix:
-// el candidato ve su propio puntaje y decide si continúa el proceso.
+// Evalúa los casos de estudio de un candidato a un puesto docente usando
+// Groq (Llama 3.3) — rúbrica técnica (didáctica/pedagogía/tecnología) +
+// habilidades blandas, estilo Hurix: el candidato ve su propio puntaje y
+// decide si continúa el proceso. General, no ligado a un programa
+// específico (ver generate-cases para los casos que responde).
 // Pública — el candidato no tiene cuenta Supabase, se autentica con el
 // `access_token` que recibió de submit-application (no un JWT).
 //
@@ -60,7 +62,7 @@ Deno.serve(async (req) => {
 
     const { data: candidate, error: findErr } = await admin
       .from('candidates')
-      .select('id, full_name, status, tenant_id')
+      .select('id, full_name, status, tenant_id, generated_cases')
       .eq('access_token', access_token)
       .maybeSingle();
 
@@ -107,22 +109,33 @@ Deno.serve(async (req) => {
       return json({ error: 'Esta postulación ya fue evaluada o no está lista para evaluación' }, 409);
     }
 
-    const responsesText = safeResponses.map((r, i) =>
-      `${i + 1}. Caso "${r.case_id}":\n"${r.answer_text}"`
-    ).join('\n\n');
+    // Recupera el enunciado real de cada caso (generado por generate-cases
+    // y cacheado en candidates.generated_cases) para que el LLM pueda
+    // juzgar si la respuesta es coherente con lo que se preguntó — sin
+    // esto solo vería el id genérico ("caso-3") y la respuesta, sin saber
+    // qué situación se planteó.
+    const casesById = new Map(
+      (Array.isArray(candidate.generated_cases) ? candidate.generated_cases : [])
+        .map((c: any) => [String(c.id), String(c.prompt || '')])
+    );
 
-    const systemPrompt = `Eres un evaluador de talento humano experto en programas de educación STEEAM (Ciencia, Tecnología, Ingeniería, Arte y Matemática) con robótica educativa (kits tipo 1bot/mBot) en Guatemala. Evalúas a candidatos NO docentes que aspiran a facilitar el programa en aulas escolares. Siempre respondes ÚNICAMENTE con JSON válido, sin texto adicional, sin bloques de código markdown.`;
+    const responsesText = safeResponses.map((r, i) => {
+      const prompt = casesById.get(r.case_id);
+      return `${i + 1}. Caso${prompt ? `: "${prompt}"` : ` "${r.case_id}"`}\nRespuesta del candidato: "${r.answer_text}"`;
+    }).join('\n\n');
 
-    const userPrompt = `Evalúa las respuestas de este/a candidato/a a ${safeResponses.length} caso(s) de estudio de un proceso de selección para facilitador STEEAM.
+    const systemPrompt = `Eres un especialista en selección de personal docente en Guatemala. Evalúas candidatos a un puesto de facilitador/docente general — no de una materia, programa o tecnología específica. Siempre respondes ÚNICAMENTE con JSON válido, sin texto adicional, sin bloques de código markdown.`;
+
+    const userPrompt = `Evalúa las respuestas de este/a candidato/a a ${safeResponses.length} caso(s) de estudio de un proceso de selección docente.
 
 Califica DOS dimensiones, cada una de 0 a 100:
 
-TÉCNICA (lógica STEEAM, pensamiento computacional/robótica, resolución de problemas pedagógicos):
+TÉCNICA (didáctica, pedagogía, resolución de problemas de aula, uso de tecnología educativa):
 - ¿Propone una solución coherente y aplicable al caso?
-- ¿Demuestra lógica estructurada (pasos, causa-efecto, iteración tipo "prueba y mejora")?
-- ¿Entiende el enfoque STEEAM (interdisciplinario, basado en proyectos)?
+- ¿Demuestra lógica pedagógica estructurada (pasos, causa-efecto, iteración tipo "prueba y mejora")?
+- ¿Entiende principios de didáctica/pedagogía aplicados a la situación?
 
-BLANDAS (manejo de aula, comunicación, adaptabilidad):
+BLANDAS (manejo de grupo, comunicación, adaptabilidad):
 - ¿La respuesta muestra empatía y manejo de grupo realista?
 - ¿Comunica ideas con claridad?
 - ¿Muestra disposición a adaptarse a un aula real, no solo teoría?
