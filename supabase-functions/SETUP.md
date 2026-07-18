@@ -236,3 +236,66 @@ podrá listar candidatos ni contratarlos.
 teléfono, respuestas de evaluación) — **no agregar una política RLS de
 lectura permisiva** a estas tablas por costumbre al copiar el patrón de
 otras tablas del schema. Todo acceso debe pasar por una Edge Function.
+
+---
+
+# Reclutamiento multi-tenant (Fase 1) — white-label por colegio
+
+Vender el módulo de reclutamiento a otros colegios (ej. "VDF") con su propia
+marca y su propio login de admin, en `yoaprendo.online/<slug>/`, dentro del
+mismo proyecto Supabase.
+
+## Paso 1 — Ejecutar la migración SQL
+
+Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/sql
+Ejecuta `migrations/multi-tenant-phase1.sql` (crea `tenants`, agrega
+`tenant_id` a `user_roles`/`candidates`/`candidate_evaluations`, cambia el
+unique de `user_roles` a compuesto tenant+usuario).
+
+⚠️ Si la línea `UNIQUE NULLS NOT DISTINCT` falla, tu proyecto está en una
+versión de Postgres anterior a la 15 — avísame antes de continuar, hay que
+resolverlo de otra forma.
+
+## Paso 2 — Re-desplegar las 3 funciones que cambiaron
+
+`submit-application`, `evaluate-candidate` y `admin-users` se modificaron
+para aceptar/validar `tenant_id`. Pega el código actualizado de cada una en
+el Dashboard y Deploy — sin esto, las postulaciones no quedarán asociadas a
+ningún colegio y el panel de reclutamiento no distinguirá tenants.
+
+## Paso 3 — Publicar `.nojekyll` y `404.html`
+
+Ya están en el repo (raíz) — solo asegúrate de que el deploy a `main` los
+incluya. Sin `.nojekyll`, GitHub Pages corre Jekyll y podría comportarse
+raro con `404.html`.
+
+## Paso 4 — Crear el primer colegio de prueba (ej. VDF)
+
+En el SQL Editor:
+```sql
+insert into public.tenants (slug, name, program_name, primary_color)
+values ('vdf', 'Colegio VDF', 'Programa STEEAM VDF', '#7C3AED')
+returning id;
+```
+Guarda el `id` que regresa — lo necesitas para el siguiente paso.
+
+## Paso 5 — Invitar al primer admin de ese colegio
+
+Como super admin (`billy@1bot.org`, sesión iniciada en cualquier página que
+tenga `admin-users` disponible), llama la Edge Function con:
+```json
+{ "action": "invite", "email": "admin@vdf.edu.gt", "role": "admin", "tenantId": "<uuid del paso 4>" }
+```
+(Puedes hacerlo con `curl` + tu `access_token` de sesión, o agregar un botón
+temporal en algún panel — no hay UI para esto en Fase 1, es proceso manual.)
+
+## Paso 6 — Probar
+
+1. `yoaprendo.online/vdf/postulacion.html` → debe verse con el color/nombre
+   de VDF (no los de 1bot), y la URL debe quedar bonita en la barra.
+2. Postular → confirmar en `candidates` que la fila tiene el `tenant_id` de VDF.
+3. Login del admin de VDF en `yoaprendo.online/vdf/reclutamiento.html` → debe
+   ver SOLO candidatos de VDF, sin el link "← Panel Administrativo" (ese
+   panel es solo de 1bot en Fase 1).
+4. `yoaprendo.online/postulacion.html` (sin slug) → debe seguir viéndose
+   exactamente como antes, cero cambios para 1bot.
