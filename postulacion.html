@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Postulación — Facilitador STEEAM</title>
+<title>Postulación Docente</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -47,11 +47,11 @@
 </style>
 </head>
 <body>
-  <img class="tenant-logo" data-tenant="logo" src="icon.svg" alt="Logo">
+  <img class="tenant-logo" data-tenant="logo" src="default-logo.svg" alt="Logo">
   <div class="card" id="card">
     <div class="icon" id="topIcon"></div>
-    <h1>Postulación · Facilitador STEEAM</h1>
-    <p class="sub">Programa <span data-tenant="name">1bot</span> — educación STEAM con robótica en el aula</p>
+    <h1>Postulación Docente · <span data-tenant="name">1bot</span></h1>
+    <p class="sub" data-tenant="program">Programa de Reclutamiento Docente 4.0</p>
 
     <form id="form">
       <label for="full_name">Nombre completo</label>
@@ -97,7 +97,7 @@
       <p class="err" id="errMsg"></p>
     </form>
 
-    <p class="footer">Programa STEEAM · <span data-tenant="name">1bot</span> · Guatemala</p>
+    <p class="footer"><span data-tenant="name">1bot</span> · Guatemala</p>
   </div>
 
   <script src="tenant.js"></script>
@@ -155,7 +155,7 @@
             <div class="icon">${window.svgIcon('check', 40)}</div>
             <div class="status valid">¡Postulación recibida!</div>
             <p class="sub" style="margin-bottom:20px">Cumples los requisitos iniciales. El siguiente paso es una breve evaluación de casos de estudio — te redirigiremos automáticamente.</p>
-            <p class="footer">Programa STEEAM · ${tenantName} · Guatemala</p>`;
+            <p class="footer">${tenantName} · Guatemala</p>`;
           setTimeout(() => {
             location.href = 'evaluacion.html?token=' + encodeURIComponent(data.access_token);
           }, 2200);
@@ -163,14 +163,14 @@
           document.getElementById('card').innerHTML = `
             <div class="icon">${window.svgIcon('heart', 40)}</div>
             <div class="status invalid">Gracias por tu interés</div>
-            <p class="sub" style="margin-bottom:20px">Agradecemos mucho tu interés en el programa STEEAM. En este momento tu pretensión salarial supera el presupuesto disponible para esta posición, así que no logramos llenar tus expectativas. Si tu situación cambia, con gusto puedes postular de nuevo.</p>
-            <p class="footer">Programa STEEAM · ${tenantName} · Guatemala</p>`;
+            <p class="sub" style="margin-bottom:20px">Agradecemos mucho tu interés en el programa de reclutamiento docente. En este momento tu pretensión salarial supera el presupuesto disponible para esta posición, así que no logramos llenar tus expectativas. Si tu situación cambia, con gusto puedes postular de nuevo.</p>
+            <p class="footer">${tenantName} · Guatemala</p>`;
         } else {
           document.getElementById('card').innerHTML = `
             <div class="icon">${window.svgIcon('clipboard', 40)}</div>
             <div class="status invalid">No cumples los requisitos actuales</div>
-            <p class="sub" style="margin-bottom:20px">Gracias por tu interés en el programa STEEAM. En este momento tu postulación no cumple con los requisitos de elegibilidad (jornada o compromiso de permanencia). Puedes escribirnos si tu situación cambia.</p>
-            <p class="footer">Programa STEEAM · ${tenantName} · Guatemala</p>`;
+            <p class="sub" style="margin-bottom:20px">Gracias por tu interés en el programa de reclutamiento docente. En este momento tu postulación no cumple con los requisitos de elegibilidad (jornada o compromiso de permanencia). Puedes escribirnos si tu situación cambia.</p>
+            <p class="footer">${tenantName} · Guatemala</p>`;
         }
       } catch (networkErr) {
         errMsg.textContent = 'No se pudo conectar. Verifica tu conexión e intenta de nuevo.';

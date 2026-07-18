@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v90';
+const CACHE_VERSION  = 'steam-v91';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -44,6 +44,7 @@ const SECONDARY_ASSETS = [
     './tenant.js',
     './colegios.html',
     './colegios.js',
+    './default-logo.svg',
 ];
 
 // ──────────────────────────────────────────────────────────

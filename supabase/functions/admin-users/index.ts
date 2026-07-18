@@ -176,12 +176,47 @@ serve(async (req) => {
         .insert({
           slug: cleanSlug,
           name: String(name).trim(),
-          program_name: (program_name && String(program_name).trim()) || 'Programa STEEAM',
+          program_name: (program_name && String(program_name).trim()) || 'Programa de Reclutamiento Docente 4.0',
           primary_color: primary_color || '#07B0E4',
           secondary_color: secondary_color || null,
           tertiary_color: tertiary_color || null,
           logo_url: logo_url || null,
         })
+        .select()
+        .single()
+
+      if (error) {
+        const msg = error.message.includes('duplicate') ? 'Ya existe un colegio con ese slug' : error.message
+        return json({ error: msg }, 500)
+      }
+      return json({ ok: true, tenant })
+    }
+
+    // ── Editar colegio — solo super admin ────────────────────
+    if (action === 'updateTenant') {
+      const { targetTenantId, name, slug, program_name, primary_color, secondary_color, tertiary_color, logo_url } = body
+      if (!targetTenantId) return json({ error: 'targetTenantId es requerido' }, 400)
+      if (!name || !String(name).trim()) return json({ error: 'name es requerido' }, 400)
+
+      const cleanSlug = String(slug || '').trim().toLowerCase()
+      if (!/^[a-z0-9-]{2,40}$/.test(cleanSlug)) {
+        return json({ error: 'slug inválido — usa solo minúsculas, números y guiones (2-40 caracteres)' }, 400)
+      }
+      const RESERVED_SLUGS = ['recursos', 'supabase', 'migrations', 'admin', 'app', 'data']
+      if (RESERVED_SLUGS.includes(cleanSlug)) return json({ error: 'slug reservado, elige otro' }, 400)
+
+      const { data: tenant, error } = await admin
+        .from('tenants')
+        .update({
+          slug: cleanSlug,
+          name: String(name).trim(),
+          program_name: (program_name && String(program_name).trim()) || 'Programa de Reclutamiento Docente 4.0',
+          primary_color: primary_color || '#07B0E4',
+          secondary_color: secondary_color || null,
+          tertiary_color: tertiary_color || null,
+          logo_url: logo_url || null,
+        })
+        .eq('id', targetTenantId)
         .select()
         .single()
 
