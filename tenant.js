@@ -72,7 +72,7 @@
     }
 
     try {
-      const url = `${TENANT_SUPABASE_URL}/rest/v1/tenants?slug=eq.${encodeURIComponent(slug)}&active=eq.true&select=id,slug,name,program_name,primary_color,secondary_color,tertiary_color,logo_url`;
+      const url = `${TENANT_SUPABASE_URL}/rest/v1/tenants?slug=eq.${encodeURIComponent(slug)}&active=eq.true&select=id,slug,name,program_name,primary_color,secondary_color,tertiary_color,logo_url,salario_presupuesto`;
       const res = await fetch(url, {
         headers: { 'apikey': TENANT_ANON_KEY, 'Authorization': `Bearer ${TENANT_ANON_KEY}` },
       });
