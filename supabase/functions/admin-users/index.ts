@@ -20,6 +20,33 @@ function cleanCnbAreas(areas: unknown): string[] {
   return areas.filter((a) => VALID_CNB_AREAS.includes(a))
 }
 
+// Supabase Auth devuelve sus errores en inglés — traduce los más comunes
+// para que nunca se le muestre texto en inglés al usuario final.
+function translateAuthError(msg: string): string {
+  const m = (msg || '').toLowerCase()
+  if (m.includes('already been registered') || m.includes('already registered')) {
+    return 'Ya existe una cuenta con ese correo.'
+  }
+  if (m.includes('invalid') && m.includes('email')) return 'El correo no es válido.'
+  if (m.includes('rate limit')) return 'Se alcanzó el límite de invitaciones — intenta de nuevo en unos minutos.'
+  return 'No se pudo completar la acción. Intenta de nuevo o contacta soporte.'
+}
+
+// Busca el user_id de una cuenta ya existente por correo (paginado, igual
+// que bulkImportTeachers) — se usa cuando inviteUserByEmail falla porque
+// el correo ya está registrado, para VINCULAR esa cuenta en vez de fallar.
+async function findUserIdByEmail(admin: ReturnType<typeof createClient>, email: string): Promise<string | null> {
+  const target = email.trim().toLowerCase()
+  for (let page = 1; ; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
+    if (error) return null
+    const match = data.users.find((u: any) => u.email?.toLowerCase() === target)
+    if (match) return match.id
+    if (data.users.length < 1000) break
+  }
+  return null
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
@@ -94,16 +121,31 @@ serve(async (req) => {
       const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(email, {
         data: { invited_by: user.email }
       })
-      if (invErr) return json({ error: invErr.message }, 500)
+
+      let targetUserId = invited?.user?.id
+      let linked = false
+
+      if (invErr) {
+        // Si el correo ya tiene cuenta, vincúlala a este tenant/rol en vez
+        // de fallar — es un caso normal (ej. invitar a alguien que ya es
+        // estudiante de otro colegio como admin de este).
+        if (invErr.message?.toLowerCase().includes('already') && invErr.message?.toLowerCase().includes('registered')) {
+          targetUserId = await findUserIdByEmail(admin, email)
+          if (!targetUserId) return json({ error: 'Ya existe una cuenta con ese correo, pero no se pudo vincular. Contacta soporte.' }, 500)
+          linked = true
+        } else {
+          return json({ error: translateAuthError(invErr.message) }, 500)
+        }
+      }
 
       // Asignar rol inicial
-      if (invited?.user?.id) {
+      if (targetUserId) {
         await admin.from('user_roles').upsert(
-          { user_id: invited.user.id, role, tenant_id: tenantId || null },
+          { user_id: targetUserId, role, tenant_id: tenantId || null },
           { onConflict: 'tenant_id,user_id' }
         )
       }
-      return json({ ok: true, email, role })
+      return json({ ok: true, email, role, linked })
     }
 
     // ── Importar docentes en lote (CSV) + asignar a un centro ─
@@ -344,11 +386,23 @@ serve(async (req) => {
       const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(candidate.email, {
         data: { invited_by: user.email, name: candidate.full_name, source: 'reclutamiento' }
       })
-      if (invErr) return json({ error: invErr.message }, 500)
 
-      if (invited?.user?.id) {
+      let hiredUserId = invited?.user?.id
+
+      if (invErr) {
+        // El candidato ya tenía cuenta (ej. ya era estudiante de otro
+        // colegio) — vincúlala en vez de fallar la contratación.
+        if (invErr.message?.toLowerCase().includes('already') && invErr.message?.toLowerCase().includes('registered')) {
+          hiredUserId = await findUserIdByEmail(admin, candidate.email)
+          if (!hiredUserId) return json({ error: 'Ya existe una cuenta con ese correo, pero no se pudo vincular. Contacta soporte.' }, 500)
+        } else {
+          return json({ error: translateAuthError(invErr.message) }, 500)
+        }
+      }
+
+      if (hiredUserId) {
         await admin.from('user_roles').upsert(
-          { user_id: invited.user.id, role: 'student', tenant_id: candidate.tenant_id },
+          { user_id: hiredUserId, role: 'student', tenant_id: candidate.tenant_id },
           { onConflict: 'tenant_id,user_id' }
         )
       }
