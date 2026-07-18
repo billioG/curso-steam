@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v95';
+const CACHE_VERSION  = 'steam-v96';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -88,12 +88,39 @@ self.addEventListener('activate', event => {
 // ──────────────────────────────────────────────────────────
 // FETCH — estrategia por tipo de request
 // ──────────────────────────────────────────────────────────
+// Assets reales que viven en la raíz del sitio — si llega una petición
+// tipo /vdf/reclutamiento.js (ruta de tenant + nombre de archivo real de
+// raíz, en vez de /reclutamiento.js), es una resolución relativa mal
+// calculada en algún punto del flujo de rutas de tenant. En vez de 404,
+// la servimos desde la raíz real.
+const KNOWN_ROOT_FILES = new Set(
+    [...CRITICAL_ASSETS, ...SECONDARY_ASSETS].map(p => p.replace(/^\.\//, ''))
+);
+
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
 
     // 1. Peticiones a Supabase / CDN externos → solo red, sin cachear
     if (url.origin !== self.location.origin) {
         // Para Supabase auth y realtime: dejar pasar siempre
+        return;
+    }
+
+    // 1b. /<slug>/<archivo-real-de-raiz> → redirigir a /<archivo> en la raíz.
+    const segments = url.pathname.split('/').filter(Boolean);
+    if (segments.length === 2 && KNOWN_ROOT_FILES.has(segments[1]) && event.request.mode !== 'navigate') {
+        const rootUrl = new URL('/' + segments[1], url.origin);
+        event.respondWith(
+            fetch(rootUrl.href)
+                .then(res => {
+                    if (res && res.status === 200 && res.type === 'basic') {
+                        const clone = res.clone();
+                        caches.open(CACHE_STATIC).then(c => c.put(rootUrl.href, clone));
+                    }
+                    return res;
+                })
+                .catch(() => caches.match('./' + segments[1]))
+        );
         return;
     }
 
