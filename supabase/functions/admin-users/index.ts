@@ -148,6 +148,59 @@ serve(async (req) => {
       return json({ ok: true, results })
     }
 
+    // ── Listar colegios (tenants) — solo super admin ─────────
+    if (action === 'listTenants') {
+      const { data, error } = await admin
+        .from('tenants')
+        .select('id, slug, name, program_name, primary_color, secondary_color, logo_url, active, created_at')
+        .order('created_at', { ascending: false })
+
+      if (error) return json({ error: error.message }, 500)
+      return json({ ok: true, tenants: data })
+    }
+
+    // ── Crear colegio (tenant) — solo super admin ────────────
+    if (action === 'createTenant') {
+      const { name, slug, program_name, primary_color, secondary_color, logo_url } = body
+      if (!name || !String(name).trim()) return json({ error: 'name es requerido' }, 400)
+
+      const cleanSlug = String(slug || '').trim().toLowerCase()
+      if (!/^[a-z0-9-]{2,40}$/.test(cleanSlug)) {
+        return json({ error: 'slug inválido — usa solo minúsculas, números y guiones (2-40 caracteres)' }, 400)
+      }
+      const RESERVED_SLUGS = ['recursos', 'supabase', 'migrations', 'admin', 'app', 'data']
+      if (RESERVED_SLUGS.includes(cleanSlug)) return json({ error: 'slug reservado, elige otro' }, 400)
+
+      const { data: tenant, error } = await admin
+        .from('tenants')
+        .insert({
+          slug: cleanSlug,
+          name: String(name).trim(),
+          program_name: (program_name && String(program_name).trim()) || 'Programa STEEAM',
+          primary_color: primary_color || '#07B0E4',
+          secondary_color: secondary_color || null,
+          logo_url: logo_url || null,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        const msg = error.message.includes('duplicate') ? 'Ya existe un colegio con ese slug' : error.message
+        return json({ error: msg }, 500)
+      }
+      return json({ ok: true, tenant })
+    }
+
+    // ── Activar/desactivar colegio — solo super admin ────────
+    if (action === 'setTenantActive') {
+      const { targetTenantId, active } = body
+      if (!targetTenantId) return json({ error: 'targetTenantId es requerido' }, 400)
+
+      const { error } = await admin.from('tenants').update({ active: !!active }).eq('id', targetTenantId)
+      if (error) return json({ error: error.message }, 500)
+      return json({ ok: true })
+    }
+
     // ── Eliminar usuario ─────────────────────────────────────
     if (action === 'deleteUser') {
       const { userId } = body
