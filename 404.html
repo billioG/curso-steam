@@ -19,10 +19,12 @@
     var EXCLUDED_PREFIXES = ['recursos', 'supabase', 'migrations', '.github'];
 
     var segments = location.pathname.split('/').filter(Boolean);
-    var slug = segments[0] || '';
+    // Los slugs se guardan en minúsculas en la DB (createTenant hace
+    // .toLowerCase()); normalizar aquí para que /VDF/... también resuelva.
+    var slug = (segments[0] || '').toLowerCase();
     var rest = segments.slice(1).join('/');
 
-    var isExcluded = EXCLUDED_PREFIXES.indexOf(slug) !== -1 || !/^[a-z0-9-]+$/i.test(slug);
+    var isExcluded = EXCLUDED_PREFIXES.indexOf(slug) !== -1 || !/^[a-z0-9-]+$/.test(slug);
     var page = KNOWN_PAGES.indexOf(rest) !== -1 ? rest : 'postulacion.html';
 
     if (slug && !isExcluded) {

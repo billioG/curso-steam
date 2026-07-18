@@ -148,7 +148,13 @@
           return;
         }
 
-        if (data.passed_filter && data.access_token) {
+        if (data.already_applied) {
+          document.getElementById('card').innerHTML = `
+            <div class="icon">${window.svgIcon('clipboard', 40)}</div>
+            <div class="status valid">Ya recibimos tu postulación</div>
+            <p class="sub" style="margin-bottom:20px">Con este correo ya tienes una postulación registrada en este proceso. No es necesario postular de nuevo — el equipo de reclutamiento revisará tu evaluación y se pondrá en contacto contigo.</p>
+            <p class="footer">${tenantName} · Guatemala</p>`;
+        } else if (data.passed_filter && data.access_token) {
           document.getElementById('card').innerHTML = `
             <div class="icon">${window.svgIcon('check', 40)}</div>
             <div class="status valid">¡Postulación recibida!</div>

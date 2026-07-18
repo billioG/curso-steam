@@ -163,7 +163,29 @@ Responde ÚNICAMENTE con este JSON (array de exactamente ${CASES_TO_GENERATE} ob
       // Groq falló o la respuesta no era JSON válido — se queda el FALLBACK_CASES ya asignado arriba.
     }
 
-    await admin.from('candidates').update({ generated_cases: cases }).eq('id', candidate.id);
+    // Guard atómico contra carreras: dos llamadas concurrentes (2 pestañas,
+    // doble-click, retry por red lenta) NO deben generar dos sets distintos.
+    // El UPDATE solo escribe si generated_cases sigue en NULL; si otra
+    // llamada ya lo llenó, este update no afecta filas y se relee el set
+    // ganador para devolver SIEMPRE el mismo que quedó guardado.
+    const { data: claimed, error: claimErr } = await admin
+      .from('candidates')
+      .update({ generated_cases: cases })
+      .eq('id', candidate.id)
+      .is('generated_cases', null)
+      .select('id');
+    if (claimErr) return json({ error: claimErr.message }, 500);
+
+    if (!claimed || claimed.length === 0) {
+      const { data: winner } = await admin
+        .from('candidates')
+        .select('generated_cases')
+        .eq('id', candidate.id)
+        .maybeSingle();
+      if (Array.isArray(winner?.generated_cases) && winner.generated_cases.length > 0) {
+        return json({ ok: true, cases: winner.generated_cases });
+      }
+    }
 
     return json({ ok: true, cases });
 
