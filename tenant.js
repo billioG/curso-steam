@@ -63,14 +63,6 @@
     if (!slug) slug = new URLSearchParams(location.search).get('tenant');
     if (!slug) return null;
 
-    // Restaura la URL "bonita" /slug/pagina.html en la barra de direcciones
-    // (la página real se sirvió desde la raíz vía el redirect de 404.html).
-    const currentPage = location.pathname.split('/').filter(Boolean).pop() || 'postulacion.html';
-    const prettyUrl = '/' + slug + '/' + currentPage + location.search;
-    if (location.pathname !== '/' + slug + '/' + currentPage) {
-      history.replaceState(null, '', prettyUrl);
-    }
-
     try {
       const url = `${TENANT_SUPABASE_URL}/rest/v1/tenants?slug=eq.${encodeURIComponent(slug)}&active=eq.true&select=id,slug,name,program_name,primary_color,secondary_color,tertiary_color,logo_url,salario_presupuesto`;
       const res = await fetch(url, {
@@ -82,6 +74,17 @@
       if (!tenant) return null;
 
       window.TENANT = tenant;
+
+      // Restaura la URL "bonita" /slug/pagina.html SOLO cuando el colegio
+      // existe y está activo (la página real se sirvió desde la raíz vía el
+      // redirect de 404.html). Si el slug no resolvió, la barra se queda en
+      // /pagina.html — honesto: se está renderizando como 1bot, no con la
+      // marca de un colegio inexistente/inactivo.
+      const currentPage = location.pathname.split('/').filter(Boolean).pop() || 'postulacion.html';
+      if (location.pathname !== '/' + slug + '/' + currentPage) {
+        history.replaceState(null, '', '/' + slug + '/' + currentPage + location.search);
+      }
+
       applyBranding(tenant);
       return tenant;
     } catch (e) {
