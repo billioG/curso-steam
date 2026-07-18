@@ -11,10 +11,13 @@
     background:#0F172A;
     min-height:100vh;
     display:flex;
+    flex-direction:column;
     align-items:center;
     justify-content:center;
+    gap:14px;
     padding:1.5rem;
   }
+  .tenant-logo { width:56px; height:56px; border-radius:14px; object-fit:cover; box-shadow:0 8px 20px rgba(0,0,0,.35); }
   .card {
     background:white;
     border-radius:20px;
@@ -23,7 +26,7 @@
     padding:32px 28px;
     box-shadow:0 25px 60px rgba(0,0,0,.35);
   }
-  .icon { font-size:42px; text-align:center; margin-bottom:8px; }
+  .icon { text-align:center; margin-bottom:8px; color:var(--brand-primary,#07B0E4); }
   h1 { font-size:19px; text-align:center; color:#0F172A; margin-bottom:4px; }
   .sub { font-size:12.5px; text-align:center; color:#94A3B8; margin-bottom:24px; }
   label { display:block; font-size:12.5px; font-weight:700; color:#334155; margin:14px 0 5px; }
@@ -44,8 +47,9 @@
 </style>
 </head>
 <body>
+  <img class="tenant-logo" data-tenant="logo" src="icon.svg" alt="Logo">
   <div class="card" id="card">
-    <div class="icon">🚀</div>
+    <div class="icon" id="topIcon"></div>
     <h1>Postulación · Facilitador STEEAM</h1>
     <p class="sub">Programa <span data-tenant="name">1bot</span> — educación STEAM con robótica en el aula</p>
 
@@ -105,6 +109,8 @@
       return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
+    document.getElementById('topIcon').innerHTML = window.svgIcon('plane', 40);
+
     document.getElementById('form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const errMsg = document.getElementById('errMsg');
@@ -146,7 +152,7 @@
 
         if (data.passed_filter && data.access_token) {
           document.getElementById('card').innerHTML = `
-            <div class="icon">✅</div>
+            <div class="icon">${window.svgIcon('check', 40)}</div>
             <div class="status valid">¡Postulación recibida!</div>
             <p class="sub" style="margin-bottom:20px">Cumples los requisitos iniciales. El siguiente paso es una breve evaluación de casos de estudio — te redirigiremos automáticamente.</p>
             <p class="footer">Programa STEEAM · ${tenantName} · Guatemala</p>`;
@@ -155,13 +161,13 @@
           }, 2200);
         } else if (data.rejection_reason === 'salario') {
           document.getElementById('card').innerHTML = `
-            <div class="icon">🙏</div>
+            <div class="icon">${window.svgIcon('heart', 40)}</div>
             <div class="status invalid">Gracias por tu interés</div>
             <p class="sub" style="margin-bottom:20px">Agradecemos mucho tu interés en el programa STEEAM. En este momento tu pretensión salarial supera el presupuesto disponible para esta posición, así que no logramos llenar tus expectativas. Si tu situación cambia, con gusto puedes postular de nuevo.</p>
             <p class="footer">Programa STEEAM · ${tenantName} · Guatemala</p>`;
         } else {
           document.getElementById('card').innerHTML = `
-            <div class="icon">📋</div>
+            <div class="icon">${window.svgIcon('clipboard', 40)}</div>
             <div class="status invalid">No cumples los requisitos actuales</div>
             <p class="sub" style="margin-bottom:20px">Gracias por tu interés en el programa STEEAM. En este momento tu postulación no cumple con los requisitos de elegibilidad (jornada o compromiso de permanencia). Puedes escribirnos si tu situación cambia.</p>
             <p class="footer">Programa STEEAM · ${tenantName} · Guatemala</p>`;
