@@ -6,13 +6,18 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Áreas seleccionables para los casos de estudio generados por IA (ver
-// generate-cases). Vacío/no configurado = mezcla de las 4.
-const VALID_EVALUATION_AREAS = ['didactica', 'pedagogia', 'manejo_grupo', 'tecnologia']
+// Áreas curriculares del CNB (Guatemala) — opcional, contextualiza los
+// casos de estudio generados por IA dentro de una materia concreta. Las
+// 4 áreas pedagógicas base (didáctica/pedagogía/manejo de grupo/
+// tecnología, ver generate-cases) SIEMPRE se evalúan, no son configurables.
+const VALID_CNB_AREAS = [
+  'comunicacion_lenguaje', 'matematicas', 'medio_social_natural', 'expresion_artistica',
+  'educacion_fisica', 'formacion_ciudadana', 'emprendimiento', 'tecnologia_aprendizaje',
+]
 
-function cleanEvaluationAreas(areas: unknown): string[] {
+function cleanCnbAreas(areas: unknown): string[] {
   if (!Array.isArray(areas)) return []
-  return areas.filter((a) => VALID_EVALUATION_AREAS.includes(a))
+  return areas.filter((a) => VALID_CNB_AREAS.includes(a))
 }
 
 serve(async (req) => {
@@ -52,7 +57,7 @@ serve(async (req) => {
 
     const isSuperAdmin = (roleRows || []).some(r => r.tenant_id === null && r.role === 'admin')
     const isTenantAdminForRequest = !!tenantId && (roleRows || []).some(r => r.tenant_id === tenantId && r.role === 'admin')
-    const TENANT_ADMIN_ACTIONS = ['listCandidates', 'provisionCandidate']
+    const TENANT_ADMIN_ACTIONS = ['listCandidates', 'provisionCandidate', 'getTenantSettings', 'updateTenantSettings']
     const allowed = isSuperAdmin || (TENANT_ADMIN_ACTIONS.includes(action) && isTenantAdminForRequest)
 
     if (!allowed) return json({ error: 'Acceso denegado — solo admins' }, 403)
@@ -158,10 +163,12 @@ serve(async (req) => {
     }
 
     // ── Listar colegios (tenants) — solo super admin ─────────
+    // Solo identidad/marca — salario y áreas los configura el propio
+    // admin del colegio en reclutamiento.html (getTenantSettings).
     if (action === 'listTenants') {
       const { data, error } = await admin
         .from('tenants')
-        .select('id, slug, name, program_name, primary_color, secondary_color, tertiary_color, logo_url, active, created_at, salario_presupuesto, salario_maximo, evaluation_areas')
+        .select('id, slug, name, program_name, primary_color, secondary_color, tertiary_color, logo_url, active, created_at')
         .order('created_at', { ascending: false })
 
       if (error) return json({ error: error.message }, 500)
@@ -169,9 +176,10 @@ serve(async (req) => {
     }
 
     // ── Crear colegio (tenant) — solo super admin ────────────
+    // Solo identidad/marca. El admin del colegio configura su propio
+    // salario/áreas después, desde su panel (updateTenantSettings).
     if (action === 'createTenant') {
-      const { name, slug, program_name, primary_color, secondary_color, tertiary_color, logo_url,
-              salario_presupuesto, salario_maximo, evaluation_areas } = body
+      const { name, slug, program_name, primary_color, secondary_color, tertiary_color, logo_url } = body
       if (!name || !String(name).trim()) return json({ error: 'name es requerido' }, 400)
 
       const cleanSlug = String(slug || '').trim().toLowerCase()
@@ -191,9 +199,6 @@ serve(async (req) => {
           secondary_color: secondary_color || null,
           tertiary_color: tertiary_color || null,
           logo_url: logo_url || null,
-          salario_presupuesto: salario_presupuesto || null,
-          salario_maximo: salario_maximo || null,
-          evaluation_areas: cleanEvaluationAreas(evaluation_areas),
         })
         .select()
         .single()
@@ -207,8 +212,7 @@ serve(async (req) => {
 
     // ── Editar colegio — solo super admin ────────────────────
     if (action === 'updateTenant') {
-      const { targetTenantId, name, slug, program_name, primary_color, secondary_color, tertiary_color, logo_url,
-              salario_presupuesto, salario_maximo, evaluation_areas } = body
+      const { targetTenantId, name, slug, program_name, primary_color, secondary_color, tertiary_color, logo_url } = body
       if (!targetTenantId) return json({ error: 'targetTenantId es requerido' }, 400)
       if (!name || !String(name).trim()) return json({ error: 'name es requerido' }, 400)
 
@@ -229,9 +233,6 @@ serve(async (req) => {
           secondary_color: secondary_color || null,
           tertiary_color: tertiary_color || null,
           logo_url: logo_url || null,
-          salario_presupuesto: salario_presupuesto || null,
-          salario_maximo: salario_maximo || null,
-          evaluation_areas: cleanEvaluationAreas(evaluation_areas),
         })
         .eq('id', targetTenantId)
         .select()
@@ -242,6 +243,41 @@ serve(async (req) => {
         return json({ error: msg }, 500)
       }
       return json({ ok: true, tenant })
+    }
+
+    // ── Leer configuración operativa del colegio — admin del tenant ──
+    // (o super admin pasando cualquier tenantId). Solo los campos que
+    // el admin del colegio puede ver/editar — nunca identidad/marca.
+    if (action === 'getTenantSettings') {
+      if (!tenantId) return json({ error: 'tenantId es requerido' }, 400)
+
+      const { data, error } = await admin
+        .from('tenants')
+        .select('salario_presupuesto, salario_maximo, cnb_areas')
+        .eq('id', tenantId)
+        .maybeSingle()
+
+      if (error) return json({ error: error.message }, 500)
+      if (!data) return json({ error: 'Colegio no encontrado' }, 404)
+      return json({ ok: true, settings: data })
+    }
+
+    // ── Editar configuración operativa del colegio — admin del tenant ──
+    if (action === 'updateTenantSettings') {
+      if (!tenantId) return json({ error: 'tenantId es requerido' }, 400)
+      const { salario_presupuesto, salario_maximo, cnb_areas } = body
+
+      const { error } = await admin
+        .from('tenants')
+        .update({
+          salario_presupuesto: salario_presupuesto || null,
+          salario_maximo: salario_maximo || null,
+          cnb_areas: cleanCnbAreas(cnb_areas),
+        })
+        .eq('id', tenantId)
+
+      if (error) return json({ error: error.message }, 500)
+      return json({ ok: true })
     }
 
     // ── Activar/desactivar colegio — solo super admin ────────
