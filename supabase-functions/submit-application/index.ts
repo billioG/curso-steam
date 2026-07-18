@@ -76,7 +76,9 @@ Deno.serve(async (req) => {
         .select('salario_maximo')
         .eq('id', tenant_id)
         .maybeSingle();
-      if (tenantRow?.salario_maximo) salarioMaximo = Number(tenantRow.salario_maximo);
+      // Solo un tope explícito y positivo reemplaza el default; 0/null/negativo
+      // (config no puesta o inválida) cae al default, nunca rechaza a todos.
+      if (tenantRow && Number(tenantRow.salario_maximo) > 0) salarioMaximo = Number(tenantRow.salario_maximo);
     }
 
     // Filtro duro — revalidado server-side, el cliente solo declara intención.
@@ -89,6 +91,63 @@ Deno.serve(async (req) => {
 
     let rejection_reason: string | null = null;
     if (!passedFilter) rejection_reason = !salarioOk ? 'salario' : 'jornada_compromiso';
+
+    // Anti re-intento: una persona (mismo correo + mismo colegio) no puede
+    // volver a hacer la evaluación para "farmear" un mejor puntaje. Se busca
+    // su postulación previa y se decide según en qué punto quedó:
+    //   - evaluado/contratado/desertado  → ya completó o cerró su proceso:
+    //     se bloquea, NO se crea fila nueva ni token nuevo (already_applied).
+    //   - evaluacion_pendiente           → pasó el filtro pero no terminó la
+    //     evaluación (ej. cerró la pestaña): se REANUDA con el MISMO token,
+    //     así ve los mismos casos cacheados, no un intento fresco.
+    //   - rechazado_filtro/rechazado     → nunca llegó a la evaluación: se le
+    //     deja corregir sus datos y re-enviar SOBRE la misma fila (sin
+    //     duplicar), re-evaluando el filtro server-side.
+    let existingQuery = admin
+      .from('candidates')
+      .select('id, status, access_token')
+      .eq('email', email);
+    existingQuery = tenant_id ? existingQuery.eq('tenant_id', tenant_id) : existingQuery.is('tenant_id', null);
+    const { data: existingRows, error: existErr } = await existingQuery
+      .order('applied_at', { ascending: false })
+      .limit(1);
+    if (existErr) return json({ error: existErr.message }, 500);
+    const existing = existingRows?.[0] || null;
+
+    if (existing) {
+      if (existing.status === 'evaluado' || existing.status === 'contratado' || existing.status === 'desertado') {
+        return json({ ok: true, already_applied: true });
+      }
+      if (existing.status === 'evaluacion_pendiente') {
+        // Reanuda la evaluación en curso — mismo token, mismos casos.
+        return json({ ok: true, passed_filter: true, resumed: true, access_token: existing.access_token });
+      }
+      // Estaba rechazado por filtro: actualiza la misma fila con los datos nuevos.
+      const { data: updated, error: updErr } = await admin
+        .from('candidates')
+        .update({
+          full_name,
+          phone,
+          jornada_disponible,
+          pretension_salarial,
+          acepta_jornada,
+          interes_mineduc,
+          compromiso_finalizar_programa,
+          status: passedFilter ? 'evaluacion_pendiente' : 'rechazado_filtro',
+          rejection_reason,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .select('access_token')
+        .single();
+      if (updErr) return json({ error: updErr.message }, 500);
+      return json({
+        ok: true,
+        passed_filter: passedFilter,
+        rejection_reason,
+        access_token: passedFilter ? updated.access_token : null,
+      });
+    }
 
     const { data: inserted, error } = await admin
       .from('candidates')
