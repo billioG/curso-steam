@@ -89,14 +89,48 @@
     }
   })();
 
+  // Un colegio puede elegir blanco (u otro color casi blanco) como color
+  // de marca — sobre las tarjetas blancas eso vuelve invisibles botones y
+  // bordes. hexToRgb/luminance/ensureVisible oscurecen automáticamente
+  // cualquier color que quede ilegible sobre fondo blanco, sin tocar
+  // colores normales.
+  function hexToRgb(hex) {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex || '').trim());
+    if (!m) return null;
+    return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+  }
+
+  function luminance(rgb) {
+    return (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+  }
+
+  function ensureVisible(hex, fallback) {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return hex || fallback;
+    if (luminance(rgb) < 0.85) return hex; // suficiente contraste sobre blanco, no tocar
+
+    // demasiado claro (blanco/casi blanco) — mezcla hacia un tono oscuro
+    // neutro para que siga siendo visible en botones/bordes/texto.
+    const dark = { r: 15, g: 23, b: 42 }; // #0F172A
+    const mix = (a, b, t) => Math.round(a + (b - a) * t);
+    const blended = {
+      r: mix(rgb.r, dark.r, 0.6),
+      g: mix(rgb.g, dark.g, 0.6),
+      b: mix(rgb.b, dark.b, 0.6),
+    };
+    return `rgb(${blended.r},${blended.g},${blended.b})`;
+  }
+
   function applyBranding(tenant) {
-    const primary = tenant.primary_color || '#07B0E4';
+    const primary = ensureVisible(tenant.primary_color, '#07B0E4');
+    const secondary = ensureVisible(tenant.secondary_color, primary);
+    const tertiary = ensureVisible(tenant.tertiary_color, primary);
     const style = document.createElement('style');
     style.id = 'tenant-theme';
     style.textContent = `:root {
       --brand-primary: ${primary};
-      --brand-secondary: ${tenant.secondary_color || primary};
-      --brand-tertiary: ${tenant.tertiary_color || primary};
+      --brand-secondary: ${secondary};
+      --brand-tertiary: ${tertiary};
     }`;
     document.head.appendChild(style);
 
