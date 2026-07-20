@@ -9,9 +9,18 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 const FROM_EMAIL     = Deno.env.get('FROM_EMAIL') || 'onboarding@resend.dev';
 const APP_URL        = Deno.env.get('APP_URL') || 'https://billiog.github.io/curso-steam';
+const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')!;
 
 // Costo en XP para desbloquear un módulo (ajusta si cambia en app.js)
 const MODULE_UNLOCK_COST = 50;
+
+// Link de un clic para dejar de recibir estos correos (unsubscribe-email
+// function) — se usa como header List-Unsubscribe (RFC 8058, one-click)
+// y como texto visible en el footer. Sin esto los proveedores de correo
+// (Gmail/Outlook) penalizan el envío masivo y lo mandan a spam.
+function unsubscribeUrl(userId: string, email: string): string {
+  return `${SUPABASE_URL}/functions/v1/unsubscribe-email?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`;
+}
 
 function localDate(offsetDays = 0): string {
   const d = new Date();
@@ -20,7 +29,7 @@ function localDate(offsetDays = 0): string {
 }
 
 // ── Email: usuario inactivo ────────────────────────────────────
-function buildInactiveEmail(p: any, daysMissed: number): string {
+function buildInactiveEmail(p: any, daysMissed: number, unsubUrl: string): string {
   const name = p.daily_missions?.fullName || p.daily_missions?.displayName || p.email?.split('@')[0] || 'Docente';
   const streak = p.streak || 0;
   const xp = p.xp || 0;
@@ -80,13 +89,14 @@ function buildInactiveEmail(p: any, daysMissed: number): string {
         <!-- CTA -->
         <tr><td style="background:white;padding:0 32px 32px;text-align:center">
           <a href="${APP_URL}" style="display:inline-block;background:#f97316;color:white;font-size:15px;font-weight:700;padding:14px 40px;border-radius:100px;text-decoration:none">
-            RETOMAR MI APRENDIZAJE
+            Retomar mi aprendizaje
           </a>
         </td></tr>
 
         <!-- Footer -->
         <tr><td style="background:#f9fafb;border-radius:0 0 20px 20px;padding:20px 32px;text-align:center">
           <p style="margin:0;font-size:11px;color:#9ca3af">Formación Docente en Pedagogía Innovadora · Guatemala</p>
+          <p style="margin:8px 0 0;font-size:11px;color:#9ca3af"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline">Dejar de recibir estos correos</a></p>
         </td></tr>
 
       </table>
@@ -97,7 +107,7 @@ function buildInactiveEmail(p: any, daysMissed: number): string {
 }
 
 // ── Email: módulo sin desbloquear ─────────────────────────────
-function buildLockedModuleEmail(p: any): string {
+function buildLockedModuleEmail(p: any, unsubUrl: string): string {
   const name = p.daily_missions?.fullName || p.daily_missions?.displayName || p.email?.split('@')[0] || 'Docente';
   const xp   = p.xp || 0;
 
@@ -132,13 +142,14 @@ function buildLockedModuleEmail(p: any): string {
         <!-- CTA -->
         <tr><td style="background:white;padding:0 32px 32px;text-align:center">
           <a href="${APP_URL}" style="display:inline-block;background:#4f46e5;color:white;font-size:15px;font-weight:700;padding:14px 40px;border-radius:100px;text-decoration:none">
-            DESBLOQUEAR AHORA
+            Desbloquear ahora
           </a>
         </td></tr>
 
         <!-- Footer -->
         <tr><td style="background:#f9fafb;border-radius:0 0 20px 20px;padding:20px 32px;text-align:center">
           <p style="margin:0;font-size:11px;color:#9ca3af">Formación Docente en Pedagogía Innovadora · Guatemala</p>
+          <p style="margin:8px 0 0;font-size:11px;color:#9ca3af"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline">Dejar de recibir estos correos</a></p>
         </td></tr>
 
       </table>
@@ -161,7 +172,8 @@ Deno.serve(async (req) => {
     const { data: users } = await sb
       .from('progress')
       .select('user_id, email, xp, streak, completed_cards, last_activity_date, daily_missions, last_reminder_date')
-      .not('email', 'is', null);
+      .not('email', 'is', null)
+      .is('unsubscribed_at', null);
 
     let inactiveSent = 0, lockedSent = 0, failed = 0, skipped = 0;
 
@@ -182,16 +194,26 @@ Deno.serve(async (req) => {
 
       // ── Recordatorio de inactividad (1+ días sin entrar) ──
       if (isInactive && daysMissed >= 1) {
-        const html = buildInactiveEmail(user, daysMissed);
+        const unsubUrl = unsubscribeUrl(user.user_id, user.email);
+        const html = buildInactiveEmail(user, daysMissed, unsubUrl);
         const name = user.daily_missions?.fullName || user.email.split('@')[0];
         const subject = daysMissed === 1
-          ? `😢 ${name}, ¡hace 1 día que no aprendes!`
-          : `🔥 ${name}, tu racha lleva ${daysMissed} días en pausa`;
+          ? `${name}, hace 1 día que no aprendes`
+          : `${name}, tu racha lleva ${daysMissed} días en pausa`;
 
         const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ from: `Formación Docente <${FROM_EMAIL}>`, to: [user.email], subject, html }),
+          body: JSON.stringify({
+            from: `Formación Docente <${FROM_EMAIL}>`,
+            to: [user.email],
+            subject,
+            html,
+            headers: {
+              'List-Unsubscribe': `<${unsubUrl}>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
+          }),
         });
         if (res.ok) { inactiveSent++; sentToUser = true; } else failed++;
         await new Promise(r => setTimeout(r, 100));
@@ -208,7 +230,8 @@ Deno.serve(async (req) => {
 
       // !sentToUser: si ya recibió el de inactividad, no lo doble-emaileamos.
       if (!sentToUser && wasActiveYesterday && hasEnoughXP && isLikelyBlocked) {
-        const html = buildLockedModuleEmail(user);
+        const unsubUrl = unsubscribeUrl(user.user_id, user.email);
+        const html = buildLockedModuleEmail(user, unsubUrl);
         const name = user.daily_missions?.fullName || user.email.split('@')[0];
         const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -216,8 +239,12 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: `Formación Docente <${FROM_EMAIL}>`,
             to: [user.email],
-            subject: `🔓 ${name}, tienes XP suficiente para continuar`,
+            subject: `${name}, tienes XP suficiente para continuar`,
             html,
+            headers: {
+              'List-Unsubscribe': `<${unsubUrl}>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
           }),
         });
         if (res.ok) { lockedSent++; sentToUser = true; } else failed++;
