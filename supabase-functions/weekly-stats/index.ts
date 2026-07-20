@@ -8,6 +8,13 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 const FROM_EMAIL     = Deno.env.get('FROM_EMAIL') || 'onboarding@resend.dev';
 const ADMIN_EMAIL    = 'billy@1bot.org';
 const APP_URL        = Deno.env.get('APP_URL') || 'https://billiog.github.io/curso-steam';
+const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')!;
+
+// Ver daily-reminders/index.ts para la explicación completa — mismo
+// mecanismo de un clic (RFC 8058) para no penalizar la entregabilidad.
+function unsubscribeUrl(userId: string, email: string): string {
+  return `${SUPABASE_URL}/functions/v1/unsubscribe-email?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`;
+}
 
 const COURSES = [
   { id: 'steam',             title: 'Metodología STEAM',        prefix: null    },
@@ -52,7 +59,7 @@ function weekDots(lastActivityDate: string | null): string {
   }).join('');
 }
 
-function buildEmail(p: any): string {
+function buildEmail(p: any, unsubUrl: string): string {
   const name = p.daily_missions?.fullName || p.daily_missions?.displayName || p.email?.split('@')[0] || 'Docente';
   const xp = p.xp || 0;
   const streak = p.streak || 0;
@@ -160,7 +167,7 @@ function buildEmail(p: any): string {
         <!-- CTA -->
         <tr><td style="background:white;padding:0 32px 32px;text-align:center">
           <a href="${APP_URL}" style="display:inline-block;background:#4f46e5;color:white;font-size:15px;font-weight:700;padding:14px 40px;border-radius:100px;text-decoration:none">
-            CONTINUAR APRENDIENDO
+            Continuar aprendiendo
           </a>
         </td></tr>
 
@@ -168,6 +175,7 @@ function buildEmail(p: any): string {
         <tr><td style="background:#f9fafb;border-radius:0 0 20px 20px;padding:20px 32px;text-align:center">
           <p style="margin:0;font-size:11px;color:#9ca3af">Formación Docente en Pedagogía Innovadora · Guatemala</p>
           <p style="margin:6px 0 0;font-size:11px;color:#9ca3af">Este correo se envía automáticamente cada semana con tu progreso.</p>
+          <p style="margin:8px 0 0;font-size:11px;color:#9ca3af"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline">Dejar de recibir este resumen</a></p>
         </td></tr>
 
       </table>
@@ -187,7 +195,8 @@ Deno.serve(async (req) => {
     const { data: users, error } = await sb
       .from('progress')
       .select('user_id, email, xp, streak, completed_cards, last_activity_date, daily_missions')
-      .not('email', 'is', null);
+      .not('email', 'is', null)
+      .is('unsubscribed_at', null);
 
     if (error) throw error;
 
@@ -196,7 +205,8 @@ Deno.serve(async (req) => {
     for (const user of users || []) {
       if (!user.email) continue;
 
-      const html = buildEmail(user);
+      const unsubUrl = unsubscribeUrl(user.user_id, user.email);
+      const html = buildEmail(user, unsubUrl);
       const name = user.daily_missions?.fullName || user.email.split('@')[0];
 
       const res = await fetch('https://api.resend.com/emails', {
@@ -205,8 +215,12 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           from: `Formación Docente <${FROM_EMAIL}>`,
           to: [user.email],
-          subject: `📊 Tu resumen semanal, ${name} — ¡Sigue aprendiendo!`,
+          subject: `Tu resumen semanal, ${name} — sigue aprendiendo`,
           html,
+          headers: {
+            'List-Unsubscribe': `<${unsubUrl}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
         }),
       });
 
