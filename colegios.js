@@ -80,6 +80,7 @@ function renderTenants() {
             <td>
               <button class="small" data-action="edit" data-id="${t.id}">Editar</button>
               <button class="small hire" data-action="invite" data-id="${t.id}" data-name="${escapeHtml(t.name)}">Invitar admin</button>
+              <button class="small" data-action="invites" data-id="${t.id}" data-name="${escapeHtml(t.name)}">Ver invitaciones</button>
               <button class="small" data-action="toggle" data-id="${t.id}" data-active="${t.active}">${t.active ? 'Desactivar' : 'Activar'}</button>
             </td>
           </tr>`;
@@ -96,6 +97,9 @@ function renderTenants() {
     });
     document.querySelectorAll('button[data-action="invite"]').forEach(btn => {
         btn.addEventListener('click', () => inviteTenantAdmin(btn.dataset.id, btn.dataset.name));
+    });
+    document.querySelectorAll('button[data-action="invites"]').forEach(btn => {
+        btn.addEventListener('click', () => openInvites(btn.dataset.id, btn.dataset.name));
     });
     document.querySelectorAll('button[data-action="toggle"]').forEach(btn => {
         btn.addEventListener('click', () => toggleTenantActive(btn.dataset.id, btn.dataset.active === 'true'));
@@ -147,6 +151,42 @@ async function inviteTenantAdmin(tenantId, tenantName) {
     } catch (e) {
         alert('Error: ' + e.message);
     }
+}
+
+async function openInvites(tenantId, tenantName) {
+    document.getElementById('invitesTitle').textContent = `Invitaciones — ${tenantName}`;
+    document.getElementById('invitesWrap').innerHTML = '<div class="loader">Cargando…</div>';
+    document.getElementById('invitesOverlay').style.display = 'flex';
+    try {
+        const { invites } = await callAdminUsers({ action: 'listInvitedUsers', tenantId });
+        renderInvites(invites || []);
+    } catch (e) {
+        document.getElementById('invitesWrap').innerHTML = `<div class="empty">Error al cargar: ${escapeHtml(e.message)}</div>`;
+    }
+}
+
+function closeInvites() {
+    document.getElementById('invitesOverlay').style.display = 'none';
+}
+
+function renderInvites(invites) {
+    if (invites.length === 0) {
+        document.getElementById('invitesWrap').innerHTML = '<div class="empty">Aún no se ha invitado a nadie para este colegio.</div>';
+        return;
+    }
+    const fmt = (iso) => iso ? new Date(iso).toLocaleString('es-GT', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+    const rows = invites.map(inv => `
+        <tr>
+            <td>${escapeHtml(inv.email)}</td>
+            <td>${escapeHtml(inv.role)}</td>
+            <td>${fmt(inv.invited_at)}</td>
+            <td><span class="badge ${inv.accepted ? 'accepted' : 'pending'}">${inv.accepted ? 'Aceptó' : 'Pendiente'}</span></td>
+        </tr>`).join('');
+    document.getElementById('invitesWrap').innerHTML = `
+        <table>
+            <thead><tr><th>Correo</th><th>Rol</th><th>Invitado</th><th>Estado</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
 }
 
 async function toggleTenantActive(tenantId, currentlyActive) {
