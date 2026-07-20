@@ -6,6 +6,13 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Todo invite (admin de colegio, docente en lote, candidato contratado)
+// debe aterrizar en aceptar-invitacion.html — es la única página que sabe
+// procesar el link de invitación de Supabase y pedir contraseña. Sin esto,
+// el link redirige al Site URL default y la persona nunca puede loguearse.
+const APP_URL = Deno.env.get('APP_URL') || 'https://yoaprendo.online'
+const INVITE_REDIRECT_TO = `${APP_URL}/aceptar-invitacion.html`
+
 // Áreas curriculares del CNB (Guatemala) — opcional, contextualiza los
 // casos de estudio generados por IA dentro de una materia concreta. Las
 // 4 áreas pedagógicas base (didáctica/pedagogía/manejo de grupo/
@@ -119,7 +126,8 @@ serve(async (req) => {
       if (!email) return json({ error: 'email es requerido' }, 400)
 
       const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(email, {
-        data: { invited_by: user.email }
+        data: { invited_by: user.email },
+        redirectTo: INVITE_REDIRECT_TO,
       })
 
       let targetUserId = invited?.user?.id
@@ -181,7 +189,8 @@ serve(async (req) => {
 
           if (!userId) {
             const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(email, {
-              data: { invited_by: user.email, ...(name ? { name } : {}) }
+              data: { invited_by: user.email, ...(name ? { name } : {}) },
+              redirectTo: INVITE_REDIRECT_TO,
             })
             if (invErr) { results.push({ email, status: 'error', message: invErr.message }); continue }
             userId = invited.user.id
@@ -384,7 +393,8 @@ serve(async (req) => {
       if (candidate.status !== 'evaluado') return json({ error: 'El candidato debe estar evaluado antes de contratar' }, 409)
 
       const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(candidate.email, {
-        data: { invited_by: user.email, name: candidate.full_name, source: 'reclutamiento' }
+        data: { invited_by: user.email, name: candidate.full_name, source: 'reclutamiento' },
+        redirectTo: INVITE_REDIRECT_TO,
       })
 
       let hiredUserId = invited?.user?.id

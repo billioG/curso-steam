@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v98';
+const CACHE_VERSION  = 'steam-v99';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -27,6 +27,7 @@ const SECONDARY_ASSETS = [
     './admin.html',
     './admin.js',
     './admin-login.html',
+    './aceptar-invitacion.html',
     './verificar.html',
     './schools_gt.js',
     // Páginas de contenido enlazadas desde Perfil — sin esto no abren offline
