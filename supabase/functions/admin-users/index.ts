@@ -229,13 +229,14 @@ serve(async (req) => {
       for (const r of roleRows) roleByUserId[r.user_id] = r.role
       const wantedIds = new Set(roleRows.map((r) => r.user_id))
 
-      const invites: Array<{ email: string, role: string, invited_at: string | null, last_sign_in_at: string | null, accepted: boolean }> = []
+      const invites: Array<{ user_id: string, email: string, role: string, invited_at: string | null, last_sign_in_at: string | null, accepted: boolean }> = []
       for (let page = 1; ; page++) {
         const { data: listData, error: listErr } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
         if (listErr) return json({ error: listErr.message }, 500)
         for (const u of listData.users) {
           if (wantedIds.has(u.id)) {
             invites.push({
+              user_id: u.id,
               email: u.email || '(sin correo)',
               role: roleByUserId[u.id] || 'student',
               invited_at: u.invited_at || u.created_at || null,
@@ -248,6 +249,26 @@ serve(async (req) => {
       }
       invites.sort((a, b) => new Date(b.invited_at || 0).getTime() - new Date(a.invited_at || 0).getTime())
       return json({ ok: true, invites })
+    }
+
+    // ── Quitar acceso de admin a un colegio — solo super admin ──────
+    // Borra SOLO la fila (tenant_id, user_id) de user_roles — no borra la
+    // cuenta de auth.users. Si esa persona es admin/estudiante de OTRO
+    // colegio o del 1bot original, esas filas quedan intactas; solo pierde
+    // acceso a ESTE tenant específico.
+    if (action === 'revokeTenantAccess') {
+      const { targetUserId } = body
+      if (!targetUserId) return json({ error: 'targetUserId es requerido' }, 400)
+      if (!tenantId) return json({ error: 'tenantId es requerido' }, 400)
+
+      const { error } = await admin
+        .from('user_roles')
+        .delete()
+        .eq('tenant_id', tenantId)
+        .eq('user_id', targetUserId)
+
+      if (error) return json({ error: error.message }, 500)
+      return json({ ok: true })
     }
 
     // ── Listar colegios (tenants) — solo super admin ─────────

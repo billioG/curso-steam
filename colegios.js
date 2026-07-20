@@ -153,7 +153,10 @@ async function inviteTenantAdmin(tenantId, tenantName) {
     }
 }
 
+let currentInvitesTenant = null; // { id, name } — colegio abierto en el modal de invitaciones
+
 async function openInvites(tenantId, tenantName) {
+    currentInvitesTenant = { id: tenantId, name: tenantName };
     document.getElementById('invitesTitle').textContent = `Invitaciones — ${tenantName}`;
     document.getElementById('invitesWrap').innerHTML = '<div class="loader">Cargando…</div>';
     document.getElementById('invitesOverlay').style.display = 'flex';
@@ -167,6 +170,7 @@ async function openInvites(tenantId, tenantName) {
 
 function closeInvites() {
     document.getElementById('invitesOverlay').style.display = 'none';
+    currentInvitesTenant = null;
 }
 
 function renderInvites(invites) {
@@ -181,12 +185,28 @@ function renderInvites(invites) {
             <td>${escapeHtml(inv.role)}</td>
             <td>${fmt(inv.invited_at)}</td>
             <td><span class="badge ${inv.accepted ? 'accepted' : 'pending'}">${inv.accepted ? 'Aceptó' : 'Pendiente'}</span></td>
+            <td><button class="small" data-action="revoke" data-user-id="${inv.user_id}" data-email="${escapeHtml(inv.email)}">Quitar acceso</button></td>
         </tr>`).join('');
     document.getElementById('invitesWrap').innerHTML = `
         <table>
-            <thead><tr><th>Correo</th><th>Rol</th><th>Invitado</th><th>Estado</th></tr></thead>
+            <thead><tr><th>Correo</th><th>Rol</th><th>Invitado</th><th>Estado</th><th></th></tr></thead>
             <tbody>${rows}</tbody>
         </table>`;
+
+    document.querySelectorAll('#invitesWrap button[data-action="revoke"]').forEach(btn => {
+        btn.addEventListener('click', () => revokeAccess(btn.dataset.userId, btn.dataset.email));
+    });
+}
+
+async function revokeAccess(userId, email) {
+    if (!currentInvitesTenant) return;
+    if (!confirm(`¿Quitar el acceso de admin de "${email}" a "${currentInvitesTenant.name}"? Podrá seguir teniendo acceso a otros colegios si los tiene.`)) return;
+    try {
+        await callAdminUsers({ action: 'revokeTenantAccess', tenantId: currentInvitesTenant.id, targetUserId: userId });
+        await openInvites(currentInvitesTenant.id, currentInvitesTenant.name);
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
 }
 
 async function toggleTenantActive(tenantId, currentlyActive) {
