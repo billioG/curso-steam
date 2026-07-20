@@ -54,6 +54,40 @@ async function findUserIdByEmail(admin: ReturnType<typeof createClient>, email: 
   return null
 }
 
+// inviteUserByEmail SOLO envía correo para cuentas nuevas — si el correo ya
+// está registrado (ej. se le había quitado el acceso y se le vuelve a
+// invitar), Supabase la rechaza y el flujo de arriba solo VINCULA el rol en
+// silencio, sin avisarle a la persona que ya puede entrar. Esta función
+// cubre ese caso: genera un magic link (no crea cuenta nueva, la cuenta ya
+// existe) y lo manda por Resend — misma infra que daily-reminders, mismos
+// secrets (RESEND_API_KEY/FROM_EMAIL son project-wide, no hace falta
+// configurarlos de nuevo para esta función).
+async function sendAccessEmail(admin: ReturnType<typeof createClient>, email: string, tenantName: string | null): Promise<void> {
+  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+  if (!RESEND_API_KEY) return // sin key configurada — la acción ya se completó, solo no se pudo avisar por correo
+  const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'onboarding@resend.dev'
+
+  const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
+    type: 'magiclink',
+    email,
+    options: { redirectTo: INVITE_REDIRECT_TO },
+  })
+  if (linkErr || !linkData?.properties?.action_link) return
+
+  const label = tenantName ? `de "${tenantName}"` : 'a la plataforma'
+  const html = `<!DOCTYPE html><html lang="es"><body style="font-family:'Segoe UI',Arial,sans-serif;padding:24px">
+    <p>Se te otorgó acceso ${label}.</p>
+    <p><a href="${linkData.properties.action_link}" style="display:inline-block;background:#07B0E4;color:white;font-weight:700;padding:12px 28px;border-radius:100px;text-decoration:none">Entrar ahora</a></p>
+    <p style="font-size:12px;color:#94A3B8">Si no esperabas este correo, puedes ignorarlo.</p>
+  </body></html>`
+
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: `Formación Docente <${FROM_EMAIL}>`, to: [email], subject: 'Tienes acceso — Formación Docente', html }),
+  })
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
@@ -153,6 +187,19 @@ serve(async (req) => {
           { onConflict: 'tenant_id,user_id' }
         )
       }
+
+      // Cuenta ya existía (linked=true) — inviteUserByEmail NO le mandó
+      // correo (Supabase la rechaza para cuentas ya registradas). Avisarle
+      // por otra vía o nunca sabe que ya puede entrar (ej. se le quitó el
+      // acceso antes y se le vuelve a dar).
+      if (linked) {
+        let tenantName: string | null = null
+        if (tenantId) {
+          const { data: t } = await admin.from('tenants').select('name').eq('id', tenantId).maybeSingle()
+          tenantName = t?.name || null
+        }
+        await sendAccessEmail(admin, email, tenantName)
+      }
       return json({ ok: true, email, role, linked })
     }
 
@@ -225,8 +272,8 @@ serve(async (req) => {
       if (roleRowsErr) return json({ error: roleRowsErr.message }, 500)
       if (!roleRows || roleRows.length === 0) return json({ ok: true, invites: [] })
 
-      const roleByUserId: Record<string, string> = {}
-      for (const r of roleRows) roleByUserId[r.user_id] = r.role
+      const roleInfoByUserId: Record<string, { role: string, created_at: string }> = {}
+      for (const r of roleRows) roleInfoByUserId[r.user_id] = { role: r.role, created_at: r.created_at }
       const wantedIds = new Set(roleRows.map((r) => r.user_id))
 
       const invites: Array<{ user_id: string, email: string, role: string, invited_at: string | null, last_sign_in_at: string | null, accepted: boolean }> = []
@@ -235,13 +282,23 @@ serve(async (req) => {
         if (listErr) return json({ error: listErr.message }, 500)
         for (const u of listData.users) {
           if (wantedIds.has(u.id)) {
+            const info = roleInfoByUserId[u.id]
+            // invited_at = cuándo se le dio acceso a ESTE colegio (user_roles.
+            // created_at), no la fecha de la cuenta global — así al quitar y
+            // volver a invitar, la fecha se resetea en vez de mostrar la
+            // primera vez que esa persona se registró hace meses.
+            // accepted = inició sesión DESPUÉS de que se le dio (o devolvió)
+            // este acceso — un login viejo de antes de una revocación no
+            // cuenta como "ya aceptó" la invitación actual.
+            const accepted = !!u.last_sign_in_at && !!info?.created_at
+              && new Date(u.last_sign_in_at).getTime() >= new Date(info.created_at).getTime()
             invites.push({
               user_id: u.id,
               email: u.email || '(sin correo)',
-              role: roleByUserId[u.id] || 'student',
-              invited_at: u.invited_at || u.created_at || null,
+              role: info?.role || 'student',
+              invited_at: info?.created_at || u.invited_at || u.created_at || null,
               last_sign_in_at: u.last_sign_in_at || null,
-              accepted: !!u.last_sign_in_at,
+              accepted,
             })
           }
         }
@@ -457,12 +514,14 @@ serve(async (req) => {
 
       let hiredUserId = invited?.user?.id
 
+      let hireLinked = false
       if (invErr) {
         // El candidato ya tenía cuenta (ej. ya era estudiante de otro
         // colegio) — vincúlala en vez de fallar la contratación.
         if (invErr.message?.toLowerCase().includes('already') && invErr.message?.toLowerCase().includes('registered')) {
           hiredUserId = await findUserIdByEmail(admin, candidate.email)
           if (!hiredUserId) return json({ error: 'Ya existe una cuenta con ese correo, pero no se pudo vincular. Contacta soporte.' }, 500)
+          hireLinked = true
         } else {
           return json({ error: translateAuthError(invErr.message) }, 500)
         }
@@ -473,6 +532,17 @@ serve(async (req) => {
           { user_id: hiredUserId, role: 'student', tenant_id: candidate.tenant_id },
           { onConflict: 'tenant_id,user_id' }
         )
+      }
+
+      // Cuenta ya existía — inviteUserByEmail no le mandó correo, avisarle
+      // por otra vía que ya fue contratado y puede entrar.
+      if (hireLinked) {
+        let tenantName: string | null = null
+        if (candidate.tenant_id) {
+          const { data: t } = await admin.from('tenants').select('name').eq('id', candidate.tenant_id).maybeSingle()
+          tenantName = t?.name || null
+        }
+        await sendAccessEmail(admin, candidate.email, tenantName)
       }
 
       const { error: statusErr } = await admin
