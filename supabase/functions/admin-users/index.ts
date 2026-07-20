@@ -91,7 +91,7 @@ serve(async (req) => {
 
     const isSuperAdmin = (roleRows || []).some(r => r.tenant_id === null && r.role === 'admin')
     const isTenantAdminForRequest = !!tenantId && (roleRows || []).some(r => r.tenant_id === tenantId && r.role === 'admin')
-    const TENANT_ADMIN_ACTIONS = ['listCandidates', 'provisionCandidate', 'getTenantSettings', 'updateTenantSettings']
+    const TENANT_ADMIN_ACTIONS = ['listCandidates', 'provisionCandidate', 'getTenantSettings', 'updateTenantSettings', 'listInvitedUsers']
     const allowed = isSuperAdmin || (TENANT_ADMIN_ACTIONS.includes(action) && isTenantAdminForRequest)
 
     if (!allowed) return json({ error: 'Acceso denegado — solo admins' }, 403)
@@ -211,6 +211,43 @@ serve(async (req) => {
       }
 
       return json({ ok: true, results })
+    }
+
+    // ── Listar invitaciones enviadas — admin del tenant (o super admin) ──
+    // tenantId null/omitido = invitaciones del 1bot original. Cruza
+    // user_roles (quién quedó asignado a este tenant) con auth.users (para
+    // ver el correo y si ya usó el link de invitación) — no hay tabla
+    // propia de invitaciones, la fuente de verdad es auth.users.
+    if (action === 'listInvitedUsers') {
+      let roleQuery = admin.from('user_roles').select('user_id, role, created_at')
+      roleQuery = tenantId ? roleQuery.eq('tenant_id', tenantId) : roleQuery.is('tenant_id', null)
+      const { data: roleRows, error: roleRowsErr } = await roleQuery
+      if (roleRowsErr) return json({ error: roleRowsErr.message }, 500)
+      if (!roleRows || roleRows.length === 0) return json({ ok: true, invites: [] })
+
+      const roleByUserId: Record<string, string> = {}
+      for (const r of roleRows) roleByUserId[r.user_id] = r.role
+      const wantedIds = new Set(roleRows.map((r) => r.user_id))
+
+      const invites: Array<{ email: string, role: string, invited_at: string | null, last_sign_in_at: string | null, accepted: boolean }> = []
+      for (let page = 1; ; page++) {
+        const { data: listData, error: listErr } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
+        if (listErr) return json({ error: listErr.message }, 500)
+        for (const u of listData.users) {
+          if (wantedIds.has(u.id)) {
+            invites.push({
+              email: u.email || '(sin correo)',
+              role: roleByUserId[u.id] || 'student',
+              invited_at: u.invited_at || u.created_at || null,
+              last_sign_in_at: u.last_sign_in_at || null,
+              accepted: !!u.last_sign_in_at,
+            })
+          }
+        }
+        if (listData.users.length < 1000) break
+      }
+      invites.sort((a, b) => new Date(b.invited_at || 0).getTime() - new Date(a.invited_at || 0).getTime())
+      return json({ ok: true, invites })
     }
 
     // ── Listar colegios (tenants) — solo super admin ─────────
