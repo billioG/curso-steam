@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
         <!-- CTA -->
         <tr><td style="background:white;padding:0 32px 32px;text-align:center">
           <a href="${APP_URL}/admin.html#users" style="display:inline-block;background:#1A6B68;color:white;font-size:14px;font-weight:700;padding:12px 32px;border-radius:100px;text-decoration:none">
-            VER EN PANEL ADMIN
+            Ver en panel admin
           </a>
         </td></tr>
 
@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: `Formación Docente <${FROM_EMAIL}>`,
         to: [ADMIN_EMAIL],
-        subject: `🎉 Nuevo docente inscrito: ${name}`,
+        subject: `Nuevo docente inscrito: ${name}`,
         html,
       }),
     });
