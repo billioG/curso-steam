@@ -709,6 +709,8 @@ function updateUI() {
     if (currentUser) {
         const emailEl = document.getElementById("userEmailDisplay");
         if (emailEl) emailEl.textContent = getDisplayName();
+        const emailSubEl = document.getElementById("perfilEmailDisplay");
+        if (emailSubEl) emailSubEl.textContent = currentUser.email || '';
         const photo = progress?.dailyMissions?.profilePhoto;
         if (photo) updateProfilePhotoDisplay(photo);
     }
@@ -5246,7 +5248,6 @@ document.getElementById("closeBadgesBtn")?.addEventListener("click", () => docum
 document.getElementById("shareBadgesBtn")?.addEventListener("click", shareBadges);
 document.getElementById("redeemFloatBtn")?.addEventListener("click", showComingSoon);
 document.getElementById("closeRedeemBtn")?.addEventListener("click", () => document.getElementById("redeemModal")?.classList.add("hidden"));
-document.getElementById("rankingFloatBtn")?.addEventListener("click", showRanking);
 document.getElementById("closeRankingBtn")?.addEventListener("click", () => document.getElementById("rankingModal")?.classList.add("hidden"));
 document.getElementById("avatarFloatBtn")?.addEventListener("click", showAvatarSelector);
 document.getElementById("closeAvatarBtn")?.addEventListener("click", () => document.getElementById("avatarModal")?.classList.add("hidden"));
