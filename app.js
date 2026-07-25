@@ -5595,6 +5595,13 @@ const APP_TOUR_STEPS = [
     },
     {
         tab: 'home',
+        element: '#topBarProgressInfo',
+        title: 'Buscar y cambiar de curso',
+        description: '🔍 Busca cualquier tema en todos tus cursos. El ícono junto a la lupa te lleva a la lista de cursos de tu ruta actual — si ya estás viendo esa lista, te regresa a la lista de rutas.',
+        side: 'bottom',
+    },
+    {
+        tab: 'home',
         element: '.card-body',
         title: 'El contenido de cada tarjeta',
         description: 'Lee el texto principal con calma. Algunas tarjetas incluyen un recuadro <strong>💡 Dato clave</strong> con la idea más importante para recordar.',
@@ -6005,11 +6012,35 @@ let _selectedPathId  = null; // ruta activa en el selector
 // función solo asegura que mainApp esté visible y cambia a esa tab. Se deja
 // con el mismo nombre porque hay varios callers existentes (botón "Cambiar
 // curso" del sidebar, etc.) que no necesitan tocarse.
-function showCourseSelector() {
-    _selectedPathId = null;
+function showCourseSelector(pathId) {
+    _selectedPathId = pathId || null;
     document.getElementById('loginScreen')?.classList.add('hidden');
     document.getElementById('mainApp')?.classList.remove('hidden');
     if (typeof switchTab === 'function') switchTab('biblioteca');
+}
+
+function _findPathForCourse(courseId) {
+    if (typeof LEARNING_PATHS === 'undefined') return null;
+    return LEARNING_PATHS.find(p => (p.courses || []).includes(courseId)) || null;
+}
+
+// Botón "Cambiar curso" de la barra superior: antes siempre saltaba hasta
+// arriba del todo (lista de rutas), incluso si ya estabas viendo la lista
+// de cursos de una ruta o si solo querías ver los otros cursos de TU ruta
+// actual. Ahora funciona como "un paso atrás": si ya estás en la lista de
+// cursos de una ruta (Biblioteca), regresa a la lista de rutas; si estás en
+// cualquier otro lado (estudiando un curso, etc.), te lleva directo a la
+// lista de cursos de la ruta de tu curso activo, no hasta arriba del todo.
+function _topBarChangeCourseClick() {
+    const _tabBiblioteca = document.getElementById('tabBiblioteca');
+    const _onBiblioteca = _tabBiblioteca && !_tabBiblioteca.classList.contains('hidden');
+    if (_onBiblioteca && _selectedPathId) {
+        _selectedPathId = null;
+        if (typeof _renderCourseSelector === 'function') _renderCourseSelector();
+        return;
+    }
+    const path = _findPathForCourse(typeof currentCourseId !== 'undefined' ? currentCourseId : null);
+    showCourseSelector(path?.id);
 }
 
 // Decide a dónde aterriza el usuario al iniciar sesión: si ya tiene un curso
