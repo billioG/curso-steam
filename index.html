@@ -966,46 +966,41 @@
             transform: rotate(-90deg);
         }
 
-        /* ── Carrusel de logros ─────────────────────────────────────── */
-        .badges-carousel-wrap {
-            position:relative;
-            overflow:hidden;
+        /* ── Récords personales ────────────────────────────────────── */
+        .record-card {
+            background:white; border:1.5px solid #e2e8f0; border-radius:16px;
+            padding:10px 6px; text-align:center; display:flex; flex-direction:column;
+            align-items:center; gap:4px;
         }
-        .badges-carousel-track {
-            display:flex;
-            transition: transform .4s cubic-bezier(.4,0,.2,1);
-            will-change: transform;
+        .record-card .record-icon {
+            width:34px; height:34px; border-radius:10px; display:flex;
+            align-items:center; justify-content:center; font-size:16px;
         }
-        .badge-carousel-item {
-            flex-shrink:0;
+        .record-card .record-value { font-size:13px; font-weight:900; color:#1e293b; }
+        .record-card .record-label { font-size:9px; font-weight:700; color:#94a3b8; line-height:1.2; }
+
+        /* ── Grid de insignias ──────────────────────────────────────── */
+        .badges-grid {
+            display:grid;
+            grid-template-columns:repeat(4, 1fr);
+            gap:10px;
+        }
+        .badge-grid-item {
             display:flex;
             flex-direction:column;
             align-items:center;
-            gap:7px;
-            padding:12px 6px 10px;
+            gap:6px;
+            padding:12px 4px 10px;
             background:white;
-            border-radius:18px;
+            border-radius:16px;
             border:2px solid #e2e8f0;
             cursor:pointer;
             transition:border-color .15s, box-shadow .15s;
-            margin:0 5px;
         }
-        .badge-carousel-item.earned {
+        .badge-grid-item.earned {
             border-color:#ddd6fe;
             box-shadow:0 4px 14px rgba(139,92,246,.12);
         }
-        .badge-carousel-arrow {
-            position:absolute; top:50%; transform:translateY(-50%);
-            width:32px; height:32px; border-radius:50%;
-            background:white; border:1.5px solid #e2e8f0;
-            box-shadow:0 2px 8px rgba(0,0,0,.1);
-            display:flex; align-items:center; justify-content:center;
-            cursor:pointer; z-index:2; transition:background .15s, border-color .15s;
-            color:#475569;
-        }
-        .badge-carousel-arrow:hover { background:#f8fafc; border-color:#a78bfa; color:#7c3aed; }
-        .badge-carousel-arrow.prev { left:0; }
-        .badge-carousel-arrow.next { right:0; }
 
         /* ── Animación desbloqueo de logro ─────────────────────────── */
         @keyframes badgeBackdropIn { from { opacity:0 } to { opacity:1 } }
@@ -2139,10 +2134,10 @@
 
             <!-- ── SECCIÓN DE LOGROS ─────────────────────────────────────── -->
             <div class="perfil-badges-wrap" style="padding:0 0 4px">
-                <div class="flex items-center justify-between mb-4 px-1">
+                <div class="flex items-center justify-between mb-3 px-1">
                     <div>
                         <p class="text-[11px] font-black uppercase tracking-widest" style="color:#1e3a5f">Logros y estadísticas</p>
-                        <p class="text-xs text-slate-400 mt-0.5"><span id="badgesEarnedCount">0</span> de 13 insignias desbloqueadas</p>
+                        <p class="text-xs text-slate-400 mt-0.5"><span id="badgesEarnedCount">0</span> de <span id="badgesTotalCount">0</span> insignias desbloqueadas</p>
                     </div>
                     <div class="flex gap-2">
                         <button id="statsSecretBtn"
@@ -2156,18 +2151,12 @@
                         </button>
                     </div>
                 </div>
-                <!-- Carrusel de insignias (fila única + flechas) -->
-                <div class="badges-carousel-wrap">
-                    <button class="badge-carousel-arrow prev" onclick="badgesCarouselMove(-1)" aria-label="Anterior">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-                    </button>
-                    <div style="overflow:hidden;margin:0 38px">
-                        <div id="badgesCarousel" class="badges-carousel-track"></div>
-                    </div>
-                    <button class="badge-carousel-arrow next" onclick="badgesCarouselMove(1)" aria-label="Siguiente">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                </div>
+                <!-- Récords personales -->
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Récords personales</p>
+                <div id="personalRecordsRow" class="grid grid-cols-4 gap-2 mb-5"></div>
+                <!-- Insignias -->
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Insignias</p>
+                <div id="badgesGrid" class="badges-grid"></div>
             </div>
 
             <!-- ── Sección: Certificados ── -->
@@ -2184,7 +2173,7 @@
                         class="hidden md:col-span-2 w-full mb-2 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
                         style="background:linear-gradient(135deg,#5C35C5,#7c3aed)" onclick="requestCertificate('diploma', currentCourseId, window._lastExamScore||70)">
                         <span data-icon="certificate" style="display:inline-flex;width:16px;height:16px;color:white;flex-shrink:0"></span>
-                        <span>Diploma de Participación · curso actual · Q10</span>
+                        <span id="certDownloadBtnLabel">Diploma de Participación · curso actual · Q10</span>
                     </button>
                     <div id="masterPathSelector" class="hidden md:col-span-2 mb-1"></div>
                     <div id="masterScoreSummary" class="hidden md:col-span-2 mb-1"></div>
@@ -2210,7 +2199,7 @@
                         class="hidden md:col-span-2 w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
                         style="background:linear-gradient(135deg,#4c1d95,#5C35C5)" onclick="requestCertificate('master', null, null)">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-                        <span>Obtener Certificado Maestro · Q50</span>
+                        <span id="masterCertBtnLabel">Obtener Certificado Maestro · Q50</span>
                     </button>
                 </div><!-- /perfil-items-grid cert -->
                 </div><!-- /perfil-section-body cert -->
