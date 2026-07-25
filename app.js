@@ -425,6 +425,7 @@ async function loginWithEmail(email, password) {
         startSessionTracking();
         await syncWithSupabase();
         loadPortfolio();
+        _refreshPaidCertRefs();
         await loadAppConfig();
         _updatePushToggleUI();
         return true;
@@ -607,6 +608,8 @@ async function checkExistingSession() {
 
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
+        if (typeof loadPortfolio === 'function') loadPortfolio();
+        _refreshPaidCertRefs();
         await loadAppConfig();
         _updatePushToggleUI();
         _checkOnboardingRequirements(() => _landOnAppropriateScreen());
@@ -756,8 +759,10 @@ function updateUI() {
     }
     // Master certificate — visible si todos los cursos están aprobados
     _checkMasterCert();
+    _updateCertButtonLabels();
     renderCourseResources();
-    renderBadgesCarousel();
+    renderBadgesGrid();
+    renderPersonalRecords();
 }
 
 // ── Acordeón móvil ───────────────────────────────────────────────────
@@ -768,30 +773,24 @@ function togglePerfilSection(btn) {
     btn.classList.toggle('collapsed', collapsed);
 }
 
-// ── Carrusel infinito de logros ───────────────────────────────────────
-let _bcIndex = 0;
-let _bcItemW  = 96;
-const _bcN    = () => Object.keys(badges).length;
-
-function renderBadgesCarousel() {
-    const track = document.getElementById('badgesCarousel');
-    if (!track) return;
+// ── Grid de logros + récords personales ────────────────────────────────
+function renderBadgesGrid() {
+    const grid = document.getElementById('badgesGrid');
+    if (!grid) return;
     const earned = new Set(progress?.badges || []);
     const list = Object.values(badges);
     const earnedCount = list.filter(b => earned.has(b.id)).length;
     const countEl = document.getElementById('badgesEarnedCount');
     if (countEl) countEl.textContent = earnedCount;
-
-    // Triplicar para bucle infinito
-    const tripled = [...list, ...list, ...list];
-    _bcIndex = list.length; // empezar en copia central
+    const totalEl = document.getElementById('badgesTotalCount');
+    if (totalEl) totalEl.textContent = list.length;
 
     const itemHTML = (b) => {
         const done = earned.has(b.id);
         const svg = BADGE_SVG[b.id]
             ? BADGE_SVG[b.id]
             : `<span style="font-size:22px;line-height:1">${b.icon}</span>`;
-        return `<button class="badge-carousel-item${done?' earned':''}" onclick="showBadgeDetail('${b.id}')" style="width:86px">
+        return `<button class="badge-grid-item${done?' earned':''}" onclick="showBadgeDetail('${b.id}')">
             <div style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
                 background:${done?'linear-gradient(135deg,#f3e8ff,#ede9fe)':'#f1f5f9'};
                 ${done?'':'filter:grayscale(1);opacity:.45'}">
@@ -803,47 +802,47 @@ function renderBadgesCarousel() {
                 ${done?`+${b.xpReward} XP`:'🔒'}</span>
         </button>`;
     };
-    track.innerHTML = tripled.map(itemHTML).join('');
-
-    // Medir después de dos frames para asegurar layout completo
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-        const first = track.querySelector('.badge-carousel-item');
-        if (first) {
-            const style = window.getComputedStyle(first);
-            const marginL = parseFloat(style.marginLeft) || 0;
-            const marginR = parseFloat(style.marginRight) || 0;
-            _bcItemW = first.offsetWidth + marginL + marginR;
-        }
-        _bcApply(false);
-    }));
+    grid.innerHTML = list.map(itemHTML).join('');
 }
 
-let _bcMoving = false;
-function badgesCarouselMove(dir) {
-    if (_bcMoving) return;
-    const track = document.getElementById('badgesCarousel');
-    if (!track) return;
-    _bcMoving = true;
-    _bcIndex += dir;
-    _bcApply(true);
-    track.addEventListener('transitionend', function once(e) {
-        if (e.target !== track) return;
-        const n = _bcN();
-        if (_bcIndex <= 0)        { _bcIndex = n; _bcApply(false); }
-        else if (_bcIndex >= n*2) { _bcIndex = n; _bcApply(false); }
-        _bcMoving = false;
-    }, { once: true });
-}
+// Récords personales: solo métricas que sí podemos calcular honestamente
+// con los datos que ya guardamos — no se inventan tiers ni historial que
+// no existe. La liga se deriva del nivel (que nunca baja), así que la
+// liga ACTUAL ya es, por definición, la más alta alcanzada.
+function renderPersonalRecords() {
+    const row = document.getElementById('personalRecordsRow');
+    if (!row) return;
 
-function _bcApply(animate) {
-    const track = document.getElementById('badgesCarousel');
-    if (!track) return;
-    track.style.transition = animate ? 'transform .4s cubic-bezier(.4,0,.2,1)' : 'none';
-    // Centrar el badge visible añadiendo offset del wrapper (margen de flechas = 38px)
-    const wrapper = track.parentElement;
-    const wrapW = wrapper ? wrapper.offsetWidth : 0;
-    const centerOffset = wrapW > 0 ? Math.round((wrapW - _bcItemW) / 2) : 0;
-    track.style.transform = `translateX(${centerOffset - _bcIndex * _bcItemW}px)`;
+    const LEAGUES = [
+        { name: 'Diamante', emoji: '💎', min: 11 },
+        { name: 'Platino',  emoji: '🪙', min: 8  },
+        { name: 'Oro',      emoji: '🥇', min: 5  },
+        { name: 'Plata',    emoji: '🥈', min: 3  },
+        { name: 'Bronce',   emoji: '🥉', min: 1  },
+    ];
+    const level = progress?.level || 1;
+    const league = LEAGUES.find(l => level >= l.min) || LEAGUES[LEAGUES.length - 1];
+
+    const longestStreak = Math.max(progress?.longestStreak || 0, progress?.streak || 0);
+
+    const xpLog = progress?.dailyMissions?.xpLog || [];
+    const todayXP = progress?.dailyMissions?.dailyXP || 0;
+    const bestDayXP = Math.max(todayXP, ...xpLog.map(d => d.xp || 0), 0);
+
+    const totalCards = progress?.completedCards?.length || 0;
+
+    const records = [
+        { icon: league.emoji, bg: '#fffbeb', value: league.name, label: 'Liga más alta' },
+        { icon: '🔥', bg: '#fef2f2', value: longestStreak, label: 'Racha más larga' },
+        { icon: '⚡', bg: '#eff6ff', value: bestDayXP, label: 'Más XP en un día' },
+        { icon: '📚', bg: '#f0fdf4', value: totalCards, label: 'Tarjetas completadas' },
+    ];
+    row.innerHTML = records.map(r => `
+        <div class="record-card">
+            <div class="record-icon" style="background:${r.bg}">${r.icon}</div>
+            <div class="record-value">${r.value}</div>
+            <div class="record-label">${r.label}</div>
+        </div>`).join('');
 }
 
 function showBadgeDetail(badgeId) {
@@ -1070,6 +1069,9 @@ function checkDailyStreak() {
     if (progress.streak >= 3  && !progress.badges.includes("streak3"))  unlockBadge("streak3");
     if (progress.streak >= 7  && !progress.badges.includes("streak7"))  unlockBadge("streak7");
     if (progress.streak >= 30 && !progress.badges.includes("streak30")) unlockBadge("streak30");
+    // Récord personal de racha más larga — no había historial antes de este
+    // campo, así que arranca igualada a la racha actual la primera vez.
+    progress.longestStreak = Math.max(progress.longestStreak || 0, progress.streak || 0);
     updateStreakDisplay();
 }
 
@@ -4006,6 +4008,51 @@ function _buildSignaturesHtml(signatures, firmaSrcFallback) {
     }).join('');
 }
 
+// Set con "cert_type:ref_id" de todo lo que el usuario YA pagó — se usa
+// para que los botones de diploma/certificado maestro digan "Descargar"
+// (habilitados, sin ir a la pasarela) en vez de "Obtenerlo · QX" (que sí
+// redirige a pagar) cuando corresponde. Antes el botón mostraba siempre el
+// precio, incluso ya pagado — solo funcionaba bien al hacer clic porque
+// requestCertificate() revisaba el pago en ese momento, pero la etiqueta
+// nunca reflejaba que ya estaba comprado.
+let _paidCertRefs = new Set();
+
+async function _refreshPaidCertRefs() {
+    if (!currentUser) return;
+    try {
+        const { data } = await supabase
+            .from('certificate_payments')
+            .select('cert_type, ref_id')
+            .eq('user_id', currentUser.id)
+            .eq('status', 'paid');
+        _paidCertRefs = new Set((data || []).map(r => `${r.cert_type}:${r.ref_id}`));
+    } catch (e) {
+        console.error('_refreshPaidCertRefs:', e);
+    }
+    _updateCertButtonLabels();
+}
+
+function _isCertPaid(certType, refId) {
+    return _paidCertRefs.has(`${certType}:${refId}`);
+}
+
+function _updateCertButtonLabels() {
+    const _activeCid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+    const diplomaLabel = document.getElementById('certDownloadBtnLabel');
+    if (diplomaLabel) {
+        diplomaLabel.textContent = _isCertPaid('diploma', _activeCid)
+            ? '⬇ Descargar diploma de participación'
+            : 'Diploma de Participación · curso actual · Q10';
+    }
+    const masterLabel = document.getElementById('masterCertBtnLabel');
+    if (masterLabel) {
+        const _pid = _selectedMasterPath?.id || _activeMasterPath?.id;
+        masterLabel.textContent = (_pid && _isCertPaid('master', _pid))
+            ? '⬇ Descargar Certificado Maestro'
+            : 'Obtener Certificado Maestro · Q50';
+    }
+}
+
 // Los navegadores (sobre todo móviles) bloquean casi siempre window.open()
 // cuando no hay un clic directo del usuario en el mismo turno de JS — pasa
 // SIEMPRE al volver del pago (el certificado se genera de forma asíncrona
@@ -4163,6 +4210,8 @@ async function requestCertificate(certType, courseId, score) {
             const data = rows?.[0];
             if (data?.status === 'paid') {
                 showToast('¡Pago confirmado! Generando tu ' + (paidCertType === 'master' ? 'Certificado Maestro' : 'diploma') + '…', 'success');
+                _paidCertRefs.add(`${paidCertType}:${refId}`);
+                _updateCertButtonLabels();
                 if (paidCertType === 'master') {
                     if (typeof _checkMasterCert === 'function') _checkMasterCert();
                     if (typeof generateMasterCertificate === 'function') generateMasterCertificate();
