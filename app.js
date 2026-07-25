@@ -735,28 +735,6 @@ function updateUI() {
     if (_devBtn) _devBtn.classList.toggle('hidden', !_isAdmin);
     _updateDevModeBtn();
 
-    // Botón de certificado en perfil — visible si aprobó el examen del curso activo
-    const certBtn = document.getElementById('certDownloadBtn');
-    if (certBtn) {
-        const _activeCid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
-        const _dm = progress.dailyMissions || {};
-        const _scores = _dm.examScores || {};
-        // Buscar puntaje: por courseId primero, luego legacy single-score para STEAM
-        const _score = (_scores[_activeCid] !== undefined) ? _scores[_activeCid]
-                     : (_activeCid === 'steam' && _dm.examScore !== undefined) ? _dm.examScore
-                     : undefined;
-        const _passed = (_score !== undefined && _score >= 70) || isDevMode();
-        if (_passed) {
-            certBtn.classList.remove('hidden');
-            window._lastExamScore = _score || 100;
-        } else {
-            certBtn.classList.add('hidden');
-        }
-        // Placeholder: oculto si hay algún certificado visible
-        const _masterVisible = !document.getElementById('masterCertBtn')?.classList.contains('hidden');
-        const _placeholder = document.getElementById('certPlaceholder');
-        if (_placeholder) _placeholder.classList.toggle('hidden', _passed || _masterVisible);
-    }
     // Master certificate — visible si todos los cursos están aprobados
     _checkMasterCert();
     _updateCertButtonLabels();
@@ -3845,9 +3823,11 @@ function showExamResults() {
         progress.dailyMissions.examDate = localDateStr(); // legado, se mantiene por compatibilidad
         window._lastExamScore = pct;
         window._lastExamCourseId = _cid;
-        // Mostrar botón de certificado en perfil
-        const certBtn = document.getElementById('certDownloadBtn');
-        if (certBtn) certBtn.classList.remove('hidden');
+        // Refrescar de inmediato la lista de certificados (aparece el botón
+        // de diploma de este curso sin esperar a la próxima vez que se
+        // abra Progreso).
+        if (typeof _checkMasterCert === 'function') _checkMasterCert();
+        if (typeof _updateExamBtn === 'function') _updateExamBtn();
     }
     saveProgress();
 
@@ -4047,13 +4027,6 @@ function _isCertPaid(certType, refId) {
 }
 
 function _updateCertButtonLabels() {
-    const _activeCid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
-    const diplomaLabel = document.getElementById('certDownloadBtnLabel');
-    if (diplomaLabel) {
-        diplomaLabel.textContent = _isCertPaid('diploma', _activeCid)
-            ? '⬇ Descargar diploma de participación'
-            : 'Diploma de Participación · curso actual · Q10';
-    }
     const masterLabel = document.getElementById('masterCertBtnLabel');
     if (masterLabel) {
         const _pid = _selectedMasterPath?.id || _activeMasterPath?.id;
@@ -4752,10 +4725,10 @@ function _checkMasterCert() {
     const certBtn = document.getElementById('masterCertBtn');
     if (certBtn) certBtn.classList.toggle('hidden', !masterPassed && !isDevMode());
 
-    // Placeholder: oculto si hay cualquier certificado visible o todos están en camino
-    const _certVisible = !document.getElementById('certDownloadBtn')?.classList.contains('hidden');
+    // Placeholder: oculto si ya aprobaste al menos un curso (ya hay botón de
+    // diploma por curso en la lista de arriba) o si el maestro está listo
     const _ph = document.getElementById('certPlaceholder');
-    if (_ph) _ph.classList.toggle('hidden', allIndividualPassed || masterPassed || _certVisible);
+    if (_ph) _ph.classList.toggle('hidden', allIndividualPassed || masterPassed);
 
     // Estado por curso — mostrar rutas como secciones con sus cursos dentro
     const statusEl = document.getElementById('certCourseStatus');
@@ -4779,6 +4752,15 @@ function _checkMasterCert() {
                 const started = (progress?.completedCards || []).some(id => _cardBelongsToCourse(c.id, id));
                 const col = courseColors[c.id] || '#4f46e5';
                 if (passed) {
+                    // Botón de diploma POR CURSO (no depende de cuál sea el curso
+                    // "activo" en ese momento) — antes solo existía un botón
+                    // global tied a currentCourseId, así que un curso ya
+                    // aprobado no mostraba forma de conseguir su diploma a
+                    // menos que ese curso siguiera siendo el activo.
+                    const isPaid = _isCertPaid('diploma', c.id);
+                    const certBtnHtml = isPaid
+                        ? `<button onclick="requestCertificate('diploma','${c.id}',${s})" style="flex-shrink:0;background:#16A34A;color:white;font-size:10px;font-weight:800;padding:6px 10px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap">⬇ Descargar</button>`
+                        : `<button onclick="requestCertificate('diploma','${c.id}',${s})" style="flex-shrink:0;background:#5C35C5;color:white;font-size:10px;font-weight:800;padding:6px 10px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap">Obtener · Q10</button>`;
                     return `<div style="display:flex;align-items:center;gap:10px;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:12px;padding:8px 12px">
                         <div style="width:28px;height:28px;border-radius:50%;background:#22C55E;display:flex;align-items:center;justify-content:center;flex-shrink:0">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -4787,6 +4769,7 @@ function _checkMasterCert() {
                             <p style="font-size:12px;font-weight:700;color:#15803D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
                             <p style="font-size:10px;color:#16A34A">Certificado · ${s}%</p>
                         </div>
+                        ${certBtnHtml}
                     </div>`;
                 } else if (started) {
                     return `<div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:12px;padding:8px 12px">
