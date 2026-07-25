@@ -23,6 +23,14 @@ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Fecha local YYYY-MM-DD (usa zona horaria del dispositivo, no UTC)
 function localDateStr() { return new Date().toLocaleDateString('en-CA'); }
+// Convierte un string 'YYYY-MM-DD' (formato de localDateStr) a un Date en
+// hora LOCAL — new Date('YYYY-MM-DD') a secas lo interpreta como UTC
+// medianoche, lo que puede mostrar un día antes según la zona horaria.
+function _parseLocalDateStr(dateStr) {
+    const [y, m, d] = String(dateStr).split('-').map(Number);
+    if (!y || !m || !d) return new Date();
+    return new Date(y, m - 1, d);
+}
 
 // Orden de la ruta de aprendizaje (de primero a último en desbloquearse)
 const COURSE_PATH_ORDER = ['design-thinking', 'tipos-estudiantes', 'abp', 'steam', 'evaluacion', 'storytelling'];
@@ -1104,8 +1112,8 @@ function loadDailyMissions() {
     if (savedMissions.date !== today) {
         const newMissions = dailyMissionsList.map(m => ({ ...m, current: 0, completed: false, claimed: false }));
         // Preservar campos de perfil, exámenes y desbloqueos de módulos que también viven en dailyMissions
-        const { fullName, profilePhoto, examScores, examScore, masterExamScore, masterExamScores,
-                masterExamDate, coursePositions, diagResult, diagDone, onboardingDone, portfolioByPath,
+        const { fullName, profilePhoto, examScores, examScore, examDates, masterExamScore, masterExamScores,
+                masterExamDate, masterExamDates, coursePositions, diagResult, diagDone, onboardingDone, portfolioByPath,
                 portfolioAiTotal, portfolioScores, portfolioFeedback, portfolioSummary,
                 portfolioAttempts, portfolioLastAttempt,
                 // persistentes entre días:
@@ -1126,9 +1134,11 @@ function loadDailyMissions() {
             ...(profilePhoto    && { profilePhoto }),
             ...(examScores      && { examScores }),
             ...(examScore !== undefined && { examScore }),
+            ...(examDates       && { examDates }),
             ...(masterExamScore !== undefined && { masterExamScore }),
             ...(masterExamScores && { masterExamScores }),
             ...(masterExamDate  && { masterExamDate }),
+            ...(masterExamDates && { masterExamDates }),
             ...(coursePositions && { coursePositions }),
             ...(diagResult      && { diagResult }),
             ...(diagDone        && { diagDone }),
@@ -3759,7 +3769,12 @@ function showExamResults() {
         if (!progress.dailyMissions.examScores) progress.dailyMissions.examScores = {};
         progress.dailyMissions.examScores[_cid] = pct;
         if (_cid === 'steam') progress.dailyMissions.examScore = pct; // backward compat solo para STEAM
-        progress.dailyMissions.examDate = localDateStr();
+        // Fecha por courseId (no solo la global examDate) — el certificado
+        // debe mostrar cuándo se aprobó ESE curso, no la última vez que se
+        // aprobó CUALQUIER examen (que es lo que examDate por sí sola dice).
+        if (!progress.dailyMissions.examDates) progress.dailyMissions.examDates = {};
+        progress.dailyMissions.examDates[_cid] = localDateStr();
+        progress.dailyMissions.examDate = localDateStr(); // legado, se mantiene por compatibilidad
         window._lastExamScore = pct;
         window._lastExamCourseId = _cid;
         // Mostrar botón de certificado en perfil
@@ -4067,16 +4082,22 @@ async function requestCertificate(certType, courseId, score) {
 
 async function generateCertificateFromExam(percentage, overrideCourseId) {
     const nombre = getDisplayName();
-    const fecha = new Date().toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' });
-    const _now = new Date();
-    const _issueYear = _now.getFullYear();
-    const _issueMonth = _now.getMonth() + 1;
 
     // Datos del curso: prioridad → override explícito → último examen → activo → steam
     const _cid2 = overrideCourseId
         || window._lastExamCourseId
         || (typeof currentCourseId !== 'undefined' && currentCourseId)
         || 'steam';
+
+    // Fecha de EMISIÓN = cuándo se APROBÓ el examen de este curso, no
+    // cuándo se genera/descarga el certificado (puede ser mucho después,
+    // incluso tras pagar el diploma). Si no hay fecha guardada (exámenes
+    // aprobados antes de este fix), usa hoy como último recurso.
+    const _storedExamDate = progress?.dailyMissions?.examDates?.[_cid2];
+    const _issueDate = _storedExamDate ? _parseLocalDateStr(_storedExamDate) : new Date();
+    const fecha = _issueDate.toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' });
+    const _issueYear = _issueDate.getFullYear();
+    const _issueMonth = _issueDate.getMonth() + 1;
     const _course = (typeof allCourses !== 'undefined' && allCourses.find(c => c.id === _cid2)) || allCourses[0];
     const courseTitle = _course.title || 'Metodología STEAM 2.0';
     const courseDuration = _course.durationHours ? `${_course.durationHours} horas` : '10 horas';
@@ -4714,6 +4735,10 @@ function _showMasterExamResults() {
     if (!progress.dailyMissions.masterExamScores) progress.dailyMissions.masterExamScores = {};
     const _pid = _selectedMasterPath?.id || _activeMasterPath?.id;
     if (_pid) progress.dailyMissions.masterExamScores[_pid] = pct;
+    // Fecha por ruta — igual que masterExamScores, masterExamDate por sí
+    // sola es global y se pisa si se aprueba más de una ruta.
+    if (!progress.dailyMissions.masterExamDates) progress.dailyMissions.masterExamDates = {};
+    if (_pid) progress.dailyMissions.masterExamDates[_pid] = localDateStr();
     window._lastMasterExamScore = pct;
     if (passed) {
         addXP(100, 'Parte 1 del Examen Maestro completada');
@@ -4785,13 +4810,21 @@ async function generateMasterCertificate() {
     if (certWin) certWin.document.write('<html><body style="background:#1e1b4b;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0"><p style="color:white;font-family:sans-serif;font-size:18px">Generando certificado…</p></body></html>');
 
     const nombre      = getDisplayName();
-    const _now        = new Date();
-    const fecha       = _now.toLocaleDateString('es-GT', { day:'numeric', month:'long', year:'numeric' });
-    const _issueYear  = _now.getFullYear();
-    const _issueMonth = _now.getMonth() + 1;
     const scores      = progress?.dailyMissions?.examScores || {};
     const steamScore  = scores['steam'] ?? progress?.dailyMissions?.examScore ?? 0;
     const masterScore = progress?.dailyMissions?.masterExamScore ?? window._lastMasterExamScore ?? 0;
+
+    // Solo los cursos de la RUTA activa (no todo el catálogo)
+    const _path = _activeMasterPath || LEARNING_PATHS[0];
+    const _pathLabel = _path?.label || 'Programa de Formación Docente';
+
+    // Fecha de EMISIÓN = cuándo se aprobó el examen maestro de ESTA ruta,
+    // no cuándo se genera/descarga el certificado.
+    const _storedMasterDate = _path?.id ? progress?.dailyMissions?.masterExamDates?.[_path.id] : null;
+    const _issueDate  = _storedMasterDate ? _parseLocalDateStr(_storedMasterDate) : new Date();
+    const fecha       = _issueDate.toLocaleDateString('es-GT', { day:'numeric', month:'long', year:'numeric' });
+    const _issueYear  = _issueDate.getFullYear();
+    const _issueMonth = _issueDate.getMonth() + 1;
 
     const [firmaSrc, masterSigs] = await Promise.all([
         _imgToBase64('firma.png'),
@@ -4799,9 +4832,6 @@ async function generateMasterCertificate() {
     ]);
     const logoHtml = `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:#7C3AED">Formación Docente</span>`;
 
-    // Solo los cursos de la RUTA activa (no todo el catálogo)
-    const _path = _activeMasterPath || LEARNING_PATHS[0];
-    const _pathLabel = _path?.label || 'Programa de Formación Docente';
     const _pathCourseIds = _path?.courses || [];
     const availableCourses = allCourses.filter(c => c.status === 'available' && _pathCourseIds.includes(c.id));
     const totalHours = availableCourses.reduce((a, c) => a + (c.durationHours || 0), 0);
