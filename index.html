@@ -2149,9 +2149,12 @@
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
                     <span data-icon="clipboard" style="display:inline-flex;width:20px;height:20px;color:white"></span>
                 </div>
-                <div class="flex-1">
-                    <p class="font-black text-white text-sm">Examen Final</p>
-                    <p class="text-white/70 text-xs mt-0.5">Pon a prueba lo aprendido</p>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <p class="font-black text-white text-sm truncate" id="examBtnCourseName">Examen Final</p>
+                        <span id="examBtnPassedBadge" class="hidden text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0" style="background:rgba(255,255,255,.25);color:white"></span>
+                    </div>
+                    <p class="text-white/70 text-xs mt-0.5" id="examBtnSubtitle">Pon a prueba lo aprendido</p>
                 </div>
                 <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:white"></span>
             </button>
