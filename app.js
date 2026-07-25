@@ -801,17 +801,42 @@ function renderBadgesGrid() {
 // liga ACTUAL ya es, por definición, la más alta alcanzada.
 function renderPersonalRecords() {
     const row = document.getElementById('personalRecordsRow');
+    const ladder = document.getElementById('leagueLadder');
     if (!row) return;
 
+    // Ladder de ligas al estilo Duolingo: se muestran TODAS las ligas en
+    // orden, no solo la actual — la alcanzada y las anteriores en color, las
+    // que faltan en gris/bloqueadas. La liga se deriva del nivel (que nunca
+    // baja), así que la liga actual ya es, por definición, la más alta.
     const LEAGUES = [
-        { name: 'Diamante', emoji: '💎', min: 11 },
-        { name: 'Platino',  emoji: '🪙', min: 8  },
-        { name: 'Oro',      emoji: '🥇', min: 5  },
-        { name: 'Plata',    emoji: '🥈', min: 3  },
-        { name: 'Bronce',   emoji: '🥉', min: 1  },
+        { name: 'Bronce',   emoji: '🥉', min: 1,  color: '#b45309' },
+        { name: 'Plata',    emoji: '🥈', min: 3,  color: '#64748b' },
+        { name: 'Oro',      emoji: '🥇', min: 5,  color: '#f59e0b' },
+        { name: 'Platino',  emoji: '🪙', min: 8,  color: '#8b5cf6' },
+        { name: 'Diamante', emoji: '💎', min: 11, color: '#06b6d4' },
     ];
     const level = progress?.level || 1;
-    const league = LEAGUES.find(l => level >= l.min) || LEAGUES[LEAGUES.length - 1];
+    let currentIdx = 0;
+    LEAGUES.forEach((l, i) => { if (level >= l.min) currentIdx = i; });
+    const league = LEAGUES[currentIdx];
+
+    if (ladder) {
+        ladder.innerHTML = `
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Liga actual: ${league.name}</p>
+            <div style="display:flex;justify-content:space-between;gap:4px">
+            ${LEAGUES.map((l, i) => {
+                const unlocked = i <= currentIdx;
+                const isCurrent = i === currentIdx;
+                return `<div style="flex:1;text-align:center;min-width:0">
+                    <div style="width:42px;height:42px;border-radius:50%;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:19px;
+                        background:${unlocked ? l.color + '1f' : '#f1f5f9'};
+                        border:2px solid ${isCurrent ? l.color : (unlocked ? l.color + '55' : '#e2e8f0')};
+                        ${unlocked ? '' : 'filter:grayscale(1);opacity:.5'}">${l.emoji}</div>
+                    <span style="font-size:9px;font-weight:800;color:${isCurrent ? l.color : '#94a3b8'}">${l.name}</span>
+                </div>`;
+            }).join('')}
+            </div>`;
+    }
 
     const longestStreak = Math.max(progress?.longestStreak || 0, progress?.streak || 0);
 
@@ -822,7 +847,6 @@ function renderPersonalRecords() {
     const totalCards = progress?.completedCards?.length || 0;
 
     const records = [
-        { icon: league.emoji, bg: '#fffbeb', value: league.name, label: 'Liga más alta' },
         { icon: '🔥', bg: '#fef2f2', value: longestStreak, label: 'Racha más larga' },
         { icon: '⚡', bg: '#eff6ff', value: bestDayXP, label: 'Más XP en un día' },
         { icon: '📚', bg: '#f0fdf4', value: totalCards, label: 'Tarjetas completadas' },
@@ -4772,13 +4796,20 @@ function _checkMasterCert() {
                     const certBtnHtml = isPaid
                         ? `<button onclick="requestCertificate('diploma','${c.id}',${s})" style="flex-shrink:0;background:#16A34A;color:white;font-size:10px;font-weight:800;padding:6px 10px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap">⬇ Descargar</button>`
                         : `<button onclick="requestCertificate('diploma','${c.id}',${s})" style="flex-shrink:0;background:#5C35C5;color:white;font-size:10px;font-weight:800;padding:6px 10px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap">Obtener · Q10</button>`;
+                    // Fecha real de aprobación (ya la guardamos por curso) en
+                    // vez de solo el puntaje — igual que "Aprobado el [fecha]"
+                    // en otras plataformas.
+                    const _examDateStr = progress?.dailyMissions?.examDates?.[c.id];
+                    const _examDateLabel = _examDateStr
+                        ? _parseLocalDateStr(_examDateStr).toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' })
+                        : null;
                     return `<div style="display:flex;align-items:center;gap:10px;background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:12px;padding:8px 12px">
                         <div style="width:28px;height:28px;border-radius:50%;background:#22C55E;display:flex;align-items:center;justify-content:center;flex-shrink:0">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </div>
                         <div style="flex:1;min-width:0">
                             <p style="font-size:12px;font-weight:700;color:#15803D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
-                            <p style="font-size:10px;color:#16A34A">Certificado · ${s}%</p>
+                            <p style="font-size:10px;color:#16A34A">${_examDateLabel ? `Aprobado el ${_examDateLabel} · ${s}%` : `Certificado · ${s}%`}</p>
                         </div>
                         ${certBtnHtml}
                     </div>`;
@@ -6144,6 +6175,12 @@ function _renderCourseSelector() {
                 const prereqMet = isCoursePrereqMet(c);
                 const clickable = isOpen && prereqMet;
                 const passed    = (_getScore2(c.id) || 0) >= 70;
+                // % de tarjetas completadas del curso (no solo aprobado/no
+                // aprobado) — se muestra igual que "% clases vistas" en
+                // otras plataformas, solo para cursos ya empezados.
+                const _totalC = c.totalCards || 0;
+                const _completedC = _totalC ? (progress?.completedCards || []).filter(id => _cardBelongsToCourse(c.id, id)).length : 0;
+                const coursePct = _totalC ? Math.round((_completedC / _totalC) * 100) : 0;
                 const prereqNames = (c.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
                 let statusBadge;
                 const _lockSvg = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#64748b" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="12" height="8" rx="2" stroke-width="1.8"/><path d="M6.5 9V6.5a3.5 3.5 0 0 1 7 0V9" stroke-width="1.8"/></svg>';
@@ -6174,6 +6211,15 @@ function _renderCourseSelector() {
                                 <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;max-width:100%;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;${clickable ? `background:${c.color}20;color:${c.color}` : 'background:#f1f5f9;color:#94a3b8'}">${statusBadge}</span>
                                 <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#f1f5f9;color:#64748b">${c.durationHours}h · ${c.totalCards} tarjetas</span>
                             </div>
+                            ${(clickable && !passed && coursePct > 0) ? `
+                            <div style="margin-top:7px">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+                                    <span style="font-size:9px;color:#94a3b8;font-weight:700">${coursePct}% completado</span>
+                                </div>
+                                <div style="height:4px;background:#e2e8f0;border-radius:99px;overflow:hidden">
+                                    <div style="height:100%;width:${coursePct}%;background:${c.color};border-radius:99px"></div>
+                                </div>
+                            </div>` : ''}
                         </div>
                         ${clickable ? `<span style="color:#cbd5e1;font-size:18px">›</span>` : ''}
                     </div>
