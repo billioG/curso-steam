@@ -1715,6 +1715,9 @@
                     </div>
                     <span id="courseProgressPercent" class="text-xs font-bold min-w-[30px] text-right"
                         style="color:var(--brand-blue);font-family:'Montserrat',sans-serif">0%</span>
+                    <button onclick="showCourseSelector()" aria-label="Cambiar curso" title="Cambiar curso" class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 transition flex-shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/><path d="M7 16l-3 3 3 3" stroke-width="1.6"/><path d="M17 4l3 3-3 3" stroke-width="1.6"/></svg>
+                    </button>
                     <button onclick="openGlobalSearch()" aria-label="Buscar" class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 transition flex-shrink-0">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </button>
@@ -2179,7 +2182,7 @@
                 <div class="perfil-items-grid">
                     <button id="certDownloadBtn"
                         class="hidden md:col-span-2 w-full mb-2 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                        style="background:linear-gradient(135deg,#5C35C5,#7c3aed)" onclick="requestCertificate('diploma', window._lastExamCourseId, window._lastExamScore||70)">
+                        style="background:linear-gradient(135deg,#5C35C5,#7c3aed)" onclick="requestCertificate('diploma', currentCourseId, window._lastExamScore||70)">
                         <span data-icon="certificate" style="display:inline-flex;width:16px;height:16px;color:white;flex-shrink:0"></span>
                         <span>Diploma de Participación · curso actual · Q10</span>
                     </button>
