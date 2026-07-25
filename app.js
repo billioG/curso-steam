@@ -676,6 +676,17 @@ function updateUI() {
     const courseProgressPercent = document.getElementById("courseProgressPercent");
     if (courseProgressPercent) courseProgressPercent.innerText = `${coursePercent}%`;
 
+    // Dashboard de bienvenida en Inicio — saludo + resumen del curso activo,
+    // para que al entrar se vea el progreso antes de la tarjeta de lección.
+    const _homeName = document.getElementById('homeDashName');
+    if (_homeName) _homeName.textContent = (typeof getDisplayName === 'function' ? getDisplayName().split(' ')[0] : 'Docente');
+    const _homeCourseName = document.getElementById('homeDashCourseName');
+    if (_homeCourseName) _homeCourseName.textContent = _activeCourse ? _activeCourse.title : 'Cargando…';
+    const _homePct = document.getElementById('homeDashPercent');
+    if (_homePct) _homePct.textContent = `${coursePercent}%`;
+    const _homeBar = document.getElementById('homeDashBar');
+    if (_homeBar) _homeBar.style.width = `${coursePercent}%`;
+
     // Banner "Ir a examen" cuando el curso está al 100% pero sin examen aprobado
     const _examBannerId = 'courseExamReadyBanner';
     let _examBanner = document.getElementById(_examBannerId);

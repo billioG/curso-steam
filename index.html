@@ -1539,11 +1539,30 @@
                    ancha que el contenedor, desbordando la página. */
                 min-width: 0;
             }
+
+            /* Login: en escritorio, tarjeta centrada de ancho fijo en vez de
+               ocupar toda la pantalla — antes el gradiente y el formulario se
+               estiraban de borde a borde en pantallas anchas. */
+            #loginScreen {
+                background: #eef2f6;
+                align-items: center;
+                justify-content: center;
+                padding: 40px 20px;
+            }
+            #loginScreen .login-card {
+                max-width: 440px;
+                width: 100%;
+                max-height: none;
+                border-radius: 28px;
+                overflow: hidden;
+                box-shadow: 0 24px 64px rgba(15, 23, 42, .18);
+            }
         }
     </style>
 
     <!-- ==================== PANTALLA DE LOGIN ==================== -->
     <div id="loginScreen" class="fixed inset-0 z-50 flex flex-col overflow-y-auto">
+      <div class="login-card flex flex-col">
 
         <!-- Parte superior — gradiente con info del curso -->
         <div class="shrink-0 flex flex-col items-center justify-center pt-14 pb-10 px-6 relative overflow-hidden"
@@ -1683,6 +1702,7 @@
                 Tu progreso se guarda automáticamente en la nube
             </div>
         </div>
+      </div>
     </div>
 
     <!-- ==================== APP PRINCIPAL ==================== -->
@@ -1720,6 +1740,21 @@
         <!-- TAB: INICIO (estilo Tinder)               -->
         <!-- ══════════════════════════════════════════ -->
         <div id="tabHome" class="tab-panel pt-16 px-4 pb-28">
+
+            <!-- Dashboard de bienvenida -->
+            <div class="mt-4">
+                <p class="text-lg font-black text-slate-800">Hola, <span id="homeDashName">Docente</span> 👋</p>
+                <div class="mt-3 rounded-2xl p-4" style="background:linear-gradient(135deg,#1e3a5f,#1e40af)">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-white/70 text-[11px] font-bold uppercase tracking-wide">Continúa aprendiendo</p>
+                        <span id="homeDashPercent" class="text-white text-xs font-bold">0%</span>
+                    </div>
+                    <p id="homeDashCourseName" class="text-white font-black text-base mb-2 truncate">Cargando…</p>
+                    <div class="h-1.5 bg-white/15 rounded-full overflow-hidden">
+                        <div id="homeDashBar" class="h-full rounded-full transition-all duration-500" style="width:0%;background:white"></div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Tarjeta de contenido -->
             <div id="cardContainer" class="mt-3 flex items-center justify-center">
