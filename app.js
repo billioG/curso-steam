@@ -4544,8 +4544,19 @@ function _setPortfolio(pathId, data) {
 }
 function _selectMasterPath(pathId) {
     const p = LEARNING_PATHS.find(x => x.id === pathId);
-    if (p) { _selectedMasterPath = p; _checkMasterCert(); }
+    if (!p) return;
+    // No dejar elegir una ruta que aún no está 100% aprobada — el
+    // Certificado Maestro solo aplica a rutas terminadas; el chip de esa
+    // ruta ya se muestra como bloqueado con la razón, así que este clic
+    // solo puede llegar de un chip deshabilitado.
+    if (typeof _lastMasterPathAllPassed !== 'undefined' && _lastMasterPathAllPassed[pathId] === false) {
+        showToast('Primero debes aprobar todos los cursos de esta ruta.', 'info');
+        return;
+    }
+    _selectedMasterPath = p;
+    _checkMasterCert();
 }
+let _lastMasterPathAllPassed = {};
 
 function _checkMasterCert() {
     if (typeof allCourses === 'undefined') return;
@@ -4564,6 +4575,8 @@ function _checkMasterCert() {
 
     const passedPaths = pathResults.filter(r => r.allPassed);
     const anyPassed   = passedPaths.length > 0;
+    _lastMasterPathAllPassed = {};
+    pathResults.forEach(r => { _lastMasterPathAllPassed[r.path.id] = r.allPassed; });
 
     // Ruta seleccionada: mantener la elegida si sigue aprobada, si no usar la primera completada
     if (!_selectedMasterPath || !passedPaths.some(r => r.path.id === _selectedMasterPath.id)) {
@@ -4572,26 +4585,33 @@ function _checkMasterCert() {
     _activeMasterPath = _selectedMasterPath;
     const sel = _selectedMasterPath;
 
-    // Chips de selección de ruta (solo si hay ≥1 completada)
+    // Chips de selección de ruta: se muestran TODAS las rutas (no solo la(s)
+    // ya completada(s)) — antes, si solo una ruta estaba terminada, parecía
+    // que la app "solo te manda a esa ruta" sin explicar por qué las demás
+    // no aparecían. Ahora las no completadas se ven bloqueadas con el
+    // motivo, y solo las 100% aprobadas son seleccionables.
     const selEl = document.getElementById('masterPathSelector');
     if (selEl) {
-        if (anyPassed) {
-            selEl.innerHTML = `
-                <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px">Certificado maestro · elige la ruta</p>
-                <div style="display:flex;flex-wrap:wrap;gap:6px">
-                ${passedPaths.map(r => {
-                    const isSel = sel && r.path.id === sel.id;
+        selEl.innerHTML = `
+            <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px">Certificado maestro · elige la ruta</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${pathResults.map(r => {
+                const isSel = sel && r.path.id === sel.id;
+                if (r.allPassed) {
                     return `<button onclick="_selectMasterPath('${r.path.id}')"
                         style="font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;cursor:pointer;
                                border:1.5px solid ${isSel ? r.path.color : '#e2e8f0'};
                                background:${isSel ? r.path.color : '#fff'};
                                color:${isSel ? '#fff' : '#475569'}">${esc(r.path.label)}</button>`;
-                }).join('')}
-                </div>`;
-            selEl.classList.remove('hidden');
-        } else {
-            selEl.classList.add('hidden');
-        }
+                }
+                return `<button onclick="showToast('Primero aprueba todos los cursos de ${esc(r.path.label)}.','info')"
+                    style="font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer;
+                           border:1.5px dashed #e2e8f0;background:#f8fafc;color:#94a3b8;display:inline-flex;align-items:center;gap:4px">
+                    <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="12" height="8" rx="2" stroke-width="1.8"/><path d="M6.5 9V6.5a3.5 3.5 0 0 1 7 0V9" stroke-width="1.8"/></svg>
+                    ${esc(r.path.label)}</button>`;
+            }).join('')}
+            </div>`;
+        selEl.classList.remove('hidden');
     }
 
     // Puntajes de la ruta SELECCIONADA
@@ -5560,6 +5580,13 @@ const APP_TOUR_STEPS = [
         side: 'top',
     },
     {
+        tab: 'biblioteca',
+        element: '#coursesList',
+        title: 'Rutas y cursos',
+        description: '__BIBLIOTECA_DESC__',
+        side: 'top',
+    },
+    {
         tab: 'modulos',
         element: '#modulesIndexList',
         title: 'Módulos con desbloqueo progresivo',
@@ -5567,32 +5594,25 @@ const APP_TOUR_STEPS = [
         side: 'top',
     },
     {
-        tab: 'perfil',
-        element: '#perfilStatsRow',
+        tab: 'progreso',
+        element: '#progresoChart',
         title: 'Tu progreso en números',
-        description: 'XP, nivel, racha de días activos y tarjetas completadas — todo sincronizado en la nube, accesible desde cualquier dispositivo con tu cuenta.',
-        side: 'bottom',
+        description: 'XP, nivel, racha de días activos y tarjetas completadas, más una gráfica de tu XP diario — todo sincronizado en la nube, accesible desde cualquier dispositivo con tu cuenta.',
+        side: 'top',
     },
     {
-        tab: 'perfil',
-        element: '#perfilCourseProgressBlock',
-        title: 'Rutas de aprendizaje',
-        description: 'El programa tiene varias <strong>rutas</strong>, cada una con varios cursos en secuencia lógica — algunos requieren aprobar el examen del curso anterior. Cambia de curso o ruta cuando quieras con "Cambiar curso".',
-        side: 'bottom',
-    },
-    {
-        tab: 'perfil',
+        tab: 'progreso',
         element: '.perfil-badges-wrap',
         title: 'Logros y ranking por ligas',
-        description: 'Desbloquea insignias por tu desempeño y compite de forma sana en el <strong>Ranking</strong>, organizado por ligas según tu nivel.',
+        description: 'Desbloquea insignias por tu desempeño y compite de forma sana en el <strong>Ranking</strong> (justo arriba), organizado por ligas según tu nivel.',
         side: 'bottom',
     },
     {
-        tab: 'perfil',
-        openSection: 'Aprendizaje',
-        element: '#examBtn',
+        tab: 'progreso',
+        openSection: 'Certificados',
+        element: '#certSection',
         title: 'Examen final y certificado',
-        description: 'Al completar el <strong>80%</strong> de las tarjetas de un curso se activa el examen. Con <strong>70% o más</strong>, descargas tu certificado en PDF desde tu Perfil.',
+        description: 'Al completar el <strong>80%</strong> de las tarjetas de un curso se activa el examen (desde Perfil → Aprendizaje). Con <strong>70% o más</strong>, descargas tu diploma en PDF aquí en Progreso.',
         side: 'top',
     },
     {
@@ -5614,10 +5634,19 @@ const APP_TOUR_STEPS = [
         tab: 'perfil',
         element: 'nav.bottom-nav',
         title: '¡Todo listo! 🚀',
-        description: 'Navega entre Inicio, Ranking, Módulos y Perfil desde aquí. Puedes repetir este tour cuando quieras con el botón "Tutorial".',
+        description: 'Navega entre Inicio, Biblioteca, Progreso, Módulos y Perfil desde aquí. Puedes repetir este tour cuando quieras con el botón "Tutorial".',
         side: 'top',
     },
 ];
+
+// La cantidad de rutas/cursos cambia con el tiempo (hoy son varias rutas
+// con decenas de cursos) — en vez de dejar un número fijo en el texto que
+// vuelva a quedar desactualizado, se calcula justo antes de mostrar el tour.
+function _tourBibliotecaDescription() {
+    const pathCount = (typeof LEARNING_PATHS !== 'undefined') ? LEARNING_PATHS.length : 0;
+    const courseCount = (typeof allCourses !== 'undefined') ? allCourses.filter(c => c.status === 'available').length : 0;
+    return `El programa tiene <strong>${pathCount} rutas</strong> con <strong>${courseCount} cursos</strong> en total, cada ruta en secuencia lógica — algunos cursos requieren aprobar el examen del anterior. Cambia de curso o ruta cuando quieras desde aquí, o con el botón junto al buscador.`;
+}
 
 function _ensurePerfilSectionOpen(labelTitle) {
     document.querySelectorAll('.perfil-section-toggle').forEach(btn => {
@@ -5662,7 +5691,7 @@ function startAppTour() {
             element: step.element,
             popover: {
                 title: step.title,
-                description: step.description,
+                description: step.description === '__BIBLIOTECA_DESC__' ? _tourBibliotecaDescription() : step.description,
                 side: step.side || 'bottom',
                 align: 'center',
                 onNextClick: () => {
