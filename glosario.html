@@ -426,6 +426,10 @@
   .tag-com { background: #EDE9FE; color: #5B21B6; }
   .tag-dis { background: #FFEDD5; color: #9A3412; }
   .tag-bie { background: #DCFCE7; color: #166534; }
+.tag-ei { background: #EDE9FE; color: #4C1D95; }
+.tag-tea { background: #E0E7FF; color: #3730A3; }
+.tag-ddt { background: #FEF3C7; color: #92400E; }
+.tag-lsg { background: #E0F2FE; color: #075985; }
 
   .term-definition {
     color: var(--gray-700);
@@ -618,6 +622,18 @@
     <button class="chip" data-filter="bie">
       <span class="chip-dot" style="background:#16A34A"></span>Bienestar Docente
     </button>
+    <button class="chip" data-filter="ei">
+      <span class="chip-dot" style="background:#8B5CF6"></span>Educación Inclusiva
+    </button>
+    <button class="chip" data-filter="tea">
+      <span class="chip-dot" style="background:#6366F1"></span>TEA
+    </button>
+    <button class="chip" data-filter="ddt">
+      <span class="chip-dot" style="background:#F59E0B"></span>Down y TDAH
+    </button>
+    <button class="chip" data-filter="lsg">
+      <span class="chip-dot" style="background:#0EA5E9"></span>Lengua de Señas
+    </button>
   </div>
 
   <div class="alpha-index" id="alphaIndex"></div>
@@ -659,7 +675,11 @@ const COURSES = {
   sel:    { label: 'SEL Docentes',             cls: 'tag-sel'  },
   com:    { label: 'Comunicación Asertiva',    cls: 'tag-com'  },
   dis:    { label: 'Disciplina Positiva',      cls: 'tag-dis'  },
-  bie:    { label: 'Bienestar Docente',        cls: 'tag-bie'  }
+  bie:    { label: 'Bienestar Docente',        cls: 'tag-bie'  },
+  ei:     { label: 'Educación Inclusiva',      cls: 'tag-ei'   },
+  tea:    { label: 'TEA',                      cls: 'tag-tea'  },
+  ddt:    { label: 'Down y TDAH',              cls: 'tag-ddt'  },
+  lsg:    { label: 'Lengua de Señas',          cls: 'tag-lsg'  }
 };
 
 const terms = [
@@ -970,7 +990,67 @@ const terms = [
     classroom: 'Detecta señales tempranas —dormir mal, irritabilidad nueva, perder disfrute en lo cotidiano— antes de que se agrave.' },
   { term: 'Autocuidado Docente', courses: ['bie'], letter: 'A',
     definition: 'Prácticas conscientes que un docente sostiene para proteger su propio bienestar emocional, condición necesaria para sostener la calidad de su enseñanza a largo plazo.',
-    classroom: 'Un docente agotado tiene menos capacidad de co-regulación con sus estudiantes: cuidarte a ti mismo es también una herramienta de aula.' }
+    classroom: 'Un docente agotado tiene menos capacidad de co-regulación con sus estudiantes: cuidarte a ti mismo es también una herramienta de aula.' },
+  { term: 'Adaptación Curricular', courses: ['ei'], letter: 'A',
+    definition: 'Ajuste que cambia CÓMO un estudiante accede a un mismo contenido y objetivo de aprendizaje (más tiempo, otro formato de respuesta), sin bajar la meta esperada.',
+    classroom: 'Antes de simplificar el contenido, pregúntate si el problema real es de acceso — en ese caso, una adaptación puede bastar sin modificar la meta.' },
+  { term: 'Alfabeto Dactilológico', courses: ['lsg'], letter: 'A',
+    definition: 'Sistema de formas de mano que representa cada letra del alfabeto, usado para deletrear nombres propios o palabras sin seña establecida — no para conversar letra por letra.',
+    classroom: 'Practica deletreando tu nombre y el de tus estudiantes como primer paso accesible para familiarizarte con la lengua de señas.' },
+  { term: 'Comunicación Aumentativa y Alternativa (CAA)', courses: ['ei','tea'], letter: 'C',
+    definition: 'Conjunto de sistemas (tableros de pictogramas, aplicaciones de voz, señas, gestos estructurados) que permiten comunicarse a una persona sin lenguaje oral funcional.',
+    classroom: 'Nunca hables "sobre" el estudiante como si no entendiera solo porque no habla con la voz — dirígete a él directamente y dale tiempo para responder con su sistema.' },
+  { term: 'Comunidad Sorda', courses: ['lsg'], letter: 'C',
+    definition: 'Comunidad con idioma, historia e identidad cultural propios, formada por personas sordas que se identifican más allá de la condición médica de no oír.',
+    classroom: 'Pregunta a la familia y al estudiante cómo se identifican — evita asumir que "corregir la sordera" es el único objetivo válido para todos.' },
+  { term: 'Discapacidad Sensorial', courses: ['ei'], letter: 'D',
+    definition: 'Diferencia funcional en uno o más sentidos (audición, visión) que requiere ajustes específicos de acceso a la información, no necesariamente de contenido.',
+    classroom: 'Evalúa cada evaluación con la pregunta: "¿esta forma de preguntar mide el conocimiento, o mide además una habilidad sensorial que no es el objetivo real?"' },
+  { term: 'Diseño Universal para el Aprendizaje (DUA)', courses: ['ei'], letter: 'D',
+    definition: 'Marco de planificación que ofrece desde el inicio múltiples formas de presentar información, de que el estudiante muestre lo aprendido, y de motivar su interés.',
+    classroom: 'Agregar un apoyo visual a una explicación oral y una opción de respuesta oral a un examen escrito no cuesta mucho más tiempo, y abre la clase a más estudiantes.' },
+  { term: 'Enseñanza Estructurada', courses: ['tea'], letter: 'E',
+    definition: 'Enfoque (inspirado en TEACCH) que organiza el espacio, el tiempo y las tareas de forma predecible y visualmente clara, reduciendo la ambigüedad del entorno.',
+    classroom: 'Un horario visual del día y una zona de trabajo bien delimitada ya aplican el principio central de este enfoque, sin rediseñar toda el aula.' },
+  { term: 'Funciones Ejecutivas', courses: ['ddt'], letter: 'F',
+    definition: 'Conjunto de habilidades cognitivas —memoria de trabajo, control inhibitorio, flexibilidad cognitiva, planificación— que el TDAH afecta de forma central.',
+    classroom: 'Apoyos externos como checklists visibles compensan una memoria de trabajo más débil, igual que cualquiera usaría una lista de compras.' },
+  { term: 'Hiperfoco', courses: ['ddt'], letter: 'H',
+    definition: 'Capacidad de concentración profunda y sostenida en una actividad de interés genuino, presente en muchas personas con TDAH, en contraste con la dificultad de atención en tareas poco estimulantes.',
+    classroom: 'No es "falta de atención" general — es una regulación distinta de dónde se dirige la atención; conecta el contenido con intereses reales cuando puedas.' },
+  { term: 'Historia Social', courses: ['tea'], letter: 'H',
+    definition: 'Relato breve, escrito en primera persona y tono neutro, que describe una situación nueva o difícil y qué se espera que ocurra, usado para reducir la ansiedad ante lo desconocido.',
+    classroom: 'Léela junto con el estudiante ANTES de la situación real (una excursión, un cambio de rutina) — no como advertencia disciplinaria, sino para informar y calmar.' },
+  { term: 'Intérprete de Lengua de Señas', courses: ['lsg'], letter: 'I',
+    definition: 'Profesional que traduce entre la lengua de señas y el idioma oral, actuando como canal neutral de comunicación, no como participante de la conversación.',
+    classroom: 'Dirígete siempre directamente al estudiante sordo, nunca al intérprete ("dile que...") — el intérprete traduce, no opina ni explica en tu lugar.' },
+  { term: 'Lengua de Señas de Guatemala (LSG)', courses: ['lsg'], letter: 'L',
+    definition: 'Idioma natural completo, con gramática y sintaxis propias distintas del español, usado por la Comunidad Sorda de Guatemala — varía de la lengua de señas de otros países.',
+    classroom: 'No es "español deletreado con las manos": es un idioma distinto, con su propia estructura, que merece aprenderse como tal.' },
+  { term: 'Meltdown (Crisis Sensorial)', courses: ['tea'], letter: 'M',
+    definition: 'Respuesta neurológica involuntaria de sobrecarga sensorial o emocional en TEA, distinta de un berrinche intencional — el estudiante pierde temporalmente la capacidad de autorregularse.',
+    classroom: 'Durante la crisis, reduce estímulos y da espacio; no exijas que "se calme" ni razones con él en ese momento — eso se conversa después, ya regulado.' },
+  { term: 'Modelo Social de la Discapacidad', courses: ['ei','lsg'], letter: 'M',
+    definition: 'Marco que entiende la discapacidad como una diferencia humana válida con identidad propia, en contraste con el modelo médico, que la ve como un déficit a corregir.',
+    classroom: 'Ningún modelo es "el correcto" de forma universal — conversa con la familia y el estudiante cómo se identifican, en vez de asumirlo.' },
+  { term: 'Modificación Curricular', courses: ['ei'], letter: 'M',
+    definition: 'Ajuste que cambia QUÉ se espera que el estudiante aprenda (menos contenido, objetivos más simples), a diferencia de una adaptación, que solo cambia el acceso.',
+    classroom: 'Confundir modificación con adaptación puede bajar expectativas de aprendizaje cuando el problema real era solo de acceso.' },
+  { term: 'Presunción de Competencia', courses: ['ei','tea'], letter: 'P',
+    definition: 'Principio de asumir que un estudiante entiende y tiene algo que comunicar, aunque su forma de expresarlo (CAA, señas, gestos) sea distinta a la esperada.',
+    classroom: 'Trata al estudiante como interlocutor válido: dirígete a él directamente y dale tiempo para responder con su sistema de comunicación.' },
+  { term: 'Síndrome de Asperger', courses: ['tea'], letter: 'S',
+    definition: 'Diagnóstico histórico hoy integrado dentro del Trastorno del Espectro Autista (TEA) desde el DSM-5 (2013) — no es una condición separada, sino un punto más del mismo espectro.',
+    classroom: 'Evita tratarlo como un diagnóstico distinto al TEA; la evidencia mostró que no lo es.' },
+  { term: 'Síndrome de Down', courses: ['ddt'], letter: 'S',
+    definition: 'Condición genética (copia extra del cromosoma 21) con perfil típico de fortaleza en memoria visual y desafío relativo en memoria auditiva y razonamiento abstracto — el rango de habilidades varía mucho por persona.',
+    classroom: 'Apoya la instrucción con horarios visuales y checklists escritos, aprovechando la memoria visual como fortaleza típica.' },
+  { term: 'TDAH (Trastorno por Déficit de Atención e Hiperactividad)', courses: ['ddt'], letter: 'T',
+    definition: 'Condición neurológica real que afecta principalmente las funciones ejecutivas — no es falta de disciplina ni un problema de crianza.',
+    classroom: 'Divide instrucciones largas en pasos cortos verificables uno a la vez, en vez de dar varios pasos encadenados de una sola vez.' },
+  { term: 'Trastorno del Espectro Autista (TEA)', courses: ['ei','tea'], letter: 'T',
+    definition: 'Condición del desarrollo neurológico que afecta la comunicación social y genera patrones de comportamiento e intereses restringidos y repetitivos, con manifestaciones muy variables entre personas.',
+    classroom: '"Si conoces a una persona con autismo, conoces a UNA persona con autismo" — evita generalizar de un estudiante a otro.' }
 ];
 
 const ALL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
