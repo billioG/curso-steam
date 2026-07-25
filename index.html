@@ -2059,9 +2059,9 @@
                 <div class="perfil-items-grid">
                     <button id="certDownloadBtn"
                         class="hidden md:col-span-2 w-full mb-2 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                        style="background:linear-gradient(135deg,#5C35C5,#7c3aed)" onclick="generateCertificateFromExam(window._lastExamScore||70, window._lastExamCourseId)">
+                        style="background:linear-gradient(135deg,#5C35C5,#7c3aed)" onclick="requestCertificate('diploma', window._lastExamCourseId, window._lastExamScore||70)">
                         <span data-icon="certificate" style="display:inline-flex;width:16px;height:16px;color:white;flex-shrink:0"></span>
-                        <span>Diploma de Participación · curso actual</span>
+                        <span>Diploma de Participación · curso actual · Q10</span>
                     </button>
                     <div id="masterPathSelector" class="hidden md:col-span-2 mb-1"></div>
                     <div id="masterScoreSummary" class="hidden md:col-span-2 mb-1"></div>
@@ -2085,9 +2085,9 @@
                     </button>
                     <button id="masterCertBtn"
                         class="hidden md:col-span-2 w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                        style="background:linear-gradient(135deg,#4c1d95,#5C35C5)" onclick="generateMasterCertificate()">
+                        style="background:linear-gradient(135deg,#4c1d95,#5C35C5)" onclick="requestCertificate('master', null, null)">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-                        <span>Obtener Certificado Maestro</span>
+                        <span>Obtener Certificado Maestro · Q50</span>
                     </button>
                 </div><!-- /perfil-items-grid cert -->
                 </div><!-- /perfil-section-body cert -->

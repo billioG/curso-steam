@@ -3797,7 +3797,7 @@ function showExamResults() {
                     <p style="font-size:.75rem;color:#64748B;margin-top:2px">Incorrectas ❌</p>
                 </div>
             </div>
-            ${passed ? `<button onclick="generateCertificateFromExam(${pct})" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">📜 Obtener mi diploma de participación</button>` : ''}
+            ${passed ? `<button onclick="requestCertificate('diploma', null, ${pct})" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">📜 Obtener mi diploma de participación · Q10</button>` : ''}
             <button onclick="retryExam()" class="w-full py-3 rounded-xl font-bold text-sm" style="border:2px solid #E2E8F0;color:#475569;background:white;margin-bottom:4px">
                 🔄 Reintentar examen
             </button>
@@ -3934,6 +3934,126 @@ function _buildSignaturesHtml(signatures, firmaSrcFallback) {
         </div>`;
     }).join('');
 }
+
+// ── Pago de diplomas/certificados (Recurrente) ──────────────────────────
+// Q10 el diploma de participación de cada curso, Q50 el Certificado
+// Maestro de una ruta. Antes de generar el certificado, verifica si el
+// usuario ya pagó (lee certificate_payments, solo puede LEER su propia
+// fila por RLS); si no, crea un checkout y redirige de página completa —
+// Recurrente confirma el pago vía webhook server-side, nunca el cliente.
+async function requestCertificate(certType, courseId, score) {
+    if (!currentUser) { showToast('Inicia sesión para continuar.', 'error'); return; }
+
+    const cid = certType === 'diploma'
+        ? (courseId || window._lastExamCourseId || (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam')
+        : null;
+    const refId = certType === 'master' ? (_activeMasterPath?.id || null) : cid;
+
+    if (certType === 'master' && !refId) {
+        showToast('No se pudo determinar la ruta del Certificado Maestro.', 'error');
+        return;
+    }
+
+    try {
+        const { data: paidRow } = await supabase
+            .from('certificate_payments')
+            .select('id')
+            .eq('user_id', currentUser.id)
+            .eq('cert_type', certType)
+            .eq('ref_id', refId)
+            .eq('status', 'paid')
+            .maybeSingle();
+        if (paidRow) {
+            if (certType === 'master') return generateMasterCertificate();
+            return generateCertificateFromExam(score, cid);
+        }
+    } catch (e) {
+        console.error('Error verificando pago de certificado:', e);
+    }
+
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) { showToast('Inicia sesión para continuar.', 'error'); return; }
+
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/create-certificate-checkout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ cert_type: certType, ref_id: refId, course_id: certType === 'diploma' ? cid : null, score: score || null }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.checkout_url) {
+            if (data.already_paid) {
+                if (certType === 'master') return generateMasterCertificate();
+                return generateCertificateFromExam(score, cid);
+            }
+            showToast(data.error || 'No se pudo iniciar el pago. Intenta de nuevo.', 'error');
+            return;
+        }
+        location.href = data.checkout_url;
+    } catch (e) {
+        console.error('Error creando checkout de certificado:', e);
+        showToast('No se pudo conectar con el sistema de pago.', 'error');
+    }
+}
+
+// Al volver del checkout de Recurrente (?paid_cert=...), espera a que el
+// webhook confirme el pago (puede tardar unos segundos) y genera el
+// certificado automáticamente — el usuario no tiene que volver a hacer clic.
+(function () {
+    const params = new URLSearchParams(location.search);
+    const paidCertType = params.get('paid_cert');
+    if (!paidCertType) return;
+
+    const refId = params.get('ref') || null;
+    const courseIdParam = params.get('course') || null;
+    const scoreParam = Number(params.get('score'));
+
+    // Limpiar los query params de inmediato — un refresh no debe re-disparar esto.
+    history.replaceState(null, '', location.pathname + location.hash);
+
+    async function waitForUser(maxMs) {
+        const start = Date.now();
+        while (!currentUser && Date.now() - start < maxMs) {
+            await new Promise((r) => setTimeout(r, 200));
+        }
+        return currentUser;
+    }
+
+    async function checkPaidAndUnlock() {
+        const user = await waitForUser(8000);
+        if (!user || !refId) return;
+
+        // El webhook puede tardar unos segundos en confirmar — reintenta.
+        for (let attempt = 0; attempt < 8; attempt++) {
+            const { data } = await supabase
+                .from('certificate_payments')
+                .select('status')
+                .eq('user_id', user.id)
+                .eq('cert_type', paidCertType)
+                .eq('ref_id', refId)
+                .maybeSingle();
+            if (data?.status === 'paid') {
+                showToast('¡Pago confirmado! Generando tu ' + (paidCertType === 'master' ? 'Certificado Maestro' : 'diploma') + '…', 'success');
+                if (paidCertType === 'master') {
+                    if (typeof _checkMasterCert === 'function') _checkMasterCert();
+                    if (typeof generateMasterCertificate === 'function') generateMasterCertificate();
+                } else if (typeof generateCertificateFromExam === 'function') {
+                    generateCertificateFromExam(Number.isFinite(scoreParam) ? scoreParam : 70, courseIdParam || refId);
+                }
+                return;
+            }
+            await new Promise((r) => setTimeout(r, 1500));
+        }
+        showToast('Tu pago se está confirmando. Si no aparece en un momento, vuelve a intentar desde tu perfil.', 'info');
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkPaidAndUnlock);
+    } else {
+        checkPaidAndUnlock();
+    }
+})();
 
 async function generateCertificateFromExam(percentage, overrideCourseId) {
     const nombre = getDisplayName();
