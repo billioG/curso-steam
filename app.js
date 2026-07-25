@@ -3955,15 +3955,20 @@ async function requestCertificate(certType, courseId, score) {
     }
 
     try {
-        const { data: paidRow } = await supabase
+        // .limit(1) antes de .maybeSingle(): si el usuario reintentó el pago
+        // más de una vez, puede haber varias filas 'paid' para el mismo
+        // certificado — sin el límite, maybeSingle() lanza error ("multiple
+        // rows returned") en vez de devolver una.
+        const { data: paidRows } = await supabase
             .from('certificate_payments')
             .select('id')
             .eq('user_id', currentUser.id)
             .eq('cert_type', certType)
             .eq('ref_id', refId)
             .eq('status', 'paid')
-            .maybeSingle();
-        if (paidRow) {
+            .order('created_at', { ascending: false })
+            .limit(1);
+        if (paidRows && paidRows.length > 0) {
             if (certType === 'master') return generateMasterCertificate();
             return generateCertificateFromExam(score, cid);
         }
@@ -4025,14 +4030,19 @@ async function requestCertificate(certType, courseId, score) {
         if (!user || !refId) return;
 
         // El webhook puede tardar unos segundos en confirmar — reintenta.
+        // Filtra directo por status='paid' (no por "más reciente"): puede
+        // haber varias filas 'pending' de intentos previos para el mismo
+        // certificado, y la que se pagó no siempre es la última creada.
         for (let attempt = 0; attempt < 8; attempt++) {
-            const { data } = await supabase
+            const { data: rows } = await supabase
                 .from('certificate_payments')
                 .select('status')
                 .eq('user_id', user.id)
                 .eq('cert_type', paidCertType)
                 .eq('ref_id', refId)
-                .maybeSingle();
+                .eq('status', 'paid')
+                .limit(1);
+            const data = rows?.[0];
             if (data?.status === 'paid') {
                 showToast('¡Pago confirmado! Generando tu ' + (paidCertType === 'master' ? 'Certificado Maestro' : 'diploma') + '…', 'success');
                 if (paidCertType === 'master') {
