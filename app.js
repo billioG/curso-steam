@@ -760,6 +760,7 @@ function updateUI() {
     // Master certificate — visible si todos los cursos están aprobados
     _checkMasterCert();
     _updateCertButtonLabels();
+    _updateExamBtn();
     renderCourseResources();
     renderBadgesGrid();
     renderPersonalRecords();
@@ -3684,11 +3685,20 @@ function _setTopBarExam(active) {
     const label = badge?.previousElementSibling; // "CURSO STEAM" label
     const progressArea = document.querySelector('.top-bar .flex.items-center.gap-2');
     if (active) {
-        if (badge) { badge.dataset.orig = badge.textContent; badge.textContent = 'Evaluación Final'; }
+        // Mostrar de qué curso es el examen (con su color) — antes decía
+        // siempre "Evaluación Final" genérico, sin identificar el curso.
+        const _cid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+        const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === _cid) : null;
+        if (badge) {
+            badge.dataset.orig = badge.textContent;
+            badge.dataset.origColor = badge.style.color || '';
+            badge.textContent = course ? `Examen: ${course.title}` : 'Evaluación Final';
+            if (course?.color) badge.style.color = course.color;
+        }
         if (label) { label.dataset.orig = label.textContent; label.textContent = 'EXAMEN FINAL'; }
         if (progressArea) progressArea.style.display = 'none';
     } else {
-        if (badge?.dataset.orig) badge.textContent = badge.dataset.orig;
+        if (badge?.dataset.orig) { badge.textContent = badge.dataset.orig; badge.style.color = badge.dataset.origColor || ''; }
         if (label?.dataset.orig) label.textContent = label.dataset.orig;
         if (progressArea) progressArea.style.display = '';
     }
@@ -4051,6 +4061,33 @@ function _updateCertButtonLabels() {
             ? '⬇ Descargar Certificado Maestro'
             : 'Obtener Certificado Maestro · Q50';
     }
+}
+
+// Tarjeta "Examen Final" en Progreso: antes solo decía "Examen Final" sin
+// indicar de qué curso se trata ni si ya se aprobó — y el clic "adivinaba"
+// a qué curso te mandaba. Ahora muestra el curso ACTIVO (currentCourseId,
+// el mismo que ves en Inicio) y, si ya lo aprobaste, un indicador con el
+// puntaje — pero el botón sigue habilitado para volver a intentarlo.
+function _updateExamBtn() {
+    const nameEl = document.getElementById('examBtnCourseName');
+    if (!nameEl || typeof allCourses === 'undefined') return;
+    const _cid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+    const course = allCourses.find(c => c.id === _cid);
+    const dm = progress?.dailyMissions || {};
+    const scores = dm.examScores || {};
+    const score = (scores[_cid] !== undefined) ? scores[_cid]
+                : (_cid === 'steam' && dm.examScore !== undefined) ? dm.examScore
+                : undefined;
+    const passed = score !== undefined && score >= 70;
+
+    nameEl.textContent = course ? course.title : 'Examen Final';
+    const badgeEl = document.getElementById('examBtnPassedBadge');
+    if (badgeEl) {
+        badgeEl.classList.toggle('hidden', !passed);
+        if (passed) badgeEl.textContent = `✅ ${score}%`;
+    }
+    const subEl = document.getElementById('examBtnSubtitle');
+    if (subEl) subEl.textContent = passed ? 'Ya aprobado — toca para volver a intentarlo' : 'Pon a prueba lo aprendido';
 }
 
 // Los navegadores (sobre todo móviles) bloquean casi siempre window.open()
@@ -5327,39 +5364,12 @@ document.getElementById("doForgotPassword")?.addEventListener("click", async () 
 document.getElementById("nextBtn")?.addEventListener("click", goToNextCard);
 document.getElementById("prevBtn")?.addEventListener("click", goToPrevCard);
 document.getElementById("examBtn")?.addEventListener("click", () => {
-    // Elegir a qué curso apunta el examen (por si modulesData no es el correcto)
-    if (typeof allCourses !== 'undefined' && allCourses.length) {
-        const completed = progress.completedCards || [];
-        const examScores = progress?.dailyMissions?.examScores || {};
-        const legacySteamScore = progress?.dailyMissions?.examScore;
-        const eligible = allCourses.filter(c => c.modules && c.modules.length);
-        const isPending = (course) => {
-            const ids = course.modules.flatMap(m => m.cards.map(c => String(c.id)));
-            const count = ids.filter(id => completed.includes(id)).length;
-            const score = course.id === 'steam' ? (examScores[course.id] ?? legacySteamScore) : examScores[course.id];
-            return ids.length > 0 && count === ids.length && !(score >= 70);
-        };
-        // Prioridad 1: un curso terminado al 100% sin examen aprobado — el
-        // caso "terminé el curso, no hice el examen, ahora quiero hacerlo" —
-        // prefiriendo el curso activo si él mismo califica.
-        const currentCourse = eligible.find(c => c.id === currentCourseId);
-        let target = (currentCourse && isPending(currentCourse)) ? currentCourse : eligible.find(isPending);
-        // Prioridad 2 (fallback): el curso con más tarjetas completadas que ya califica (80%+)
-        if (!target) {
-            let bestCourse = null, bestCount = -1;
-            eligible.forEach(course => {
-                const ids = course.modules.flatMap(m => m.cards.map(c => String(c.id)));
-                const count = ids.filter(id => completed.includes(id)).length;
-                const minReq = Math.ceil(ids.length * 0.8);
-                if (count >= minReq && count > bestCount) { bestCount = count; bestCourse = course; }
-            });
-            target = bestCourse;
-        }
-        if (target && target.id !== currentCourseId) {
-            currentCourseId = target.id;
-            modulesData = target.modules;
-        }
-    }
+    // El botón ya muestra el curso activo (currentCourseId) y si lo aprobaste
+    // o no — antes esto adivinaba a qué curso "mandarte" por cantidad de
+    // tarjetas completadas entre TODOS tus cursos, lo que a veces te
+    // examinaba de un curso distinto al que la tarjeta decía. Ahora examina
+    // siempre el curso que ves en pantalla; para examinar otro, cambia de
+    // curso primero (Biblioteca o el ícono junto al buscador).
     startExam();
 });
 document.getElementById("badgesBtn")?.addEventListener("click", showBadgesModal);
