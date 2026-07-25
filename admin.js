@@ -14,6 +14,7 @@ const LEARNING_PATHS = [
     { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
     { id:'ia',            label:'Docente y la IA',        color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)',  courses:['ia-fundamentos','ia-tiempo','ia-herramientas','ia-inclusion','ia-ciudadania'] },
     { id:'convivencia',   label:'Clima y Convivencia Escolar', color:'#0891B2', gradient:'linear-gradient(135deg,#155E75,#0891B2)',  courses:['manejo-conductas','sel-docentes','comunicacion-asertiva','disciplina-positiva','bienestar-docente'] },
+    { id:'inclusion',     label:'Educación Inclusiva',    color:'#8B5CF6', gradient:'linear-gradient(135deg,#5B21B6,#8B5CF6)',  courses:['educacion-inclusiva','tea-profundidad','discapacidad-down-tdah','lengua-senas-docentes'] },
 ];
 
 const STATIC_COURSES = [
@@ -39,7 +40,10 @@ const STATIC_COURSES = [
     { id:'comunicacion-asertiva', title:'Comunicación Asertiva y Resolución de Conflictos', durationHours:4, totalCards:25, modules:4, ruta:'convivencia', masterCert:true  },
     { id:'disciplina-positiva',   title:'Disciplina Positiva y Motivación Intrínseca', durationHours:4, totalCards:24, modules:4, ruta:'convivencia', masterCert:true  },
     { id:'bienestar-docente',     title:'Bienestar Docente: Prevención del Desgaste',  durationHours:3, totalCards:24, modules:4, ruta:'convivencia', masterCert:true  },
-    { id:'educacion-inclusiva',   title:'Educación Inclusiva y Necesidades Educativas Especiales', durationHours:5, totalCards:27, modules:5, ruta:'convivencia', masterCert:false },
+    { id:'educacion-inclusiva',   title:'Educación Inclusiva y Necesidades Educativas Especiales', durationHours:5, totalCards:27, modules:5, ruta:'inclusion', masterCert:false },
+    { id:'tea-profundidad',       title:'TEA en el Aula: Estrategias Avanzadas',        durationHours:4, totalCards:20, modules:4, ruta:'inclusion', masterCert:false },
+    { id:'discapacidad-down-tdah', title:'Síndrome de Down y TDAH: Estrategias para el Aula', durationHours:4, totalCards:20, modules:4, ruta:'inclusion', masterCert:false },
+    { id:'lengua-senas-docentes', title:'Lengua de Señas para Docentes: Fundamentos Prácticos', durationHours:3, totalCards:20, modules:4, ruta:'inclusion', masterCert:false },
 ];
 
 // ────────────────────────────────────────────────────────────
