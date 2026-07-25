@@ -787,17 +787,6 @@
                 background: #f8fafc !important;
             }
 
-            /* Ranking: mismo nivel que los demás, sin empujar al fondo */
-            #rankingFloatBtn {
-                margin-top: 0 !important;
-                flex: none !important;
-                border-top: none !important;
-                padding-top: 0 !important;
-                padding-bottom: 0 !important;
-                display: block !important;
-                width: 100% !important;
-            }
-
             /* Ranking modal: centrado y amplio en desktop */
             #rankingModal {
                 align-items: center !important;
@@ -1797,6 +1786,7 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-white/60 text-xs mb-0.5 font-medium">Docente en formación</p>
                     <p id="userEmailDisplay" class="text-white font-black text-xl leading-tight truncate">Docente</p>
+                    <p id="perfilEmailDisplay" class="text-blue-200 text-xs mt-0.5 truncate"></p>
                     <p class="text-blue-200 text-xs mt-1">Programa de Formación Docente · Guatemala</p>
                 </div>
 
@@ -1839,39 +1829,6 @@
             </div>
             </div><!-- /contenedor interno hero -->
         </div><!-- /hero -->
-
-        <!-- ── SECCIÓN DE LOGROS ─────────────────────────────────────── -->
-        <div class="perfil-badges-wrap">
-            <div class="flex items-center justify-between mb-4 px-1">
-                <div>
-                    <p class="text-[11px] font-black uppercase tracking-widest" style="color:#1e3a5f">Logros y estadísticas</p>
-                    <p class="text-xs text-slate-400 mt-0.5"><span id="badgesEarnedCount">0</span> de 13 insignias desbloqueadas</p>
-                </div>
-                <div class="flex gap-2">
-                    <button id="statsSecretBtn"
-                        class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition">
-                        Estadísticas
-                    </button>
-                    <button id="devModeBtn" onclick="toggleDevMode()"
-                        class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 transition">
-                        <span id="devModeBtnLabel" style="color:#ea580c">🛠️ Dev</span>
-                        <span id="devModeBtnSub" class="hidden"></span>
-                    </button>
-                </div>
-            </div>
-            <!-- Carrusel de insignias (fila única + flechas) -->
-            <div class="badges-carousel-wrap">
-                <button class="badge-carousel-arrow prev" onclick="badgesCarouselMove(-1)" aria-label="Anterior">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-                </button>
-                <div style="overflow:hidden;margin:0 38px">
-                    <div id="badgesCarousel" class="badges-carousel-track"></div>
-                </div>
-                <button class="badge-carousel-arrow next" onclick="badgesCarouselMove(1)" aria-label="Siguiente">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-            </div>
-        </div>
 
         <!-- ── CONTENIDO PRINCIPAL ───────────────────────────────────── -->
         <div class="perfil-grid">
@@ -1985,63 +1942,6 @@
                     </a>
                 </div><!-- /perfil-items-grid aprendizaje -->
                 </div><!-- /perfil-section-body aprendizaje -->
-            </div>
-
-            <!-- ── Sección: Certificados ── -->
-            <div id="certSection" class="perfil-section">
-                <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
-                    <span class="perfil-section-label"><span class="perfil-section-label-title">Certificados</span><span class="perfil-section-label-sub">Diplomas obtenidos en el programa</span></span>
-                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <div class="perfil-section-body collapsed">
-                <div id="certCourseStatus" class="mb-3 space-y-1.5"></div>
-                <p id="certPlaceholder" class="text-xs text-slate-400 px-1 mb-2">Aprueba el examen de cualquier curso para obtener tu certificado.</p>
-                <div class="perfil-items-grid">
-                    <button id="certDownloadBtn"
-                        class="hidden md:col-span-2 w-full mb-2 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                        style="background:linear-gradient(135deg,#5C35C5,#7c3aed)" onclick="requestCertificate('diploma', window._lastExamCourseId, window._lastExamScore||70)">
-                        <span data-icon="certificate" style="display:inline-flex;width:16px;height:16px;color:white;flex-shrink:0"></span>
-                        <span>Diploma de Participación · curso actual · Q10</span>
-                    </button>
-                    <div id="masterPathSelector" class="hidden md:col-span-2 mb-1"></div>
-                    <div id="masterScoreSummary" class="hidden md:col-span-2 mb-1"></div>
-                    <button id="masterExamBtn"
-                        class="hidden w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                        style="background:linear-gradient(135deg,#1e3a5f,#1e40af)" onclick="startMasterExam()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                        <span>Parte 1 · Examen de conocimiento (50 pts)</span>
-                    </button>
-                    <button id="masterPortfolioBtn"
-                        class="hidden w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                        style="background:linear-gradient(135deg,#065f46,#16a34a)" onclick="showPortfolioModal()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                        <span>Parte 2 · Portafolio de práctica (50 pts)</span>
-                    </button>
-                    <button id="masterPortfolioResultsBtn"
-                        class="hidden w-full py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 border border-green-200"
-                        style="background:#f0fdf4;color:#15803d" onclick="showPortfolioModal()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                        Ver retroalimentación del portafolio
-                    </button>
-                    <button id="masterCertBtn"
-                        class="hidden md:col-span-2 w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                        style="background:linear-gradient(135deg,#4c1d95,#5C35C5)" onclick="requestCertificate('master', null, null)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-                        <span>Obtener Certificado Maestro · Q50</span>
-                    </button>
-                </div><!-- /perfil-items-grid cert -->
-                </div><!-- /perfil-section-body cert -->
-            </div>
-
-            <!-- ── Recursos descargables ── -->
-            <div id="resourcesSection" class="perfil-section hidden">
-                <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
-                    <span class="perfil-section-label"><span class="perfil-section-label-title">Recursos descargables</span><span class="perfil-section-label-sub">Materiales y rúbricas del curso</span></span>
-                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <div class="perfil-section-body collapsed">
-                <div id="courseResourcesSection"></div>
-                </div><!-- /perfil-section-body recursos -->
             </div>
 
             <!-- ── Notificaciones ── -->
@@ -2218,6 +2118,110 @@
             <div class="rounded-2xl p-4 mb-4" style="background:white;border:1.5px solid #F1F5F9">
                 <p class="text-xs font-bold text-slate-600 mb-3">XP ganado por día (últimas semanas)</p>
                 <div id="progresoChart"></div>
+            </div>
+
+            <!-- Ranking -->
+            <button onclick="showRankingModal ? showRankingModal() : null"
+                class="w-full rounded-2xl p-4 mb-6 flex items-center gap-3 text-left shadow-sm active:scale-95 transition"
+                style="background:linear-gradient(135deg,#1e3a5f,#1e40af)">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
+                    <span data-icon="trophy" style="display:inline-flex;width:20px;height:20px;color:white"></span>
+                </div>
+                <div class="flex-1">
+                    <p class="font-black text-white text-sm">Ranking</p>
+                    <p class="text-white/70 text-xs mt-0.5">Mira cómo te comparás con otros docentes</p>
+                </div>
+                <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:white"></span>
+            </button>
+
+            <!-- ── SECCIÓN DE LOGROS ─────────────────────────────────────── -->
+            <div class="perfil-badges-wrap" style="padding:0 0 4px">
+                <div class="flex items-center justify-between mb-4 px-1">
+                    <div>
+                        <p class="text-[11px] font-black uppercase tracking-widest" style="color:#1e3a5f">Logros y estadísticas</p>
+                        <p class="text-xs text-slate-400 mt-0.5"><span id="badgesEarnedCount">0</span> de 13 insignias desbloqueadas</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="statsSecretBtn"
+                            class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition">
+                            Estadísticas
+                        </button>
+                        <button id="devModeBtn" onclick="toggleDevMode()"
+                            class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 transition">
+                            <span id="devModeBtnLabel" style="color:#ea580c">🛠️ Dev</span>
+                            <span id="devModeBtnSub" class="hidden"></span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Carrusel de insignias (fila única + flechas) -->
+                <div class="badges-carousel-wrap">
+                    <button class="badge-carousel-arrow prev" onclick="badgesCarouselMove(-1)" aria-label="Anterior">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <div style="overflow:hidden;margin:0 38px">
+                        <div id="badgesCarousel" class="badges-carousel-track"></div>
+                    </div>
+                    <button class="badge-carousel-arrow next" onclick="badgesCarouselMove(1)" aria-label="Siguiente">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Sección: Certificados ── -->
+            <div id="certSection" class="perfil-section mt-5">
+                <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
+                    <span class="perfil-section-label"><span class="perfil-section-label-title">Certificados</span><span class="perfil-section-label-sub">Diplomas obtenidos en el programa</span></span>
+                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="perfil-section-body collapsed">
+                <div id="certCourseStatus" class="mb-3 space-y-1.5"></div>
+                <p id="certPlaceholder" class="text-xs text-slate-400 px-1 mb-2">Aprueba el examen de cualquier curso para obtener tu certificado.</p>
+                <div class="perfil-items-grid">
+                    <button id="certDownloadBtn"
+                        class="hidden md:col-span-2 w-full mb-2 py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                        style="background:linear-gradient(135deg,#5C35C5,#7c3aed)" onclick="requestCertificate('diploma', window._lastExamCourseId, window._lastExamScore||70)">
+                        <span data-icon="certificate" style="display:inline-flex;width:16px;height:16px;color:white;flex-shrink:0"></span>
+                        <span>Diploma de Participación · curso actual · Q10</span>
+                    </button>
+                    <div id="masterPathSelector" class="hidden md:col-span-2 mb-1"></div>
+                    <div id="masterScoreSummary" class="hidden md:col-span-2 mb-1"></div>
+                    <button id="masterExamBtn"
+                        class="hidden w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                        style="background:linear-gradient(135deg,#1e3a5f,#1e40af)" onclick="startMasterExam()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                        <span>Parte 1 · Examen de conocimiento (50 pts)</span>
+                    </button>
+                    <button id="masterPortfolioBtn"
+                        class="hidden w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                        style="background:linear-gradient(135deg,#065f46,#16a34a)" onclick="showPortfolioModal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <span>Parte 2 · Portafolio de práctica (50 pts)</span>
+                    </button>
+                    <button id="masterPortfolioResultsBtn"
+                        class="hidden w-full py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 border border-green-200"
+                        style="background:#f0fdf4;color:#15803d" onclick="showPortfolioModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        Ver retroalimentación del portafolio
+                    </button>
+                    <button id="masterCertBtn"
+                        class="hidden md:col-span-2 w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                        style="background:linear-gradient(135deg,#4c1d95,#5C35C5)" onclick="requestCertificate('master', null, null)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                        <span>Obtener Certificado Maestro · Q50</span>
+                    </button>
+                </div><!-- /perfil-items-grid cert -->
+                </div><!-- /perfil-section-body cert -->
+            </div>
+
+            <!-- ── Recursos descargables ── -->
+            <div id="resourcesSection" class="perfil-section hidden">
+                <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
+                    <span class="perfil-section-label"><span class="perfil-section-label-title">Recursos descargables</span><span class="perfil-section-label-sub">Materiales y rúbricas del curso</span></span>
+                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="perfil-section-body collapsed">
+                <div id="courseResourcesSection"></div>
+                </div><!-- /perfil-section-body recursos -->
             </div>
         </div>
 
@@ -2634,12 +2638,6 @@
                     <span class="bnav-icon" id="bnavProgresoIcon"></span>
                     <span class="bnav-label">Progreso</span>
                 </button>
-                <div id="rankingFloatBtn" class="flex-1 flex">
-                    <button class="bnav-btn w-full" onclick="showRankingModal ? showRankingModal() : null">
-                        <span class="bnav-icon" id="bnavRankingIcon"></span>
-                        <span class="bnav-label">Ranking</span>
-                    </button>
-                </div>
                 <button id="bnavModulos" class="bnav-btn" onclick="switchTab('modulos')">
                     <span class="bnav-icon" id="bnavModulosIcon"></span>
                     <span class="bnav-label">Módulos</span>
@@ -2697,13 +2695,11 @@
                 const ni = document.getElementById('bnavHomeIcon');
                 const nb = document.getElementById('bnavBibliotecaIcon');
                 const npg = document.getElementById('bnavProgresoIcon');
-                const nr = document.getElementById('bnavRankingIcon');
                 const nm = document.getElementById('bnavModulosIcon');
                 const np = document.getElementById('bnavPerfilIcon');
                 if (ni) ni.innerHTML = ICONS.home;
                 if (nb) nb.innerHTML = ICONS.library;
                 if (npg) npg.innerHTML = ICONS.progress;
-                if (nr) nr.innerHTML = ICONS.trophy;
                 if (nm) nm.innerHTML = ICONS.modules;
                 if (np) np.innerHTML = ICONS.profile;
             });
