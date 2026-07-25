@@ -4672,13 +4672,20 @@ function _checkMasterCert() {
                 }
             }).join('');
 
-            return `<div style="margin-bottom:16px">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                    <div style="width:10px;height:10px;border-radius:50%;background:${path.color};flex-shrink:0"></div>
-                    <p style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin:0">${path.label}</p>
-                    ${pathAllPassed ? '<span style="margin-left:auto;font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;padding:2px 8px;border-radius:20px">COMPLETADA</span>' : ''}
+            const pathIsActive = pathCourses.some(c => c.id === currentCourseId);
+            const startCollapsed = !pathIsActive;
+            return `<div style="margin-bottom:12px">
+                <button class="perfil-section-toggle${startCollapsed ? ' collapsed' : ''}" onclick="togglePerfilSection(this)" style="width:100%">
+                    <span style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+                        <span style="width:10px;height:10px;border-radius:50%;background:${path.color};flex-shrink:0"></span>
+                        <span style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${path.label}</span>
+                        ${pathAllPassed ? '<span style="font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;padding:2px 8px;border-radius:20px;flex-shrink:0">COMPLETADA</span>' : ''}
+                    </span>
+                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="perfil-section-body${startCollapsed ? ' collapsed' : ''}">
+                    <div style="display:flex;flex-direction:column;gap:6px;padding-top:8px">${coursesHTML}</div>
                 </div>
-                <div style="display:flex;flex-direction:column;gap:6px">${coursesHTML}</div>
             </div>`;
         }).join('');
     }
@@ -5225,20 +5232,37 @@ document.getElementById("doForgotPassword")?.addEventListener("click", async () 
 document.getElementById("nextBtn")?.addEventListener("click", goToNextCard);
 document.getElementById("prevBtn")?.addEventListener("click", goToPrevCard);
 document.getElementById("examBtn")?.addEventListener("click", () => {
-    // Buscar el curso con más tarjetas completadas (por si modulesData no es el correcto)
+    // Elegir a qué curso apunta el examen (por si modulesData no es el correcto)
     if (typeof allCourses !== 'undefined' && allCourses.length) {
         const completed = progress.completedCards || [];
-        let bestCourse = null, bestCount = -1;
-        allCourses.forEach(course => {
-            if (!course.modules) return;
+        const examScores = progress?.dailyMissions?.examScores || {};
+        const legacySteamScore = progress?.dailyMissions?.examScore;
+        const eligible = allCourses.filter(c => c.modules && c.modules.length);
+        const isPending = (course) => {
             const ids = course.modules.flatMap(m => m.cards.map(c => String(c.id)));
             const count = ids.filter(id => completed.includes(id)).length;
-            const minReq = Math.ceil(ids.length * 0.8);
-            if (count >= minReq && count > bestCount) { bestCount = count; bestCourse = course; }
-        });
-        if (bestCourse && bestCourse.id !== currentCourseId) {
-            currentCourseId = bestCourse.id;
-            modulesData = bestCourse.modules;
+            const score = course.id === 'steam' ? (examScores[course.id] ?? legacySteamScore) : examScores[course.id];
+            return ids.length > 0 && count === ids.length && !(score >= 70);
+        };
+        // Prioridad 1: un curso terminado al 100% sin examen aprobado — el
+        // caso "terminé el curso, no hice el examen, ahora quiero hacerlo" —
+        // prefiriendo el curso activo si él mismo califica.
+        const currentCourse = eligible.find(c => c.id === currentCourseId);
+        let target = (currentCourse && isPending(currentCourse)) ? currentCourse : eligible.find(isPending);
+        // Prioridad 2 (fallback): el curso con más tarjetas completadas que ya califica (80%+)
+        if (!target) {
+            let bestCourse = null, bestCount = -1;
+            eligible.forEach(course => {
+                const ids = course.modules.flatMap(m => m.cards.map(c => String(c.id)));
+                const count = ids.filter(id => completed.includes(id)).length;
+                const minReq = Math.ceil(ids.length * 0.8);
+                if (count >= minReq && count > bestCount) { bestCount = count; bestCourse = course; }
+            });
+            target = bestCourse;
+        }
+        if (target && target.id !== currentCourseId) {
+            currentCourseId = target.id;
+            modulesData = target.modules;
         }
     }
     startExam();
