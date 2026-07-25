@@ -40,6 +40,20 @@ const ICONS = {
     <path d="M11 9l.6 1.2 1.4.2-1 1 .2 1.4L11 12l-1.2.8.2-1.4-1-1 1.4-.2L11 9z" stroke-width="1.2" fill="currentColor" fill-opacity=".5"/>
   </svg>`,
 
+  // Biblioteca: libros apilados (distinto del "modules" — libro abierto)
+  library: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="7" height="17" rx="1.5" fill="currentColor" fill-opacity=".1"/>
+    <rect x="12" y="2" width="7" height="19" rx="1.5" fill="currentColor" fill-opacity=".15"/>
+    <line x1="5.5" y1="8" x2="7.5" y2="8" stroke-width="1.5"/>
+  </svg>`,
+
+  // Progreso: barras de tendencia ascendente
+  progress: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="13" width="4" height="7" rx="1" fill="currentColor" fill-opacity=".15"/>
+    <rect x="10" y="9" width="4" height="11" rx="1" fill="currentColor" fill-opacity=".15"/>
+    <rect x="16" y="4" width="4" height="16" rx="1" fill="currentColor" fill-opacity=".15"/>
+  </svg>`,
+
   // ── PERFIL — BOTONES DE ACCIÓN ───────────────────────────
 
   // Examen Final: clipboard con lápiz

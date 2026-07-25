@@ -609,7 +609,7 @@ async function checkExistingSession() {
         loadSavedProgress(true);
         await loadAppConfig();
         _updatePushToggleUI();
-        _checkOnboardingRequirements(() => showCourseSelector());
+        _checkOnboardingRequirements(() => _landOnAppropriateScreen());
         return true;
     }
     return false;
@@ -1118,7 +1118,12 @@ function loadDailyMissions() {
                 portfolioAttempts, portfolioLastAttempt,
                 // persistentes entre días:
                 cardNotes, appliedCards, streakFreezes, lastFreezeWeek,
-                weeklyMissions, weeklyMissionsDate, weeklyXP, quizStreak, earlyBirdCards } = savedMissions;
+                weeklyMissions, weeklyMissionsDate, weeklyXP, quizStreak, earlyBirdCards, xpLog } = savedMissions;
+        // Snapshot del XP del día que termina, para la gráfica de Progreso (histórico acumulativo)
+        const prevXpLog = Array.isArray(xpLog) ? xpLog : [];
+        const newXpLog = savedMissions.date
+            ? [...prevXpLog, { date: savedMissions.date, xp: savedMissions.dailyXP || 0 }].slice(-60)
+            : prevXpLog;
         // Extraer todas las claves de bloqueo de módulos (moduleStart_* y moduleEarlyUnlock_*)
         const moduleKeys = {};
         Object.keys(savedMissions).forEach(k => {
@@ -1160,6 +1165,7 @@ function loadDailyMissions() {
             ...(weeklyXP !== undefined && { weeklyXP }),
             ...(quizStreak !== undefined && { quizStreak }),
             ...(earlyBirdCards !== undefined && { earlyBirdCards }),
+            ...(newXpLog.length && { xpLog: newXpLog }),
         };
         saveProgress();
     }
@@ -1176,6 +1182,54 @@ function loadDailyMissions() {
     const hoursLeft = Math.round((tomorrow - new Date()) / (1000 * 60 * 60));
     const resetSpan = document.getElementById("missionsReset");
     if (resetSpan) resetSpan.innerText = `Reinicia en ${hoursLeft}h`;
+}
+
+function renderProgresoTab() {
+    const xpEl = document.getElementById('progresoXP');
+    const levelEl = document.getElementById('progresoLevel');
+    const streakEl = document.getElementById('progresoStreak');
+    const cardsEl = document.getElementById('progresoCards');
+    if (xpEl) xpEl.innerText = progress.xp || 0;
+    if (levelEl) levelEl.innerText = progress.level || 1;
+    if (streakEl) streakEl.innerText = progress.streak || 0;
+    if (cardsEl) cardsEl.innerText = (progress.completedCards || []).length;
+
+    const chartBox = document.getElementById('progresoChart');
+    if (!chartBox) return;
+    const log = (progress.dailyMissions?.xpLog || []).slice(-14);
+    const todayXP = progress.dailyMissions?.dailyXP || 0;
+    const todayStr = localDateStr();
+    const points = (log.length && log[log.length - 1].date === todayStr)
+        ? [...log.slice(0, -1), { date: todayStr, xp: todayXP }]
+        : [...log, { date: todayStr, xp: todayXP }];
+
+    if (points.length < 3) {
+        chartBox.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Aún no hay suficiente historial para mostrar tu tendencia.<br>Sigue estudiando cada día y aquí verás tu progreso 📈</p>`;
+        return;
+    }
+
+    const w = 300, h = 120, pad = 8;
+    const max = Math.max(...points.map(p => p.xp), 20);
+    const stepX = (w - pad * 2) / (points.length - 1);
+    const coords = points.map((p, i) => {
+        const x = pad + i * stepX;
+        const y = h - pad - ((p.xp / max) * (h - pad * 2));
+        return { x, y, ...p };
+    });
+    const linePath = coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ');
+    const areaPath = `${linePath} L${coords[coords.length - 1].x.toFixed(1)},${h - pad} L${coords[0].x.toFixed(1)},${h - pad} Z`;
+    const dots = coords.map(c => `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="2.5" fill="#07B0E4"><title>${c.date}: ${c.xp} XP</title></circle>`).join('');
+
+    chartBox.innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" style="width:100%;height:120px">
+            <path d="${areaPath}" fill="#07B0E4" fill-opacity="0.08"/>
+            <path d="${linePath}" fill="none" stroke="#07B0E4" stroke-width="2"/>
+            ${dots}
+        </svg>
+        <div class="flex justify-between text-[10px] text-slate-300 mt-1">
+            <span>${coords[0].date.slice(5)}</span>
+            <span>${coords[coords.length - 1].date.slice(5)}</span>
+        </div>`;
 }
 
 function _updateDailyXPBar() {
@@ -5084,7 +5138,7 @@ document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
     if (success) {
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
-        _checkOnboardingRequirements(() => showCourseSelector());
+        _checkOnboardingRequirements(() => _landOnAppropriateScreen());
     }
 });
 document.getElementById("doRegister")?.addEventListener("click", async () => {
@@ -5096,7 +5150,7 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
         await checkReferralBonus();
-        _checkOnboardingRequirements(() => showCourseSelector());
+        _checkOnboardingRequirements(() => _landOnAppropriateScreen());
     }
 });
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
@@ -5825,15 +5879,31 @@ function _checkOnboardingRequirements(onComplete) {
 let currentCourseId = 'steam';
 let _selectedPathId  = null; // ruta activa en el selector
 
+// Antes mostraba un overlay de pantalla completa forzado en cada sesión —
+// ahora "el selector" es la tab Biblioteca dentro de #mainApp, así que esta
+// función solo asegura que mainApp esté visible y cambia a esa tab. Se deja
+// con el mismo nombre porque hay varios callers existentes (botón "Cambiar
+// curso" del sidebar, etc.) que no necesitan tocarse.
 function showCourseSelector() {
-    const el = document.getElementById('courseSelector');
-    if (!el) return;
     _selectedPathId = null;
-    // Mostrar contenedor PRIMERO para evitar pantalla en blanco si el render falla
     document.getElementById('loginScreen')?.classList.add('hidden');
-    document.getElementById('mainApp')?.classList.add('hidden');
-    el.classList.remove('hidden');
-    try { _renderCourseSelector(); } catch (e) { console.error('Error al renderizar selector:', e); }
+    document.getElementById('mainApp')?.classList.remove('hidden');
+    if (typeof switchTab === 'function') switchTab('biblioteca');
+}
+
+// Decide a dónde aterriza el usuario al iniciar sesión: si ya tiene un curso
+// activo válido, lo lleva directo a su última lección (en vez de forzar
+// pasar primero por la Biblioteca) — antes SIEMPRE se mostraba el selector,
+// sin importar que el usuario ya llevara semanas en un curso.
+function _landOnAppropriateScreen() {
+    const savedCourseId = progress?.currentCourseId;
+    const courseExists = savedCourseId && typeof allCourses !== 'undefined'
+        && allCourses.some(c => c.id === savedCourseId && c.status === 'available');
+    if (courseExists) {
+        selectCourse(savedCourseId); // ya deja todo listo: posición restaurada, tab Inicio activa
+    } else {
+        showCourseSelector(); // primera vez, o el curso guardado ya no existe/está disponible
+    }
 }
 
 function _renderCourseSelector() {
@@ -5998,10 +6068,10 @@ function selectCourse(courseId) {
         saveProgress();
     }
 
-    // Asegurarse de mostrar la tab home (tarjetas), no perfil
+    // Asegurarse de mostrar la tab home (tarjetas), no perfil.
+    // switchTab('home') ya oculta todas las demás tabs (incluida Biblioteca).
     if (typeof switchTab === 'function') switchTab('home');
 
-    document.getElementById('courseSelector')?.classList.add('hidden');
     document.getElementById('mainApp')?.classList.remove('hidden');
     renderCard();
     updateUI();
