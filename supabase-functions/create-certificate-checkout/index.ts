@@ -57,16 +57,21 @@ Deno.serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
     // Si ya pagó este certificado antes, no generar un checkout nuevo —
-    // evita cobrar dos veces por lo mismo si reintenta el flujo.
-    const { data: existingPaid } = await admin
+    // evita cobrar dos veces por lo mismo si reintenta el flujo. .limit(1)
+    // en vez de maybeSingle() a secas: si hubo más de un intento pagado
+    // (o pending+paid mezclados), maybeSingle() lanzaría error por
+    // "multiple rows returned".
+    const { data: existingPaidRows } = await admin
       .from('certificate_payments')
       .select('id')
       .eq('user_id', user.id)
       .eq('cert_type', cert_type)
       .eq('ref_id', ref_id)
       .eq('status', 'paid')
-      .maybeSingle();
-    if (existingPaid) return json({ error: 'Ya pagaste este certificado.', already_paid: true }, 409);
+      .limit(1);
+    if (existingPaidRows && existingPaidRows.length > 0) {
+      return json({ error: 'Ya pagaste este certificado.', already_paid: true }, 409);
+    }
 
     const amount_in_cents = PRICES[cert_type];
     const successUrl = `${APP_URL}/index.html?paid_cert=${encodeURIComponent(cert_type)}&ref=${encodeURIComponent(ref_id)}${course_id ? `&course=${encodeURIComponent(course_id)}` : ''}`;
