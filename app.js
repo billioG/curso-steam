@@ -5757,7 +5757,7 @@ function _renderCourseSelector() {
                             </div>
                             <p style="font-size:11px;color:rgba(255,255,255,.6);margin:2px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.subtitle}</p>
                             <div class="flex gap-2 flex-wrap">
-                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;${clickable ? 'background:rgba(255,255,255,.18);color:white' : 'background:rgba(255,255,255,.08);color:rgba(255,255,255,.45)'}">${statusBadge}</span>
+                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;max-width:100%;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;${clickable ? 'background:rgba(255,255,255,.18);color:white' : 'background:rgba(255,255,255,.08);color:rgba(255,255,255,.45)'}">${statusBadge}</span>
                                 <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(0,0,0,.2);color:rgba(255,255,255,.7)">${c.durationHours}h · ${c.totalCards} tarjetas</span>
                             </div>
                         </div>

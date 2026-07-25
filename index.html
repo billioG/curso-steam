@@ -1615,6 +1615,11 @@
 
             .lp-grid>div {
                 margin-bottom: 0 !important;
+                /* Sin esto, un ítem de grid no se encoge más allá del ancho
+                   mínimo de su contenido (min-width:auto por defecto) — un
+                   título/badge largo sin espacios fuerza la columna 1fr más
+                   ancha que el contenedor, desbordando la página. */
+                min-width: 0;
             }
         }
     </style>
