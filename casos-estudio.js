@@ -3267,6 +3267,172 @@ const CASE_STUDIES = [
         xpReward: 10
       }
     }
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CASO 16: "El semáforo de Andrés" — Educación Inclusiva
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cs16',
+    title: 'El semáforo de Andrés',
+    course: 'Educación Inclusiva',
+    color: '#8B5CF6',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',
+    duration: '20-25 min',
+    description: 'Suena una alarma de simulacro sin previo aviso y Andrés, un estudiante con TEA, entra en sobrecarga sensorial. Acompaña a la maestra Marta a decidir cómo sostener la seguridad del protocolo sin ignorar lo que Andrés está viviendo.',
+    start: 'cs16_n1',
+    nodes: {
+
+      'cs16_n1': {
+        type: 'scenario',
+        text: 'Marta enseña tercer grado en una escuela de Quetzaltenango. Andrés, uno de sus estudiantes, tiene TEA y suele regularse bien con las rutinas conocidas del aula. Hoy, sin ningún aviso previo, suena la alarma de un simulacro de incendio. Andrés se cubre los oídos de inmediato, empieza a mecerse cada vez más rápido, y su respiración se acelera visiblemente. El resto de la clase ya está formándose en fila para salir, siguiendo el protocolo.',
+        context: 'El protocolo de evacuación exige que todos los estudiantes salgan del edificio en los próximos minutos, sin excepción — es un procedimiento de seguridad real, no algo que se pueda posponer.',
+        choices: [
+          {
+            text: 'Acercarse a Andrés con voz baja y calmada, ofrecerle cubrirse los oídos o tomarle la mano, y guiarlo hacia la salida usando pocas palabras, sin dejar de cumplir el protocolo de evacuación.',
+            next: 'cs16_n2a',
+            isCorrect: true
+          },
+          {
+            text: 'Tomarlo firmemente del brazo y llevarlo a la fila, insistiendo en que "tiene que seguir las reglas igual que todos".',
+            next: 'cs16_n2b',
+            isCorrect: false
+          },
+          {
+            text: 'Dejarlo en su lugar mientras el resto de la clase evacúa, decidiendo que "es muy complicado" resolverlo en ese momento.',
+            next: 'cs16_n2c',
+            isCorrect: false
+          }
+        ]
+      },
+
+      'cs16_n2a': {
+        type: 'feedback_correct',
+        text: 'Buena decisión. La seguridad durante una evacuación no es negociable, pero cómo la acompañas sí puede ajustarse: reducir tu propio volumen de voz, usar pocas palabras, y ofrecer un apoyo sensorial simple (cubrirse los oídos, tomarse de la mano) permite cumplir el protocolo sin ignorar la sobrecarga sensorial real que Andrés está viviendo. Seguridad y sensibilidad sensorial no son opuestas.',
+        tip: 'En una emergencia real, el objetivo es salir de forma segura — el apoyo sensorial se ofrece EN MOVIMIENTO hacia la salida, no deteniendo la evacuación por completo.',
+        next: 'cs16_n3a',
+        xp: 10
+      },
+      'cs16_n2b': {
+        type: 'feedback_wrong',
+        text: 'Tomarlo firmemente del brazo sin ninguna advertencia ni acompañamiento verbal calmado, en medio de una sobrecarga sensorial ya en curso, muy probablemente intensifica la respuesta de Andrés en vez de ayudarlo a moverse con más calma — el contacto físico brusco añade otro estímulo más a un sistema ya sobrecargado.',
+        tip: 'El movimiento físico sigue siendo necesario en una evacuación real, pero SIEMPRE acompañado de calma y aviso, nunca como una fuerza repentina sin explicación.',
+        next: 'cs16_n3b',
+        xp: 0
+      },
+      'cs16_n2c': {
+        type: 'feedback_wrong',
+        text: 'Dejar a un estudiante atrás durante una evacuación real, sin importar cuánto cueste acompañarlo, es un riesgo de seguridad que nunca es aceptable — la sobrecarga sensorial de Andrés no cambia la obligación de sacarlo del edificio junto con el resto de la clase.',
+        tip: 'La complejidad de una situación nunca justifica dejar a un estudiante en riesgo — busca ayuda de otro adulto si necesitas apoyo extra en el momento, pero nunca lo dejes solo.',
+        next: 'cs16_n3c',
+        xp: 0
+      },
+
+      // ── Rama A: acompañamiento correcto desde el inicio ──
+      'cs16_n3a': {
+        type: 'scenario',
+        text: 'Ya afuera del edificio, con la evacuación cumplida, Andrés entra en una crisis más intensa (meltdown): se mece con fuerza, se tapa los oídos, y empieza a llorar sin responder a las preguntas de Marta. El resto de la clase observa a cierta distancia.',
+        context: 'La alarma ya se apagó y el simulacro terminó — el reto ahora es acompañar a Andrés a recuperarse, no continuar dando instrucciones.',
+        choices: [
+          {
+            text: 'Darle espacio físico, bajar su propio nivel de habla al mínimo indispensable, y quedarse cerca en silencio sin exigirle que explique qué le pasa.',
+            next: 'cs16_outcome_success',
+            isCorrect: true
+          },
+          {
+            text: 'Preguntarle repetidamente "¿qué te pasa? cuéntame qué sientes" esperando una respuesta verbal inmediata.',
+            next: 'cs16_outcome_partial',
+            isCorrect: false
+          },
+          {
+            text: 'Decirle que "ya pasó, fue solo un simulacro, no tiene nada de qué preocuparse".',
+            next: 'cs16_outcome_partial',
+            isCorrect: false
+          }
+        ]
+      },
+
+      // ── Rama B: contacto físico brusco al inicio ──
+      'cs16_n3b': {
+        type: 'scenario',
+        text: 'Afuera del edificio, la crisis de Andrés es más intensa que si hubiera sido acompañado con calma desde el inicio — se resistió al ser jalado, y ahora llora con fuerza, evitando cualquier contacto. Marta se da cuenta de que el momento inicial pudo manejarse distinto.',
+        context: 'El simulacro ya terminó, pero Andrés sigue visiblemente alterado y algunos compañeros lo están mirando.',
+        choices: [
+          {
+            text: 'Reconocer en silencio que el primer acercamiento no ayudó, bajar el tono, dar espacio, y esperar sin exigir nada hasta que Andrés se calme por su cuenta.',
+            next: 'cs16_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'Insistir en que se calme "ya" porque el simulacro terminó y no hay ninguna razón para seguir alterado.',
+            next: 'cs16_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Pedirle a otro adulto que se lo lleve a otro lugar de inmediato, sin que Marta misma intente acompañarlo primero.',
+            next: 'cs16_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      // ── Rama C: lo dejó atrás ──
+      'cs16_n3c': {
+        type: 'scenario',
+        text: 'Un compañero le avisa a Marta que Andrés se quedó adentro. Marta regresa de inmediato y lo encuentra solo, muy alterado, sin haber salido del aula durante todo el simulacro — una situación de riesgo real que además intensificó su angustia al quedarse solo.',
+        context: 'El resto de la clase ya está afuera; hay que decidir cómo proceder ahora con Andrés, y qué hacer de cara al protocolo de seguridad de la escuela.',
+        choices: [
+          {
+            text: 'Acompañarlo de inmediato hacia afuera con calma, y reportar el incidente a dirección para ajustar el plan de evacuación de Andrés hacia el futuro.',
+            next: 'cs16_outcome_partial',
+            isCorrect: true
+          },
+          {
+            text: 'No reportar lo ocurrido, asumiendo que "la próxima vez será distinto" sin ningún ajuste al plan.',
+            next: 'cs16_outcome_struggle',
+            isCorrect: false
+          },
+          {
+            text: 'Regañarlo por "no haber salido con los demás" sin explicar que la responsabilidad de acompañarlo era de Marta, no de él.',
+            next: 'cs16_outcome_struggle',
+            isCorrect: false
+          }
+        ]
+      },
+
+      // ── OUTCOMES ─────────────────────────────────────────────────────────
+
+      'cs16_outcome_success': {
+        type: 'outcome',
+        outcome: 'success',
+        end: true,
+        score: 100,
+        title: 'Marta: Seguridad con sensibilidad sensorial',
+        text: 'Marta logró sostener dos cosas a la vez que a veces parecen contradictorias: cumplir el protocolo de seguridad sin excepción, y acompañar la sobrecarga sensorial real de Andrés con calma, pocas palabras y apoyo físico simple. Después de la crisis, le dio espacio para recuperarse sin exigirle una explicación inmediata — reconociendo que procesar verbalmente lo ocurrido, en ese momento, no era algo que Andrés pudiera hacer todavía. Esta experiencia también es una señal clara para que la escuela prepare, junto con la familia, un plan de evacuación con aviso anticipado para Andrés de cara a futuros simulacros.',
+        badge: 'Acompañamiento Sensorial con Seguridad',
+        xpReward: 50
+      },
+      'cs16_outcome_partial': {
+        type: 'outcome',
+        outcome: 'partial',
+        end: true,
+        score: 60,
+        title: 'Marta: La corrección a mitad de camino',
+        text: 'El primer movimiento de Marta no fue el ideal —ya sea por el contacto físico brusco inicial, por exigir una explicación verbal inmediata durante la crisis, o por no reconocer a tiempo que Andrés se había quedado atrás—, pero logró corregir el rumbo antes de que la situación se agravara más. Ese ajuste, aunque no perfecto desde el inicio, evitó que la situación empeorara, y es una habilidad tan real como acertar desde el primer momento — sobre todo si Marta usa lo aprendido para preparar mejor la próxima evacuación.',
+        badge: 'Acompañamiento Sensorial en Ajuste',
+        xpReward: 25
+      },
+      'cs16_outcome_struggle': {
+        type: 'outcome',
+        outcome: 'struggle',
+        end: true,
+        score: 25,
+        title: 'Marta: La conversación pendiente',
+        text: 'Ya sea por dejar a Andrés atrás sin reportarlo, por exigir que "se calmara ya" sin reconocer la sobrecarga real, o por regañarlo por algo que no era su responsabilidad, esta situación no se resolvió de la mejor manera para Andrés. La buena noticia es que el acompañamiento a estudiantes con TEA en situaciones de crisis es una habilidad que se practica y se mejora — la próxima vez, con un plan de evacuación preparado de antemano junto con la familia y el equipo de apoyo, Marta tiene ahora un mapa mucho más claro de por dónde empezar.',
+        badge: 'Acompañamiento Sensorial en Camino',
+        xpReward: 10
+      }
+    }
   }
 
 ];
