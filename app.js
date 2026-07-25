@@ -4006,6 +4006,44 @@ function _buildSignaturesHtml(signatures, firmaSrcFallback) {
     }).join('');
 }
 
+// Los navegadores (sobre todo móviles) bloquean casi siempre window.open()
+// cuando no hay un clic directo del usuario en el mismo turno de JS — pasa
+// SIEMPRE al volver del pago (el certificado se genera de forma asíncrona
+// tras confirmar el pago vía polling, sin gesto de usuario reciente). Antes
+// de este fix, ese bloqueo caía en una descarga silenciosa + un toast fácil
+// de perder, y el usuario terminaba sin saber que su diploma sí se había
+// generado. Ahora se muestra un banner persistente con un botón que el
+// usuario sí puede tocar — ese toque es un gesto real, así que abrir la
+// pestaña en ese momento nunca se bloquea.
+function _offerCertificateDownload(blobUrl, filename, label) {
+    const id = 'certReadyBanner';
+    document.getElementById(id)?.remove();
+    const banner = document.createElement('div');
+    banner.id = id;
+    banner.style.cssText = 'position:fixed;left:16px;right:16px;bottom:90px;z-index:9999;background:#16a34a;color:white;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer';
+    banner.innerHTML = `
+        <span style="font-size:24px;flex-shrink:0">🎓</span>
+        <div style="flex:1;min-width:0">
+            <p style="font-weight:800;font-size:13px;margin:0">¡Tu ${esc(label)} está listo!</p>
+            <p style="font-size:11px;opacity:.85;margin:2px 0 0">Toca aquí para abrirlo o descargarlo</p>
+        </div>
+        <button data-close-cert-banner style="background:rgba(255,255,255,.2);border:none;color:white;width:26px;height:26px;border-radius:50%;font-size:15px;cursor:pointer;flex-shrink:0">&times;</button>`;
+    banner.addEventListener('click', (e) => {
+        if (e.target.closest('[data-close-cert-banner]')) { banner.remove(); return; }
+        const win = window.open(blobUrl, '_blank');
+        if (!win) {
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        banner.remove();
+    });
+    document.body.appendChild(banner);
+}
+
 // ── Pago de diplomas/certificados (Recurrente) ──────────────────────────
 // Q10 el diploma de participación de cada curso, Q50 el Certificado
 // Maestro de una ruta. Antes de generar el certificado, verifica si el
@@ -4276,15 +4314,10 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
         const blobUrl = URL.createObjectURL(blob);
         const win = window.open(blobUrl, '_blank');
         if (!win) {
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = `Certificado_${nombre.replace(/\s+/g,'_')}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            showToast('Certificado descargado. Ábrelo en tu navegador.', 'success');
+            _offerCertificateDownload(blobUrl, `Certificado_${nombre.replace(/\s+/g,'_')}.html`, 'diploma');
+        } else {
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
         }
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
     } catch(e) {
         showToast('Error al generar el certificado.', 'error');
     }
@@ -5023,17 +5056,10 @@ async function generateMasterCertificate() {
             certWin.document.write(masterHTML);
             certWin.document.close();
         } else {
-            // Ventana bloqueada — fallback: descarga directa
+            // Ventana bloqueada (o cerrada por el usuario) — mostrar banner
             const blob = new Blob([masterHTML], { type: 'text/html;charset=utf-8' });
             const blobUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = `Certificado_Maestro_${nombre.replace(/\s+/g,'_')}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
-            showToast('Certificado descargado. Ábrelo en tu navegador.', 'success');
+            _offerCertificateDownload(blobUrl, `Certificado_Maestro_${nombre.replace(/\s+/g,'_')}.html`, 'Certificado Maestro');
         }
     } catch(e) {
         console.error('generateMasterCertificate:', e);
@@ -5941,7 +5967,7 @@ function _renderCourseSelector() {
         const _legacySteam = progress?.dailyMissions?.examScore; // legacy single-score for steam
         const _getScore = id => id === 'steam' ? (scores['steam'] ?? _legacySteam) : scores[id];
         list.innerHTML = `
-            <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.5);margin:0 0 14px">Elige tu ruta de formación</p>
+            <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;margin:0 0 14px">Elige tu ruta de formación</p>
             <div class="lp-grid">
             ${LEARNING_PATHS.map(path => {
                 const pathCourses = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(Boolean);
@@ -5952,26 +5978,26 @@ function _renderCourseSelector() {
                 const allDone     = available.length > 0 && passed === available.length;
                 return `
                 <div onclick="_selectPath('${path.id}')"
-                     class="cursor-pointer active:scale-95 transition-all backdrop-blur border rounded-2xl p-4 mb-3"
-                     style="background:${path.color}22;border-color:${path.color}55">
+                     class="cursor-pointer active:scale-95 transition-all border rounded-2xl p-4 mb-3"
+                     style="background:${path.color}14;border-color:${path.color}40">
                     <div class="flex items-center gap-3">
                         <div style="width:44px;height:44px;border-radius:14px;background:${path.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
                             ${(typeof PATH_SVG !== 'undefined' && PATH_SVG[path.id]) ? PATH_SVG[path.id] : '<svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12 H32 V32 H12 Z" stroke-width="2"/><path d="M12 12 L22 20 L32 12" stroke-width="2"/></svg>'}
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
-                                <h3 style="font-size:14px;font-weight:700;color:white;margin:0">${path.label}</h3>
-                                ${allDone ? `<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;background:rgba(255,255,255,0.2);color:white;flex-shrink:0">✓ Completada</span>` : ''}
+                                <h3 style="font-size:14px;font-weight:700;color:#1e293b;margin:0">${path.label}</h3>
+                                ${allDone ? `<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;background:#dcfce7;color:#16a34a;flex-shrink:0">✓ Completada</span>` : ''}
                             </div>
-                            <p style="font-size:11px;color:rgba(255,255,255,.6);margin:2px 0 6px">${pathCourses.length} cursos · ${totalHours}h de formación</p>
+                            <p style="font-size:11px;color:#64748b;margin:2px 0 6px">${pathCourses.length} cursos · ${totalHours}h de formación</p>
                             <div style="display:flex;align-items:center;gap:8px">
-                                <div style="flex:1;height:4px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden">
+                                <div style="flex:1;height:4px;background:#e2e8f0;border-radius:99px;overflow:hidden">
                                     <div style="width:${pct}%;height:100%;background:${path.color};border-radius:99px;transition:width .4s"></div>
                                 </div>
                                 <span style="font-size:10px;font-weight:700;color:${path.color};flex-shrink:0">${passed}/${available.length} aprobados</span>
                             </div>
                         </div>
-                        <span style="color:rgba(255,255,255,.4);font-size:18px">›</span>
+                        <span style="color:#cbd5e1;font-size:18px">›</span>
                     </div>
                 </div>`;
             }).join('')}
@@ -5988,7 +6014,7 @@ function _renderCourseSelector() {
 
         list.innerHTML = `
             <button onclick="_selectedPathId=null;_renderCourseSelector()"
-                    style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:none;color:white;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;margin-bottom:14px">
+                    style="display:flex;align-items:center;gap:6px;background:#f1f5f9;border:none;color:#475569;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;margin-bottom:14px">
                 ‹ Todas las rutas
             </button>
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
@@ -5996,8 +6022,8 @@ function _renderCourseSelector() {
                     ${(typeof PATH_SVG !== 'undefined' && PATH_SVG[path.id]) ? `<div style="width:28px;height:28px">${PATH_SVG[path.id]}</div>` : ''}
                 </div>
                 <div>
-                    <h2 style="font-size:15px;font-weight:800;color:white;margin:0">${path.label}</h2>
-                    <p style="font-size:11px;color:rgba(255,255,255,.5);margin:0">${pathCourses.length} cursos en esta ruta</p>
+                    <h2 style="font-size:15px;font-weight:800;color:#1e293b;margin:0">${path.label}</h2>
+                    <p style="font-size:11px;color:#94a3b8;margin:0">${pathCourses.length} cursos en esta ruta</p>
                 </div>
             </div>
             <div class="lp-grid">
@@ -6008,36 +6034,36 @@ function _renderCourseSelector() {
                 const passed    = (_getScore2(c.id) || 0) >= 70;
                 const prereqNames = (c.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
                 let statusBadge;
-                const _lockSvg = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="12" height="8" rx="2" stroke-width="1.8"/><path d="M6.5 9V6.5a3.5 3.5 0 0 1 7 0V9" stroke-width="1.8"/></svg>';
+                const _lockSvg = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#64748b" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="12" height="8" rx="2" stroke-width="1.8"/><path d="M6.5 9V6.5a3.5 3.5 0 0 1 7 0V9" stroke-width="1.8"/></svg>';
                 if (!isOpen)       statusBadge = '○ Próximamente';
                 else if (!prereqMet) statusBadge = `${_lockSvg.replace('width="20" height="20"','width="11" height="11" style="vertical-align:-1.5px;margin-right:2px"')} Requiere: ${prereqNames}`;
                 else               statusBadge = '● Disponible';
                 return `
                 <div onclick="${clickable ? `selectCourse('${c.id}')` : (isOpen && !prereqMet ? `showToast('Primero completa: ${prereqNames}','info')` : '')}"
-                     class="backdrop-blur border rounded-2xl p-4 mb-3 ${clickable ? 'cursor-pointer active:scale-95' : 'opacity-55'} transition-all"
-                     style="background:${clickable ? c.color+'33' : 'rgba(255,255,255,.06)'};border-color:${clickable ? c.color+'66' : 'rgba(255,255,255,.12)'}">
+                     class="border rounded-2xl p-4 mb-3 ${clickable ? 'cursor-pointer active:scale-95' : 'opacity-70'} transition-all"
+                     style="background:${clickable ? c.color+'14' : '#f8fafc'};border-color:${clickable ? c.color+'40' : '#e2e8f0'}">
                     <div class="flex items-center gap-3">
                         <div style="position:relative;flex-shrink:0">
-                            <div style="width:44px;height:44px;background:${clickable ? c.color : 'rgba(255,255,255,0.1)'};border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                            <div style="width:44px;height:44px;background:${clickable ? c.color : '#eef2f6'};border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden">
                                 ${(!isOpen || !prereqMet)
                                     ? _lockSvg
                                     : (() => { try { const t = getCourseThemeAndIllus(c.id, 1); return `<div style="width:34px;height:34px">${t.illus}</div>`; } catch(_){ return `<span style="font-size:22px">${c.icon||'📚'}</span>`; } })()
                                 }
                             </div>
-                            <span style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;background:rgba(0,0,0,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:white">${idx+1}</span>
+                            <span style="position:absolute;top:-6px;left:-6px;width:18px;height:18px;background:#334155;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:white">${idx+1}</span>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
-                                <h3 style="font-size:13px;font-weight:700;color:white;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</h3>
-                                ${passed ? `<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;background:rgba(255,255,255,0.2);color:white;flex-shrink:0">✓</span>` : ''}
+                                <h3 style="font-size:13px;font-weight:700;color:#1e293b;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</h3>
+                                ${passed ? `<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;background:#dcfce7;color:#16a34a;flex-shrink:0">✓</span>` : ''}
                             </div>
-                            <p style="font-size:11px;color:rgba(255,255,255,.6);margin:2px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.subtitle}</p>
+                            <p style="font-size:11px;color:#64748b;margin:2px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.subtitle}</p>
                             <div class="flex gap-2 flex-wrap">
-                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;max-width:100%;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;${clickable ? 'background:rgba(255,255,255,.18);color:white' : 'background:rgba(255,255,255,.08);color:rgba(255,255,255,.45)'}">${statusBadge}</span>
-                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(0,0,0,.2);color:rgba(255,255,255,.7)">${c.durationHours}h · ${c.totalCards} tarjetas</span>
+                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;max-width:100%;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;${clickable ? `background:${c.color}20;color:${c.color}` : 'background:#f1f5f9;color:#94a3b8'}">${statusBadge}</span>
+                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#f1f5f9;color:#64748b">${c.durationHours}h · ${c.totalCards} tarjetas</span>
                             </div>
                         </div>
-                        ${clickable ? `<span style="color:rgba(255,255,255,.4);font-size:18px">›</span>` : ''}
+                        ${clickable ? `<span style="color:#cbd5e1;font-size:18px">›</span>` : ''}
                     </div>
                 </div>`;
             }).join('')}
@@ -6459,18 +6485,31 @@ function showPortfolioModal() {
     const modal = document.getElementById('portfolioModal');
     if (!modal) return;
 
-    const path = _selectedMasterPath || _activeMasterPath;
-    const pathId = path?.id || 'steam20';
-    const existing = _portfolioByPathRow[pathId] || _portfolioData;
-    const alreadyEvaluated = existing?.ai_total !== undefined && existing?.ai_total !== null;
-
-    if (alreadyEvaluated) {
-        _renderPortfolioResults(pathId);
-    } else {
-        _renderPortfolioForm(existing, path);
-    }
+    // Mostrar el modal (aunque esté vacío) ANTES de renderizar el contenido:
+    // si algo dentro del render falla, el usuario ve el modal abrirse en vez
+    // de que el clic no haga nada visible ("pantalla en blanco").
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
+
+    try {
+        const path = _selectedMasterPath || _activeMasterPath;
+        const pathId = path?.id || 'steam20';
+        const existing = _portfolioByPathRow[pathId] || _portfolioData;
+        const alreadyEvaluated = existing?.ai_total !== undefined && existing?.ai_total !== null;
+
+        if (alreadyEvaluated) {
+            _renderPortfolioResults(pathId);
+        } else {
+            _renderPortfolioForm(existing, path);
+        }
+    } catch (e) {
+        console.error('showPortfolioModal:', e);
+        const body = document.getElementById('portfolioBody');
+        if (body) body.innerHTML = `<div style="padding:24px;text-align:center;color:#64748b">
+            <p style="font-weight:700;color:#1e293b;margin-bottom:6px">No se pudo cargar el portafolio</p>
+            <p style="font-size:13px">Intenta cerrar y volver a abrir esta pantalla. Si el problema sigue, contacta soporte.</p>
+        </div>`;
+    }
 }
 
 function _renderPortfolioForm(existing, path) {
