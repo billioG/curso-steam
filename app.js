@@ -1203,6 +1203,11 @@ function loadDailyMissions() {
 }
 
 function renderProgresoTab() {
+    // El widget de referidos vivía en Perfil — ahora vive en Progreso
+    // (sección "Misiones y retos"), junto con las demás formas de ganar XP.
+    if (typeof displayReferralLink === 'function') displayReferralLink();
+    if (typeof checkReferrerReward === 'function') checkReferrerReward();
+
     const xpEl = document.getElementById('progresoXP');
     const levelEl = document.getElementById('progresoLevel');
     const streakEl = document.getElementById('progresoStreak');
@@ -5693,24 +5698,26 @@ const APP_TOUR_STEPS = [
     },
     {
         tab: 'progreso',
-        element: '#badgesSection',
-        title: 'Logros y ranking por ligas',
-        description: 'Desbloquea insignias por tu desempeño y compite de forma sana en el <strong>Ranking</strong> (justo arriba), organizado por ligas según tu nivel.',
-        side: 'bottom',
-    },
-    {
-        tab: 'progreso',
-        element: '#examBtn',
-        title: 'Examen final y certificado',
-        description: 'Al completar el <strong>80%</strong> de las tarjetas de un curso se activa el examen. Con <strong>70% o más</strong>, descargas tu diploma en PDF justo abajo.',
+        openSection: 'Misiones y retos',
+        element: '#misionesSection',
+        title: 'Misiones y formas de ganar XP',
+        description: 'Retos diarios, retroalimentación por módulo, evidencia de tu práctica y referidos — hasta <strong>400 XP extra</strong> documentando lo aprendido.',
         side: 'top',
     },
     {
-        tab: 'perfil',
-        openSection: 'Gana más XP',
-        element: '#missionsToggle',
-        title: 'Más formas de ganar XP',
-        description: 'Retos diarios, retroalimentación por módulo y evidencia de tu práctica en el aula — hasta <strong>400 XP extra</strong> documentando lo aprendido.',
+        tab: 'progreso',
+        openSection: 'Reconocimientos',
+        element: '#reconocimientosSection',
+        title: 'Ranking, ligas e insignias',
+        description: 'Compite de forma sana en el <strong>Ranking</strong> por ligas según tu nivel, y desbloquea insignias por tu desempeño.',
+        side: 'top',
+    },
+    {
+        tab: 'progreso',
+        openSection: 'Certificación',
+        element: '#examBtn',
+        title: 'Examen final y certificado',
+        description: 'Al completar el <strong>80%</strong> de las tarjetas de un curso se activa el examen. Con <strong>70% o más</strong>, descargas tu diploma en PDF justo abajo.',
         side: 'top',
     },
     {
