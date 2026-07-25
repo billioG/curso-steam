@@ -3959,6 +3959,15 @@ function _buildSignaturesHtml(signatures, firmaSrcFallback) {
 async function requestCertificate(certType, courseId, score) {
     if (!currentUser) { showToast('Inicia sesión para continuar.', 'error'); return; }
 
+    // Si ya hay una versión nueva de la app esperando, NO dejar que el pago
+    // corra con código potencialmente desactualizado — recargar primero es
+    // más seguro que confiar en que el usuario minimice la pestaña a tiempo.
+    if (window._updateReady) {
+        showToast('Actualizando la app antes de continuar con el pago…', 'info');
+        setTimeout(() => window.location.reload(), 1200);
+        return;
+    }
+
     const cid = certType === 'diploma'
         ? (courseId || window._lastExamCourseId || (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam')
         : null;
@@ -5241,8 +5250,13 @@ checkExistingSession();
 // ==================== AUTO-ACTUALIZACIÓN (sin borrar caché manualmente) ====================
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then(reg => {
-        // Revisa si hay una versión nueva del Service Worker cada 30 min mientras la app está abierta
-        setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+        // Revisa de inmediato al cargar — antes esto NO pasaba: una sesión
+        // que nunca se pone en segundo plano ni pasan 30 min podía quedarse
+        // corriendo código viejo toda la sesión sin ningún chequeo.
+        reg.update().catch(() => {});
+        // Revisa cada 5 min mientras la app está abierta (antes 30 min —
+        // muy lento para deploys urgentes, ej. correcciones de pago).
+        setInterval(() => reg.update().catch(() => {}), 5 * 60 * 1000);
         // También revisa al volver a la pestaña/app tras estar en segundo plano
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') reg.update().catch(() => {});
@@ -5261,10 +5275,17 @@ if ('serviceWorker' in navigator) {
     // o que el usuario decida actualizar tocando el aviso.
     let _swRefreshed = false;
     let _updateReady = false;
+    window._updateReady = false; // expuesto para que flujos críticos (pago) lo consulten
     navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (_swRefreshed) return;
         _updateReady = true;
+        window._updateReady = true;
         if (typeof showUpdateBanner === 'function') showUpdateBanner();
+        // Momento seguro #2: si el usuario nunca minimiza la pestaña ni toca
+        // "Actualizar", no dejar el aviso ahí indefinidamente corriendo
+        // código viejo — sobre todo grave en flujos de pago/certificados.
+        // Tras un período de gracia, forzar la recarga de todos modos.
+        setTimeout(() => doSafeReload(), 3 * 60 * 1000);
     });
 
     function doSafeReload() {
