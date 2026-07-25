@@ -5651,17 +5651,16 @@ const APP_TOUR_STEPS = [
     },
     {
         tab: 'progreso',
-        element: '.perfil-badges-wrap',
+        element: '#badgesSection',
         title: 'Logros y ranking por ligas',
         description: 'Desbloquea insignias por tu desempeño y compite de forma sana en el <strong>Ranking</strong> (justo arriba), organizado por ligas según tu nivel.',
         side: 'bottom',
     },
     {
         tab: 'progreso',
-        openSection: 'Certificados',
-        element: '#certSection',
+        element: '#examBtn',
         title: 'Examen final y certificado',
-        description: 'Al completar el <strong>80%</strong> de las tarjetas de un curso se activa el examen (desde Perfil → Aprendizaje). Con <strong>70% o más</strong>, descargas tu diploma en PDF aquí en Progreso.',
+        description: 'Al completar el <strong>80%</strong> de las tarjetas de un curso se activa el examen. Con <strong>70% o más</strong>, descargas tu diploma en PDF justo abajo.',
         side: 'top',
     },
     {

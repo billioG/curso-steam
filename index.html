@@ -889,11 +889,6 @@
                 padding-left: 48px !important;
                 padding-right: 48px !important;
             }
-            #tabPerfil .perfil-badges-wrap {
-                max-width: 1100px;
-                margin: 20px auto 0;
-                padding: 0 48px;
-            }
             #tabPerfil .perfil-grid {
                 max-width: 1100px;
                 margin: 0 auto;
@@ -920,7 +915,6 @@
         }
 
         /* ── Perfil: márgenes móvil ────────────────────────────────── */
-        .perfil-badges-wrap { padding: 16px 16px 0; }
         .perfil-grid        { padding: 14px 16px 40px; }
         .perfil-section     { margin-bottom: 20px; }
 
@@ -1697,19 +1691,21 @@
         <!-- ── TOP BAR MINIMAL (fijo) ── -->
         <div class="top-bar">
             <div class="flex items-center justify-between px-4 h-full">
-                <div>
+                <div id="topBarCourseInfo">
                     <p id="courseNameLabel" class="text-[10px] text-slate-400 font-medium uppercase tracking-widest"
                         style="font-family:'Montserrat',sans-serif">Curso STEAM</p>
                     <span id="moduleBadge" class="text-sm font-extrabold text-slate-800"
                         style="font-family:'Nunito',sans-serif">Módulo 1 / 5</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="w-28 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div id="courseProgressBar" class="h-full rounded-full transition-all duration-500"
-                            style="width:0%;background:var(--brand-blue)"></div>
+                    <div id="topBarProgressInfo" class="flex items-center gap-2">
+                        <div class="w-28 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div id="courseProgressBar" class="h-full rounded-full transition-all duration-500"
+                                style="width:0%;background:var(--brand-blue)"></div>
+                        </div>
+                        <span id="courseProgressPercent" class="text-xs font-bold min-w-[30px] text-right"
+                            style="color:var(--brand-blue);font-family:'Montserrat',sans-serif">0%</span>
                     </div>
-                    <span id="courseProgressPercent" class="text-xs font-bold min-w-[30px] text-right"
-                        style="color:var(--brand-blue);font-family:'Montserrat',sans-serif">0%</span>
                     <button onclick="showCourseSelector()" aria-label="Cambiar curso" title="Cambiar curso" class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 transition flex-shrink-0">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/><path d="M7 16l-3 3 3 3" stroke-width="1.6"/><path d="M17 4l3 3-3 3" stroke-width="1.6"/></svg>
                     </button>
@@ -1834,22 +1830,11 @@
             <!-- ── Sección: Aprendizaje ── -->
             <div class="perfil-section">
                 <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
-                    <span class="perfil-section-label"><span class="perfil-section-label-title">Aprendizaje</span><span class="perfil-section-label-sub">Cursos, simulaciones y evaluaciones</span></span>
+                    <span class="perfil-section-label"><span class="perfil-section-label-title">Misiones</span><span class="perfil-section-label-sub">Retos diarios y objetivos</span></span>
                     <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <div class="perfil-section-body collapsed">
                 <div class="perfil-items-grid">
-                    <button id="examBtn"
-                        class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:bg-cyan-50 hover:border-cyan-300 transition shadow-sm">
-                        <div class="w-8 h-8 rounded-xl bg-cyan-50 flex items-center justify-center flex-shrink-0">
-                            <span data-icon="clipboard" style="display:inline-flex;width:16px;height:16px;color:#06b6d4"></span>
-                        </div>
-                        <div class="text-left flex-1">
-                            <div class="font-semibold text-slate-700 text-sm">Examen Final</div>
-                            <div class="text-xs text-slate-400">Pon a prueba lo aprendido</div>
-                        </div>
-                        <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
-                    </button>
                     <button id="missionsToggle"
                         class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm">
                         <div class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
@@ -2133,31 +2118,43 @@
             </button>
 
             <!-- ── SECCIÓN DE LOGROS ─────────────────────────────────────── -->
-            <div class="perfil-badges-wrap" style="padding:0 0 4px">
-                <div class="flex items-center justify-between mb-3 px-1">
-                    <div>
-                        <p class="text-[11px] font-black uppercase tracking-widest" style="color:#1e3a5f">Logros y estadísticas</p>
-                        <p class="text-xs text-slate-400 mt-0.5"><span id="badgesEarnedCount">0</span> de <span id="badgesTotalCount">0</span> insignias desbloqueadas</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button id="statsSecretBtn"
-                            class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition">
-                            Estadísticas
-                        </button>
-                        <button id="devModeBtn" onclick="toggleDevMode()"
-                            class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 transition">
-                            <span id="devModeBtnLabel" style="color:#ea580c">🛠️ Dev</span>
-                            <span id="devModeBtnSub" class="hidden"></span>
-                        </button>
-                    </div>
-                </div>
-                <!-- Récords personales -->
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Récords personales</p>
-                <div id="personalRecordsRow" class="grid grid-cols-4 gap-2 mb-5"></div>
-                <!-- Insignias -->
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Insignias</p>
-                <div id="badgesGrid" class="badges-grid"></div>
+            <div class="flex items-center gap-2 justify-end mb-2">
+                <button id="statsSecretBtn"
+                    class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition">
+                    Estadísticas
+                </button>
+                <button id="devModeBtn" onclick="toggleDevMode()"
+                    class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 transition">
+                    <span id="devModeBtnLabel" style="color:#ea580c">🛠️ Dev</span>
+                    <span id="devModeBtnSub" class="hidden"></span>
+                </button>
             </div>
+            <div id="badgesSection" class="perfil-section">
+                <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
+                    <span class="perfil-section-label"><span class="perfil-section-label-title">Insignias</span><span class="perfil-section-label-sub"><span id="badgesEarnedCount">0</span> de <span id="badgesTotalCount">0</span> desbloqueadas</span></span>
+                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="perfil-section-body collapsed">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1 mt-1">Récords personales</p>
+                    <div id="personalRecordsRow" class="grid grid-cols-4 gap-2 mb-5"></div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Insignias</p>
+                    <div id="badgesGrid" class="badges-grid"></div>
+                </div>
+            </div>
+
+            <!-- Examen Final -->
+            <button id="examBtn"
+                class="w-full rounded-2xl p-4 my-5 flex items-center gap-3 text-left shadow-sm active:scale-95 transition"
+                style="background:linear-gradient(135deg,#0e7490,#0891b2)">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
+                    <span data-icon="clipboard" style="display:inline-flex;width:20px;height:20px;color:white"></span>
+                </div>
+                <div class="flex-1">
+                    <p class="font-black text-white text-sm">Examen Final</p>
+                    <p class="text-white/70 text-xs mt-0.5">Pon a prueba lo aprendido</p>
+                </div>
+                <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:white"></span>
+            </button>
 
             <!-- ── Sección: Certificados ── -->
             <div id="certSection" class="perfil-section mt-5">
@@ -2701,6 +2698,14 @@
             function switchTab(tab) {
                 const tabs = ['tabHome', 'tabBiblioteca', 'tabProgreso', 'tabModulos', 'tabPerfil'];
                 const btns = ['bnavHome', 'bnavBiblioteca', 'bnavProgreso', 'bnavModulos', 'bnavPerfil'];
+                // El nombre/módulo/progreso del curso activo solo tiene sentido en
+                // Inicio — en las demás tabs (sobre todo Biblioteca, donde se puede
+                // estar viendo OTRA ruta) confundía, pareciendo que la app "se
+                // quedó" en el curso anterior.
+                const _tbCourse = document.getElementById('topBarCourseInfo');
+                const _tbProgress = document.getElementById('topBarProgressInfo');
+                if (_tbCourse) _tbCourse.classList.toggle('hidden', tab !== 'home');
+                if (_tbProgress) _tbProgress.classList.toggle('hidden', tab !== 'home');
                 tabs.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.classList.add('hidden');
