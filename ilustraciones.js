@@ -754,6 +754,14 @@ const BIE_ILLUS = {
     4: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="40" cy="28" r="16" stroke-width="2.3" fill="rgba(255,255,255,0.1)"/><line x1="40" y1="42" x2="40" y2="58" stroke-width="2.3"/><path d="M40 58 L28 70 M40 58 L52 70 M40 62 L34 72 M40 62 L46 72" stroke-width="1.8" stroke="rgba(255,255,255,0.5)"/></svg>`,
 };
 
+// ── Ruta Educación Inclusiva — cada curso con su propio ícono (escalado 2x
+// desde su `icon` en data.js), en vez de caer al ilustración por defecto de
+// STEAM/ciencias cuando un courseId no está en el switch de arriba.
+const EDU_INCL_ILLUS = { 1: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="28" cy="32" r="12" stroke-width="2.3" fill="rgba(255,255,255,0.12)"/><circle cx="52" cy="32" r="12" stroke-width="2.3" fill="rgba(255,255,255,0.12)"/><path d="M16 60c0-10 6-16 12-16h24c6 0 12 6 12 16" stroke-width="2.3"/></svg>` };
+const TEA_PROF_ILLUS  = { 1: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="40" cy="40" r="10" stroke-width="2.3" fill="rgba(255,255,255,0.12)"/><line x1="40" y1="8" x2="40" y2="22" stroke-width="2.3"/><line x1="40" y1="58" x2="40" y2="72" stroke-width="2.3"/><line x1="8" y1="40" x2="22" y2="40" stroke-width="2.3"/><line x1="58" y1="40" x2="72" y2="40" stroke-width="2.3"/><line x1="18" y1="18" x2="28" y2="28" stroke-width="2"/><line x1="52" y1="52" x2="62" y2="62" stroke-width="2"/></svg>` };
+const DOWN_TDAH_ILLUS = { 1: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M12 68h14v-16h14v-16h14v-16h14" stroke-width="2.5"/><circle cx="68" cy="20" r="3.5" fill="white" stroke="none"/></svg>` };
+const LSG_ILLUS       = { 1: `<svg viewBox="0 0 80 80" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M26 38V16a4 4 0 018 0v18M36 36V12a4 4 0 018 0v22M46 36V16a4 4 0 018 0v18M54 38v-12a4 4 0 018 0v20c0 12-8 22-22 22h-2c-10 0-14-4-18-12l-8-14a4 4 0 016.8-4.4l5.2 7.6" stroke-width="2" fill="rgba(255,255,255,0.1)"/></svg>` };
+
 // Función que retorna theme+illus para el módulo activo de las 2 nuevas rutas
 function getConvivenciaOrIaThemeAndIllus(courseId, moduleIndex) {
     const map = {
@@ -767,6 +775,10 @@ function getConvivenciaOrIaThemeAndIllus(courseId, moduleIndex) {
         'comunicacion-asertiva': { THEME: COM_THEME, ILLUS: COM_ILLUS, fallback: '#7C3AED', fallbackSoft: '#EDE9FE' },
         'disciplina-positiva': { THEME: DIS_THEME, ILLUS: DIS_ILLUS, fallback: '#EA580C', fallbackSoft: '#FFEDD5' },
         'bienestar-docente':   { THEME: BIE_THEME, ILLUS: BIE_ILLUS, fallback: '#16A34A', fallbackSoft: '#DCFCE7' },
+        'educacion-inclusiva':     { THEME: {}, ILLUS: EDU_INCL_ILLUS,  fallback: '#8B5CF6', fallbackSoft: '#EDE9FE' },
+        'tea-profundidad':         { THEME: {}, ILLUS: TEA_PROF_ILLUS,  fallback: '#6366F1', fallbackSoft: '#E0E7FF' },
+        'discapacidad-down-tdah':  { THEME: {}, ILLUS: DOWN_TDAH_ILLUS, fallback: '#F59E0B', fallbackSoft: '#FEF3C7' },
+        'lengua-senas-docentes':   { THEME: {}, ILLUS: LSG_ILLUS,       fallback: '#0EA5E9', fallbackSoft: '#E0F2FE' },
     };
     const m = map[courseId];
     if (!m) return null;
