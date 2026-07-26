@@ -81,6 +81,58 @@ const ICONS = {
     <path d="M5 14l5-5 4 3 5-6" stroke-width="1.5" stroke-dasharray="2 1.5"/>
   </svg>`,
 
+  // Racha: llama
+  flame: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2c1 4-4 5-4 9a4 4 0 008 0c0-2.5-1.5-4-1.5-6" fill="currentColor" fill-opacity=".15"/>
+    <path d="M9.5 14c0 2 1.1 3.5 2.5 3.5s2.5-1.2 2.5-3.5" fill="currentColor" fill-opacity=".3"/>
+  </svg>`,
+
+  // Ligas/récords altos: gema
+  gem: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 3h12l3 5-9 13L3 8z" fill="currentColor" fill-opacity=".15"/>
+    <path d="M3 8h18M9 3l-2 5 5 13 5-13-2-5" stroke-width="1.5"/>
+  </svg>`,
+
+  // Podio del ranking: corona del 1er lugar
+  crown: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 8l4 3 5-6 5 6 4-3-2 10H5L3 8z" fill="currentColor" fill-opacity=".25"/>
+  </svg>`,
+
+  // XP / energía: rayo
+  bolt: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor" fill-opacity=".2"/>
+  </svg>`,
+
+  // Misiones de tarjetas: mazo de tarjetas
+  cards: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="7" width="14" height="14" rx="2" fill="currentColor" fill-opacity=".1"/>
+    <path d="M7 7V5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
+  </svg>`,
+
+  // "Lo apliqué en clase": manzana
+  apple: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 9c-3.5 0-6 2.5-6 6.5S8 21 11 21c.7 0 1.3-.2 1-.2s.3.2 1 .2c3 0 5-2 5-5.5S15.5 9 12 9z" fill="currentColor" fill-opacity=".15"/>
+    <path d="M12 9c0-2 1-3.5 3-4" stroke-width="1.6"/>
+  </svg>`,
+
+  // Racha rota / bloqueado temporal: copo de nieve (protector de racha)
+  snowflake: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="2" x2="12" y2="22"/>
+    <line x1="4" y1="7" x2="20" y2="17"/>
+    <line x1="4" y1="17" x2="20" y2="7"/>
+  </svg>`,
+
+  // Misión pendiente: reloj de arena
+  hourglass: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9" fill="currentColor" fill-opacity=".1"/>
+  </svg>`,
+
+  // Misión desbloqueada sin reclamar: candado abierto
+  unlock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="11" width="14" height="9" rx="2" fill="currentColor" fill-opacity=".12"/>
+    <path d="M7.5 11V7.5a4 4 0 017-2.6"/>
+  </svg>`,
+
   // Misiones: diana con flecha
   target: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="12" r="9"/>
