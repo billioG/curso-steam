@@ -202,16 +202,16 @@ const badges = {
 
 // ==================== MISIONES DIARIAS Y SEMANALES ====================
 const dailyMissionsList = [
-    { id: "mission1", name: "📖 Completa 3 tarjetas", target: 3, type: "cards", reward: 30, current: 0 },
-    { id: "mission2", name: "✅ Responde 2 quizzes", target: 2, type: "quizzes", reward: 25, current: 0 },
-    { id: "mission3", name: "⭐ Gana 50 XP hoy", target: 50, type: "xp", reward: 20, current: 0 }
+    { id: "mission1", name: "Completa 3 tarjetas", icon: "cards", target: 3, type: "cards", reward: 30, current: 0 },
+    { id: "mission2", name: "Responde 2 quizzes", icon: "checkCircle", target: 2, type: "quizzes", reward: 25, current: 0 },
+    { id: "mission3", name: "Gana 50 XP hoy", icon: "bolt", target: 50, type: "xp", reward: 20, current: 0 }
 ];
 
 const weeklyMissionsList = [
-    { id: "wmission1", name: "📚 Completa 2 módulos esta semana", target: 2, type: "w_modules", reward: 150, current: 0 },
-    { id: "wmission2", name: "🎯 Responde 15 quizzes correctos", target: 15, type: "w_quizzes", reward: 120, current: 0 },
-    { id: "wmission3", name: "🔥 Mantén racha 5 días", target: 5, type: "w_streak", reward: 100, current: 0 },
-    { id: "wmission4", name: "🍎 Aplica 3 conceptos en clase", target: 3, type: "w_applied", reward: 200, current: 0 },
+    { id: "wmission1", name: "Completa 2 módulos esta semana", icon: "modules", target: 2, type: "w_modules", reward: 150, current: 0 },
+    { id: "wmission2", name: "Responde 15 quizzes correctos", icon: "target", target: 15, type: "w_quizzes", reward: 120, current: 0 },
+    { id: "wmission3", name: "Mantén racha 5 días", icon: "flame", target: 5, type: "w_streak", reward: 100, current: 0 },
+    { id: "wmission4", name: "Aplica 3 conceptos en clase", icon: "apple", target: 3, type: "w_applied", reward: 200, current: 0 },
 ];
 
 // ==================== INICIALIZAR INDEXEDDB ====================
@@ -795,6 +795,15 @@ function renderBadgesGrid() {
     grid.innerHTML = list.map(itemHTML).join('');
 }
 
+// Ícono SVG de una liga (medalla para Bronce/Plata/Oro, gema para
+// Platino/Diamante) — reemplaza los emoji 🥉🥈🥇🪙💎 usados antes en
+// Récords personales y en el Ranking, coloreado con currentColor.
+function _leagueIconSvg(leagueName, sizePx) {
+    const size = sizePx || 16;
+    const shape = (leagueName === 'Platino' || leagueName === 'Diamante') ? ICONS.gem : ICONS.medal;
+    return `<span style="display:inline-flex;width:${size}px;height:${size}px;vertical-align:-3px">${shape}</span>`;
+}
+
 // Récords personales: solo métricas que sí podemos calcular honestamente
 // con los datos que ya guardamos — no se inventan tiers ni historial que
 // no existe. La liga se deriva del nivel (que nunca baja), así que la
@@ -809,11 +818,11 @@ function renderPersonalRecords() {
     // que faltan en gris/bloqueadas. La liga se deriva del nivel (que nunca
     // baja), así que la liga actual ya es, por definición, la más alta.
     const LEAGUES = [
-        { name: 'Bronce',   emoji: '🥉', min: 1,  color: '#b45309' },
-        { name: 'Plata',    emoji: '🥈', min: 3,  color: '#64748b' },
-        { name: 'Oro',      emoji: '🥇', min: 5,  color: '#f59e0b' },
-        { name: 'Platino',  emoji: '🪙', min: 8,  color: '#8b5cf6' },
-        { name: 'Diamante', emoji: '💎', min: 11, color: '#06b6d4' },
+        { name: 'Bronce',   min: 1,  color: '#b45309' },
+        { name: 'Plata',    min: 3,  color: '#64748b' },
+        { name: 'Oro',      min: 5,  color: '#f59e0b' },
+        { name: 'Platino',  min: 8,  color: '#8b5cf6' },
+        { name: 'Diamante', min: 11, color: '#06b6d4' },
     ];
     const level = progress?.level || 1;
     let currentIdx = 0;
@@ -828,10 +837,10 @@ function renderPersonalRecords() {
                 const unlocked = i <= currentIdx;
                 const isCurrent = i === currentIdx;
                 return `<div style="flex:1;text-align:center;min-width:0">
-                    <div style="width:42px;height:42px;border-radius:50%;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:19px;
+                    <div style="width:42px;height:42px;border-radius:50%;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;color:${isCurrent ? l.color : (unlocked ? l.color : '#94a3b8')};
                         background:${unlocked ? l.color + '1f' : '#f1f5f9'};
                         border:2px solid ${isCurrent ? l.color : (unlocked ? l.color + '55' : '#e2e8f0')};
-                        ${unlocked ? '' : 'filter:grayscale(1);opacity:.5'}">${l.emoji}</div>
+                        ${unlocked ? '' : 'filter:grayscale(1);opacity:.5'}">${_leagueIconSvg(l.name, 22)}</div>
                     <span style="font-size:9px;font-weight:800;color:${isCurrent ? l.color : '#94a3b8'}">${l.name}</span>
                 </div>`;
             }).join('')}
@@ -847,13 +856,13 @@ function renderPersonalRecords() {
     const totalCards = progress?.completedCards?.length || 0;
 
     const records = [
-        { icon: '🔥', bg: '#fef2f2', value: longestStreak, label: 'Racha más larga' },
-        { icon: '⚡', bg: '#eff6ff', value: bestDayXP, label: 'Más XP en un día' },
-        { icon: '📚', bg: '#f0fdf4', value: totalCards, label: 'Tarjetas completadas' },
+        { icon: ICONS.flame, bg: '#fef2f2', value: longestStreak, label: 'Racha más larga' },
+        { icon: ICONS.bolt, bg: '#eff6ff', value: bestDayXP, label: 'Más XP en un día' },
+        { icon: ICONS.library, bg: '#f0fdf4', value: totalCards, label: 'Tarjetas completadas' },
     ];
     row.innerHTML = records.map(r => `
         <div class="record-card">
-            <div class="record-icon" style="background:${r.bg}">${r.icon}</div>
+            <div class="record-icon" style="background:${r.bg};color:#334155"><span style="display:inline-flex;width:18px;height:18px">${r.icon}</span></div>
             <div class="record-value">${r.value}</div>
             <div class="record-label">${r.label}</div>
         </div>`).join('');
@@ -1279,8 +1288,10 @@ function renderDailyMissions() {
     const _missionRow = (m, weekly = false) => {
         const pct = Math.min((m.current / m.target) * 100, 100);
         const claimFn = weekly ? `claimWeeklyMissionReward` : `claimMissionReward`;
+        const statusIcon = m.completed ? (m.claimed ? ICONS.checkCircle : ICONS.unlock) : ICONS.hourglass;
+        const statusColor = m.completed ? (m.claimed ? '#16a34a' : '#f59e0b') : '#94a3b8';
         return `<div class="flex items-center gap-2 py-1.5">
-            <span class="text-base flex-shrink-0">${m.completed ? (m.claimed ? '✅' : '🔓') : '⏳'}</span>
+            <span style="display:inline-flex;width:18px;height:18px;color:${statusColor};flex-shrink:0">${statusIcon}</span>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between mb-0.5">
                     <span class="text-[11px] font-semibold ${m.completed ? 'text-green-600' : 'text-gray-700'} truncate">${m.name}</span>
@@ -1297,15 +1308,15 @@ function renderDailyMissions() {
         <!-- Barra XP diario -->
         <div class="mb-3 p-2.5 rounded-xl" style="background:#fefce8;border:1px solid #fde68a">
             <div class="flex items-center justify-between mb-1">
-                <span class="text-[11px] font-bold text-yellow-700">⭐ Meta diaria</span>
+                <span class="text-[11px] font-bold text-yellow-700" style="display:inline-flex;align-items:center;gap:4px"><span style="display:inline-flex;width:13px;height:13px">${ICONS.star}</span>Meta diaria</span>
                 <span id="dailyXPLabel" class="text-[11px] font-bold text-yellow-600">${dailyXP}/${dailyGoal} XP hoy</span>
             </div>
             <div class="w-full bg-yellow-100 rounded-full h-2">
                 <div id="dailyXPBar" class="h-2 rounded-full transition-all" style="width:${dailyPct}%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div>
             </div>
-            ${dailyPct >= 100 ? '<div class="text-[10px] text-green-600 font-bold mt-1 text-center">🎉 ¡Meta del día alcanzada!</div>' : ''}
+            ${dailyPct >= 100 ? `<div class="text-[10px] text-green-600 font-bold mt-1 text-center" style="display:flex;align-items:center;justify-content:center;gap:4px"><span style="display:inline-flex;width:12px;height:12px">${ICONS.checkCircle}</span>¡Meta del día alcanzada!</div>` : ''}
         </div>
-        ${freezes > 0 ? `<div class="mb-2 flex items-center gap-1.5 text-[11px] text-blue-600 font-semibold"><span>🧊</span> ${freezes} Protector${freezes>1?'es':''} de Racha disponible${freezes>1?'s':''}</div>` : ''}
+        ${freezes > 0 ? `<div class="mb-2 flex items-center gap-1.5 text-[11px] text-blue-600 font-semibold"><span style="display:inline-flex;width:13px;height:13px">${ICONS.snowflake}</span> ${freezes} Protector${freezes>1?'es':''} de Racha disponible${freezes>1?'s':''}</div>` : ''}
         <!-- Tabs -->
         <div class="flex gap-1 mb-2" id="missionTabBtns">
             <button onclick="_switchMissionTab('daily')" id="mTabDaily" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg transition" style="background:#0f172a;color:white">Diarias</button>
@@ -2743,105 +2754,6 @@ async function showRanking() {
 
     _rankingDataTotal = data;
     _renderTotalRanking(data);
-    return; // el resto del código original ya está en _renderTotalRanking
-
-    // ── Definición de ligas por nivel ──────────────────────────────
-    const LEAGUES = [
-        { name: 'Liga Diamante', emoji: '💎', min: 11, color: '#06b6d4', bg: '#ecfeff' },
-        { name: 'Liga Platino',  emoji: '🪙', min: 8,  color: '#8b5cf6', bg: '#f5f3ff' },
-        { name: 'Liga Oro',      emoji: '🥇', min: 5,  color: '#f59e0b', bg: '#fffbeb' },
-        { name: 'Liga Plata',    emoji: '🥈', min: 3,  color: '#64748b', bg: '#f8fafc' },
-        { name: 'Liga Bronce',   emoji: '🥉', min: 1,  color: '#b45309', bg: '#fef3c7' },
-    ];
-
-    const getLeague = lvl => LEAGUES.find(l => lvl >= l.min) || LEAGUES[LEAGUES.length - 1];
-
-    // Agrupar usuarios en ligas, ordenados por XP dentro de cada liga
-    const leagueGroups = {};
-    data.forEach(user => {
-        const lvl = user.level || 1;
-        const league = getLeague(lvl);
-        if (!leagueGroups[league.name]) leagueGroups[league.name] = { ...league, members: [] };
-        leagueGroups[league.name].members.push(user);
-    });
-
-    // Lista plana ordenada por XP/nivel para el podio y la lista
-    const flat = [...data].sort((a,b) => (b.level||1) - (a.level||1) || (b.xp||0) - (a.xp||0));
-
-    const _avatar = (user, size=44) => user.profile_photo
-        ? `<img src="${user.profile_photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
-        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:${size*0.4}px;flex-shrink:0">👨‍🏫</div>`;
-
-    // ── PODIO top 3 ─────────────────────────────────────────────────
-    const podiumEl = document.getElementById('rankingPodium');
-    const top3 = flat.slice(0, 3);
-    // Orden visual: 2° izquierda, 1° centro, 3° derecha
-    const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
-    const podiumPos   = top3[1] ? [2, 1, 3] : [1];
-    const podiumH     = ['64px', '88px', '52px'];
-    const podiumColors= ['#5b21b6', '#4c1d95', '#6d28d9'];
-    const crownIdx    = top3[1] ? 1 : 0; // índice del 1° en podiumOrder
-
-    if (podiumEl) {
-        podiumEl.innerHTML = `
-        <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;padding:0 8px">
-            ${podiumOrder.map((u, vi) => {
-                const rank = podiumPos[vi];
-                const isMe = u.user_id === currentUser?.id;
-                const name = (u.full_name || u.nombre_usuario || 'Docente').split(' ')[0];
-                const isCrown = rank === 1;
-                const pedH = podiumH[vi];
-                return `
-                <div style="display:flex;flex-direction:column;align-items:center;flex:1;max-width:120px">
-                    ${isCrown ? '<div style="font-size:20px;margin-bottom:2px">👑</div>' : '<div style="height:28px"></div>'}
-                    <div style="position:relative">
-                        <div style="border:3px solid ${isCrown?'#fbbf24':'rgba(255,255,255,.4)'};border-radius:50%;padding:2px;${isMe?'box-shadow:0 0 0 3px rgba(251,191,36,.5)':''}">
-                            ${_avatar(u, isCrown?52:44)}
-                        </div>
-                        ${isMe ? '<div style="position:absolute;bottom:-4px;right:-4px;background:#fbbf24;color:#1e1b4b;font-size:9px;font-weight:900;padding:1px 5px;border-radius:99px">TÚ</div>' : ''}
-                    </div>
-                    <p style="color:white;font-weight:800;font-size:11px;margin:6px 0 4px;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</p>
-                    <div style="background:rgba(255,255,255,.18);border-radius:99px;padding:2px 10px;margin-bottom:6px">
-                        <span style="color:white;font-size:10px;font-weight:700">⭐ ${(u.xp||0).toLocaleString()} XP</span>
-                    </div>
-                    <div style="background:${podiumColors[vi]};border-radius:12px 12px 0 0;height:${pedH};width:100%;display:flex;align-items:center;justify-content:center">
-                        <span style="color:white;font-size:${isCrown?'28px':'22px'};font-weight:900;opacity:.8">${rank}</span>
-                    </div>
-                </div>`;
-            }).join('')}
-        </div>`;
-    }
-
-    // ── LISTA 4+ ─────────────────────────────────────────────────────
-    let listHtml = '';
-
-    if (flat.length <= 3) {
-        listHtml = `<p style="text-align:center;color:#94a3b8;font-size:12px;padding:16px 0">¡Solo los docentes del podio hasta ahora!</p>`;
-    } else {
-        flat.slice(3).forEach((user, i) => {
-            const rank = i + 4;
-            const isMe = user.user_id === currentUser?.id;
-            const name = user.full_name || user.nombre_usuario || `Docente ${rank}`;
-            const lvl  = user.level || 1;
-            const league = getLeague(lvl);
-            listHtml += `
-            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;
-                background:${isMe?'linear-gradient(135deg,#ede9fe,#ddd6fe)':'#f8fafc'};
-                border:${isMe?'2px solid #a78bfa':'1.5px solid #e2e8f0'}">
-                <span style="font-size:12px;font-weight:900;color:${isMe?'#6d28d9':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>
-                ${_avatar(user, 38)}
-                <div style="flex:1;min-width:0">
-                    <p style="font-weight:700;font-size:13px;color:${isMe?'#4c1d95':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#7c3aed">(Tú)</span>':''}</p>
-                    <span style="font-size:10px;font-weight:600;color:${league.color}">${league.emoji} ${league.name}</span>
-                </div>
-                <div style="text-align:right;flex-shrink:0">
-                    <p style="font-weight:800;font-size:13px;color:#6d28d9">⭐ ${(user.xp||0).toLocaleString()}</p>
-                    <p style="font-size:10px;color:#94a3b8">Nv. ${lvl}</p>
-                </div>
-            </div>`;
-        });
-    }
-    listEl.innerHTML = listHtml;
 }
 
 let _rankingMode = 'total'; // 'total' | 'weekly'
@@ -2863,23 +2775,23 @@ function _renderTotalRanking(data) {
     const podiumEl = document.getElementById('rankingPodium');
     if (!data?.length) { listEl.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:12px;padding:16px">Sin datos aún</p>'; return; }
     const LEAGUES = [
-        { name:'Liga Diamante',emoji:'💎',min:11,color:'#06b6d4',bg:'#ecfeff' },
-        { name:'Liga Platino', emoji:'🪙',min:8, color:'#8b5cf6',bg:'#f5f3ff' },
-        { name:'Liga Oro',     emoji:'🥇',min:5, color:'#f59e0b',bg:'#fffbeb' },
-        { name:'Liga Plata',   emoji:'🥈',min:3, color:'#64748b',bg:'#f8fafc' },
-        { name:'Liga Bronce',  emoji:'🥉',min:1, color:'#b45309',bg:'#fef3c7' },
+        { name:'Liga Diamante',min:11,color:'#06b6d4',bg:'#ecfeff' },
+        { name:'Liga Platino', min:8, color:'#8b5cf6',bg:'#f5f3ff' },
+        { name:'Liga Oro',     min:5, color:'#f59e0b',bg:'#fffbeb' },
+        { name:'Liga Plata',   min:3, color:'#64748b',bg:'#f8fafc' },
+        { name:'Liga Bronce',  min:1, color:'#b45309',bg:'#fef3c7' },
     ];
     const getLeague = lvl => LEAGUES.find(l => lvl >= l.min) || LEAGUES[LEAGUES.length-1];
     const flat = [...data].sort((a,b)=>(b.level||1)-(a.level||1)||(b.xp||0)-(a.xp||0));
     const _avatar = (u,size=44) => u.profile_photo
         ? `<img src="${u.profile_photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
-        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:${size*.4}px;flex-shrink:0">👨‍🏫</div>`;
+        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#a78bfa);display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0"><span style="display:inline-flex;width:${size*.5}px;height:${size*.5}px">${ICONS.profile}</span></div>`;
 
     const top3=flat.slice(0,3); const podiumOrder=[top3[1],top3[0],top3[2]].filter(Boolean);
     const podiumPos=top3[1]?[2,1,3]:[1]; const podiumH=['64px','88px','52px']; const podiumColors=['#5b21b6','#4c1d95','#6d28d9'];
     if (podiumEl) podiumEl.innerHTML=`<div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;padding:0 8px">${podiumOrder.map((u,vi)=>{
         const rank=podiumPos[vi];const isMe=u.user_id===currentUser?.id;const name=(u.full_name||u.nombre_usuario||'Docente').split(' ')[0];const isCrown=rank===1;
-        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;max-width:120px">${isCrown?'<div style="font-size:20px;margin-bottom:2px">👑</div>':'<div style="height:28px"></div>'}<div style="position:relative"><div style="border:3px solid ${isCrown?'#fbbf24':'rgba(255,255,255,.4)'};border-radius:50%;padding:2px">${_avatar(u,isCrown?52:44)}</div>${isMe?'<div style="position:absolute;bottom:-4px;right:-4px;background:#fbbf24;color:#1e1b4b;font-size:9px;font-weight:900;padding:1px 5px;border-radius:99px">TÚ</div>':''}</div><p style="color:white;font-weight:800;font-size:11px;margin:6px 0 4px;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</p><div style="background:rgba(255,255,255,.18);border-radius:99px;padding:2px 10px;margin-bottom:6px"><span style="color:white;font-size:10px;font-weight:700">⭐ ${(u.xp||0).toLocaleString()}</span></div><div style="background:${podiumColors[vi]};border-radius:12px 12px 0 0;height:${podiumH[vi]};width:100%;display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:${isCrown?'28px':'22px'};font-weight:900;opacity:.8">${rank}</span></div></div>`;
+        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;max-width:120px">${isCrown?`<div style="width:20px;height:20px;margin-bottom:2px;color:#fbbf24">${ICONS.crown}</div>`:'<div style="height:28px"></div>'}<div style="position:relative"><div style="border:3px solid ${isCrown?'#fbbf24':'rgba(255,255,255,.4)'};border-radius:50%;padding:2px">${_avatar(u,isCrown?52:44)}</div>${isMe?'<div style="position:absolute;bottom:-4px;right:-4px;background:#fbbf24;color:#1e1b4b;font-size:9px;font-weight:900;padding:1px 5px;border-radius:99px">TÚ</div>':''}</div><p style="color:white;font-weight:800;font-size:11px;margin:6px 0 4px;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</p><div style="background:rgba(255,255,255,.18);border-radius:99px;padding:2px 10px;margin-bottom:6px;display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:11px;height:11px;color:white">${ICONS.bolt}</span><span style="color:white;font-size:10px;font-weight:700">${(u.xp||0).toLocaleString()}</span></div><div style="background:${podiumColors[vi]};border-radius:12px 12px 0 0;height:${podiumH[vi]};width:100%;display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:${isCrown?'28px':'22px'};font-weight:900;opacity:.8">${rank}</span></div></div>`;
     }).join('')}</div>`;
 
     let listHtml='';
@@ -2887,7 +2799,7 @@ function _renderTotalRanking(data) {
     else flat.slice(3).forEach((user,i)=>{
         const rank=i+4;const isMe=user.user_id===currentUser?.id;const name=user.full_name||user.nombre_usuario||`Docente ${rank}`;
         const lvl=user.level||1;const league=getLeague(lvl);
-        listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'linear-gradient(135deg,#ede9fe,#ddd6fe)':'#f8fafc'};border:${isMe?'2px solid #a78bfa':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#6d28d9':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#4c1d95':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#7c3aed">(Tú)</span>':''}</p><span style="font-size:10px;font-weight:600;color:${league.color}">${league.emoji} ${league.name}</span></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#6d28d9">⭐ ${(user.xp||0).toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">Nv. ${lvl}</p></div></div>`;
+        listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'linear-gradient(135deg,#ede9fe,#ddd6fe)':'#f8fafc'};border:${isMe?'2px solid #a78bfa':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#6d28d9':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#4c1d95':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#7c3aed">(Tú)</span>':''}</p><span style="font-size:10px;font-weight:600;color:${league.color};display:inline-flex;align-items:center;gap:3px">${_leagueIconSvg(league.name.replace('Liga ',''),11)}${league.name}</span></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#6d28d9;display:flex;align-items:center;gap:3px;justify-content:flex-end"><span style="display:inline-flex;width:12px;height:12px">${ICONS.bolt}</span>${(user.xp||0).toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">Nv. ${lvl}</p></div></div>`;
     });
     listEl.innerHTML = listHtml;
 }
@@ -2895,7 +2807,7 @@ function _renderTotalRanking(data) {
 async function _renderWeeklyRanking() {
     const listEl = document.getElementById('rankingList');
     const podiumEl = document.getElementById('rankingPodium');
-    listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:28px;height:28px;color:#94a3b8">${ICONS?.spinner||'⏳'}</span></div>`;
+    listEl.innerHTML = `<div class="text-center py-6 text-gray-400" style="display:flex;justify-content:center"><span style="display:inline-flex;width:28px;height:28px;color:#94a3b8">${ICONS?.spinner||'...'}</span></div>`;
     if (podiumEl) podiumEl.innerHTML = '';
 
     // Calcular inicio de semana (lunes)
@@ -5643,8 +5555,8 @@ const APP_TOUR_STEPS = [
     {
         tab: 'home',
         element: '#topBarProgressInfo',
-        title: 'Buscar y cambiar de curso',
-        description: '🔍 Busca cualquier tema en todos tus cursos. El ícono junto a la lupa te lleva a la lista de cursos de tu ruta actual — si ya estás viendo esa lista, te regresa a la lista de rutas.',
+        title: 'Buscar y volver',
+        description: 'La lupa busca cualquier tema en todos tus cursos. La flecha junto a ella te lleva a la lista de cursos de tu ruta actual — si ya estás viendo esa lista, te regresa a la lista de rutas.',
         side: 'bottom',
     },
     {
@@ -5706,7 +5618,6 @@ const APP_TOUR_STEPS = [
     },
     {
         tab: 'progreso',
-        openSection: 'Reconocimientos',
         element: '#reconocimientosSection',
         title: 'Ranking, ligas e insignias',
         description: 'Compite de forma sana en el <strong>Ranking</strong> por ligas según tu nivel, y desbloquea insignias por tu desempeño.',
