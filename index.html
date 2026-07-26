@@ -1514,7 +1514,7 @@
             <p class="text-slate-400 text-sm mt-1">Selecciona tu ruta de formación</p>
         </div>
         <div id="coursesList"></div>
-        <p class="text-center text-slate-300 text-xs mt-8 mb-4">Más cursos llegando pronto 🚀</p>
+        <p class="text-center text-slate-300 text-xs mt-8 mb-4">Más cursos llegando pronto</p>
 
         <!-- ══ Recursos de estudio ══ -->
         <div class="perfil-section">
@@ -1528,7 +1528,7 @@
                     class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-pink-300 hover:bg-pink-50 transition shadow-sm"
                     onclick="showCourseRequests()">
                     <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FDF2F8">
-                        <span style="font-size:16px">💡</span>
+                        <span data-icon="lightbulb" style="display:inline-flex;width:16px;height:16px;color:#ec4899"></span>
                     </div>
                     <div class="text-left flex-1">
                         <div class="font-semibold text-slate-700 text-sm">Sugiere un curso</div>
@@ -1654,7 +1654,7 @@
                 </div>
                 <div class="w-px bg-white/20 self-stretch"></div>
                 <div class="text-center">
-                    <p class="text-xl">🏆</p>
+                    <p class="text-xl" style="display:flex;justify-content:center"><span data-icon="trophy" style="display:inline-flex;width:22px;height:22px"></span></p>
                     <p class="text-cyan-200 text-xs">Certificados</p>
                 </div>
             </div>
@@ -1795,8 +1795,8 @@
                         <span id="courseProgressPercent" class="text-xs font-bold min-w-[30px] text-right"
                             style="color:var(--brand-blue);font-family:'Montserrat',sans-serif">0%</span>
                     </div>
-                    <button onclick="_topBarChangeCourseClick()" aria-label="Cambiar curso" title="Cambiar curso" class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 transition flex-shrink-0">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/><path d="M7 16l-3 3 3 3" stroke-width="1.6"/><path d="M17 4l3 3-3 3" stroke-width="1.6"/></svg>
+                    <button onclick="_topBarChangeCourseClick()" aria-label="Volver / cambiar curso" title="Volver / cambiar curso" class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 transition flex-shrink-0">
+                        <span data-icon="arrowLeft" style="display:inline-flex;width:17px;height:17px"></span>
                     </button>
                     <button onclick="openGlobalSearch()" aria-label="Buscar" class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 transition flex-shrink-0">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1812,7 +1812,7 @@
 
             <!-- Dashboard de bienvenida -->
             <div class="mt-4">
-                <p class="text-lg font-black text-slate-800">Hola, <span id="homeDashName">Docente</span> 👋</p>
+                <p class="text-lg font-black text-slate-800">Hola, <span id="homeDashName">Docente</span></p>
                 <div class="mt-3 rounded-2xl p-4" style="background:linear-gradient(135deg,#1e3a5f,#1e40af)">
                     <div class="flex items-center justify-between mb-2">
                         <p class="text-white/70 text-[11px] font-bold uppercase tracking-wide">Continúa aprendiendo</p>
@@ -2034,7 +2034,7 @@
                     <!-- Panel misiones: ocupa ambas columnas -->
                     <div id="dailyMissions" class="hidden bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 md:col-span-2">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-amber-700">🎯 Misiones de hoy</span>
+                            <span class="text-xs font-bold text-amber-700" style="display:inline-flex;align-items:center;gap:4px"><span data-icon="target" style="display:inline-flex;width:13px;height:13px"></span>Misiones de hoy</span>
                             <span id="missionsReset" class="text-[10px] text-slate-400"></span>
                         </div>
                         <div id="missionsList" class="space-y-2 text-xs"></div>
@@ -2043,7 +2043,7 @@
                         class="rounded-2xl p-4 flex items-center gap-3 text-left transition active:scale-95 shadow-md md:col-span-2"
                         style="background:linear-gradient(135deg,#1e3a5f,#1e40af)">
                         <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
-                            <span style="font-size:20px">⚡</span>
+                            <span data-icon="bolt" style="display:inline-flex;width:20px;height:20px;color:white"></span>
                         </div>
                         <div class="flex-1">
                             <p class="font-black text-white text-sm">Reto del día</p>
@@ -2106,42 +2106,42 @@
                 </div><!-- /perfil-section-body misiones -->
             </div>
 
-            <!-- ══ Reconocimientos: Ranking + Insignias ══ -->
+            <!-- ══ Reconocimientos: Ranking + Insignias — siempre visible, no es acordeón ══ -->
             <div id="reconocimientosSection" class="perfil-section">
-                <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
-                    <span class="perfil-section-label"><span class="perfil-section-label-title">Reconocimientos</span><span class="perfil-section-label-sub">Ranking, ligas e insignias</span></span>
-                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <div class="perfil-section-body collapsed">
-                    <div class="flex items-center gap-2 justify-end mb-2">
+                <div class="flex items-center justify-between mb-3 px-1">
+                    <div>
+                        <p class="text-[11px] font-black uppercase tracking-widest" style="color:#1e3a5f">Reconocimientos</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Ranking, ligas e insignias</p>
+                    </div>
+                    <div class="flex gap-2">
                         <button id="statsSecretBtn"
                             class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition">
                             Estadísticas
                         </button>
                         <button id="devModeBtn" onclick="toggleDevMode()"
                             class="hidden text-xs font-semibold px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50 transition">
-                            <span id="devModeBtnLabel" style="color:#ea580c">🛠️ Dev</span>
+                            <span id="devModeBtnLabel" style="color:#ea580c">Dev</span>
                             <span id="devModeBtnSub" class="hidden"></span>
                         </button>
                     </div>
-                    <button onclick="showRankingModal ? showRankingModal() : null"
-                        class="w-full rounded-2xl p-4 mb-5 flex items-center gap-3 text-left shadow-sm active:scale-95 transition"
-                        style="background:linear-gradient(135deg,#1e3a5f,#1e40af)">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
-                            <span data-icon="trophy" style="display:inline-flex;width:20px;height:20px;color:white"></span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-black text-white text-sm">Ranking</p>
-                            <p class="text-white/70 text-xs mt-0.5">Mira cómo te comparás con otros docentes</p>
-                        </div>
-                        <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:white"></span>
-                    </button>
-                    <div id="leagueLadder" class="mb-5"></div>
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Récords personales</p>
-                    <div id="personalRecordsRow" class="grid grid-cols-3 gap-2 mb-5"></div>
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1"><span id="badgesEarnedCount">0</span> de <span id="badgesTotalCount">0</span> insignias desbloqueadas</p>
-                    <div id="badgesGrid" class="badges-grid"></div>
                 </div>
+                <button onclick="showRankingModal ? showRankingModal() : null"
+                    class="w-full rounded-2xl p-4 mb-5 flex items-center gap-3 text-left shadow-sm active:scale-95 transition"
+                    style="background:linear-gradient(135deg,#1e3a5f,#1e40af)">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
+                        <span data-icon="trophy" style="display:inline-flex;width:20px;height:20px;color:white"></span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-black text-white text-sm">Ranking</p>
+                        <p class="text-white/70 text-xs mt-0.5">Mira cómo te comparás con otros docentes</p>
+                    </div>
+                    <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:white"></span>
+                </button>
+                <div id="leagueLadder" class="mb-5"></div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Récords personales</p>
+                <div id="personalRecordsRow" class="grid grid-cols-3 gap-2 mb-5"></div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1"><span id="badgesEarnedCount">0</span> de <span id="badgesTotalCount">0</span> insignias desbloqueadas</p>
+                <div id="badgesGrid" class="badges-grid"></div>
             </div>
 
             <!-- ══ Certificación: Examen → Certificados → Recursos ══ -->
@@ -2279,16 +2279,16 @@
                 <!-- Header degradado morado + podio dentro -->
                 <div style="background:linear-gradient(160deg,#4c1d95,#6d28d9,#7c3aed);padding:24px 16px 0;position:relative;flex-shrink:0">
                     <button id="closeRankingBtn" style="position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:white;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer">&times;</button>
-                    <h2 style="color:white;font-size:20px;font-weight:900;margin-bottom:2px">🏆 Ranking Docentes</h2>
+                    <h2 style="color:white;font-size:20px;font-weight:900;margin-bottom:2px;display:flex;align-items:center;gap:6px"><span data-icon="trophy" style="display:inline-flex;width:20px;height:20px"></span>Ranking Docentes</h2>
                     <!-- Tabs Total / Semanal -->
                     <div style="display:flex;gap:6px;margin-bottom:12px">
                         <button id="rankTabTotal" onclick="switchRankingTab('total')"
                             style="flex:1;padding:6px;border-radius:10px;border:1.5px solid rgba(255,255,255,.5);background:white;color:#4c1d95;font-size:11px;font-weight:800;cursor:pointer">
-                            📊 Total XP
+                            Total XP
                         </button>
                         <button id="rankTabWeekly" onclick="switchRankingTab('weekly')"
                             style="flex:1;padding:6px;border-radius:10px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:white;font-size:11px;font-weight:800;cursor:pointer">
-                            🗓 Esta semana
+                            Esta semana
                         </button>
                     </div>
                     <!-- Podio top 3 — dentro del header morado -->
@@ -2304,7 +2304,7 @@
             <div class="modal-inner">
                 <div class="modal-drag"></div>
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">💡 Sugiere un curso</h2>
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><span data-icon="lightbulb" style="display:inline-flex;width:20px;height:20px;color:#ec4899"></span>Sugiere un curso</h2>
                     <button id="closeCourseRequestsBtn"
                         class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
                 </div>
@@ -2325,7 +2325,7 @@
                     propuestas</p>
                 <div id="courseRequestsList" class="space-y-2 mb-2 max-h-[40vh] overflow-y-auto"></div>
                 <p class="text-center text-xs text-slate-400 mt-2">Las propuestas con más votos son las próximas en
-                    desarrollarse 🚀</p>
+                    desarrollarse</p>
             </div>
         </div>
 
@@ -2335,7 +2335,7 @@
             onclick="closeModuleComplete()">
             <canvas id="confettiCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
             <div class="relative z-10 text-center px-8 select-none pointer-events-none">
-                <div class="text-7xl mb-3" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))">🎉</div>
+                <div class="mb-3" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3));display:flex;justify-content:center"><span data-icon="trophy" style="display:inline-flex;width:72px;height:72px;color:#fbbf24"></span></div>
                 <div id="mcModuleIcon"
                     class="w-28 h-28 rounded-3xl mx-auto mb-5 flex items-center justify-center shadow-2xl p-4"></div>
                 <h2 class="text-3xl font-black text-white mb-1" style="text-shadow:0 2px 12px rgba(0,0,0,0.4)">¡Módulo
@@ -2538,7 +2538,7 @@
             <div class="modal-inner">
                 <div class="modal-drag"></div>
                 <div class="flex justify-between items-center mb-5">
-                    <h2 class="text-xl font-bold text-slate-800">🎨 Elige tu avatar</h2>
+                    <h2 class="text-xl font-bold text-slate-800">Elige tu avatar</h2>
                     <button id="closeAvatarBtn"
                         class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl hover:bg-slate-200 transition">&times;</button>
                 </div>
@@ -2646,12 +2646,8 @@
                     Glosario
                 </a>
                 <button onclick="_topBarChangeCourseClick()" class="sidebar-action-btn sidebar-action-course">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="17 1 21 5 17 9" />
-                        <path d="M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4" />
-                        <path d="M21 13v2a4 4 0 01-4 4H3" />
-                    </svg>
-                    Cambiar curso
+                    <span data-icon="arrowLeft" style="display:inline-flex;width:15px;height:15px"></span>
+                    Volver / cambiar curso
                 </button>
                 <button onclick="localStorage.removeItem('onboardingDone'); startAppTour();" class="sidebar-action-btn sidebar-action-tutorial">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2742,8 +2738,9 @@
                     if (diagResult && diagBadge && diagLabel) {
                         try {
                             const dr = JSON.parse(diagResult);
-                            const lvlMap = { inicial: '🔴 Inicial', proceso: '🟡 En Proceso', satisfactorio: '🟢 Satisfactorio', destacado: '💜 Destacado' };
-                            diagBadge.textContent = lvlMap[dr.level] || '';
+                            const lvlMap = { inicial: ['#ef4444','Inicial'], proceso: ['#eab308','En Proceso'], satisfactorio: ['#22c55e','Satisfactorio'], destacado: ['#a855f7','Destacado'] };
+                            const lvlInfo = lvlMap[dr.level];
+                            diagBadge.innerHTML = lvlInfo ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + lvlInfo[0] + ';margin-right:4px"></span>' + lvlInfo[1] : '';
                             diagBadge.classList.remove('hidden');
                             diagLabel.textContent = 'Ver mi diagnóstico';
                         } catch (e) { }
