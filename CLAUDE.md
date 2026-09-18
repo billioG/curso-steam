@@ -42,6 +42,16 @@ Al iniciar una sesión con cambios de código:
 - `schools_gt.js` — base de datos de 35,136 centros educativos (carga lazy)
 - Admins: tabla `user_roles` (`tenant_id IS NULL AND role='admin'` = super admin; `tenant_id=X AND role='admin'` = admin de ese colegio). No hay lista de correos hardcodeada en el código.
 
+## CSS (Tailwind)
+`index.html` usa `tailwind.css` compilado (no el CDN de Tailwind). Si cambiás
+o agregás clases de Tailwind en `index.html`/`app.js`/`iconos.js`/
+`ilustraciones.js`, regenerar con:
+```
+npx tailwindcss@3 -i ./tailwind-input.css -o ./tailwind.css --config ./tailwind.config.js --minify
+```
+Si no se regenera, las clases nuevas simplemente no van a tener estilo (el
+CSS es estático, no JIT en el navegador como el CDN viejo).
+
 ## Convenciones de código
 - IDs de tarjetas por curso: STEAM=numérico, ABP=`abp-`, DT=`dt-`, EV=`ev-`, TE=`te-`
 - `examScores` (objeto por courseId) es el campo principal; `examScore` (singular) es legacy solo para STEAM
