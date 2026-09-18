@@ -1528,7 +1528,7 @@ function renderCard() {
                     <textarea id="noteInput_${cardKey}" placeholder="Escribe tus apuntes aquí…"
                         oninput="saveCardNote('${cardKey}', this.value)"
                         class="w-full text-xs rounded-xl border border-blue-200 p-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
-                        rows="3" style="background:#eff6ff;color:#1e3a5f">${savedNote}</textarea>
+                        rows="3" style="background:#eff6ff;color:#1e3a5f">${esc(savedNote)}</textarea>
                 </div>`;
             })()}
             <div class="card-swipe-hint" style="display:flex;align-items:center;justify-content:center;gap:6px">
@@ -2784,20 +2784,20 @@ function _renderTotalRanking(data) {
     const getLeague = lvl => LEAGUES.find(l => lvl >= l.min) || LEAGUES[LEAGUES.length-1];
     const flat = [...data].sort((a,b)=>(b.level||1)-(a.level||1)||(b.xp||0)-(a.xp||0));
     const _avatar = (u,size=44) => u.profile_photo
-        ? `<img src="${u.profile_photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
+        ? `<img src="${_escHtml(u.profile_photo)}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
         : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#a78bfa);display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0"><span style="display:inline-flex;width:${size*.5}px;height:${size*.5}px">${ICONS.profile}</span></div>`;
 
     const top3=flat.slice(0,3); const podiumOrder=[top3[1],top3[0],top3[2]].filter(Boolean);
     const podiumPos=top3[1]?[2,1,3]:[1]; const podiumH=['64px','88px','52px']; const podiumColors=['#5b21b6','#4c1d95','#6d28d9'];
     if (podiumEl) podiumEl.innerHTML=`<div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;padding:0 8px">${podiumOrder.map((u,vi)=>{
-        const rank=podiumPos[vi];const isMe=u.user_id===currentUser?.id;const name=(u.full_name||u.nombre_usuario||'Docente').split(' ')[0];const isCrown=rank===1;
+        const rank=podiumPos[vi];const isMe=u.user_id===currentUser?.id;const name=_escHtml((u.full_name||u.nombre_usuario||'Docente').split(' ')[0]);const isCrown=rank===1;
         return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;max-width:120px">${isCrown?`<div style="width:20px;height:20px;margin-bottom:2px;color:#fbbf24">${ICONS.crown}</div>`:'<div style="height:28px"></div>'}<div style="position:relative"><div style="border:3px solid ${isCrown?'#fbbf24':'rgba(255,255,255,.4)'};border-radius:50%;padding:2px">${_avatar(u,isCrown?52:44)}</div>${isMe?'<div style="position:absolute;bottom:-4px;right:-4px;background:#fbbf24;color:#1e1b4b;font-size:9px;font-weight:900;padding:1px 5px;border-radius:99px">TÚ</div>':''}</div><p style="color:white;font-weight:800;font-size:11px;margin:6px 0 4px;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</p><div style="background:rgba(255,255,255,.18);border-radius:99px;padding:2px 10px;margin-bottom:6px;display:inline-flex;align-items:center;gap:3px"><span style="display:inline-flex;width:11px;height:11px;color:white">${ICONS.bolt}</span><span style="color:white;font-size:10px;font-weight:700">${(u.xp||0).toLocaleString()}</span></div><div style="background:${podiumColors[vi]};border-radius:12px 12px 0 0;height:${podiumH[vi]};width:100%;display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:${isCrown?'28px':'22px'};font-weight:900;opacity:.8">${rank}</span></div></div>`;
     }).join('')}</div>`;
 
     let listHtml='';
     if(flat.length<=3) listHtml=`<p style="text-align:center;color:#94a3b8;font-size:12px;padding:16px 0">¡Solo los docentes del podio!</p>`;
     else flat.slice(3).forEach((user,i)=>{
-        const rank=i+4;const isMe=user.user_id===currentUser?.id;const name=user.full_name||user.nombre_usuario||`Docente ${rank}`;
+        const rank=i+4;const isMe=user.user_id===currentUser?.id;const name=_escHtml(user.full_name||user.nombre_usuario||`Docente ${rank}`);
         const lvl=user.level||1;const league=getLeague(lvl);
         listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'linear-gradient(135deg,#ede9fe,#ddd6fe)':'#f8fafc'};border:${isMe?'2px solid #a78bfa':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#6d28d9':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#4c1d95':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#7c3aed">(Tú)</span>':''}</p><span style="font-size:10px;font-weight:600;color:${league.color};display:inline-flex;align-items:center;gap:3px">${_leagueIconSvg(league.name.replace('Liga ',''),11)}${league.name}</span></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#6d28d9;display:flex;align-items:center;gap:3px;justify-content:flex-end"><span style="display:inline-flex;width:12px;height:12px">${ICONS.bolt}</span>${(user.xp||0).toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">Nv. ${lvl}</p></div></div>`;
     });
@@ -2840,21 +2840,21 @@ async function _renderWeeklyRanking() {
     if (!weekly.length) { listEl.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:12px;padding:24px">¡Sé el primero en acumular XP esta semana!</p>'; return; }
 
     const _avatar = (u,size=44) => u.profile_photo
-        ? `<img src="${u.profile_photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
-        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#d97706,#fbbf24);display:flex;align-items:center;justify-content:center;font-size:${size*.4}px;flex-shrink:0">👨‍🏫</div>`;
+        ? `<img src="${_escHtml(u.profile_photo)}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
+        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#d97706,#fbbf24);display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0"><span style="display:inline-flex;width:${size*.5}px;height:${size*.5}px">${ICONS.profile}</span></div>`;
 
     const top3=weekly.slice(0,3); const podiumOrder=[top3[1],top3[0],top3[2]].filter(Boolean);
     const podiumPos=top3[1]?[2,1,3]:[1]; const podiumH=['64px','88px','52px']; const podiumColors=['#b45309','#92400e','#d97706'];
     if (podiumEl) podiumEl.innerHTML=`<div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;padding:0 8px">${podiumOrder.map((u,vi)=>{
-        const rank=podiumPos[vi];const isMe=u.user_id===currentUser?.id;const name=(u.full_name||'Docente').split(' ')[0];const isCrown=rank===1;
-        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;max-width:120px">${isCrown?'<div style="font-size:20px;margin-bottom:2px">👑</div>':'<div style="height:28px"></div>'}<div style="position:relative"><div style="border:3px solid ${isCrown?'#fbbf24':'rgba(255,255,255,.4)'};border-radius:50%;padding:2px">${_avatar(u,isCrown?52:44)}</div>${isMe?'<div style="position:absolute;bottom:-4px;right:-4px;background:#fbbf24;color:#1e1b4b;font-size:9px;font-weight:900;padding:1px 5px;border-radius:99px">TÚ</div>':''}</div><p style="color:white;font-weight:800;font-size:11px;margin:6px 0 4px;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</p><div style="background:rgba(255,255,255,.18);border-radius:99px;padding:2px 10px;margin-bottom:6px"><span style="color:white;font-size:10px;font-weight:700">🗓 ${u.weeklyXP.toLocaleString()} XP</span></div><div style="background:${podiumColors[vi]};border-radius:12px 12px 0 0;height:${podiumH[vi]};width:100%;display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:${isCrown?'28px':'22px'};font-weight:900;opacity:.8">${rank}</span></div></div>`;
+        const rank=podiumPos[vi];const isMe=u.user_id===currentUser?.id;const name=_escHtml((u.full_name||'Docente').split(' ')[0]);const isCrown=rank===1;
+        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;max-width:120px">${isCrown?`<div style="width:20px;height:20px;margin-bottom:2px;color:#fbbf24">${ICONS.crown}</div>`:'<div style="height:28px"></div>'}<div style="position:relative"><div style="border:3px solid ${isCrown?'#fbbf24':'rgba(255,255,255,.4)'};border-radius:50%;padding:2px">${_avatar(u,isCrown?52:44)}</div>${isMe?'<div style="position:absolute;bottom:-4px;right:-4px;background:#fbbf24;color:#1e1b4b;font-size:9px;font-weight:900;padding:1px 5px;border-radius:99px">TÚ</div>':''}</div><p style="color:white;font-weight:800;font-size:11px;margin:6px 0 4px;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</p><div style="background:rgba(255,255,255,.18);border-radius:99px;padding:2px 10px;margin-bottom:6px"><span style="color:white;font-size:10px;font-weight:700">${u.weeklyXP.toLocaleString()} XP</span></div><div style="background:${podiumColors[vi]};border-radius:12px 12px 0 0;height:${podiumH[vi]};width:100%;display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:${isCrown?'28px':'22px'};font-weight:900;opacity:.8">${rank}</span></div></div>`;
     }).join('')}</div>`;
 
     let listHtml='';
     if(weekly.length<=3) listHtml=`<p style="text-align:center;color:#94a3b8;font-size:12px;padding:16px 0">¡Solo los del podio esta semana!</p>`;
     else weekly.slice(3).forEach((user,i)=>{
-        const rank=i+4;const isMe=user.user_id===currentUser?.id;const name=user.full_name||`Docente ${rank}`;
-        listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'linear-gradient(135deg,#fef3c7,#fde68a)':'#f8fafc'};border:${isMe?'2px solid #fbbf24':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#d97706':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#92400e':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#d97706">(Tú)</span>':''}</p></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#d97706">🗓 ${user.weeklyXP.toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">XP esta semana</p></div></div>`;
+        const rank=i+4;const isMe=user.user_id===currentUser?.id;const name=_escHtml(user.full_name||`Docente ${rank}`);
+        listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'linear-gradient(135deg,#fef3c7,#fde68a)':'#f8fafc'};border:${isMe?'2px solid #fbbf24':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#d97706':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#92400e':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#d97706">(Tú)</span>':''}</p></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#d97706">${user.weeklyXP.toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">XP esta semana</p></div></div>`;
     });
     listEl.innerHTML = listHtml;
 
@@ -6641,7 +6641,7 @@ function _renderPortfolioForm(existing, path) {
                     oninput="_portWordCount(this,'wc_${c.key}')"
                     onfocus="this.style.borderColor='${c.color}'"
                     onblur="this.style.borderColor='#e2e8f0'"
-                >${savedEntregables[c.key] || (existing ? (existing['entregable_'+c.key]||'') : '')}</textarea>
+                >${esc(savedEntregables[c.key] || (existing ? (existing['entregable_'+c.key]||'') : ''))}</textarea>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">
                     <label for="file_${c.key}" style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#64748b;cursor:pointer;padding:4px 8px;border:1.5px dashed #cbd5e1;border-radius:8px;transition:border-color .15s"
                         onmouseover="this.style.borderColor='${c.color}'" onmouseout="this.style.borderColor='#cbd5e1'">
@@ -7045,7 +7045,7 @@ function appendChatMsg(role, text) {
         div.textContent = text;
     } else {
         div.className = 'chat-bot-msg bg-slate-100 text-slate-700 rounded-2xl rounded-tl-sm px-3 py-2.5 text-sm max-w-[85%] chat-md';
-        div.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+        div.innerHTML = _renderChatMarkdown(text);
     }
     messages.appendChild(div);
     messages.scrollTop = messages.scrollHeight;
@@ -7056,9 +7056,19 @@ function replaceLastBotMsg(text) {
     if (!messages) return;
     const bots = messages.querySelectorAll('.chat-bot-msg');
     if (bots.length) {
-        bots[bots.length - 1].innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+        bots[bots.length - 1].innerHTML = _renderChatMarkdown(text);
     }
     messages.scrollTop = messages.scrollHeight;
+}
+
+// El texto de la respuesta del bot pasa por marked (markdown → HTML) y
+// luego SIEMPRE por DOMPurify antes de innerHTML — marked no sanitiza HTML
+// embebido por sí solo, así que sin esto un texto que la IA repita tal
+// cual (p. ej. si el usuario intenta inyectar HTML/script en su mensaje y
+// el modelo lo cita de vuelta) se ejecutaría en el navegador.
+function _renderChatMarkdown(text) {
+    const html = (typeof marked !== 'undefined') ? marked.parse(String(text ?? '')) : _escHtml(String(text ?? ''));
+    return (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(html) : _escHtml(String(text ?? ''));
 }
 
 
