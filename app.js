@@ -5425,6 +5425,17 @@ if ('serviceWorker' in navigator) {
         if (_updateReady && document.visibilityState === 'hidden') doSafeReload();
     });
 
+    function showAppVersion() {
+        const badge = document.getElementById('appVersionBadge');
+        const sw = navigator.serviceWorker.controller;
+        if (!badge || !sw) return;
+        const channel = new MessageChannel();
+        channel.port1.onmessage = e => { badge.textContent = `Versión ${e.data?.version || '—'}`; };
+        sw.postMessage({ type: 'GET_VERSION' }, [channel.port2]);
+    }
+    navigator.serviceWorker.ready.then(showAppVersion).catch(() => {});
+    navigator.serviceWorker.addEventListener('controllerchange', showAppVersion);
+
     window.showUpdateBanner = function () {
         if (document.getElementById('updateReadyToast')) return;
         const el = document.createElement('div');
