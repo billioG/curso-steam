@@ -4,7 +4,6 @@
 
 const SUPABASE_URL = "https://grkjhzkgcmackbafqudu.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
-const ADMIN_EMAILS  = ['billy@1bot.org'];
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
@@ -40,10 +39,9 @@ function toast(msg, type = 'info') {
 
 // NOTA: este gate del lado cliente es solo UX/redirección. El límite de
 // seguridad real está en admin-users/index.ts, que valida server-side.
-// Sin tenant (1bot, comportamiento actual): ADMIN_EMAILS. Con tenant: se
-// permite si el usuario es admin de ESE tenant, O si es super admin
-// (tenant_id NULL + role='admin', ej. billy@1bot.org) — el super admin
-// puede entrar a cualquier colegio, igual que en admin-users.
+// Se permite si el usuario es admin de ESE tenant, O si es super admin
+// (tenant_id NULL + role='admin') — el super admin puede entrar a
+// cualquier colegio, igual que en admin-users.
 async function checkAdminAuth() {
     await window.TENANT_READY;
     const tenant = window.TENANT;
@@ -57,17 +55,10 @@ async function checkAdminAuth() {
     }
     currentUser = session.user;
 
-    let isAdmin;
-    let isSuperAdmin;
-    if (tenant) {
-        const { data: roleRows } = await sb.from('user_roles').select('role, tenant_id').eq('user_id', currentUser.id);
-        isSuperAdmin = (roleRows || []).some(r => r.tenant_id === null && r.role === 'admin');
-        const isTenantAdmin = (roleRows || []).some(r => r.tenant_id === tenant.id && r.role === 'admin');
-        isAdmin = isSuperAdmin || isTenantAdmin;
-    } else {
-        isSuperAdmin = ADMIN_EMAILS.includes(currentUser.email);
-        isAdmin = isSuperAdmin;
-    }
+    const { data: roleRows } = await sb.from('user_roles').select('role, tenant_id').eq('user_id', currentUser.id);
+    const isSuperAdmin = (roleRows || []).some(r => r.tenant_id === null && r.role === 'admin');
+    const isTenantAdmin = tenant && (roleRows || []).some(r => r.tenant_id === tenant.id && r.role === 'admin');
+    const isAdmin = isSuperAdmin || isTenantAdmin;
 
     if (!isAdmin) {
         alert('Acceso denegado. Solo administradores pueden entrar.');

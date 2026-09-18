@@ -40,7 +40,7 @@ Al iniciar una sesión con cambios de código:
 - `data.js` — contenido de cursos (tarjetas, módulos, exámenes)
 - `diagnostico.js` — prueba diagnóstica inicial
 - `schools_gt.js` — base de datos de 35,136 centros educativos (carga lazy)
-- `ADMIN_EMAILS = ['billy@1bot.org']` (definido en admin.js)
+- Admins: tabla `user_roles` (`tenant_id IS NULL AND role='admin'` = super admin; `tenant_id=X AND role='admin'` = admin de ese colegio). No hay lista de correos hardcodeada en el código.
 
 ## Convenciones de código
 - IDs de tarjetas por curso: STEAM=numérico, ABP=`abp-`, DT=`dt-`, EV=`ev-`, TE=`te-`

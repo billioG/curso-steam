@@ -447,7 +447,10 @@ function showTab(tabId, btn) {
 
 // ── Load dashboard ───────────────────────────────────────────
 async function loadDashboard(user) {
-    const isAdmin = user.email === 'billy@1bot.org';
+    // Solo super admin (tenant_id NULL + role='admin' en user_roles) ve
+    // todos los colegios sin restricción de plan — ver comentario en colegios.js.
+    const { data: roleRows } = await sb.from('user_roles').select('role, tenant_id').eq('user_id', user.id);
+    const isAdmin = (roleRows || []).some(r => r.tenant_id === null && r.role === 'admin');
     const lookupId = _urlCoordId || user.id;
 
     const { data: coordRows } = await sb.from('coordinators')
