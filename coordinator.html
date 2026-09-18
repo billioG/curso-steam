@@ -447,28 +447,40 @@ function showTab(tabId, btn) {
 
 // ── Load dashboard ───────────────────────────────────────────
 async function loadDashboard(user) {
-    // Solo super admin (tenant_id NULL + role='admin' en user_roles) ve
-    // todos los colegios sin restricción de plan — ver comentario en colegios.js.
-    const { data: roleRows } = await sb.from('user_roles').select('role, tenant_id').eq('user_id', user.id);
-    const isAdmin = (roleRows || []).some(r => r.tenant_id === null && r.role === 'admin');
+    // Super admin (tenant_id NULL + school_id NULL + role='admin') ve todos
+    // los colegios sin restricción de plan. Admin de UN colegio (school_id
+    // en user_roles) tiene el mismo privilegio pero solo en su(s) colegio(s)
+    // — ver comentario en colegios.js.
+    const { data: roleRows } = await sb.from('user_roles').select('role, tenant_id, school_id').eq('user_id', user.id);
+    const isSuperAdmin = (roleRows || []).some(r => r.role === 'admin' && r.tenant_id === null && r.school_id === null);
+    const adminSchoolIds = new Set((roleRows || []).filter(r => r.role === 'admin' && r.school_id).map(r => r.school_id));
     const lookupId = _urlCoordId || user.id;
 
     const { data: coordRows } = await sb.from('coordinators')
         .select('*, schools(id, name, plan)')
         .eq('user_id', lookupId);
 
-    let allSchools = (coordRows || []).map(r => ({ id: r.school_id, name: r.schools?.name || r.school_id, plan: r.schools?.plan || 'free' }));
+    let allSchools = (coordRows || []).map(r => ({ id: r.school_id, name: r.schools?.name || r.school_id, plan: r.schools?.plan || 'free', isAdminSchool: adminSchoolIds.has(r.school_id) }));
 
-    if (!allSchools.length && isAdmin && _urlSchoolId) {
+    // Admin de colegio sin fila propia en `coordinators` para su escuela: agregarla igual.
+    for (const schoolId of adminSchoolIds) {
+        if (!allSchools.some(s => s.id === schoolId)) {
+            const { data: school } = await sb.from('schools').select('id,name,plan').eq('id', schoolId).maybeSingle();
+            if (school) allSchools.push({ id: school.id, name: school.name, plan: school.plan || 'free', isAdminSchool: true });
+        }
+    }
+
+    if (!allSchools.length && isSuperAdmin && _urlSchoolId) {
         const { data: school } = await sb.from('schools').select('id,name,plan').eq('id', _urlSchoolId).maybeSingle();
-        if (school) allSchools = [{ id: school.id, name: school.name, plan: school.plan || 'free' }];
+        if (school) allSchools = [{ id: school.id, name: school.name, plan: school.plan || 'free', isAdminSchool: true }];
     }
 
     if (!allSchools.length) { show('noAccessScreen'); return; }
 
-    // Reportería es beneficio de plan pagado — admin ve todo sin restricción
-    _coordSchools  = isAdmin ? allSchools : allSchools.filter(s => s.plan === 'paid');
-    _lockedSchools = isAdmin ? [] : allSchools.filter(s => s.plan !== 'paid');
+    // Reportería es beneficio de plan pagado — super admin, y admin de
+    // colegio en SU colegio, ven todo sin restricción de plan.
+    _coordSchools  = allSchools.filter(s => isSuperAdmin || s.isAdminSchool || s.plan === 'paid');
+    _lockedSchools = allSchools.filter(s => !(isSuperAdmin || s.isAdminSchool || s.plan === 'paid'));
 
     if (!_coordSchools.length) {
         document.getElementById('lockedSchoolsMsg').textContent =
