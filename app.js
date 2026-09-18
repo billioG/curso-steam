@@ -2944,18 +2944,12 @@ document.getElementById('submitCourseRequestBtn')?.addEventListener('click', asy
 });
 
 async function voteCourseRequest(id) {
-    const myId = currentUser?.id;
-    if (!myId) return;
+    if (!currentUser?.id) return;
 
-    const { data: current, error: fetchErr } = await supabase
-        .from('course_requests').select('voters').eq('id', id).single();
-    if (fetchErr) { showToast('No se pudo registrar tu voto.', 'error'); return; }
-
-    let voters = current.voters || [];
-    const alreadyVoted = voters.includes(myId);
-    voters = alreadyVoted ? voters.filter(v => v !== myId) : [...voters, myId];
-
-    const { error } = await supabase.from('course_requests').update({ voters }).eq('id', id);
+    // Vía RPC (no UPDATE directo a la tabla): el toggle de voto y el
+    // conteo se hacen server-side, así nadie puede editar título/
+    // descripción/votes de una sugerencia ajena desde la API.
+    const { error } = await supabase.rpc('toggle_course_request_vote', { request_id: id });
     if (error) { showToast('No se pudo registrar tu voto.', 'error'); return; }
 
     await loadCourseRequests();
