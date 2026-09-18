@@ -35,6 +35,7 @@ const SECONDARY_ASSETS = [
     './fuentes.html',
     './casos-estudio.html',
     './casos-estudio.js',
+    './privacidad.html',
     './coordinator.html',
     './recursos/_shared.css',
     // Módulo de reclutamiento (Fase 1 multi-tenant)

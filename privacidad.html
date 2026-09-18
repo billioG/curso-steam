@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de Privacidad · Formación Docente</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  :root {
+    --brand:#1A6B68; --brand-light:#E0F2F1;
+    --gray-50:#F8FAFC; --gray-100:#F1F5F9; --gray-200:#E2E8F0; --gray-300:#CBD5E1;
+    --gray-500:#64748B; --gray-600:#475569; --gray-700:#334155; --gray-900:#0F172A;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:var(--gray-50); color:var(--gray-900); line-height:1.6; padding:0 0 4rem; }
+  .topbar { background:white; border-bottom:1px solid var(--gray-200); padding:14px 20px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:10; }
+  .btn-back { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:var(--gray-600); text-decoration:none; background:var(--gray-100); padding:8px 14px; border-radius:10px; }
+  .btn-print { margin-left:auto; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:white; background:var(--brand); border:none; padding:8px 16px; border-radius:10px; cursor:pointer; font-family:inherit; }
+  .wrap { max-width:780px; margin:0 auto; padding:0 20px; }
+  .hero { text-align:center; padding:48px 20px 36px; }
+  .hero h1 { font-size:30px; font-weight:900; color:var(--gray-900); letter-spacing:-0.02em; }
+  .hero p { font-size:15px; color:var(--gray-500); margin-top:10px; max-width:560px; margin-left:auto; margin-right:auto; }
+  .hero .meta { font-size:12px; color:var(--gray-500); margin-top:16px; }
+  .intro-note { background:var(--brand-light); border:1px solid #B2DFDB; border-radius:14px; padding:16px 20px; font-size:13.5px; color:var(--gray-700); margin-bottom:32px; }
+  .block { background:white; border:1px solid var(--gray-200); border-radius:16px; padding:24px 26px; margin-bottom:20px; box-shadow:0 1px 2px rgba(0,0,0,0.03); }
+  .block h2 { font-size:18px; font-weight:800; color:var(--gray-900); margin-bottom:12px; }
+  .block p, .block li { font-size:13.5px; color:var(--gray-700); margin-bottom:8px; }
+  .block ul { padding-left:20px; margin-bottom:4px; }
+  .block table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; }
+  .block th, .block td { text-align:left; padding:8px 10px; border-top:1px solid var(--gray-100); vertical-align:top; }
+  .block th { color:var(--gray-500); font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; }
+  .tag { display:inline-block; background:var(--gray-100); color:var(--gray-600); font-size:11px; font-weight:700; padding:3px 9px; border-radius:6px; }
+  .footer { text-align:center; font-size:12px; color:var(--gray-500); margin-top:36px; line-height:1.7; }
+  a { color:var(--brand); }
+  @media print {
+    .topbar { display:none; } body { background:white; }
+    .block { break-inside:avoid; box-shadow:none; border-color:var(--gray-300); }
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="btn-back" href="index.html">‹ Volver al programa</a>
+    <button class="btn-print" onclick="window.print()">⬇ Guardar PDF / Imprimir</button>
+  </div>
+
+  <div class="wrap">
+    <div class="hero">
+      <h1>Política de Privacidad</h1>
+      <p>Qué datos recopila Formación Docente, para qué se usan y qué derechos tienes sobre ellos.</p>
+      <div class="meta">Última actualización: 18 de septiembre de 2026 · Guatemala</div>
+    </div>
+
+    <div class="intro-note">
+      Esta plataforma es un programa gratuito de formación docente. Recopilamos solo los datos necesarios para
+      llevar tu progreso, emitir certificados y mejorar el contenido. Nunca vendemos tus datos.
+    </div>
+
+    <div class="block">
+      <h2>1. Responsable del tratamiento</h2>
+      <p>Formación Docente — Programa de Formación Docente en Pedagogía Innovadora (Guatemala). Contacto: <a href="mailto:profebillio@gmail.com">profebillio@gmail.com</a>.</p>
+    </div>
+
+    <div class="block">
+      <h2>2. Datos que recopilamos</h2>
+      <table>
+        <tr><th>Dato</th><th>Origen</th><th>Para qué</th></tr>
+        <tr><td>Correo y contraseña</td><td>Registro / inicio de sesión</td><td>Autenticación de tu cuenta (gestionada por Supabase Auth)</td></tr>
+        <tr><td>Nombre completo y foto de perfil</td><td>Que tú ingresas en "Editar perfil"</td><td>Personalizar tu experiencia y mostrarte en el ranking</td></tr>
+        <tr><td>Progreso de cursos, módulos y exámenes</td><td>Uso de la app</td><td>Guardar tu avance, emitir certificados, mostrar estadísticas</td></tr>
+        <tr><td>Resultado de la prueba diagnóstica</td><td>Diagnóstico inicial</td><td>Adaptar la ruta de aprendizaje sugerida</td></tr>
+        <tr><td>Comentarios y evidencias de portafolio</td><td>Que tú escribes o subes</td><td>Evaluación pedagógica, retroalimentación docente</td></tr>
+        <tr><td>Mensajes al asistente de IA</td><td>Uso del chatbot</td><td>Responder tus preguntas (procesado vía Groq, ver sección 4)</td></tr>
+        <tr><td>Colegio / institución</td><td>Que tú ingresas</td><td>Estadísticas agregadas por institución</td></tr>
+        <tr><td>Datos técnicos básicos</td><td>Automático</td><td>Funcionamiento de la app (caché offline, notificaciones push si las activas)</td></tr>
+      </table>
+      <p style="margin-top:10px">Si participas en el módulo de reclutamiento/postulación docente, también se guardan los datos que ingreses en tu postulación (CV, respuestas, evaluación) — únicamente visibles para los coordinadores del proceso correspondiente.</p>
+    </div>
+
+    <div class="block">
+      <h2>3. Dónde se almacenan tus datos</h2>
+      <p>Todos los datos se guardan en <strong>Supabase</strong>, nuestro proveedor de base de datos y autenticación, con acceso restringido por políticas de seguridad a nivel de fila (RLS): cada usuario solo puede ver y modificar su propia información, salvo los datos que son públicos por diseño (nombre y avatar en el ranking).</p>
+    </div>
+
+    <div class="block">
+      <h2>4. Servicios de terceros que usamos</h2>
+      <ul>
+        <li><span class="tag">Supabase</span> Base de datos, autenticación y funciones del servidor.</li>
+        <li><span class="tag">Groq</span> Procesa tus preguntas al asistente de IA para generar una respuesta. No almacena tu identidad, solo el texto de la conversación durante el procesamiento.</li>
+        <li><span class="tag">Resend</span> Envía correos transaccionales (bienvenida, recuperación de contraseña, notificaciones).</li>
+      </ul>
+      <p>Ninguno de estos proveedores usa tus datos con fines publicitarios propios.</p>
+    </div>
+
+    <div class="block">
+      <h2>5. Tus derechos</h2>
+      <p>Puedes en cualquier momento:</p>
+      <ul>
+        <li>Ver y editar tu nombre y foto desde "Editar perfil".</li>
+        <li>Pedir una copia de tus datos o su eliminación completa escribiendo a <a href="mailto:profebillio@gmail.com">profebillio@gmail.com</a>.</li>
+        <li>Eliminar tu cuenta — al hacerlo se borra tu progreso, comentarios y datos de perfil asociados.</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h2>6. Cookies y almacenamiento local</h2>
+      <p>Usamos almacenamiento local del navegador (localStorage / IndexedDB) únicamente para mantener tu sesión activa y permitir el uso offline de la app (es una PWA). No usamos cookies de rastreo ni publicidad de terceros.</p>
+    </div>
+
+    <div class="block">
+      <h2>7. Menores de edad</h2>
+      <p>Esta plataforma está dirigida a docentes en ejercicio, no a estudiantes menores de edad.</p>
+    </div>
+
+    <div class="block">
+      <h2>8. Cambios a esta política</h2>
+      <p>Si actualizamos esta política de forma relevante, lo indicaremos en esta misma página con la fecha de última actualización.</p>
+    </div>
+
+    <div class="footer">
+      Formación Docente · Programa de Formación Docente en Pedagogía Innovadora · Guatemala 2026<br>
+      Contacto: <a href="mailto:profebillio@gmail.com">profebillio@gmail.com</a>
+    </div>
+  </div>
+</body>
+</html>
