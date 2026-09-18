@@ -4,7 +4,6 @@
 
 const SUPABASE_URL = "https://grkjhzkgcmackbafqudu.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
-const ADMIN_EMAILS  = ['billy@1bot.org'];
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
@@ -15,16 +14,19 @@ function escapeHtml(s) {
     return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// Gestionar colegios es una acción de plataforma — SIEMPRE super admin
-// (billy@1bot.org), nunca un admin de tenant. Este gate cliente es solo
-// UX; admin-users valida server-side que la fila de user_roles del
-// caller tenga tenant_id NULL + role='admin'.
+// Gestionar colegios es una acción de plataforma — SIEMPRE super admin,
+// nunca un admin de tenant. Este gate cliente es solo UX; admin-users
+// valida server-side que la fila de user_roles del caller tenga
+// tenant_id NULL + role='admin'.
 async function checkSuperAdmin() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.href = 'admin-login.html?redirect=colegios.html'; return false; }
     currentUser = session.user;
 
-    if (!ADMIN_EMAILS.includes(currentUser.email)) {
+    const { data: roleRows } = await sb.from('user_roles').select('role, tenant_id').eq('user_id', currentUser.id);
+    const isSuperAdmin = (roleRows || []).some(r => r.tenant_id === null && r.role === 'admin');
+
+    if (!isSuperAdmin) {
         alert('Acceso denegado. Solo el super admin puede entrar aquí.');
         await sb.auth.signOut();
         window.location.href = 'admin-login.html';

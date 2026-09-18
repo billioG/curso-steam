@@ -4,7 +4,15 @@
 
 const SUPABASE_URL  = "https://grkjhzkgcmackbafqudu.supabase.co";
 const SUPABASE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
-const ADMIN_EMAILS  = ['billy@1bot.org'];
+// Admins ya no son una lista fija en el código — se leen de user_roles
+// (tenant_id NULL + role='admin'). Agregar/quitar admin es un cambio de
+// datos, no un deploy. Este gate cliente sigue siendo solo UX: el límite
+// real está en RLS y en admin-users/index.ts (server-side).
+let _adminUserIds = new Set();
+async function loadAdminUserIds() {
+    const { data } = await sb.from('user_roles').select('user_id').is('tenant_id', null).eq('role', 'admin');
+    _adminUserIds = new Set((data || []).map(r => r.user_id));
+}
 
 // Cursos estáticos del programa (datos reales de data.js)
 // Rutas de aprendizaje disponibles
@@ -230,7 +238,8 @@ async function checkAdminAuth() {
     if (!session) { window.location.href = 'admin-login.html'; return false; }
     currentUser = session.user;
 
-    const isAdmin = ADMIN_EMAILS.includes(currentUser.email);
+    await loadAdminUserIds();
+    const isAdmin = _adminUserIds.has(currentUser.id);
 
     if (!isAdmin) {
         alert('Acceso denegado. Solo administradores pueden entrar.');
@@ -272,7 +281,7 @@ async function fetchAllProgress() {
         return [];
     }
     showConnectionError(false);
-    _allProgress = (data || []).filter(p => !ADMIN_EMAILS.includes(p.email));
+    _allProgress = (data || []).filter(p => !_adminUserIds.has(p.user_id));
     _usersCache  = [..._allProgress];
     return _allProgress;
 }
@@ -974,7 +983,7 @@ let _coordUserIds   = new Set(); // user_ids que son coordinadores
 
 async function loadUsers() {
     const progress = _allProgress.length ? _allProgress : await fetchAllProgress();
-    _usersCache = progress.filter(p => !ADMIN_EMAILS.includes(p.email));
+    _usersCache = progress.filter(p => !_adminUserIds.has(p.user_id));
 
     // Fetch DB courses
     if (!_dbCourses.length) {
@@ -1574,8 +1583,7 @@ async function loadFeedback() {
     _allProgress.forEach(p => { if (p.user_id) nameMap[p.user_id] = { name: getName(p), email: getEmail(p) }; });
 
     // Excluir admins de KPIs, gráficos y listado
-    const _adminSet = new Set(ADMIN_EMAILS.map(e => e.toLowerCase()));
-    const fb = fbRaw.filter(f => !_adminSet.has((nameMap[f.user_id]?.email || '').toLowerCase()));
+    const fb = fbRaw.filter(f => !_adminUserIds.has(f.user_id));
 
     document.getElementById('fbTotal').textContent = fb.length || 0;
 
