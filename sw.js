@@ -208,6 +208,9 @@ self.addEventListener('message', event => {
     if (event.data?.type === 'CLEAR_CACHE') {
         caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
     }
+    if (event.data?.type === 'GET_VERSION') {
+        event.ports[0]?.postMessage({ version: CACHE_VERSION });
+    }
 });
 
 // ──────────────────────────────────────────────────────────
