@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v118';
+const CACHE_VERSION  = 'steam-v119';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -206,6 +206,9 @@ self.addEventListener('message', event => {
     }
     if (event.data?.type === 'CLEAR_CACHE') {
         caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+    }
+    if (event.data?.type === 'GET_VERSION') {
+        event.ports[0]?.postMessage({ version: CACHE_VERSION });
     }
 });
 
