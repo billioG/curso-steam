@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v119';
+const CACHE_VERSION  = 'steam-v120';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -12,6 +12,7 @@ const CRITICAL_ASSETS = [
     './',
     './index.html',
     './app.js',
+    './tailwind.css',
     './data.js',
     './diagnostico.js',
     './iconos.js',
