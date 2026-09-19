@@ -38,7 +38,7 @@ const STATIC_COURSES = [
     { id:'flipped-classroom', title:'Flipped Classroom · El Aula Invertida',   durationHours:3,  totalCards:52, modules:4, ruta:'metodologias', masterCert:true  },
     { id:'abv',               title:'Aprendizaje Basado en Videos',            durationHours:3,  totalCards:47, modules:4, ruta:'metodologias', masterCert:true  },
     { id:'micro-learning',    title:'Micro-learning · Aprender en Pequeñas Dosis', durationHours:3, totalCards:47, modules:4, ruta:'metodologias', masterCert:true  },
-    { id:'ia-fundamentos',    title:'Docente y la Inteligencia Artificial',        durationHours:4, totalCards:35, modules:4, ruta:'ia', masterCert:true  },
+    { id:'ia-fundamentos',    title:'Docente y la Inteligencia Artificial',        durationHours:4, totalCards:47, modules:4, ruta:'ia', masterCert:true  },
     { id:'ia-tiempo',         title:'IA para Ahorrar Tiempo',                      durationHours:3, totalCards:22, modules:4, ruta:'ia', masterCert:true  },
     { id:'ia-herramientas',   title:'Herramientas de IA Gratuitas para el Aula',   durationHours:3, totalCards:19, modules:4, ruta:'ia', masterCert:true  },
     { id:'ia-inclusion',      title:'IA e Inclusión Educativa',                    durationHours:3, totalCards:18, modules:4, ruta:'ia', masterCert:true  },
