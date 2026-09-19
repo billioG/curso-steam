@@ -1144,7 +1144,7 @@ function loadDailyMissions() {
                 portfolioAiTotal, portfolioScores, portfolioFeedback, portfolioSummary,
                 portfolioAttempts, portfolioLastAttempt,
                 // persistentes entre días:
-                cardNotes, appliedCards, streakFreezes, lastFreezeWeek,
+                cardNotes, appliedCards, pinnedCards, streakFreezes, lastFreezeWeek,
                 weeklyMissions, weeklyMissionsDate, weeklyXP, quizStreak, earlyBirdCards, xpLog } = savedMissions;
         // Snapshot del XP del día que termina, para la gráfica de Progreso (histórico acumulativo)
         const prevXpLog = Array.isArray(xpLog) ? xpLog : [];
@@ -1185,6 +1185,7 @@ function loadDailyMissions() {
             // persistentes:
             ...(cardNotes       && { cardNotes }),
             ...(appliedCards    && { appliedCards }),
+            ...(pinnedCards     && { pinnedCards }),
             ...(streakFreezes !== undefined && { streakFreezes }),
             ...(lastFreezeWeek  && { lastFreezeWeek }),
             ...(weeklyMissions  && { weeklyMissions }),
@@ -1507,6 +1508,8 @@ function renderCard() {
                     const cardKey = String(card.id ?? (currentModule+'-'+currentCardIndex));
                     const applied = (progress.dailyMissions?.appliedCards || []).includes(cardKey);
                     const hasNote = !!(progress.dailyMissions?.cardNotes?.[cardKey]);
+                    const _courseIdForPin = currentCourseId || 'steam';
+                    const pinned = (progress.dailyMissions?.pinnedCards || []).some(p => p.cardId === cardKey && p.courseId === _courseIdForPin);
                     return `
                     <button onclick="toggleApplied('${cardKey}')" id="appliedBtn_${cardKey}"
                         class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-2xl border text-xs font-semibold transition"
@@ -1517,6 +1520,10 @@ function renderCard() {
                         class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-2xl border text-xs font-semibold transition"
                         style="${hasNote ? 'background:#eff6ff;border-color:#93c5fd;color:#1d4ed8' : 'background:white;border-color:#e2e8f0;color:#64748b'}">
                         📝 ${hasNote ? 'Ver mi nota' : 'Agregar nota'}
+                    </button>
+                    <button onclick="toggleCardPin('${cardKey}')" id="pinBtn_${cardKey}" title="Guardar en mi tablero de apuntes"
+                        style="width:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:16px;border:1px solid ${pinned ? '#fde68a' : '#e2e8f0'};background:${pinned ? '#fef9c3' : 'white'};color:${pinned ? '#a16207' : '#94a3b8'};cursor:pointer">
+                        <span style="display:inline-flex;width:16px;height:16px">${ICONS?.pin || ''}</span>
                     </button>`;
                 })()}
             </div>
@@ -2886,6 +2893,88 @@ document.getElementById('closeCourseRequestsBtn')?.addEventListener('click', () 
     document.getElementById('courseRequestsModal')?.classList.add('hidden');
 });
 
+// ==================== TABLERO DE APUNTES GUARDADOS (pin) ====================
+function showPinBoard() {
+    document.getElementById('pinBoardModal')?.classList.remove('hidden');
+    _renderPinBoard();
+}
+
+document.getElementById('closePinBoardBtn')?.addEventListener('click', () => {
+    document.getElementById('pinBoardModal')?.classList.add('hidden');
+});
+
+function _pinSnippet(card) {
+    const raw = card.content || card.question || card.scenario || card.description || '';
+    const text = String(raw).replace(/[*_#>`]/g, '').replace(/\n+/g, ' ').trim();
+    return text.length > 140 ? text.slice(0, 140) + '…' : text;
+}
+
+function _renderPinBoard() {
+    const list = document.getElementById('pinBoardList');
+    if (!list) return;
+    const pins = progress?.dailyMissions?.pinnedCards || [];
+    if (!pins.length) {
+        list.innerHTML = `<div class="text-center text-gray-400 py-8 text-sm">Todavía no guardaste ninguna tarjeta.<br><span class="text-xs">Tocá el <span data-icon="pin" style="display:inline-flex;width:11px;height:11px;vertical-align:-1px"></span> en cualquier tarjeta de contenido para guardarla aquí.</span></div>`;
+        return;
+    }
+    // Más recientes primero
+    const sorted = [...pins].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+    const rows = sorted.map(p => {
+        const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === p.courseId) : null;
+        let card = null;
+        if (course) {
+            for (const m of course.modules) { card = m.cards.find(c => String(c.id) === String(p.cardId)); if (card) break; }
+        }
+        if (!course || !card) {
+            // Curso/tarjeta ya no existe (contenido reestructurado) — mostrar solo opción de quitar
+            return `
+            <div class="border border-slate-100 rounded-2xl p-3 bg-slate-50 flex items-center justify-between gap-2">
+                <p class="text-xs text-slate-400 italic">Esta tarjeta ya no está disponible</p>
+                <button onclick="_unpinFromBoard('${p.cardId}','${p.courseId}')" class="text-slate-400 hover:text-red-500 text-xs font-bold flex-shrink-0">Quitar</button>
+            </div>`;
+        }
+        return `
+        <div class="border border-amber-100 rounded-2xl p-3.5 bg-amber-50/40">
+            <div class="flex items-start justify-between gap-2 mb-1.5">
+                <p class="text-[10px] font-bold uppercase tracking-wide text-amber-700">${esc(course.title)}</p>
+                <button onclick="_unpinFromBoard('${p.cardId}','${p.courseId}')" title="Quitar del tablero"
+                    class="text-slate-300 hover:text-red-500 flex-shrink-0" style="line-height:1">&times;</button>
+            </div>
+            <p class="text-sm font-bold text-slate-800 mb-1">${esc(card.title || card.question || 'Nota guardada')}</p>
+            <p class="text-xs text-slate-500 leading-relaxed mb-2">${esc(_pinSnippet(card))}</p>
+            <button onclick="_jumpToPinnedCard('${p.courseId}','${p.cardId}')"
+                class="text-xs font-bold text-amber-700 hover:underline flex items-center gap-1">
+                Repasar tarjeta <span data-icon="arrowRight" style="display:inline-flex;width:11px;height:11px"></span>
+            </button>
+        </div>`;
+    }).join('');
+    list.innerHTML = rows;
+}
+
+function _unpinFromBoard(cardId, courseId) {
+    if (!progress.dailyMissions?.pinnedCards) return;
+    progress.dailyMissions.pinnedCards = progress.dailyMissions.pinnedCards.filter(p => !(p.cardId === cardId && p.courseId === courseId));
+    saveProgress();
+    _renderPinBoard();
+}
+
+function _jumpToPinnedCard(courseId, cardId) {
+    const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === courseId) : null;
+    if (!course) { showToast('Este curso ya no está disponible', 'error'); return; }
+    selectCourse(courseId); // deja currentCourseId/modulesData listos y cambia a la tab de tarjetas
+    for (let m = 0; m < course.modules.length; m++) {
+        const idx = course.modules[m].cards.findIndex(c => String(c.id) === String(cardId));
+        if (idx !== -1) {
+            currentModule = m + 1;
+            currentCardIndex = idx;
+            renderCard();
+            updateUI();
+            break;
+        }
+    }
+    document.getElementById('pinBoardModal')?.classList.add('hidden');
+}
+
 async function loadCourseRequests() {
     const listEl = document.getElementById('courseRequestsList');
     if (!listEl) return;
@@ -3516,6 +3605,28 @@ function toggleApplied(cardKey) {
     }
     saveProgress();
     checkBadges();
+}
+
+// ── Tablero de apuntes guardados (estilo "pin" de Google Primer): guarda
+// solo la referencia (curso + id de tarjeta), no el texto — se resuelve al
+// mostrar el tablero desde data.js, que ya vive local/cacheado (funciona
+// sin conexión igual). ──
+function toggleCardPin(cardKey) {
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    if (!progress.dailyMissions.pinnedCards) progress.dailyMissions.pinnedCards = [];
+    const arr = progress.dailyMissions.pinnedCards;
+    const courseId = currentCourseId || 'steam';
+    const idx = arr.findIndex(p => p.cardId === cardKey && p.courseId === courseId);
+    const btn = document.getElementById(`pinBtn_${cardKey}`);
+    if (idx === -1) {
+        arr.push({ cardId: cardKey, courseId, date: new Date().toISOString() });
+        if (btn) btn.style.cssText = 'width:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:16px;border:1px solid #fde68a;background:#fef9c3;color:#a16207;cursor:pointer';
+        showToast('📌 Guardado en tu tablero de apuntes', 'success');
+    } else {
+        arr.splice(idx, 1);
+        if (btn) btn.style.cssText = 'width:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:16px;border:1px solid #e2e8f0;background:white;color:#94a3b8;cursor:pointer';
+    }
+    saveProgress();
 }
 
 // ── Helper: ir a la tarjeta de referencia del quiz ──

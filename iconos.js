@@ -87,6 +87,19 @@ const ICONS = {
     <path d="M9.5 14c0 2 1.1 3.5 2.5 3.5s2.5-1.2 2.5-3.5" fill="currentColor" fill-opacity=".3"/>
   </svg>`,
 
+  // Pin / guardar tarjeta para el tablero de apuntes (offline)
+  pin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 17v5" stroke-width="1.9"/>
+    <path d="M8 3h8l-1 6 3 3v2H6v-2l3-3-1-6z" fill="currentColor" fill-opacity=".12"/>
+  </svg>`,
+
+  // Tablero de apuntes guardados (varias notas pineadas)
+  pinboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="16" rx="2.5" fill="currentColor" fill-opacity=".06"/>
+    <path d="M8 9h8M8 13h5" stroke-width="1.7"/>
+    <circle cx="8" cy="16.5" r="1" fill="currentColor" stroke="none"/>
+  </svg>`,
+
   // Ligas/récords altos: gema
   gem: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
     <path d="M6 3h12l3 5-9 13L3 8z" fill="currentColor" fill-opacity=".15"/>
