@@ -1780,7 +1780,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 4,
-    totalCards: 45,
+    totalCards: 57,
     modules: [
         {
             id: 1,
@@ -1897,6 +1897,35 @@ const allCourses = [
                     ],
                     correct: 1,
                     explanation: "La efectividad no viene de usar muchas herramientas, sino de usar pocas bien. Dominar a fondo herramientas seleccionadas permite al docente usarlas con más confianza, creatividad y propósito pedagógico claro."
+                },
+                {
+                    id: 46,
+                    type: "project",
+                    title: "Ubica una actividad tuya en el modelo SAMR",
+                    description: "Tomá una actividad que ya usás con tecnología y ubicala en el modelo SAMR (Sustitución, Aumento, Modificación, Redefinición).",
+                    objective: "Identificar en qué nivel SAMR estás realmente, y subir un nivel si es posible.",
+                    materials: ["Una actividad que ya hacés con tecnología"],
+                    steps: ["Elegí una actividad donde uses tecnología (ej: presentación en PowerPoint en vez de cartel).", "¿Solo sustituye una herramienta análoga? ¿Aumenta algo? ¿Modifica la tarea? ¿La redefine?", "Pensá qué cambiaría para subir un nivel.", "Anotá también tu plan B si la tecnología falla ese día."],
+                    think: ["¿La mayoría de tu uso de tecnología está en Sustitución o más arriba?", "¿Qué actividad podría redefinirse completamente con tecnología?"],
+                    make: ["Una actividad ubicada en SAMR + su plan B"],
+                    improve: ["Anotá un paso concreto para subir un nivel en esa actividad"]
+                },
+                {
+                    id: 47,
+                    type: "simulation",
+                    title: "¿Confiás en que la conexión va a andar?",
+                    scenario: "Preparaste una clase completa dependiendo de internet en la escuela, y justo el día de la clase se corta la conexión.",
+                    statement: "Vale la pena tener siempre un plan B sin conexión, aunque eso signifique preparar doble trabajo.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** En el contexto guatemalteco, la conectividad intermitente es la norma, no la excepción — un plan B no es trabajo extra desperdiciado, es parte real de planificar con tecnología acá. Sin él, la clase completa se cae cuando falla algo que no controlás.",
+                    leftOutcome: "Confiar en que la conexión va a funcionar es un riesgo real en el contexto guatemalteco. El \"doble trabajo\" del plan B se paga una sola vez, pero te salva cada vez que la conexión falla — y va a fallar."
+                },
+                {
+                    id: 48,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a revisar antes de tu próxima clase con tecnología?",
+                    options: ["En qué nivel SAMR está mi actividad y cómo subirlo", "Mi plan B si falla la conexión o el equipo", "Si todos mis estudiantes tienen acceso real a lo que voy a pedir"]
                 }
             ]
         },
@@ -2008,6 +2037,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "La nube de palabras de Mentimeter es especialmente poderosa al inicio de clase: activa el conocimiento previo, hace visible lo que los estudiantes ya saben, genera curiosidad y permite al docente ajustar su clase según las respuestas en tiempo real."
+                },
+                {
+                    id: 49,
+                    type: "project",
+                    title: "Crea tu primer recurso con una herramienta nueva",
+                    description: "Elegí UNA herramienta de este módulo que nunca usaste y creá un recurso real para tu próxima clase.",
+                    objective: "Tener un recurso digital real, no solo haber visto cómo funciona la herramienta.",
+                    materials: ["Computadora o celular con internet", "Un tema de tu próxima clase"],
+                    steps: ["Elegí una herramienta que nunca probaste (Canva, Genially, Mentimeter, etc.).", "Creá un recurso simple para tu próxima clase.", "No busques que quede perfecto — buscá terminarlo.", "Probalo con tus estudiantes esta semana."],
+                    think: ["¿Por qué elegiste esa herramienta y no otra?", "¿Qué tan disponible es esta herramienta para tus estudiantes fuera de tu control?"],
+                    make: ["Un recurso digital terminado y usado en clase real"],
+                    improve: ["Anotá qué parte de la herramienta te costó más — ahí es donde practicar la próxima vez"]
+                },
+                {
+                    id: 50,
+                    type: "simulation",
+                    title: "¿Creás desde cero o usás lo que ya existe?",
+                    scenario: "Encontrás un video educativo excelente ya hecho sobre tu tema, pero pensabas crear el tuyo propio con Genially. Crear el tuyo tomaría 2 horas más.",
+                    statement: "Vale la pena usar el recurso ya existente en vez de invertir 2 horas más creando uno propio.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** La curación de contenido de calidad —encontrar y adaptar lo que ya existe— es una habilidad tan válida como crear desde cero, y mucho más sostenible en el tiempo. Las 2 horas ahorradas se invierten mejor en planificar cómo usás ese video en tu clase.",
+                    leftOutcome: "Crear tu propio recurso desde cero tiene valor, pero no siempre — si ya existe algo de calidad, curarlo y adaptarlo es más sostenible que reinventar todo cada vez. El tiempo docente es limitado."
+                },
+                {
+                    id: 51,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué herramienta vas a usar esta semana?",
+                    options: ["Canva o Genially para crear un recurso visual nuevo", "Mentimeter para una pregunta interactiva en clase", "Curar y adaptar un video ya existente en vez de crear el mío"]
                 }
             ]
         },
@@ -2119,6 +2177,35 @@ const allCourses = [
                     ],
                     correct: 1,
                     explanation: "Para recoger reflexiones escritas abiertas, Google Forms con preguntas de texto largo o Padlet son las opciones más adecuadas. Kahoot y Quizizz están diseñados principalmente para preguntas cerradas de opción múltiple, no para reflexiones elaboradas."
+                },
+                {
+                    id: 52,
+                    type: "project",
+                    title: "Tu primera evaluación formativa digital",
+                    description: "Elegí una herramienta de evaluación formativa digital y usala esta semana para revisar comprensión, no para calificar.",
+                    objective: "Usar una herramienta digital de evaluación formativa real, con datos reales de tus estudiantes.",
+                    materials: ["Computadora o celular, proyector si es posible", "Un tema reciente de tu planificación"],
+                    steps: ["Elegí una herramienta (Kahoot, Quizizz, Padlet, Socrative o Forms).", "Creá 3-5 preguntas sobre un tema que ya diste.", "Aplicala AL FINAL de una clase, no como examen — como diagnóstico.", "Usá los resultados para decidir qué repasar mañana."],
+                    think: ["¿Por qué elegiste esa herramienta sobre las demás?", "¿Qué vas a hacer distinto mañana según lo que muestren los resultados?"],
+                    make: ["Una evaluación formativa digital aplicada con datos reales"],
+                    improve: ["Anotá si la herramienta funcionó bien con la conectividad real de tu escuela"]
+                },
+                {
+                    id: 53,
+                    type: "simulation",
+                    title: "¿Ajustás el ranking público?",
+                    scenario: "Usaste Kahoot para evaluar comprensión, y un estudiante que suele tener buenas notas quedó último en el ranking del juego, visible para toda la clase, por los nervios de la competencia cronometrada.",
+                    statement: "Vale la pena ajustar cómo usás estas herramientas gamificadas para que el ranking público no desmotive a quien no rinde bien bajo presión de tiempo.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** La gamificación motiva a muchos, pero el ranking público cronometrado puede medir velocidad y manejo de la presión más que comprensión real. Opciones como ocultar el ranking, dar más tiempo, o usar el modo sin competencia resuelven esto sin abandonar la herramienta.",
+                    leftOutcome: "Dejar el ranking público tal como está mantiene la emoción del juego para la mayoría, pero para algunos convierte una evaluación formativa en una experiencia de humillación pública que no mide lo que realmente se quiere evaluar."
+                },
+                {
+                    id: 54,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer con tu próxima evaluación digital?",
+                    options: ["Usar una herramienta nueva de evaluación formativa esta semana", "Ajustar el modo competitivo para que no desmotive a nadie", "Usar los resultados para decidir qué repasar, no solo para calificar"]
                 }
             ]
         },
@@ -2230,6 +2317,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "Este curso sostiene que la tecnología no es magia ni sustituto de la buena pedagogía: es una herramienta poderosa cuando se elige con criterio, se usa con propósito claro de aprendizaje y se acompaña de responsabilidad digital. El docente que integra tecnología con estos principios transforma su práctica de manera sostenible."
+                },
+                {
+                    id: 55,
+                    type: "project",
+                    title: "Refuerza la seguridad digital de tu aula",
+                    description: "Revisá y mejorá un aspecto real de seguridad digital con tus estudiantes esta semana.",
+                    objective: "Que tus estudiantes practiquen UN hábito concreto de seguridad digital, no solo lo escuchen en teoría.",
+                    materials: ["Acceso a las cuentas o plataformas que usan tus estudiantes"],
+                    steps: ["Elegí un tema: contraseñas seguras, o ciudadanía digital.", "Diseñá una actividad corta (10-15 min) sobre eso.", "Aplicala esta semana con tus estudiantes.", "Pedirles que la apliquen ellos mismos (ej: cambiar una contraseña débil)."],
+                    think: ["¿Qué hábito de seguridad digital ves más descuidado en tus estudiantes?", "¿Cómo lo explicás sin generar miedo excesivo a la tecnología?"],
+                    make: ["Una actividad de seguridad o ciudadanía digital aplicada"],
+                    improve: ["Anotá si notaste algún cambio de comportamiento después"]
+                },
+                {
+                    id: 56,
+                    type: "simulation",
+                    title: "¿Hablás con toda la clase o sancionás a uno?",
+                    scenario: "Un estudiante entregó un trabajo que sospechás fue generado con inteligencia artificial, sin decírtelo.",
+                    statement: "Vale la pena hablar abiertamente con la clase sobre el uso de IA antes de sancionar a ese estudiante en particular.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** La mayoría de los estudiantes usa IA sin reglas claras porque el docente nunca las estableció — sancionar a uno sin haber hablado del tema con todos es injusto y no resuelve el problema de fondo. Establecer reglas claras de uso previene esto hacia adelante para toda la clase.",
+                    leftOutcome: "Sancionar solo a ese estudiante sin haber hablado nunca de reglas de uso de IA con la clase es inconsistente — probablemente otros hicieron lo mismo sin ser detectados. Establecer reglas claras primero es más justo y efectivo."
+                },
+                {
+                    id: 57,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a cerrar este curso de herramientas?",
+                    options: ["Aplicar una regla clara de uso de IA con mis estudiantes", "Reforzar un hábito de seguridad digital esta semana", "Elegir 2 herramientas del curso para dominar bien, no 10 a medias"]
                 }
             ]
         }
