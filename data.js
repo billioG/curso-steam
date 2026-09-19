@@ -3,6 +3,7 @@
 const allCourses = [
 {
     id: 'steam',
+    recommendedLevels: ['proceso', 'satisfactorio', 'destacado'],
     title: 'Metodología STEAM 2.0',
     subtitle: 'Ciencia, Tecnología, Ingeniería, Arte y Matemáticas integrados en tu aula',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6 H24 V14 L30 32 Q31 34.5 28 34.5 H12 Q9 34.5 10 32 L16 14 Z" stroke-width="2" fill="rgba(255,255,255,0.1)"/><line x1="14" y1="6" x2="26" y2="6" stroke-width="2"/><line x1="13" y1="24" x2="27" y2="24" stroke-width="1.6" stroke="rgba(255,255,255,0.5)"/></svg>',
@@ -239,6 +240,7 @@ const allCourses = [
 ,
 {
     id: 'abp',
+    recommendedLevels: ['proceso', 'satisfactorio'],
     title: 'Aprendizaje Basado en Proyectos',
     subtitle: 'Diseña proyectos con impacto real en tu comunidad educativa',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="20" width="8" height="14" rx="1" stroke-width="2" fill="rgba(255,255,255,0.12)"/><rect x="17" y="12" width="8" height="22" rx="1" stroke-width="2" fill="rgba(255,255,255,0.18)"/><rect x="26" y="6" width="8" height="28" rx="1" stroke-width="2" fill="rgba(255,255,255,0.25)"/></svg>',
@@ -427,6 +429,7 @@ const allCourses = [
 },
 {
     id: 'design-thinking',
+    recommendedLevels: ['inicial', 'proceso'],
     title: 'Design Thinking para Docentes',
     subtitle: 'Resuelve problemas del aula con empatía y creatividad',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 C14 6 10 10.5 10 16 C10 20 12.5 22.5 14 25 L14 28 H26 L26 25 C27.5 22.5 30 20 30 16 C30 10.5 26 6 20 6Z" stroke-width="2" fill="rgba(255,255,255,0.12)"/><line x1="16" y1="32" x2="24" y2="32" stroke-width="2"/><line x1="17" y1="35" x2="23" y2="35" stroke-width="2"/></svg>',
@@ -586,6 +589,7 @@ const allCourses = [
 },
 {
     id: 'evaluacion',
+    recommendedLevels: ['satisfactorio', 'destacado'],
     title: 'Herramientas de Evaluación',
     subtitle: 'Rúbricas, portafolios y evaluación auténtica para el siglo XXI',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="34" x2="33" y2="34" stroke-width="2"/><rect x="11" y="22" width="6" height="12" rx="1" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><rect x="19" y="14" width="6" height="20" rx="1" stroke-width="1.8" fill="rgba(255,255,255,0.25)"/><rect x="27" y="18" width="6" height="16" rx="1" stroke-width="1.8" fill="rgba(255,255,255,0.2)"/></svg>',
@@ -739,6 +743,7 @@ const allCourses = [
 ,
 {
   id: 'tipos-estudiantes',
+  recommendedLevels: ['inicial', 'proceso'],
   title: 'Conoce a Quien Enseñas',
   subtitle: 'Tipos de estudiantes, casos de estudio y estrategias diferenciadas para el aula guatemalteca',
   icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="14" r="5" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><path d="M5 32 C5 25 9 21 14 21 C19 21 23 25 23 32" stroke-width="1.8"/><circle cx="27" cy="16" r="4" stroke-width="1.8" fill="rgba(255,255,255,0.2)"/><path d="M20 32 C20 27 23 24 27 24 C31 24 34 27 34 32" stroke-width="1.8"/></svg>',
@@ -913,6 +918,7 @@ const allCourses = [
 ,
 {
     id: 'storytelling',
+    recommendedLevels: ['inicial', 'proceso'],
     title: 'Storytelling para Docentes',
     subtitle: 'El arte de contar historias para enseñar con impacto',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10 H34 V26 H24 L18 33 V26 H6 Z" stroke-width="2" fill="rgba(255,255,255,0.1)"/><circle cx="14" cy="17" r="1.4" fill="white" stroke="none"/><circle cx="20" cy="17" r="1.4" fill="white" stroke="none"/><circle cx="26" cy="17" r="1.4" fill="white" stroke="none"/></svg>',
@@ -1015,6 +1021,7 @@ const allCourses = [
 // CURSO: creatividad
 {
     id: 'creatividad',
+    recommendedLevels: ['inicial', 'proceso'],
     title: 'Despertando la Creatividad',
     subtitle: 'Herramientas para cultivar el pensamiento creativo en tu aula',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M20 5 L23 15 L33 12 L26 20 L33 28 L23 25 L20 35 L17 25 L7 28 L14 20 L7 12 L17 15 Z" stroke-width="1.6" fill="rgba(255,255,255,0.15)"/></svg>',
@@ -1514,6 +1521,7 @@ const allCourses = [
 // CURSO: herramientas-tec
 {
     id: 'herramientas-tec',
+    recommendedLevels: ['inicial', 'proceso'],
     title: 'Herramientas Tecnológicas para Docentes',
     subtitle: 'Integra la tecnología con sentido pedagógico en tu aula',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="10" width="24" height="16" rx="1.5" stroke-width="2" fill="rgba(255,255,255,0.1)"/><line x1="8" y1="30" x2="32" y2="30" stroke-width="2"/><line x1="4" y1="30" x2="36" y2="30" stroke-width="2.2"/></svg>',
@@ -1983,6 +1991,7 @@ const allCourses = [
 // CURSO: m-learning
 {
     id: 'm-learning',
+    recommendedLevels: ['proceso', 'satisfactorio'],
     title: 'Mobile Learning · Aprender con el Celular',
     subtitle: 'Convierte el smartphone en una herramienta poderosa de aprendizaje para tu aula',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="13" y="5" width="14" height="30" rx="2.5" stroke-width="2" fill="rgba(255,255,255,0.1)"/><line x1="17" y1="30" x2="23" y2="30" stroke-width="2"/></svg>',
@@ -2382,6 +2391,7 @@ const allCourses = [
 // CURSO: flipped-classroom
 {
     id: 'flipped-classroom',
+    recommendedLevels: ['proceso', 'satisfactorio'],
     title: 'Flipped Classroom · El Aula Invertida',
     subtitle: 'Los estudiantes aprenden la teoría en casa y practican en clase contigo',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20 A12 12 0 0 1 27 11" stroke-width="2.2"/><polyline points="27 5 27 11 21 11" stroke-width="2.2"/><path d="M32 20 A12 12 0 0 1 13 29" stroke-width="2.2"/><polyline points="13 35 13 29 19 29" stroke-width="2.2"/></svg>',
@@ -2787,6 +2797,7 @@ const allCourses = [
 // CURSO: abv
 {
     id: 'abv',
+    recommendedLevels: ['proceso', 'satisfactorio'],
     title: 'Aprendizaje Basado en Videos',
     subtitle: 'Usa el video como herramienta pedagógica poderosa en tu aula',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="30" height="22" rx="3" stroke-width="2" fill="rgba(255,255,255,0.1)"/><path d="M17 15 L26 20 L17 25 Z" fill="rgba(255,255,255,0.6)" stroke-width="1.4"/></svg>',
@@ -3143,6 +3154,7 @@ const allCourses = [
 // CURSO: micro-learning
 {
     id: 'micro-learning',
+    recommendedLevels: ['proceso', 'satisfactorio'],
     title: 'Micro-learning: Aprender en Pequeñas Dosis',
     subtitle: 'Diseña cápsulas de aprendizaje de 2 a 10 minutos que realmente funcionan',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4 L10 22 H18 L16 36 L30 16 H21 Z" stroke-width="1.8" fill="rgba(255,255,255,0.2)"/></svg>',
@@ -3497,6 +3509,7 @@ const allCourses = [
 },
 {
     id: 'ia-fundamentos',
+    recommendedLevels: ['inicial', 'proceso'],
     title: 'Docente y la Inteligencia Artificial',
     subtitle: 'Fundamentos para entender y usar la IA con criterio pedagógico',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><rect x="13" y="13" width="14" height="14" rx="2" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/><circle cx="20" cy="20" r="3" stroke-width="1.8"/><line x1="20" y1="5" x2="20" y2="13" stroke-width="1.8"/><line x1="20" y1="27" x2="20" y2="35" stroke-width="1.8"/><line x1="5" y1="20" x2="13" y2="20" stroke-width="1.8"/><line x1="27" y1="20" x2="35" y2="20" stroke-width="1.8"/></svg>',
@@ -3569,6 +3582,7 @@ const allCourses = [
 },
 {
     id: 'ia-tiempo',
+    recommendedLevels: ['proceso', 'satisfactorio'],
     title: 'IA para Ahorrar Tiempo en tu Día a Día Docente',
     subtitle: 'Automatiza lo mecánico, conserva tu tiempo para lo que de verdad importa',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="22" r="12" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/><line x1="18" y1="22" x2="18" y2="14" stroke-width="2"/><line x1="18" y1="22" x2="24" y2="25" stroke-width="2"/><line x1="14" y1="4" x2="22" y2="4" stroke-width="2"/></svg>',
@@ -3642,6 +3656,7 @@ const allCourses = [
 },
 {
     id: 'ia-herramientas',
+    recommendedLevels: ['proceso', 'satisfactorio'],
     title: 'Herramientas de IA Gratuitas para el Aula',
     subtitle: 'Un recorrido práctico por las herramientas que puedes usar hoy, sin costo',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 H34 V32 C34 33.5 33 34.5 31.5 34.5 H8.5 C7 34.5 6 33.5 6 32 Z" stroke-width="2.2" fill="rgba(255,255,255,0.1)"/><path d="M13 18 V13 C13 11 14.5 9.5 16.5 9.5 H23.5 C25.5 9.5 27 11 27 13 V18" stroke-width="2.2"/><line x1="6" y1="24" x2="34" y2="24" stroke-width="1.8"/></svg>',
@@ -3715,6 +3730,7 @@ const allCourses = [
 },
 {
     id: 'ia-inclusion',
+    recommendedLevels: ['satisfactorio', 'destacado'],
     title: 'IA e Inclusión Educativa',
     subtitle: 'Usa la IA como herramienta de equidad en aulas diversas',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><line x1="20" y1="6" x2="20" y2="29" stroke-width="2.2"/><line x1="9" y1="12" x2="31" y2="12" stroke-width="2"/><path d="M5 12 L9 12 L7 20 Q7 23 11 23 Q15 23 13 20 Z" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><path d="M27 12 L31 12 L29 20 Q29 23 33 23 Q37 23 35 20 Z" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><path d="M14 33 Q20 29 26 33" stroke-width="2"/></svg>',
@@ -3788,6 +3804,7 @@ const allCourses = [
 },
 {
     id: 'ia-ciudadania',
+    recommendedLevels: ['satisfactorio', 'destacado'],
     title: 'Ciudadanía Digital con IA para tus Estudiantes',
     subtitle: 'Enseña a tus estudiantes a usar la IA con pensamiento crítico y responsabilidad',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="15" stroke-width="2.2" fill="rgba(255,255,255,0.08)"/><path d="M26 13 L16 17 L14 27 L24 23 Z" fill="rgba(255,255,255,0.4)" stroke-width="1.6"/></svg>',
@@ -3861,6 +3878,7 @@ const allCourses = [
 },
 {
     id: 'manejo-conductas',
+    recommendedLevels: ['inicial', 'proceso'],
     title: 'Manejo de Conductas Desafiantes en el Aula',
     subtitle: 'Herramientas prácticas para respeto, límites y motivación',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10 L24 10 L27 17 L13 17 Z" stroke-width="1.8" fill="rgba(255,255,255,0.25)"/><line x1="6" y1="17" x2="34" y2="17" stroke-width="1.4" stroke="rgba(255,255,255,0.4)" stroke-dasharray="3 2"/><path d="M9 17 L31 17 L35 31 L5 31 Z" stroke-width="1.8" fill="rgba(255,255,255,0.1)"/></svg>',
@@ -3934,6 +3952,7 @@ const allCourses = [
 },
 {
     id: 'sel-docentes',
+    recommendedLevels: ['proceso', 'satisfactorio'],
     title: 'Aprendizaje Socioemocional (SEL) para Docentes',
     subtitle: 'Desarrolla la inteligencia emocional que sostiene el aprendizaje',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8 C12 8 8 14 8 20 C8 25 12 28 14 32 L26 32 C28 28 32 25 32 20 C32 14 28 8 20 8Z" stroke-width="2" fill="rgba(255,255,255,0.08)"/><path d="M20 20 C20 18 17 16.5 15.5 18.5 C14 20.5 15.5 22.5 20 26 C24.5 22.5 26 20.5 24.5 18.5 C23 16.5 20 18 20 20Z" fill="rgba(255,255,255,0.5)" stroke="none"/></svg>',
@@ -4007,6 +4026,7 @@ const allCourses = [
 },
 {
     id: 'comunicacion-asertiva',
+    recommendedLevels: ['proceso', 'satisfactorio'],
     title: 'Comunicación Asertiva y Resolución de Conflictos',
     subtitle: 'Media conflictos entre estudiantes y comunica límites sin agresión ni pasividad',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8 H34 V25 H22 L15 32 V25 H6 Z" stroke-width="2" fill="rgba(255,255,255,0.1)"/><path d="M14 16 L18 20 L27 11" stroke-width="2.2"/></svg>',
@@ -4080,6 +4100,7 @@ const allCourses = [
 },
 {
     id: 'disciplina-positiva',
+    recommendedLevels: ['satisfactorio', 'destacado'],
     title: 'Disciplina Positiva y Motivación Intrínseca',
     subtitle: 'Motiva sin premios ni castigos que dejan de funcionar',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M20 5 L23 15 L34 15 L25 21 L28 32 L20 25 L12 32 L15 21 L6 15 L17 15 Z" stroke-width="2" fill="rgba(255,255,255,0.15)"/></svg>',
@@ -4153,6 +4174,7 @@ const allCourses = [
 },
 {
     id: 'bienestar-docente',
+    recommendedLevels: ['satisfactorio', 'destacado'],
     title: 'Bienestar Docente: Prevención del Desgaste',
     subtitle: 'Cuida tu propia salud emocional para sostener tu vocación a largo plazo',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="15" r="8" stroke-width="2" fill="rgba(255,255,255,0.12)"/><line x1="20" y1="22" x2="20" y2="32" stroke-width="2"/><path d="M20 32 L14 38 M20 32 L26 38" stroke-width="1.6" stroke="rgba(255,255,255,0.5)"/></svg>',
@@ -4227,6 +4249,7 @@ const allCourses = [
 ,
 {
     id: 'educacion-inclusiva',
+    recommendedLevels: ['inicial', 'proceso'],
     title: 'Educación Inclusiva y Necesidades Educativas Especiales',
     subtitle: 'Estrategias prácticas para trabajar con estudiantes con autismo, síndrome de Down, TDAH, discapacidad auditiva, visual y otras necesidades',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="16" r="6" stroke-width="2" fill="rgba(255,255,255,0.12)"/><circle cx="26" cy="16" r="6" stroke-width="2" fill="rgba(255,255,255,0.12)"/><path d="M8 30c0-5 3-8 6-8h12c3 0 6 3 6 8" stroke-width="2"/></svg>',
@@ -4297,6 +4320,7 @@ const allCourses = [
 },
 {
     id: 'tea-profundidad',
+    recommendedLevels: ['satisfactorio', 'destacado'],
     title: 'TEA en el Aula: Estrategias Avanzadas',
     subtitle: 'Enseñanza estructurada, manejo respetuoso de crisis y apoyos individualizados para estudiantes con Trastorno del Espectro Autista',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="5" stroke-width="2" fill="rgba(255,255,255,0.12)"/><line x1="20" y1="4" x2="20" y2="11" stroke-width="2"/><line x1="20" y1="29" x2="20" y2="36" stroke-width="2"/><line x1="4" y1="20" x2="11" y2="20" stroke-width="2"/><line x1="29" y1="20" x2="36" y2="20" stroke-width="2"/><line x1="9" y1="9" x2="14" y2="14" stroke-width="2"/><line x1="26" y1="26" x2="31" y2="31" stroke-width="2"/></svg>',
@@ -4354,6 +4378,7 @@ const allCourses = [
 },
 {
     id: 'discapacidad-down-tdah',
+    recommendedLevels: ['satisfactorio', 'destacado'],
     title: 'Síndrome de Down y TDAH: Estrategias para el Aula',
     subtitle: 'Apoyo cognitivo, de lenguaje y de autorregulación para dos de las necesidades más frecuentes en el aula regular',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M6 34h7v-8h7v-8h7v-8h7" stroke-width="2"/></svg>',
@@ -4411,6 +4436,7 @@ const allCourses = [
 },
 {
     id: 'lengua-senas-docentes',
+    recommendedLevels: ['inicial', 'proceso', 'satisfactorio'],
     title: 'Lengua de Señas para Docentes: Fundamentos Prácticos',
     subtitle: 'Cultura Sorda, alfabeto dactilológico y vocabulario esencial para crear un aula visualmente accesible',
     icon: '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M13 19V8a2 2 0 014 0v9M18 18V6a2 2 0 014 0v11M23 18V8a2 2 0 014 0v9M27 19v-6a2 2 0 014 0v10c0 6-4 11-11 11h-1c-5 0-7-2-9-6l-4-7a2 2 0 013.4-2.2l2.6 3.8" stroke-width="1.6" fill="rgba(255,255,255,0.08)"/></svg>',
