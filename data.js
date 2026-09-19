@@ -3418,7 +3418,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 3,
-    totalCards: 35,
+    totalCards: 47,
     modules: [
 
         // ══════════════════════════════════════════════════════════════════════
@@ -3504,6 +3504,35 @@ const allCourses = [
                     title: "🇬🇹 El video en el contexto guatemalteco",
                     content: "En Guatemala, el video tiene un impacto especial: muchos estudiantes tienen acceso a YouTube desde sus celulares, incluso sin internet fijo en casa. Además, el aprendizaje visual es culturalmente significativo en comunidades donde la tradición oral e iconográfica (arte, tejidos, murales) es central. El video conecta con esa forma de aprender.",
                     extra: "Dato: según la ENCOVI 2021, más del 60% de los hogares guatemaltecos tienen acceso a smartphones. Esto significa que YouTube puede ser un canal educativo accesible para la mayoría de tus estudiantes fuera del aula."
+                },
+                {
+                    id: 36,
+                    type: "project",
+                    title: "Elige un video educativo con criterio",
+                    description: "Buscá un video educativo real para tu próximo tema, aplicando lo que aprendiste sobre duración y tipo de video.",
+                    objective: "Tener un video seleccionado con criterio, no solo \"el primero que aparece\".",
+                    materials: ["Un tema de tu próxima clase", "Acceso a YouTube u otra plataforma"],
+                    steps: ["Elegí un tema de tu planificación.", "Buscá 2-3 videos candidatos.", "Aplicá el criterio de duración según tu nivel educativo.", "Elegí el mejor y anotá por qué."],
+                    think: ["¿Este tema se explica mejor con animación o con screencast?", "¿El video que elegiste dura lo apropiado para tus estudiantes?"],
+                    make: ["Un video seleccionado con criterio explícito"],
+                    improve: ["Anotá si la duración fue la correcta al usarlo en clase"]
+                },
+                {
+                    id: 37,
+                    type: "simulation",
+                    title: "¿Usás el video completo o lo cortás?",
+                    scenario: "Encontraste un video excelente sobre tu tema, pero dura 18 minutos y tus estudiantes son de primaria.",
+                    statement: "Vale la pena buscar un video más corto o cortar este en partes, en vez de usarlo completo.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. La duración importa mucho para la atención sostenida, especialmente en primaria — un video de 18 minutos completo probablemente pierda a la mayoría a mitad de camino. Cortarlo en partes respeta cómo aprende el cerebro con video.",
+                    leftOutcome: "Usar el video completo aunque sea excelente, sin ajustar a la duración apropiada para el nivel, arriesga perder la atención de la mayoría a mitad del video."
+                },
+                {
+                    id: 38,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer con tu próximo video?",
+                    options: ["Elegir uno con la duración apropiada para mi nivel", "Cortar un video largo en partes más cortas", "Probar una animación para un concepto abstracto"]
                 }
             ]
         },
@@ -3591,6 +3620,35 @@ const allCourses = [
                     title: "🔁 El video como recurso para repasar",
                     content: "Una ventaja única del video sobre la clase magistral: se puede repetir. Comparte el enlace del video con tus estudiantes para que lo revean en casa, lo muestren a sus familias o lo usen para estudiar antes de una evaluación. En contextos guatemaltecos con datos móviles limitados, descarga el video con anticipación usando herramientas como 'yt-dlp' o compártelo por WhatsApp.",
                     extra: "Puedes crear una lista de reproducción privada en YouTube con todos los videos de tu curso y compartir el enlace con tus estudiantes. Así tienen un 'banco de recursos' organizado y gratuito disponible en todo momento."
+                },
+                {
+                    id: 39,
+                    type: "project",
+                    title: "Diseña tu Guía de Visualización",
+                    description: "Diseñá una guía de visualización completa (antes-durante-después) para un video que vas a usar esta semana.",
+                    objective: "Usar un video con estructura pedagógica completa, no solo \"ponerlo y ya\".",
+                    materials: ["Un video ya elegido", "Papel o formulario para la guía"],
+                    steps: ["Elegí un video para tu próxima clase.", "Antes: diseñá una pregunta de predicción.", "Durante: marcá 1-2 momentos para pausar y reflexionar.", "Después: escribí 2-3 preguntas que profundicen."],
+                    think: ["¿Qué pregunta de predicción genera más curiosidad antes de empezar?", "¿En qué momento del video conviene pausar?"],
+                    make: ["Una Guía de Visualización completa para un video real"],
+                    improve: ["Anotá si las pausas reflexivas cambiaron la atención de tus estudiantes"]
+                },
+                {
+                    id: 40,
+                    type: "simulation",
+                    title: "¿Pausás en el momento clave?",
+                    scenario: "Estás mostrando un video importante y llegás a un momento clave. Podrías seguir sin interrumpir o pausar 1 minuto para preguntar qué entendieron hasta ahí.",
+                    statement: "Vale la pena pausar el video, aunque interrumpa el flujo, para verificar comprensión en el momento clave.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Las pausas reflexivas en momentos clave son justo lo que distingue ver un video pasivamente de usarlo pedagógicamente — un minuto de pausa ahí vale más que terminar sin saber si entendieron el punto central.",
+                    leftOutcome: "Seguir sin pausar mantiene el flujo del video, pero pierde la oportunidad de verificar comprensión justo en el momento más importante."
+                },
+                {
+                    id: 41,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a agregar a tu próximo video en clase?",
+                    options: ["Una pregunta de predicción antes de empezar", "Una pausa reflexiva en el momento clave", "Preguntas de profundización después de verlo"]
                 }
             ]
         },
@@ -3678,6 +3736,35 @@ const allCourses = [
                     title: "🚀 Tu primer video en 5 pasos",
                     content: "Sigue este proceso para tu primera producción: (1) Elige un concepto pequeño que puedas explicar en 3 minutos. (2) Escribe 5 puntos clave en un papel. (3) Graba en un lugar tranquilo con luz natural de frente. (4) Revisa el audio y la imagen. Si está aceptable, no perfecciones más: publícalo. (5) Comparte con un colega de confianza para recibir retroalimentación antes de usarlo con estudiantes.",
                     extra: "El perfeccionismo es el mayor obstáculo para crear contenido. Tu primer video no tiene que ser perfecto, tiene que existir. Con cada video mejorarás naturalmente."
+                },
+                {
+                    id: 42,
+                    type: "project",
+                    title: "Graba tu primer video en 5 pasos",
+                    description: "Grabá tu primer video educativo siguiendo los 5 pasos de este módulo.",
+                    objective: "Tener un video propio grabado, priorizando audio e iluminación básica.",
+                    materials: ["Celular", "Un guión simple", "Un lugar con buena luz y silencio"],
+                    steps: ["Escribí un guión simple (no memorizado, solo puntos clave).", "Elegí un lugar con buena luz natural y silencio.", "Encuadrá la cámara a la altura de los ojos.", "Grabá siguiendo los 5 pasos del módulo, revisá el audio antes de publicar."],
+                    think: ["¿Qué te resultó más difícil — el guión, la grabación, o la edición?", "¿Cómo vas a manejar la privacidad si publicás el video?"],
+                    make: ["Tu primer video educativo propio"],
+                    improve: ["Anotá qué cambiarías del guión o la grabación la próxima vez"]
+                },
+                {
+                    id: 43,
+                    type: "simulation",
+                    title: "¿Publicás aunque no sea perfecto?",
+                    scenario: "Grabaste tu primer video pero no quedó perfecto — hay un ruido de fondo leve y te trabaste una vez. Estás por borrarlo y no publicar nada.",
+                    statement: "Vale la pena publicarlo igual, aunque no sea perfecto.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Un video imperfecto pero real y con contenido claro vale más para tus estudiantes que ningún video. El perfeccionismo en el primer intento suele ser la razón por la que muchos docentes nunca empiezan.",
+                    leftOutcome: "Borrar el video por imperfecciones menores antepone la perfección sobre el valor pedagógico real — tus estudiantes se benefician más de un video imperfecto pero disponible que de ninguno."
+                },
+                {
+                    id: 44,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer con tu próximo video?",
+                    options: ["Grabar mi primer video siguiendo los 5 pasos", "Publicarlo aunque no sea perfecto", "Mejorar el audio antes que la imagen"]
                 }
             ]
         },
@@ -3758,6 +3845,35 @@ const allCourses = [
                     title: "🏁 Tu plan de acción: primeros pasos",
                     content: "Para empezar a usar videos educativos de forma efectiva esta semana: (1) Identifica un tema de tu próxima clase y busca un video de menos de 6 minutos en YouTube. (2) Evalúalo con los criterios aprendidos en este curso. (3) Prepara 3 preguntas para discutir después del video. (4) Úsalo en clase con al menos una pausa reflexiva. (5) Reflexiona: ¿qué funcionó? ¿qué cambiarías? Así empieza la mejora continua.",
                     extra: "No esperes tener todo perfecto para empezar. Un video bien seleccionado con tres buenas preguntas al final ya transforma una clase. La práctica constante y la reflexión son lo que convierte a un docente en experto en ABV."
+                },
+                {
+                    id: 45,
+                    type: "project",
+                    title: "Diseña tu rúbrica para videos de estudiantes",
+                    description: "Si vas a pedirles a tus estudiantes que hagan un video, diseñá la rúbrica ANTES de asignarlo.",
+                    objective: "Tener una rúbrica clara para evaluar videos creados por estudiantes.",
+                    materials: ["Un tema donde tus estudiantes podrían crear un video"],
+                    steps: ["Elegí un tema donde un video de estudiantes tenga sentido.", "Definí 3-4 criterios (contenido, claridad, creatividad, duración).", "Compartila con los estudiantes ANTES de que graben.", "Aplicala a los videos que entreguen."],
+                    think: ["¿Qué criterio es más importante para tu materia — el contenido o la forma?", "¿Cómo vas a manejar la diversidad de calidad técnica entre estudiantes?"],
+                    make: ["Una rúbrica de video lista para compartir"],
+                    improve: ["Anotá si algún criterio generó confusión y ajustalo"]
+                },
+                {
+                    id: 46,
+                    type: "simulation",
+                    title: "¿Ofrecés alternativa a quien no tiene celular?",
+                    scenario: "Le pediste a tus estudiantes que graben un video como tarea, pero un estudiante no tiene celular ni acceso a uno en casa.",
+                    statement: "Vale la pena ofrecer una alternativa (grabar en la escuela, trabajar en pareja, o un formato sin video) en vez de que ese estudiante quede sin poder entregar.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Asumir que todos tienen acceso a un dispositivo para grabar excluye exactamente a quien más necesita que la escuela sea equitativa. Ofrecer una alternativa mantiene el objetivo de aprendizaje sin penalizar por una brecha de acceso.",
+                    leftOutcome: "No ofrecer alternativa penaliza a un estudiante por una brecha de acceso a tecnología que no depende de él — el objetivo de aprendizaje es lo que realmente importa evaluar."
+                },
+                {
+                    id: 47,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a cerrar este curso de ABV?",
+                    options: ["Diseñar una rúbrica de video antes de mi próxima asignación", "Organizar mi canal o lista de videos ya seleccionados", "Tener un plan alternativo para quien no tiene cómo grabar"]
                 }
             ]
         }
