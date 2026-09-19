@@ -30,7 +30,7 @@ const STATIC_COURSES = [
     { id:'abp',              title:'Aprendizaje Basado en Proyectos',      durationHours:4,  totalCards:105, modules:5, ruta:'steam20',  masterCert:true  },
     { id:'design-thinking',  title:'Design Thinking para Docentes',        durationHours:3,  totalCards:80, modules:4, ruta:'steam20',  masterCert:true  },
     { id:'evaluacion',       title:'Evaluación Formativa',                 durationHours:3,  totalCards:73, modules:4, ruta:'steam20',  masterCert:true  },
-    { id:'tipos-estudiantes',title:'Conoce a Quien Enseñas',               durationHours:5,  totalCards:60, modules:5, ruta:'steam20',  masterCert:true  },
+    { id:'tipos-estudiantes',title:'Conoce a Quien Enseñas',               durationHours:5,  totalCards:65, modules:5, ruta:'steam20',  masterCert:true  },
     { id:'storytelling',     title:'Storytelling para Docentes',           durationHours:4,  totalCards:50, modules:5, ruta:'steam20',      masterCert:false },
     { id:'creatividad',       title:'Despertando la Creatividad',              durationHours:4,  totalCards:50, modules:5, ruta:'creativo',     masterCert:true  },
     { id:'herramientas-tec',  title:'Herramientas Tecnológicas para Docentes', durationHours:3,  totalCards:45, modules:4, ruta:'creativo',     masterCert:true  },
