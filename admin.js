@@ -41,7 +41,7 @@ const STATIC_COURSES = [
     { id:'ia-fundamentos',    title:'Docente y la Inteligencia Artificial',        durationHours:4, totalCards:47, modules:4, ruta:'ia', masterCert:true  },
     { id:'ia-tiempo',         title:'IA para Ahorrar Tiempo',                      durationHours:3, totalCards:48, modules:4, ruta:'ia', masterCert:true  },
     { id:'ia-herramientas',   title:'Herramientas de IA Gratuitas para el Aula',   durationHours:3, totalCards:48, modules:4, ruta:'ia', masterCert:true  },
-    { id:'ia-inclusion',      title:'IA e Inclusión Educativa',                    durationHours:3, totalCards:18, modules:4, ruta:'ia', masterCert:true  },
+    { id:'ia-inclusion',      title:'IA e Inclusión Educativa',                    durationHours:3, totalCards:48, modules:4, ruta:'ia', masterCert:true  },
     { id:'ia-ciudadania',     title:'Ciudadanía Digital con IA',                   durationHours:3, totalCards:17, modules:4, ruta:'ia', masterCert:true  },
     { id:'manejo-conductas',  title:'Manejo de Conductas Desafiantes en el Aula',  durationHours:4, totalCards:31, modules:4, ruta:'convivencia', masterCert:true  },
     { id:'sel-docentes',      title:'Aprendizaje Socioemocional (SEL) para Docentes', durationHours:4, totalCards:26, modules:4, ruta:'convivencia', masterCert:true  },
