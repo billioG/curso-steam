@@ -26,10 +26,10 @@ const LEARNING_PATHS = [
 ];
 
 const STATIC_COURSES = [
-    { id:'steam',            title:'Metodología STEAM 2.0',               durationHours:5,  totalCards:119, modules:5, ruta:'steam20',  masterCert:true  },
-    { id:'abp',              title:'Aprendizaje Basado en Proyectos',      durationHours:4,  totalCards:95, modules:5, ruta:'steam20',  masterCert:true  },
-    { id:'design-thinking',  title:'Design Thinking para Docentes',        durationHours:3,  totalCards:72, modules:4, ruta:'steam20',  masterCert:true  },
-    { id:'evaluacion',       title:'Evaluación Formativa',                 durationHours:3,  totalCards:65, modules:4, ruta:'steam20',  masterCert:true  },
+    { id:'steam',            title:'Metodología STEAM 2.0',               durationHours:5,  totalCards:127, modules:5, ruta:'steam20',  masterCert:true  },
+    { id:'abp',              title:'Aprendizaje Basado en Proyectos',      durationHours:4,  totalCards:105, modules:5, ruta:'steam20',  masterCert:true  },
+    { id:'design-thinking',  title:'Design Thinking para Docentes',        durationHours:3,  totalCards:80, modules:4, ruta:'steam20',  masterCert:true  },
+    { id:'evaluacion',       title:'Evaluación Formativa',                 durationHours:3,  totalCards:73, modules:4, ruta:'steam20',  masterCert:true  },
     { id:'tipos-estudiantes',title:'Conoce a Quien Enseñas',               durationHours:5,  totalCards:60, modules:5, ruta:'steam20',  masterCert:true  },
     { id:'storytelling',     title:'Storytelling para Docentes',           durationHours:4,  totalCards:50, modules:5, ruta:'steam20',      masterCert:false },
     { id:'creatividad',       title:'Despertando la Creatividad',              durationHours:4,  totalCards:50, modules:5, ruta:'creativo',     masterCert:true  },
@@ -216,7 +216,7 @@ function getProgressPct(p, courseId='steam') {
     const done = new Set();
     (p.completed_cards || []).forEach(id => { if (_cardBelongsTo(courseId, id)) done.add(String(id)); });
     const total = COURSE_CARD_IDS[courseId]?.size
-        || STATIC_COURSES.find(c => c.id === courseId)?.totalCards || 119;
+        || STATIC_COURSES.find(c => c.id === courseId)?.totalCards || 127;
     return Math.min(100, Math.round((done.size / total) * 100));
 }
 
