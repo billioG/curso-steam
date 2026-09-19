@@ -6077,6 +6077,9 @@ function _renderCourseSelector() {
         const scores = progress?.dailyMissions?.examScores || {};
         const _legacySteam2 = progress?.dailyMissions?.examScore; // legacy single-score para steam
         const _getScore2 = id => id === 'steam' ? (scores[id] ?? _legacySteam2) : scores[id];
+        // Nivel del diagnóstico inicial (inicial/proceso/satisfactorio/destacado) — solo
+        // se usa para RECOMENDAR cursos (badge), nunca para bloquear ni desbloquear nada.
+        const _diagLevel = progress?.dailyMissions?.diagResult?.level;
 
         list.innerHTML = `
             <button onclick="_selectedPathId=null;_renderCourseSelector()"
@@ -6133,6 +6136,10 @@ function _renderCourseSelector() {
                             <div class="flex gap-2 flex-wrap">
                                 <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;max-width:100%;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;${clickable ? `background:${c.color}20;color:${c.color}` : 'background:#f1f5f9;color:#94a3b8'}">${statusBadge}</span>
                                 <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#f1f5f9;color:#64748b">${c.durationHours}h · ${c.totalCards} tarjetas</span>
+                                ${(clickable && !passed && _diagLevel && (c.recommendedLevels || []).includes(_diagLevel)) ? `
+                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#fef9c3;color:#a16207;display:inline-flex;align-items:center;gap:3px">
+                                    <span style="display:inline-flex;width:10px;height:10px">${ICONS?.star || '★'}</span>Recomendado para tu nivel
+                                </span>` : ''}
                             </div>
                             ${(clickable && !passed && coursePct > 0) ? `
                             <div style="margin-top:7px">
