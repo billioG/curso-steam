@@ -1135,7 +1135,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 4,
-    totalCards: 50,
+    totalCards: 65,
     modules: [
         {
             id: 1,
@@ -1231,6 +1231,35 @@ const allCourses = [
                     ],
                     correct: 1,
                     explanation: "El ciclo creativo comienza con la Preparación (acumular experiencias e información), sigue con la Incubación (procesamiento inconsciente), luego viene la Iluminación (la idea surge) y finalmente la Verificación (se evalúa y perfecciona la idea)."
+                },
+                {
+                    id: 51,
+                    type: "project",
+                    title: "Detecta un mito de la creatividad en tu propia práctica",
+                    description: "Revisá tu semana de clases pasada e identificá si actuaste bajo alguno de los mitos de creatividad que viste.",
+                    objective: "Reconocer un mito propio y reemplazarlo por una acción concreta esta semana.",
+                    materials: ["Tu planificación de la semana pasada"],
+                    steps: ["Repasá los mitos de creatividad de este módulo.", "Identificá cuál mito aplicaste sin darte cuenta (ej: \"solo los artistas son creativos\", \"la creatividad no se puede enseñar\").", "Elegí UNA actividad de tu próxima semana para hacerla de forma más creativa.", "Anotá qué cambiarías exactamente."],
+                    think: ["¿Qué mito de creatividad te resultó más incómodo reconocer en vos mismo?", "¿Cómo se lo transmitís sin querer a tus estudiantes?"],
+                    make: ["Una actividad de tu planificación rediseñada sin ese mito"],
+                    improve: ["Después de probarla, anotá qué cambió en la participación de tus estudiantes"]
+                },
+                {
+                    id: 52,
+                    type: "simulation",
+                    title: "¿Dejás que uno piense por todos?",
+                    scenario: "En una actividad grupal, un estudiante muy creativo domina las ideas del equipo y los demás solo asienten. El producto final es bueno, pero solo una persona pensó.",
+                    statement: "Vale la pena intervenir para que otros del equipo propongan ideas, aunque eso baje la calidad inicial de las propuestas.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** La creatividad colectiva no es que el más creativo piense por todos — es que TODOS practiquen pensar. Si dejás que uno domine, los demás pierden justo la práctica que la actividad buscaba darles, aunque el producto final se vea mejor a corto plazo.",
+                    leftOutcome: "Dejar que el estudiante más creativo domine da un mejor producto inmediato, pero le quita a los demás la práctica de generar ideas propias — exactamente la habilidad que una actividad creativa grupal debería desarrollar en todos, no solo en uno."
+                },
+                {
+                    id: 53,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer distinto esta semana?",
+                    options: ["Rediseñar una actividad para sacarle un mito de creatividad", "Asegurar que todos en un grupo propongan al menos una idea", "Explicarles a mis estudiantes que la creatividad se entrena, no es un don"]
                 }
             ]
         },
@@ -1328,6 +1357,35 @@ const allCourses = [
                     ],
                     correct: 1,
                     explanation: "La incubación es la fase en que dejamos de esforzarnos conscientemente en un problema y el cerebro sigue procesando en segundo plano. Ocurre durante descansos, paseos o el sueño, y con frecuencia produce los 'momentos eureka'."
+                },
+                {
+                    id: 54,
+                    type: "project",
+                    title: "Aplica pensamiento divergente y convergente",
+                    description: "Diseñá un momento de tu próxima clase que use primero pensamiento divergente (muchas ideas) y después convergente (elegir una).",
+                    objective: "Practicar la secuencia divergente→convergente con tus estudiantes, no solo entenderla en teoría.",
+                    materials: ["Un tema de tu planificación de esta semana"],
+                    steps: ["Elegí un problema o pregunta de tu tema.", "Dales 5 minutos para generar TODAS las ideas posibles, sin juzgar ninguna (divergente).", "Después, dales 5 minutos para elegir y justificar la mejor idea (convergente).", "Observá si alguno se salta directo a converger sin divergir primero."],
+                    think: ["¿Tus estudiantes suelen saltar directo a \"la respuesta correcta\" sin explorar otras?", "¿Qué pasa si les das más tiempo para divergir del que te sientas cómodo dando?"],
+                    make: ["Un momento de clase con las 2 fases claramente separadas"],
+                    improve: ["Anotá si separar las fases cambió la cantidad o calidad de ideas"]
+                },
+                {
+                    id: 55,
+                    type: "simulation",
+                    title: "¿Pausa o pista fuerte?",
+                    scenario: "Tus estudiantes llevan 20 minutos atascados en un problema creativo sin avanzar. Sentís la presión de darles la respuesta o una pista fuerte para no \"perder tiempo de clase\".",
+                    statement: "Vale la pena hacer una pausa de 5 minutos (cambiar de actividad) en vez de intervenir con una pista fuerte.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** La incubación —alejarse del problema y volver después— es un mecanismo real del cerebro creativo, no una pérdida de tiempo. Una pausa de 5 minutos con otra actividad suele generar más avances que 20 minutos más de presión directa sobre el mismo problema.",
+                    leftOutcome: "Dar una pista fuerte resuelve el atasco inmediato, pero les quita la experiencia de incubación — dejar reposar el problema y volver con la mente más fresca, que es exactamente cómo funciona la creatividad real."
+                },
+                {
+                    id: 56,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a probar esta semana?",
+                    options: ["Separar un momento de pensamiento divergente y uno convergente", "Dar una pausa de incubación cuando un grupo se atasca, en vez de una pista", "Incluir un momento de juego libre antes de una tarea creativa"]
                 }
             ]
         },
@@ -1425,6 +1483,35 @@ const allCourses = [
                     ],
                     correct: 1,
                     explanation: "Las restricciones enfocan la mente y la obligan a ser ingeniosa dentro de límites específicos. Paradójicamente, tener recursos o posibilidades ilimitadas puede inhibir la creatividad, mientras que las restricciones claras la activan."
+                },
+                {
+                    id: 57,
+                    type: "project",
+                    title: "Elige una técnica y aplícala a un problema real",
+                    description: "De todas las técnicas de este módulo, elegí UNA y usala esta semana con un problema real (no un ejercicio inventado).",
+                    objective: "Tener una experiencia real de aplicar una técnica creativa, no solo conocerla en teoría.",
+                    materials: ["Un problema real de tu aula o planificación", "Papel o pizarra según la técnica elegida"],
+                    steps: ["Elegí la técnica que más te llamó la atención (SCAMPER, mapas mentales, pensamiento lateral, etc.).", "Aplicala a un problema real: ¿cómo motivo a un grupo desanimado? ¿cómo enseño X tema de forma distinta?", "Anotá al menos 3 ideas que te dio la técnica.", "Elegí una para probar esta semana."],
+                    think: ["¿Por qué elegiste esa técnica y no otra?", "¿Qué restricción (tiempo, materiales) podés usar a tu favor, en vez de en contra?"],
+                    make: ["3 o más ideas generadas con la técnica elegida"],
+                    improve: ["Anotá si la técnica te resultó natural o forzada — probá otra la próxima vez si fue forzada"]
+                },
+                {
+                    id: 58,
+                    type: "simulation",
+                    title: "¿Cancelás la actividad por falta de recursos?",
+                    scenario: "Querés hacer una actividad creativa pero solo tenés 15 minutos y ningún material especial. Estás por cancelarla y hacer una clase expositiva en su lugar.",
+                    statement: "Vale la pena hacer la actividad creativa igual, usando la restricción de tiempo y materiales como parte del reto.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** Las restricciones (poco tiempo, pocos materiales) no son un obstáculo para la creatividad — son un motor que la activa. Plantear el reto como \"¿qué pueden lograr en 15 minutos con lo que hay?\" suele generar más creatividad que dar tiempo y recursos ilimitados.",
+                    leftOutcome: "Cancelar la actividad por falta de tiempo o materiales asume que la creatividad necesita condiciones ideales — pero la restricción bien planteada es justo lo que la activa. Vale la pena intentarlo con lo que hay."
+                },
+                {
+                    id: 59,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué técnica vas a probar esta semana?",
+                    options: ["SCAMPER sobre una actividad que ya uso", "Un mapa mental para explicar un tema complejo", "Plantear un reto creativo con una restricción de tiempo o materiales"]
                 }
             ]
         },
@@ -1522,6 +1609,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "Los portafolios documentan el proceso creativo a lo largo del tiempo: muestran borradores, errores, revisiones y aprendizajes. Esto los hace mucho más ricos para evaluar la creatividad que un examen que solo captura un momento final."
+                },
+                {
+                    id: 60,
+                    type: "project",
+                    title: "Rediseña un aspecto de tu ambiente de aula",
+                    description: "Elegí UN aspecto de tu aula (espacio físico, tipo de preguntas, manejo del error) y cambialo esta semana.",
+                    objective: "Hacer un cambio concreto y observable en tu ambiente de clase, no solo leer sobre ambientes creativos.",
+                    materials: ["Tu aula tal como está hoy"],
+                    steps: ["Elegí: espacio físico, tipo de preguntas, o manejo del error.", "Si es espacio: reorganizá algo. Si es preguntas: convertí 3 preguntas cerradas en abiertas. Si es error: definí un ritual para celebrarlo como aprendizaje.", "Aplicalo esta semana.", "Observá una reacción distinta en tus estudiantes."],
+                    think: ["¿Cuál de los 3 aspectos es el más fácil de cambiar en tu contexto real?", "¿Qué reacción esperás de tus estudiantes al principio?"],
+                    make: ["Un cambio concreto implementado en tu aula"],
+                    improve: ["Anotá qué reacción tuviste de tus estudiantes — ¿fue la esperada?"]
+                },
+                {
+                    id: 61,
+                    type: "simulation",
+                    title: "¿Detenés la clase por una risa?",
+                    scenario: "Un estudiante comete un error creativo frente a toda la clase (una idea que no funciona) y varios compañeros se ríen. Tenés que decidir qué hacer en ese momento.",
+                    statement: "Vale la pena detener la clase un momento para reencuadrar el error como parte del proceso, aunque eso \"rompa el ritmo\" de la clase.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** Ese momento es exactamente donde se construye (o se destruye) un ambiente creativo seguro. Detenerse 30 segundos para decir \"eso es exactamente lo que se supone que pase cuando probamos algo nuevo\" vale más que mantener el ritmo a costa de que ese estudiante no vuelva a arriesgarse.",
+                    leftOutcome: "Seguir de largo mantiene el ritmo de la clase, pero deja pasar el momento más importante para construir un ambiente donde arriesgarse esté bien — varios estudiantes aprenden, sin que se los digas, que es mejor no intentar nada nuevo frente a los demás."
+                },
+                {
+                    id: 62,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a cambiar en tu ambiente de aula?",
+                    options: ["Reorganizar el espacio físico para favorecer el trabajo creativo", "Convertir preguntas cerradas en preguntas abiertas", "Crear un ritual para celebrar el error como aprendizaje"]
                 }
             ]
         },
@@ -1619,6 +1735,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "Este curso sostiene que la creatividad es una habilidad universal, cultivable, que va mucho más allá del arte. Cuando un docente la práctica conscientemente —usando técnicas, creando ambientes seguros y modelándola con su propia actitud— transforma profundamente la experiencia de aprendizaje de sus estudiantes."
+                },
+                {
+                    id: 63,
+                    type: "project",
+                    title: "Tu plan de creatividad docente",
+                    description: "Cerrá el curso con un plan concreto de cómo vas a seguir siendo un docente más creativo, no solo con lo que aprendiste esta semana.",
+                    objective: "Tener un plan simple y sostenible para seguir desarrollando tu creatividad docente.",
+                    materials: ["Todo lo que viste en el curso"],
+                    steps: ["Elegí UNA técnica o práctica de todo el curso que más te sirvió.", "Definí cuándo y cómo la vas a seguir usando.", "Decidí si vas a empezar un diario creativo docente, aunque sea 1 línea por día.", "Identificá con quién de tus colegas podrías compartir esto."],
+                    think: ["¿Qué te da más miedo al ser un docente más creativo frente a tus estudiantes?", "¿Cómo vas a sostener esto cuando la rutina vuelva a apretar?"],
+                    make: ["Tu plan de creatividad docente, en una frase concreta y accionable"],
+                    improve: ["En un mes, revisá si seguiste con el plan o si necesita ajustarse"]
+                },
+                {
+                    id: 64,
+                    type: "simulation",
+                    title: "¿Te animás aunque salga mal?",
+                    scenario: "Querés probar una actividad creativa nueva frente a tus estudiantes, pero te preocupa que no funcione y quedar \"en ridículo\" frente a ellos.",
+                    statement: "Vale la pena intentarlo igual, aunque exista el riesgo de que no salga bien.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** Un docente que se anima a intentar algo nuevo frente a sus estudiantes —y que si no sale bien, lo reconoce con humor y sigue— es exactamente el modelo de creatividad que este módulo describe. Los estudiantes aprenden más de verte intentar y ajustar que de verte siempre seguro y perfecto.",
+                    leftOutcome: "Evitar el riesgo protege tu imagen a corto plazo, pero les enseña a tus estudiantes que solo vale la pena intentar cosas cuando el éxito está garantizado — exactamente lo opuesto de lo que un docente creativo modela."
+                },
+                {
+                    id: 65,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a seguir siendo un docente más creativo?",
+                    options: ["Empezar un diario creativo docente, aunque sea 1 línea al día", "Usar la técnica que más me sirvió del curso, cada semana", "Compartir esto con un colega para formar una pequeña comunidad de práctica"]
                 }
             ]
         }
