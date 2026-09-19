@@ -2896,7 +2896,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 3,
-    totalCards: 40,
+    totalCards: 52,
     modules: [
 
         // ══════════════════════════════════════════════════════════════════════
@@ -2989,6 +2989,35 @@ const allCourses = [
                     title: "🚀 ¿Por dónde empezar? El primer flip",
                     content: "Para tu primer flip: elige un tema que ya explicas bien (no uno nuevo para ti). Graba un video de 8 minutos con tu celular. Compártelo por WhatsApp el día anterior a la clase. Diseña una actividad de 30 minutos para hacer en clase. Evalúa qué pasó y ajusta. ¡Ya hiciste tu primer aula invertida!",
                     extra: "El primer video no tiene que ser perfecto. Un video auténtico con el docente real, aunque sea informal, genera más conexión que una producción elaborada. Tus estudiantes quieren escucharte a TI explicar, no a un desconocido en alta definición."
+                },
+                {
+                    id: 41,
+                    type: "project",
+                    title: "Diseña tu primer flip",
+                    description: "Elegí un tema simple de tu planificación y diseñá tu primera clase invertida: qué van a ver en casa, qué van a hacer en clase.",
+                    objective: "Tener un plan concreto para tu primera clase invertida.",
+                    materials: ["Un tema simple de tu planificación", "Algo que puedan ver o leer en casa"],
+                    steps: ["Elegí un tema simple, no el más complejo del curso.", "Decidí qué van a ver o leer en casa — no tiene que ser tu propio video la primera vez.", "Diseñá una actividad práctica de 20-30 min para el tiempo de clase.", "Anotá cómo vas a verificar que sí vieron el contenido antes."],
+                    think: ["¿Por qué elegiste ese tema y no otro para tu primer intento?", "¿Qué harás con quien no vio el contenido en casa?"],
+                    make: ["Un plan de flip completo para una clase"],
+                    improve: ["Después de aplicarlo, anotá qué parte del tiempo de clase aprovechaste mejor"]
+                },
+                {
+                    id: 42,
+                    type: "simulation",
+                    title: "¿Empezás simple o con lo más ambicioso?",
+                    scenario: "Estás emocionado con el aula invertida y querés aplicarla a tu tema más complejo del año, con tu propio video de 20 minutos, desde la primera semana.",
+                    statement: "Vale la pena empezar con un tema simple y un contenido corto, no con el más ambicioso.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Empezar con el tema más complejo y un video largo aumenta el riesgo de que salga mal y de abandonar el método en el primer intento. Un primer flip simple y corto te deja aprender el proceso con menos en juego.",
+                    leftOutcome: "Empezar directo con lo más ambicioso es tentador por la emoción inicial, pero aumenta mucho el riesgo de frustración en el primer intento — mejor aprender el proceso con algo simple antes."
+                },
+                {
+                    id: 43,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Con qué vas a hacer tu primer flip?",
+                    options: ["Un tema simple de mi planificación, con contenido ya existente", "Mi propio video corto de menos de 10 minutos", "Voy a decidir primero cómo verificar que vieron el contenido"]
                 }
             ]
         },
@@ -3083,6 +3112,35 @@ const allCourses = [
                     title: "🗂️ Organiza tu biblioteca de videos",
                     content: "Con el tiempo, acumularás videos de tus mejores explicaciones. Organízalos en playlists de YouTube por unidad o tema. Ese banco de videos es invaluable: lo puedes reutilizar año tras año, compartir con colegas, y los estudiantes lo usan para repasar antes de exámenes. Es una inversión que crece con el tiempo.",
                     extra: "Tip de productividad: graba dos o tres videos el mismo día que te sientes inspirado. Así construyes tu biblioteca más rápido. Muchos docentes dedican los sábados en la mañana a grabar los videos de la semana siguiente."
+                },
+                {
+                    id: 44,
+                    type: "project",
+                    title: "Graba tu primer video de 10 minutos",
+                    description: "Grabá tu primer video educativo, siguiendo la regla de los 10 minutos, usando solo tu celular.",
+                    objective: "Tener un video real grabado y compartido, no solo saber la teoría de cómo hacerlo.",
+                    materials: ["Celular", "Un tema de tu planificación"],
+                    steps: ["Elegí un tema puntual, no un tema completo del libro.", "Decidí: ¿guion o improvisación? Elegí lo que te sea más natural.", "Grabá en menos de 10 minutos — si te pasás, cortá el tema en dos videos.", "Compartilo con tus estudiantes y agregales 1-2 preguntas para verificar que lo vieron."],
+                    think: ["¿Qué te da más miedo de grabarte — la voz, la cámara, o equivocarte?", "¿Cómo vas a organizar este video para encontrarlo después?"],
+                    make: ["Un video de menos de 10 minutos, compartido con preguntas integradas"],
+                    improve: ["Anotá qué cambiarías del audio o la imagen para el próximo video"]
+                },
+                {
+                    id: 45,
+                    type: "simulation",
+                    title: "¿Priorizás el audio o la imagen?",
+                    scenario: "Tenés poco tiempo para grabar tu video y tenés que elegir entre invertir ese tiempo en mejorar la iluminación o en grabar el audio en un lugar silencioso con buena claridad.",
+                    statement: "Vale la pena priorizar un buen audio claro sobre una imagen perfecta.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Los estudiantes toleran una imagen simple mucho mejor que un audio con eco, ruido de fondo o volumen bajo — el audio malo hace que abandonen el video, la imagen simple no.",
+                    leftOutcome: "Priorizar la imagen sobre el audio es un error común — los estudiantes abandonan un video con audio malo mucho más rápido que uno con imagen simple pero audio claro."
+                },
+                {
+                    id: 46,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a grabar esta semana?",
+                    options: ["Mi primer video de menos de 10 minutos", "Un video con preguntas integradas para verificar comprensión", "Voy a organizar mi biblioteca de videos ya grabados"]
                 }
             ]
         },
@@ -3177,6 +3235,35 @@ const allCourses = [
                     title: "⏰ Planificación del tiempo en clase invertida",
                     content: "Estructura sugerida para un período de 45 minutos: 5 min de entrada de clase (verificar video), 5 min de aclaración de dudas comunes, 30 min de actividad principal (individual o en equipo), 5 min de cierre y reflexión. Esta distribución maximiza el tiempo activo de los estudiantes.",
                     extra: "El cierre de clase es tan importante como la entrada. En los últimos 5 minutos pregunta: '¿Qué aprendiste hoy? ¿Qué sigues sin entender? ¿Dónde usarías esto?' Este metacognición mejora la transferencia del aprendizaje a largo plazo."
+                },
+                {
+                    id: 47,
+                    type: "project",
+                    title: "Diseña tu \"entrada de clase\" y actividad presencial",
+                    description: "Diseñá cómo vas a verificar que vieron el video Y qué van a hacer con el tiempo de clase que ganaste.",
+                    objective: "Aprovechar el tiempo de clase presencial de forma distinta a solo explicar de nuevo lo del video.",
+                    materials: ["El video o contenido que asignaste para casa"],
+                    steps: ["Diseñá una \"entrada de clase\" corta (3-5 min) para verificar quién vio el contenido.", "Elegí UNA actividad presencial: debate socrático, estaciones, o proyecto.", "Planificá el tiempo: ¿cuánto para la entrada, cuánto para la actividad?", "Aplicalo y observá si el tiempo de clase se sintió distinto al de siempre."],
+                    think: ["¿Qué actividad presencial aprovecha mejor que ya vieron el contenido antes?", "¿Cómo vas a diferenciar para quien no vio el video?"],
+                    make: ["Un plan de clase presencial con entrada más actividad"],
+                    improve: ["Anotá si el tiempo de clase se sintió más productivo que una clase tradicional"]
+                },
+                {
+                    id: 48,
+                    type: "simulation",
+                    title: "¿Qué hacés con quien no vio el video?",
+                    scenario: "Llegás a tu clase invertida y 5 de 30 estudiantes no vieron el video asignado. El resto sí está listo para la actividad presencial planeada.",
+                    statement: "Vale la pena seguir adelante con la actividad para los 25 que sí vieron el video, dándoles a los 5 una alternativa.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Detener a toda la clase para esperar a los 5 desperdicia el tiempo ganado de los 25 que sí cumplieron — dándoles una alternativa a los 5 resuelve la situación sin penalizar a la mayoría.",
+                    leftOutcome: "Detener a toda la clase para reexplicar por los 5 que no vieron el video termina replicando la clase tradicional para todos — y le quita a los 25 que sí cumplieron el beneficio del tiempo que ganaron."
+                },
+                {
+                    id: 49,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a diseñar para tu próxima clase invertida?",
+                    options: ["Una entrada de clase de 3-5 minutos para verificar comprensión", "Una actividad presencial de debate o estaciones", "Un plan B para quien no vio el contenido antes de clase"]
                 }
             ]
         },
@@ -3278,6 +3365,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "La señal más valiosa del aula invertida exitosa es que los estudiantes llegan con preguntas específicas (indicio de que vieron y procesaron el video) y que el tiempo de clase es activo y colaborativo. Eso significa que la inversión está funcionando: el conocimiento entra antes y la clase se usa para profundizar."
+                },
+                {
+                    id: 50,
+                    type: "project",
+                    title: "Diseña tu plan de escalamiento gradual",
+                    description: "Planificá cómo vas a seguir usando el aula invertida las próximas 4 semanas, resolviendo tu mayor obstáculo real.",
+                    objective: "Tener un plan realista para sostener el aula invertida, no abandonarla después del primer intento.",
+                    materials: ["Tu experiencia de los módulos anteriores"],
+                    steps: ["Identificá tu mayor obstáculo real: ¿conectividad, tiempo para grabar, resistencia de padres?", "Elegí UNA solución concreta de este módulo para ese obstáculo.", "Planificá 1 flip por semana durante 4 semanas, no todos los temas a la vez.", "Decidí cómo vas a comunicar el método a padres o dirección si hace falta."],
+                    think: ["¿Cuál de tus obstáculos es realmente resoluble y cuál necesita más tiempo?", "¿Con quién de tu escuela podrías compartir esto para no hacerlo solo?"],
+                    make: ["Un plan de 4 semanas de aula invertida gradual"],
+                    improve: ["Al final del mes, revisá si el obstáculo que elegiste mejoró"]
+                },
+                {
+                    id: 51,
+                    type: "simulation",
+                    title: "¿Abandonás por falta de tiempo para grabar?",
+                    scenario: "Sentís que no tenés tiempo para grabar tus propios videos cada semana y estás por abandonar el aula invertida completamente.",
+                    statement: "Vale la pena usar videos ya existentes de otros (curados, no propios) en vez de abandonar el método por falta de tiempo para grabar.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. El aula invertida no exige que grabés tu propio contenido siempre — usar un video curado de calidad ya existente logra el mismo objetivo pedagógico sin el costo de tiempo de grabar.",
+                    leftOutcome: "Abandonar el aula invertida completa por no tener tiempo de grabar descarta el método entero por un problema que tiene solución simple: usar contenido curado de otros."
+                },
+                {
+                    id: 52,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a sostener el aula invertida?",
+                    options: ["Un plan de 4 semanas, un flip a la vez", "Usar videos curados de otros en vez de grabar todo yo", "Compartir el método con un colega o la dirección"]
                 }
             ]
         }
