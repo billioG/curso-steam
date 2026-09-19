@@ -46,7 +46,7 @@ const STATIC_COURSES = [
     { id:'manejo-conductas',  title:'Manejo de Conductas Desafiantes en el Aula',  durationHours:4, totalCards:48, modules:4, ruta:'convivencia', masterCert:true  },
     { id:'sel-docentes',      title:'Aprendizaje Socioemocional (SEL) para Docentes', durationHours:4, totalCards:48, modules:4, ruta:'convivencia', masterCert:true  },
     { id:'comunicacion-asertiva', title:'Comunicación Asertiva y Resolución de Conflictos', durationHours:4, totalCards:48, modules:4, ruta:'convivencia', masterCert:true  },
-    { id:'disciplina-positiva',   title:'Disciplina Positiva y Motivación Intrínseca', durationHours:4, totalCards:24, modules:4, ruta:'convivencia', masterCert:true  },
+    { id:'disciplina-positiva',   title:'Disciplina Positiva y Motivación Intrínseca', durationHours:4, totalCards:48, modules:4, ruta:'convivencia', masterCert:true  },
     { id:'bienestar-docente',     title:'Bienestar Docente: Prevención del Desgaste',  durationHours:3, totalCards:24, modules:4, ruta:'convivencia', masterCert:true  },
     { id:'educacion-inclusiva',   title:'Educación Inclusiva y Necesidades Educativas Especiales', durationHours:5, totalCards:27, modules:5, ruta:'inclusion', masterCert:false },
     { id:'tea-profundidad',       title:'TEA en el Aula: Estrategias Avanzadas',        durationHours:4, totalCards:20, modules:4, ruta:'inclusion', masterCert:false },
