@@ -2380,7 +2380,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 3,
-    totalCards: 40,
+    totalCards: 52,
     modules: [
 
         // ══════════════════════════════════════════════════════════════════════
@@ -2473,6 +2473,35 @@ const allCourses = [
                     title: "🚀 El rol del docente en el m-learning",
                     content: "En el m-learning, el docente deja de ser el único transmisor del conocimiento y se convierte en curador y guía. Tu rol es elegir las mejores apps, diseñar las actividades, establecer normas de uso y acompañar el proceso. El celular es la herramienta; tú sigues siendo el corazón del aprendizaje.",
                     extra: "Cita para reflexionar: 'La tecnología no reemplaza al maestro, pero el maestro que usa tecnología puede reemplazar al que no la usa.' — Adaptación del principio de Prensky."
+                },
+                {
+                    id: 41,
+                    type: "project",
+                    title: "Diseña tu primera actividad de microaprendizaje",
+                    description: "Diseñá una actividad de 5 minutos usando el celular, aprovechando el microaprendizaje.",
+                    objective: "Tener una actividad móvil de 5 minutos lista para usar.",
+                    materials: ["Un tema de tu planificación", "Celulares de los estudiantes"],
+                    steps: ["Elegí un contenido puntual (un dato, una fórmula, una fecha).", "Diseñá una actividad de máximo 5 minutos con el celular.", "Probala en tu próxima clase.", "Observá si cambia la actitud de \"guarda el celular\" a \"saca el celular\"."],
+                    think: ["¿Qué contenido tuyo se presta para 5 minutos, no para una clase entera?", "¿Cómo evitás que se distraigan con otra cosa en el celular?"],
+                    make: ["Una actividad móvil de 5 minutos"],
+                    improve: ["Anotá si la actitud del grupo cambió al usar el celular con propósito"]
+                },
+                {
+                    id: 42,
+                    type: "simulation",
+                    title: "¿Preguntás antes de pedir que lo guarde?",
+                    scenario: "Ves a un estudiante con el celular en la mano durante la clase y tu primer instinto es pedirle que lo guarde, aunque no sabés para qué lo está usando.",
+                    statement: "Vale la pena preguntar primero para qué lo usa antes de pedirle que lo guarde.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. El reflejo de \"guarda el celular\" asume mal uso automático, pero el m-learning parte de la idea contraria: el celular puede ser una herramienta si tiene propósito. Preguntar primero te da información real y modela el cambio cultural del \"guarda\" al \"saca con propósito\".",
+                    leftOutcome: "Pedir que guarde el celular sin preguntar es el reflejo tradicional, pero asume mal uso sin verificar — y refuerza la idea de que el celular siempre es una distracción, nunca una herramienta."
+                },
+                {
+                    id: 43,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer con el celular en tu próxima clase?",
+                    options: ["Diseñar una actividad de microaprendizaje de 5 minutos", "Preguntar antes de pedir que lo guarden", "Explicarles cuándo SÍ pueden usarlo y para qué"]
                 }
             ]
         },
@@ -2567,6 +2596,35 @@ const allCourses = [
                     title: "🗺️ Google Maps y Earth: geografía viva",
                     content: "Google Maps y Google Earth son apps gratuitas que transforman la geografía en una experiencia interactiva. Tus estudiantes pueden explorar departamentos de Guatemala, ver imágenes satelitales de volcanes, ríos y comunidades, o medir distancias reales. Sin salir del aula, viajan a cualquier lugar del mundo.",
                     extra: "Actividad: pide a tus estudiantes que localicen su municipio en Google Earth y describan dos características geográficas que ven. Es una actividad concreta, visual y sin costo."
+                },
+                {
+                    id: 44,
+                    type: "project",
+                    title: "Prueba una app nueva con un criterio claro",
+                    description: "Elegí una app educativa de este módulo que nunca usaste y probala con un criterio de selección claro.",
+                    objective: "Evaluar si una app realmente sirve para tu contexto, no solo si es popular.",
+                    materials: ["Celular con la app instalada", "Un tema de tu planificación"],
+                    steps: ["Elegí una app (Duolingo, Khan Academy, YouTube curado, WhatsApp, Forms).", "Aplicá los criterios de selección: ¿funciona sin buena conexión? ¿es gratis? ¿es fácil de usar?", "Probala con un grupo pequeño primero.", "Decidí si la vas a seguir usando."],
+                    think: ["¿Qué criterio de selección es el más importante en tu contexto real?", "¿La app reemplaza algo que ya hacías o agrega algo nuevo?"],
+                    make: ["Una app probada con un grupo real"],
+                    improve: ["Anotá si la conectividad de tu escuela permitió usarla bien"]
+                },
+                {
+                    id: 45,
+                    type: "simulation",
+                    title: "¿Usás WhatsApp con tus estudiantes?",
+                    scenario: "Pensás usar un grupo de WhatsApp para enviar tareas y recordatorios a tus estudiantes, pero te preocupa que se vuelva un canal de mensajes fuera de horario o mal uso.",
+                    statement: "Vale la pena usar WhatsApp igual, estableciendo reglas claras de horario y uso desde el principio.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. WhatsApp es una de las herramientas más accesibles en el contexto guatemalteco y el riesgo de mal uso se maneja con reglas claras (horario de atención, qué se comparte), no evitando la herramienta por completo.",
+                    leftOutcome: "Evitar WhatsApp por miedo al mal uso descarta la herramienta más accesible que tenés disponible. El riesgo real se resuelve con reglas claras desde el principio."
+                },
+                {
+                    id: 46,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué app vas a incorporar esta semana?",
+                    options: ["Una app de las que vimos, con un grupo pequeño primero", "WhatsApp con reglas claras de horario y uso", "YouTube curado — una lista de videos que ya revisé yo"]
                 }
             ]
         },
@@ -2661,6 +2719,35 @@ const allCourses = [
                     title: "📋 Plantilla de actividad móvil",
                     content: "Toda actividad de m-learning bien diseñada responde estas preguntas: ¿Qué aprenderán? (objetivo), ¿Qué harán con el celular? (tarea), ¿Cuánto tiempo tienen? (duración), ¿Cómo sabrás que aprendieron? (evaluación), ¿Qué pasa si no tienen internet? (plan B). Siempre diseña pensando en el plan B.",
                     extra: "El plan B es clave en Guatemala: si un estudiante no tiene datos ese día, ¿puede hacer la actividad de otra manera? Diseña actividades que tengan versión digital Y versión análoga, para no excluir a nadie."
+                },
+                {
+                    id: 47,
+                    type: "project",
+                    title: "Diseña tu actividad con la Plantilla de actividad móvil",
+                    description: "Usá la Plantilla de actividad móvil de este módulo para diseñar una actividad real con tus estudiantes.",
+                    objective: "Tener una actividad móvil completa, no solo conocer las herramientas por separado.",
+                    materials: ["La plantilla de actividad móvil (tarjeta anterior)", "Celulares de los estudiantes"],
+                    steps: ["Elegí un formato: microvideo, podcast, cacería de pistas, o evidencia fotográfica.", "Completá la plantilla con tu tema real.", "Aplicala con tus estudiantes.", "Recolectá la evidencia que produjeron."],
+                    think: ["¿Qué formato se ajusta mejor a tu tema — grabar, fotografiar, o buscar?", "¿Cómo vas a evaluar lo que produzcan?"],
+                    make: ["Una actividad móvil completa aplicada con evidencia real"],
+                    improve: ["Anotá qué parte de la plantilla tuviste que ajustar a tu contexto"]
+                },
+                {
+                    id: 48,
+                    type: "simulation",
+                    title: "¿Ya es una mejora significativa?",
+                    scenario: "Vas a pedirles a tus estudiantes que tomen una foto de su tarea y la envíen por WhatsApp, en vez de entregarla en papel.",
+                    statement: "Tomar la foto y enviarla por WhatsApp es apenas el nivel más básico (Sustitución) del modelo SAMR, aunque parezca \"usar tecnología\".",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Cambiar papel por foto es Sustitución pura — la tarea es idéntica, solo cambió el medio. No está mal como punto de partida, pero conviene apuntar a niveles más altos: pedir un video explicando el proceso, o compartir el trabajo con una audiencia real.",
+                    leftOutcome: "Es tentador sentir que cualquier uso de celular ya es \"innovador\", pero fotografiar y enviar por WhatsApp sin cambiar la tarea en sí es apenas Sustitución en el modelo SAMR — el nivel más bajo. Vale la pena apuntar más alto."
+                },
+                {
+                    id: 49,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué formato móvil vas a probar?",
+                    options: ["Un microvideo o podcast corto sobre mi tema", "Una cacería de pistas con el celular", "Subir mi actividad un nivel en el modelo SAMR"]
                 }
             ]
         },
@@ -2762,6 +2849,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "El éxito del m-learning se mide en aprendizaje, no en tecnología. La cantidad de apps o la velocidad de internet son medios, no fines. Lo que importa es si los estudiantes comprenden mejor y participan más activamente en su proceso educativo."
+                },
+                {
+                    id: 50,
+                    type: "project",
+                    title: "Diseña tu plan de conectividad limitada",
+                    description: "Diseñá una versión de tu actividad móvil favorita que funcione SIN conexión a internet o con datos muy limitados.",
+                    objective: "Que tu actividad móvil no excluya a estudiantes con poca o ninguna conectividad.",
+                    materials: ["Una actividad móvil que ya diseñaste"],
+                    steps: ["Tomá una actividad móvil de este curso.", "Preguntate: ¿qué pasa si un estudiante no tiene datos o buen celular?", "Diseñá una alternativa: función sin conexión, o trabajo en pareja con quien sí tiene.", "Aplicala asegurando que nadie quede fuera."],
+                    think: ["¿Cuántos de tus estudiantes tienen conectividad real y confiable?", "¿Cómo evitás que la brecha digital se vuelva una brecha de aprendizaje?"],
+                    make: ["Una versión de tu actividad accesible sin buena conectividad"],
+                    improve: ["Anotá cómo resolviste la inclusión de quienes no tienen celular propio"]
+                },
+                {
+                    id: 51,
+                    type: "simulation",
+                    title: "¿Rediseñás o asumís que todos tienen celular?",
+                    scenario: "Vas a pedir una tarea que requiere celular con internet, pero sabés que 3 de tus 30 estudiantes no tienen acceso a uno en casa.",
+                    statement: "Vale la pena rediseñar la tarea para que también se pueda hacer sin celular propio, en vez de asumir que todos tienen acceso.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Asumir que \"todos tienen celular\" cuando 3 de 30 no lo tienen convierte una herramienta de inclusión en una fuente de exclusión. Rediseñar para incluir alternativas es la equidad digital real, no una excepción molesta.",
+                    leftOutcome: "Asumir que la mayoría tiene celular y seguir adelante deja afuera exactamente a quienes más necesitan que la escuela sea un espacio equitativo — 3 de 30 no es un caso aislado, es una brecha real que la actividad debería resolver."
+                },
+                {
+                    id: 52,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a cerrar este curso de m-learning?",
+                    options: ["Rediseñar una actividad para que funcione sin buena conectividad", "Establecer normas claras de uso del celular en mi aula", "Enseñar un hábito concreto de ciudadanía digital"]
                 }
             ]
         }
@@ -2780,7 +2896,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 3,
-    totalCards: 40,
+    totalCards: 52,
     modules: [
 
         // ══════════════════════════════════════════════════════════════════════
@@ -2873,6 +2989,35 @@ const allCourses = [
                     title: "🚀 ¿Por dónde empezar? El primer flip",
                     content: "Para tu primer flip: elige un tema que ya explicas bien (no uno nuevo para ti). Graba un video de 8 minutos con tu celular. Compártelo por WhatsApp el día anterior a la clase. Diseña una actividad de 30 minutos para hacer en clase. Evalúa qué pasó y ajusta. ¡Ya hiciste tu primer aula invertida!",
                     extra: "El primer video no tiene que ser perfecto. Un video auténtico con el docente real, aunque sea informal, genera más conexión que una producción elaborada. Tus estudiantes quieren escucharte a TI explicar, no a un desconocido en alta definición."
+                },
+                {
+                    id: 41,
+                    type: "project",
+                    title: "Diseña tu primer flip",
+                    description: "Elegí un tema simple de tu planificación y diseñá tu primera clase invertida: qué van a ver en casa, qué van a hacer en clase.",
+                    objective: "Tener un plan concreto para tu primera clase invertida.",
+                    materials: ["Un tema simple de tu planificación", "Algo que puedan ver o leer en casa"],
+                    steps: ["Elegí un tema simple, no el más complejo del curso.", "Decidí qué van a ver o leer en casa — no tiene que ser tu propio video la primera vez.", "Diseñá una actividad práctica de 20-30 min para el tiempo de clase.", "Anotá cómo vas a verificar que sí vieron el contenido antes."],
+                    think: ["¿Por qué elegiste ese tema y no otro para tu primer intento?", "¿Qué harás con quien no vio el contenido en casa?"],
+                    make: ["Un plan de flip completo para una clase"],
+                    improve: ["Después de aplicarlo, anotá qué parte del tiempo de clase aprovechaste mejor"]
+                },
+                {
+                    id: 42,
+                    type: "simulation",
+                    title: "¿Empezás simple o con lo más ambicioso?",
+                    scenario: "Estás emocionado con el aula invertida y querés aplicarla a tu tema más complejo del año, con tu propio video de 20 minutos, desde la primera semana.",
+                    statement: "Vale la pena empezar con un tema simple y un contenido corto, no con el más ambicioso.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Empezar con el tema más complejo y un video largo aumenta el riesgo de que salga mal y de abandonar el método en el primer intento. Un primer flip simple y corto te deja aprender el proceso con menos en juego.",
+                    leftOutcome: "Empezar directo con lo más ambicioso es tentador por la emoción inicial, pero aumenta mucho el riesgo de frustración en el primer intento — mejor aprender el proceso con algo simple antes."
+                },
+                {
+                    id: 43,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Con qué vas a hacer tu primer flip?",
+                    options: ["Un tema simple de mi planificación, con contenido ya existente", "Mi propio video corto de menos de 10 minutos", "Voy a decidir primero cómo verificar que vieron el contenido"]
                 }
             ]
         },
@@ -2967,6 +3112,35 @@ const allCourses = [
                     title: "🗂️ Organiza tu biblioteca de videos",
                     content: "Con el tiempo, acumularás videos de tus mejores explicaciones. Organízalos en playlists de YouTube por unidad o tema. Ese banco de videos es invaluable: lo puedes reutilizar año tras año, compartir con colegas, y los estudiantes lo usan para repasar antes de exámenes. Es una inversión que crece con el tiempo.",
                     extra: "Tip de productividad: graba dos o tres videos el mismo día que te sientes inspirado. Así construyes tu biblioteca más rápido. Muchos docentes dedican los sábados en la mañana a grabar los videos de la semana siguiente."
+                },
+                {
+                    id: 44,
+                    type: "project",
+                    title: "Graba tu primer video de 10 minutos",
+                    description: "Grabá tu primer video educativo, siguiendo la regla de los 10 minutos, usando solo tu celular.",
+                    objective: "Tener un video real grabado y compartido, no solo saber la teoría de cómo hacerlo.",
+                    materials: ["Celular", "Un tema de tu planificación"],
+                    steps: ["Elegí un tema puntual, no un tema completo del libro.", "Decidí: ¿guion o improvisación? Elegí lo que te sea más natural.", "Grabá en menos de 10 minutos — si te pasás, cortá el tema en dos videos.", "Compartilo con tus estudiantes y agregales 1-2 preguntas para verificar que lo vieron."],
+                    think: ["¿Qué te da más miedo de grabarte — la voz, la cámara, o equivocarte?", "¿Cómo vas a organizar este video para encontrarlo después?"],
+                    make: ["Un video de menos de 10 minutos, compartido con preguntas integradas"],
+                    improve: ["Anotá qué cambiarías del audio o la imagen para el próximo video"]
+                },
+                {
+                    id: 45,
+                    type: "simulation",
+                    title: "¿Priorizás el audio o la imagen?",
+                    scenario: "Tenés poco tiempo para grabar tu video y tenés que elegir entre invertir ese tiempo en mejorar la iluminación o en grabar el audio en un lugar silencioso con buena claridad.",
+                    statement: "Vale la pena priorizar un buen audio claro sobre una imagen perfecta.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Los estudiantes toleran una imagen simple mucho mejor que un audio con eco, ruido de fondo o volumen bajo — el audio malo hace que abandonen el video, la imagen simple no.",
+                    leftOutcome: "Priorizar la imagen sobre el audio es un error común — los estudiantes abandonan un video con audio malo mucho más rápido que uno con imagen simple pero audio claro."
+                },
+                {
+                    id: 46,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a grabar esta semana?",
+                    options: ["Mi primer video de menos de 10 minutos", "Un video con preguntas integradas para verificar comprensión", "Voy a organizar mi biblioteca de videos ya grabados"]
                 }
             ]
         },
@@ -3061,6 +3235,35 @@ const allCourses = [
                     title: "⏰ Planificación del tiempo en clase invertida",
                     content: "Estructura sugerida para un período de 45 minutos: 5 min de entrada de clase (verificar video), 5 min de aclaración de dudas comunes, 30 min de actividad principal (individual o en equipo), 5 min de cierre y reflexión. Esta distribución maximiza el tiempo activo de los estudiantes.",
                     extra: "El cierre de clase es tan importante como la entrada. En los últimos 5 minutos pregunta: '¿Qué aprendiste hoy? ¿Qué sigues sin entender? ¿Dónde usarías esto?' Este metacognición mejora la transferencia del aprendizaje a largo plazo."
+                },
+                {
+                    id: 47,
+                    type: "project",
+                    title: "Diseña tu \"entrada de clase\" y actividad presencial",
+                    description: "Diseñá cómo vas a verificar que vieron el video Y qué van a hacer con el tiempo de clase que ganaste.",
+                    objective: "Aprovechar el tiempo de clase presencial de forma distinta a solo explicar de nuevo lo del video.",
+                    materials: ["El video o contenido que asignaste para casa"],
+                    steps: ["Diseñá una \"entrada de clase\" corta (3-5 min) para verificar quién vio el contenido.", "Elegí UNA actividad presencial: debate socrático, estaciones, o proyecto.", "Planificá el tiempo: ¿cuánto para la entrada, cuánto para la actividad?", "Aplicalo y observá si el tiempo de clase se sintió distinto al de siempre."],
+                    think: ["¿Qué actividad presencial aprovecha mejor que ya vieron el contenido antes?", "¿Cómo vas a diferenciar para quien no vio el video?"],
+                    make: ["Un plan de clase presencial con entrada más actividad"],
+                    improve: ["Anotá si el tiempo de clase se sintió más productivo que una clase tradicional"]
+                },
+                {
+                    id: 48,
+                    type: "simulation",
+                    title: "¿Qué hacés con quien no vio el video?",
+                    scenario: "Llegás a tu clase invertida y 5 de 30 estudiantes no vieron el video asignado. El resto sí está listo para la actividad presencial planeada.",
+                    statement: "Vale la pena seguir adelante con la actividad para los 25 que sí vieron el video, dándoles a los 5 una alternativa.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Detener a toda la clase para esperar a los 5 desperdicia el tiempo ganado de los 25 que sí cumplieron — dándoles una alternativa a los 5 resuelve la situación sin penalizar a la mayoría.",
+                    leftOutcome: "Detener a toda la clase para reexplicar por los 5 que no vieron el video termina replicando la clase tradicional para todos — y le quita a los 25 que sí cumplieron el beneficio del tiempo que ganaron."
+                },
+                {
+                    id: 49,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a diseñar para tu próxima clase invertida?",
+                    options: ["Una entrada de clase de 3-5 minutos para verificar comprensión", "Una actividad presencial de debate o estaciones", "Un plan B para quien no vio el contenido antes de clase"]
                 }
             ]
         },
@@ -3162,6 +3365,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "La señal más valiosa del aula invertida exitosa es que los estudiantes llegan con preguntas específicas (indicio de que vieron y procesaron el video) y que el tiempo de clase es activo y colaborativo. Eso significa que la inversión está funcionando: el conocimiento entra antes y la clase se usa para profundizar."
+                },
+                {
+                    id: 50,
+                    type: "project",
+                    title: "Diseña tu plan de escalamiento gradual",
+                    description: "Planificá cómo vas a seguir usando el aula invertida las próximas 4 semanas, resolviendo tu mayor obstáculo real.",
+                    objective: "Tener un plan realista para sostener el aula invertida, no abandonarla después del primer intento.",
+                    materials: ["Tu experiencia de los módulos anteriores"],
+                    steps: ["Identificá tu mayor obstáculo real: ¿conectividad, tiempo para grabar, resistencia de padres?", "Elegí UNA solución concreta de este módulo para ese obstáculo.", "Planificá 1 flip por semana durante 4 semanas, no todos los temas a la vez.", "Decidí cómo vas a comunicar el método a padres o dirección si hace falta."],
+                    think: ["¿Cuál de tus obstáculos es realmente resoluble y cuál necesita más tiempo?", "¿Con quién de tu escuela podrías compartir esto para no hacerlo solo?"],
+                    make: ["Un plan de 4 semanas de aula invertida gradual"],
+                    improve: ["Al final del mes, revisá si el obstáculo que elegiste mejoró"]
+                },
+                {
+                    id: 51,
+                    type: "simulation",
+                    title: "¿Abandonás por falta de tiempo para grabar?",
+                    scenario: "Sentís que no tenés tiempo para grabar tus propios videos cada semana y estás por abandonar el aula invertida completamente.",
+                    statement: "Vale la pena usar videos ya existentes de otros (curados, no propios) en vez de abandonar el método por falta de tiempo para grabar.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. El aula invertida no exige que grabés tu propio contenido siempre — usar un video curado de calidad ya existente logra el mismo objetivo pedagógico sin el costo de tiempo de grabar.",
+                    leftOutcome: "Abandonar el aula invertida completa por no tener tiempo de grabar descarta el método entero por un problema que tiene solución simple: usar contenido curado de otros."
+                },
+                {
+                    id: 52,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a sostener el aula invertida?",
+                    options: ["Un plan de 4 semanas, un flip a la vez", "Usar videos curados de otros en vez de grabar todo yo", "Compartir el método con un colega o la dirección"]
                 }
             ]
         }
@@ -3186,7 +3418,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 3,
-    totalCards: 35,
+    totalCards: 47,
     modules: [
 
         // ══════════════════════════════════════════════════════════════════════
@@ -3272,6 +3504,35 @@ const allCourses = [
                     title: "🇬🇹 El video en el contexto guatemalteco",
                     content: "En Guatemala, el video tiene un impacto especial: muchos estudiantes tienen acceso a YouTube desde sus celulares, incluso sin internet fijo en casa. Además, el aprendizaje visual es culturalmente significativo en comunidades donde la tradición oral e iconográfica (arte, tejidos, murales) es central. El video conecta con esa forma de aprender.",
                     extra: "Dato: según la ENCOVI 2021, más del 60% de los hogares guatemaltecos tienen acceso a smartphones. Esto significa que YouTube puede ser un canal educativo accesible para la mayoría de tus estudiantes fuera del aula."
+                },
+                {
+                    id: 36,
+                    type: "project",
+                    title: "Elige un video educativo con criterio",
+                    description: "Buscá un video educativo real para tu próximo tema, aplicando lo que aprendiste sobre duración y tipo de video.",
+                    objective: "Tener un video seleccionado con criterio, no solo \"el primero que aparece\".",
+                    materials: ["Un tema de tu próxima clase", "Acceso a YouTube u otra plataforma"],
+                    steps: ["Elegí un tema de tu planificación.", "Buscá 2-3 videos candidatos.", "Aplicá el criterio de duración según tu nivel educativo.", "Elegí el mejor y anotá por qué."],
+                    think: ["¿Este tema se explica mejor con animación o con screencast?", "¿El video que elegiste dura lo apropiado para tus estudiantes?"],
+                    make: ["Un video seleccionado con criterio explícito"],
+                    improve: ["Anotá si la duración fue la correcta al usarlo en clase"]
+                },
+                {
+                    id: 37,
+                    type: "simulation",
+                    title: "¿Usás el video completo o lo cortás?",
+                    scenario: "Encontraste un video excelente sobre tu tema, pero dura 18 minutos y tus estudiantes son de primaria.",
+                    statement: "Vale la pena buscar un video más corto o cortar este en partes, en vez de usarlo completo.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. La duración importa mucho para la atención sostenida, especialmente en primaria — un video de 18 minutos completo probablemente pierda a la mayoría a mitad de camino. Cortarlo en partes respeta cómo aprende el cerebro con video.",
+                    leftOutcome: "Usar el video completo aunque sea excelente, sin ajustar a la duración apropiada para el nivel, arriesga perder la atención de la mayoría a mitad del video."
+                },
+                {
+                    id: 38,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer con tu próximo video?",
+                    options: ["Elegir uno con la duración apropiada para mi nivel", "Cortar un video largo en partes más cortas", "Probar una animación para un concepto abstracto"]
                 }
             ]
         },
@@ -3359,6 +3620,35 @@ const allCourses = [
                     title: "🔁 El video como recurso para repasar",
                     content: "Una ventaja única del video sobre la clase magistral: se puede repetir. Comparte el enlace del video con tus estudiantes para que lo revean en casa, lo muestren a sus familias o lo usen para estudiar antes de una evaluación. En contextos guatemaltecos con datos móviles limitados, descarga el video con anticipación usando herramientas como 'yt-dlp' o compártelo por WhatsApp.",
                     extra: "Puedes crear una lista de reproducción privada en YouTube con todos los videos de tu curso y compartir el enlace con tus estudiantes. Así tienen un 'banco de recursos' organizado y gratuito disponible en todo momento."
+                },
+                {
+                    id: 39,
+                    type: "project",
+                    title: "Diseña tu Guía de Visualización",
+                    description: "Diseñá una guía de visualización completa (antes-durante-después) para un video que vas a usar esta semana.",
+                    objective: "Usar un video con estructura pedagógica completa, no solo \"ponerlo y ya\".",
+                    materials: ["Un video ya elegido", "Papel o formulario para la guía"],
+                    steps: ["Elegí un video para tu próxima clase.", "Antes: diseñá una pregunta de predicción.", "Durante: marcá 1-2 momentos para pausar y reflexionar.", "Después: escribí 2-3 preguntas que profundicen."],
+                    think: ["¿Qué pregunta de predicción genera más curiosidad antes de empezar?", "¿En qué momento del video conviene pausar?"],
+                    make: ["Una Guía de Visualización completa para un video real"],
+                    improve: ["Anotá si las pausas reflexivas cambiaron la atención de tus estudiantes"]
+                },
+                {
+                    id: 40,
+                    type: "simulation",
+                    title: "¿Pausás en el momento clave?",
+                    scenario: "Estás mostrando un video importante y llegás a un momento clave. Podrías seguir sin interrumpir o pausar 1 minuto para preguntar qué entendieron hasta ahí.",
+                    statement: "Vale la pena pausar el video, aunque interrumpa el flujo, para verificar comprensión en el momento clave.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Las pausas reflexivas en momentos clave son justo lo que distingue ver un video pasivamente de usarlo pedagógicamente — un minuto de pausa ahí vale más que terminar sin saber si entendieron el punto central.",
+                    leftOutcome: "Seguir sin pausar mantiene el flujo del video, pero pierde la oportunidad de verificar comprensión justo en el momento más importante."
+                },
+                {
+                    id: 41,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a agregar a tu próximo video en clase?",
+                    options: ["Una pregunta de predicción antes de empezar", "Una pausa reflexiva en el momento clave", "Preguntas de profundización después de verlo"]
                 }
             ]
         },
@@ -3446,6 +3736,35 @@ const allCourses = [
                     title: "🚀 Tu primer video en 5 pasos",
                     content: "Sigue este proceso para tu primera producción: (1) Elige un concepto pequeño que puedas explicar en 3 minutos. (2) Escribe 5 puntos clave en un papel. (3) Graba en un lugar tranquilo con luz natural de frente. (4) Revisa el audio y la imagen. Si está aceptable, no perfecciones más: publícalo. (5) Comparte con un colega de confianza para recibir retroalimentación antes de usarlo con estudiantes.",
                     extra: "El perfeccionismo es el mayor obstáculo para crear contenido. Tu primer video no tiene que ser perfecto, tiene que existir. Con cada video mejorarás naturalmente."
+                },
+                {
+                    id: 42,
+                    type: "project",
+                    title: "Graba tu primer video en 5 pasos",
+                    description: "Grabá tu primer video educativo siguiendo los 5 pasos de este módulo.",
+                    objective: "Tener un video propio grabado, priorizando audio e iluminación básica.",
+                    materials: ["Celular", "Un guión simple", "Un lugar con buena luz y silencio"],
+                    steps: ["Escribí un guión simple (no memorizado, solo puntos clave).", "Elegí un lugar con buena luz natural y silencio.", "Encuadrá la cámara a la altura de los ojos.", "Grabá siguiendo los 5 pasos del módulo, revisá el audio antes de publicar."],
+                    think: ["¿Qué te resultó más difícil — el guión, la grabación, o la edición?", "¿Cómo vas a manejar la privacidad si publicás el video?"],
+                    make: ["Tu primer video educativo propio"],
+                    improve: ["Anotá qué cambiarías del guión o la grabación la próxima vez"]
+                },
+                {
+                    id: 43,
+                    type: "simulation",
+                    title: "¿Publicás aunque no sea perfecto?",
+                    scenario: "Grabaste tu primer video pero no quedó perfecto — hay un ruido de fondo leve y te trabaste una vez. Estás por borrarlo y no publicar nada.",
+                    statement: "Vale la pena publicarlo igual, aunque no sea perfecto.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Un video imperfecto pero real y con contenido claro vale más para tus estudiantes que ningún video. El perfeccionismo en el primer intento suele ser la razón por la que muchos docentes nunca empiezan.",
+                    leftOutcome: "Borrar el video por imperfecciones menores antepone la perfección sobre el valor pedagógico real — tus estudiantes se benefician más de un video imperfecto pero disponible que de ninguno."
+                },
+                {
+                    id: 44,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer con tu próximo video?",
+                    options: ["Grabar mi primer video siguiendo los 5 pasos", "Publicarlo aunque no sea perfecto", "Mejorar el audio antes que la imagen"]
                 }
             ]
         },
@@ -3526,6 +3845,35 @@ const allCourses = [
                     title: "🏁 Tu plan de acción: primeros pasos",
                     content: "Para empezar a usar videos educativos de forma efectiva esta semana: (1) Identifica un tema de tu próxima clase y busca un video de menos de 6 minutos en YouTube. (2) Evalúalo con los criterios aprendidos en este curso. (3) Prepara 3 preguntas para discutir después del video. (4) Úsalo en clase con al menos una pausa reflexiva. (5) Reflexiona: ¿qué funcionó? ¿qué cambiarías? Así empieza la mejora continua.",
                     extra: "No esperes tener todo perfecto para empezar. Un video bien seleccionado con tres buenas preguntas al final ya transforma una clase. La práctica constante y la reflexión son lo que convierte a un docente en experto en ABV."
+                },
+                {
+                    id: 45,
+                    type: "project",
+                    title: "Diseña tu rúbrica para videos de estudiantes",
+                    description: "Si vas a pedirles a tus estudiantes que hagan un video, diseñá la rúbrica ANTES de asignarlo.",
+                    objective: "Tener una rúbrica clara para evaluar videos creados por estudiantes.",
+                    materials: ["Un tema donde tus estudiantes podrían crear un video"],
+                    steps: ["Elegí un tema donde un video de estudiantes tenga sentido.", "Definí 3-4 criterios (contenido, claridad, creatividad, duración).", "Compartila con los estudiantes ANTES de que graben.", "Aplicala a los videos que entreguen."],
+                    think: ["¿Qué criterio es más importante para tu materia — el contenido o la forma?", "¿Cómo vas a manejar la diversidad de calidad técnica entre estudiantes?"],
+                    make: ["Una rúbrica de video lista para compartir"],
+                    improve: ["Anotá si algún criterio generó confusión y ajustalo"]
+                },
+                {
+                    id: 46,
+                    type: "simulation",
+                    title: "¿Ofrecés alternativa a quien no tiene celular?",
+                    scenario: "Le pediste a tus estudiantes que graben un video como tarea, pero un estudiante no tiene celular ni acceso a uno en casa.",
+                    statement: "Vale la pena ofrecer una alternativa (grabar en la escuela, trabajar en pareja, o un formato sin video) en vez de que ese estudiante quede sin poder entregar.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Asumir que todos tienen acceso a un dispositivo para grabar excluye exactamente a quien más necesita que la escuela sea equitativa. Ofrecer una alternativa mantiene el objetivo de aprendizaje sin penalizar por una brecha de acceso.",
+                    leftOutcome: "No ofrecer alternativa penaliza a un estudiante por una brecha de acceso a tecnología que no depende de él — el objetivo de aprendizaje es lo que realmente importa evaluar."
+                },
+                {
+                    id: 47,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a cerrar este curso de ABV?",
+                    options: ["Diseñar una rúbrica de video antes de mi próxima asignación", "Organizar mi canal o lista de videos ya seleccionados", "Tener un plan alternativo para quien no tiene cómo grabar"]
                 }
             ]
         }
@@ -3543,7 +3891,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 3,
-    totalCards: 35,
+    totalCards: 47,
     modules: [
 
         // ══════════════════════════════════════════════════════════════════════
@@ -3629,6 +3977,35 @@ const allCourses = [
                     title: "✨ El principio clave: un concepto, una cápsula",
                     content: "La regla de oro del micro-learning es: una cápsula, un objetivo, una acción. Cada unidad de aprendizaje responde a una sola pregunta o enseña una sola habilidad. Este principio parece sencillo, pero rompe con la tradición educativa que mezcla varios conceptos en una misma clase.",
                     extra: "Ejercicio de reflexión: piensa en tu próxima clase. ¿Cuántos conceptos distintos planeas enseñar? Si son más de 3, es candidata perfecta para convertirse en una secuencia de micro-cápsulas en lugar de una clase tradicional."
+                },
+                {
+                    id: 36,
+                    type: "project",
+                    title: "Diseña tu primera micro-cápsula",
+                    description: "Convertí un concepto de tu tema en una micro-cápsula: un concepto, una cápsula.",
+                    objective: "Aplicar el principio \"un concepto, una cápsula\" a un tema real.",
+                    materials: ["Un tema de tu planificación"],
+                    steps: ["Elegí UN concepto puntual (no un tema completo).", "Escribilo en el formato más simple posible: 1 idea, 1 ejemplo.", "Definí en qué momento de tu clase la vas a usar.", "Probala esta semana."],
+                    think: ["¿Qué concepto de tu tema suele generar más confusión y se beneficiaría de aislarse?", "¿Por qué menos contenido a la vez puede enseñar más?"],
+                    make: ["Una micro-cápsula de un solo concepto"],
+                    improve: ["Anotá si aislar el concepto ayudó a que se entendiera mejor"]
+                },
+                {
+                    id: 37,
+                    type: "simulation",
+                    title: "¿Traés de vuelta un concepto olvidado?",
+                    scenario: "Diste un concepto importante hace 2 semanas y no lo volviste a mencionar. Sospechás que la mayoría ya lo olvidó.",
+                    statement: "Vale la pena traerlo de vuelta con una micro-cápsula de repaso, aunque no esté en tu planificación de esta semana.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Según la curva del olvido de Ebbinghaus, sin repaso la mayoría del contenido se pierde en pocos días — una micro-cápsula corta de repaso combate esto directamente, sin necesitar una clase completa.",
+                    leftOutcome: "Seguir adelante sin repasar asume que lo aprendido hace 2 semanas se quedó, pero la curva del olvido muestra que sin refuerzo la mayoría ya se perdió."
+                },
+                {
+                    id: 38,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer con tu próximo concepto difícil?",
+                    options: ["Aislarlo en una micro-cápsula de un solo concepto", "Programar un repaso corto 2 semanas después de enseñarlo", "Usar un ejemplo concreto como corazón de la cápsula"]
                 }
             ]
         },
@@ -3716,6 +4093,35 @@ const allCourses = [
                     title: "🧩 De la cápsula al concepto complejo: planificación en capas",
                     content: "Un concepto complejo se puede enseñar en micro-capas: Día 1: ¿Qué es? (definición y ejemplo). Día 2: ¿Cómo funciona? (proceso o mecanismo). Día 3: ¿Por qué importa? (aplicación y relevancia). Día 4: ¿Cómo lo uso yo? (práctica guiada). Día 5: Repaso integrador. Así, en 5 cápsulas de 5-8 minutos, has cubierto un concepto complejo con profundidad real.",
                     extra: "Este enfoque en capas es especialmente útil para conceptos científicos abstractos, gramática compleja o procesos matemáticos de varios pasos. Cada capa debe ser comprensible por sí sola, pero también conectar con las capas anteriores."
+                },
+                {
+                    id: 39,
+                    type: "project",
+                    title: "Diseña una cápsula con repetición espaciada",
+                    description: "Diseñá una secuencia de 3 micro-cápsulas sobre el mismo concepto, espaciadas en el tiempo.",
+                    objective: "Aplicar la repetición espaciada, no solo enseñar el concepto una vez.",
+                    materials: ["Un concepto de tu planificación"],
+                    steps: ["Elegí un concepto que valga la pena reforzar.", "Diseñá la cápsula inicial (día 1).", "Diseñá una cápsula de repaso corta para unos días después (día 4-5).", "Diseñá una última cápsula de repaso más espaciada (día 10-12)."],
+                    think: ["¿Qué formato le conviene a cada repaso?", "¿Cómo cambia la cápsula de repaso respecto a la inicial?"],
+                    make: ["Una secuencia de 3 cápsulas espaciadas sobre un mismo concepto"],
+                    improve: ["Anotá si al tercer repaso los estudiantes recordaban mejor que con un solo repaso"]
+                },
+                {
+                    id: 40,
+                    type: "simulation",
+                    title: "¿Resistís agregar más contexto?",
+                    scenario: "Estás escribiendo una micro-cápsula y sentís que necesitás agregar 2 párrafos más de contexto para que quede \"completa\".",
+                    statement: "Vale la pena resistir la tentación y mantenerla corta, aunque sientas que falta contexto.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. El arte de la brevedad en micro-learning es justamente resistir agregar \"un poco más\" — una cápsula que crece pierde su función. Si hace falta más contexto, eso es material para OTRA cápsula.",
+                    leftOutcome: "Agregar más contexto para que \"quede completa\" es la forma más común de que una micro-cápsula deje de serlo — el contexto extra puede ir en otra cápsula separada."
+                },
+                {
+                    id: 41,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a diseñar esta semana?",
+                    options: ["Una secuencia de 3 cápsulas con repetición espaciada", "Una cápsula bien breve, resistiendo agregar más contexto", "Un ejemplo concreto como corazón de mi próxima cápsula"]
                 }
             ]
         },
@@ -3803,6 +4209,35 @@ const allCourses = [
                     title: "🗂️ Organiza tu banco de micro-cápsulas",
                     content: "Conforme crees micro-cápsulas, necesitas organizarlas para reutilizarlas. Estrategia sencilla: crea una carpeta en Google Drive con subcarpetas por grado y materia. Usa nombres descriptivos: '5to_primaria_fracciones_que_es.mp4'. Comparte la carpeta con colegas del mismo grado para construir un banco colectivo de recursos.",
                     extra: "Un banco colectivo de micro-cápsulas entre docentes del mismo colegio puede ahorrarte horas de trabajo: si tu colega ya creó una cápsula excelente sobre el sistema respiratorio, puedes usarla directamente o adaptarla, en lugar de crearla desde cero."
+                },
+                {
+                    id: 42,
+                    type: "project",
+                    title: "Elige un canal y crea tu primera cápsula ahí",
+                    description: "Elegí UN canal (WhatsApp, infografía, audio, tarjeta digital) y creá tu primera micro-cápsula real ahí.",
+                    objective: "Tener una micro-cápsula publicada en un canal real, no solo diseñada en papel.",
+                    materials: ["Celular o computadora", "Un concepto ya diseñado"],
+                    steps: ["Elegí el canal más accesible para tus estudiantes.", "Adaptá tu cápsula al formato de ese canal.", "Publicala o compartila con un grupo real.", "Empezá tu banco de micro-cápsulas guardando esta primera."],
+                    think: ["¿Qué canal usan ya tus estudiantes todos los días?", "¿Cómo vas a organizar tu banco para no perder las cápsulas que ya hiciste?"],
+                    make: ["Una micro-cápsula publicada en un canal real, más el inicio de tu banco"],
+                    improve: ["Anotá qué canal generó más interacción de tus estudiantes"]
+                },
+                {
+                    id: 43,
+                    type: "simulation",
+                    title: "¿WhatsApp simple o infografía elaborada?",
+                    scenario: "Te entusiasma crear infografías elaboradas con una app de diseño, pero requiere que los estudiantes tengan buena conexión, mientras que WhatsApp lo tienen todos y funciona con poca conexión.",
+                    statement: "Vale la pena empezar con WhatsApp aunque sea menos vistoso, en vez de una infografía elaborada que no todos pueden ver bien.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. La accesibilidad real del canal importa más que lo vistoso del formato — una cápsula simple que TODOS pueden ver vale más que una elaborada que solo algunos pueden cargar bien.",
+                    leftOutcome: "Priorizar lo vistoso sobre lo accesible deja afuera a quienes tienen menos conectividad — el canal más simple y accesible para todos es mejor punto de partida."
+                },
+                {
+                    id: 44,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué canal vas a usar esta semana?",
+                    options: ["WhatsApp, por ser el más accesible para mis estudiantes", "Una infografía o tarjeta digital simple", "Empezar a organizar mi banco de micro-cápsulas"]
                 }
             ]
         },
@@ -3883,6 +4318,35 @@ const allCourses = [
                     title: "🚀 Tu plan de micro-learning: empieza esta semana",
                     content: "Para implementar micro-learning esta semana: (1) Identifica un concepto que tus estudiantes encuentran difícil. (2) Diseña 3 cápsulas de 5-7 minutos: qué es, cómo funciona, para qué sirve. (3) Elige un formato para cada una (video, audio o infografía). (4) Crea la primera cápsula hoy. (5) Compártela mañana. Evalúa con un ticket de salida. (6) Mejora la siguiente cápsula con lo que aprendiste. El micro-learning también es iterativo.",
                     extra: "Recuerda: el objetivo no es la perfección técnica, sino el aprendizaje de tus estudiantes. Una nota de voz de 5 minutos enviada por WhatsApp esta noche puede ser tu primera micro-cápsula. ¡El momento para empezar es ahora!"
+                },
+                {
+                    id: 45,
+                    type: "project",
+                    title: "Diseña tu secuencia semanal de micro-learning",
+                    description: "Planificá una secuencia de micro-cápsulas para una semana completa de un tema.",
+                    objective: "Tener un plan semanal de micro-learning, no cápsulas sueltas sin conexión entre sí.",
+                    materials: ["Un tema que dura toda una semana en tu planificación"],
+                    steps: ["Elegí el tema de la semana.", "Dividilo en 3-4 micro-cápsulas encadenadas.", "Definí cómo vas a evaluar rápido al final de la semana.", "Aplicalo y ajustá según cómo respondan tus estudiantes."],
+                    think: ["¿Cómo se conecta cada cápsula con la siguiente en la secuencia?", "¿Qué estrategia rápida de evaluación se ajusta a esta semana?"],
+                    make: ["Una secuencia semanal de micro-cápsulas encadenadas"],
+                    improve: ["Anotá qué indicador de éxito usarías para saber si la secuencia funcionó"]
+                },
+                {
+                    id: 46,
+                    type: "simulation",
+                    title: "¿Invertís tiempo en seguimiento digital?",
+                    scenario: "Tenés la opción de llevar un seguimiento digital detallado de qué cápsulas vio cada estudiante, pero te toma tiempo extra configurarlo.",
+                    statement: "Vale la pena invertir ese tiempo en el seguimiento digital, aunque sea trabajo extra al principio.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. El seguimiento digital te da información real de quién está avanzando y quién necesita apoyo — sin él, estás enseñando \"a ciegas\". El tiempo de configuración inicial se recupera con mejores decisiones después.",
+                    leftOutcome: "Saltarse el seguimiento ahorra tiempo al principio, pero te deja sin información real de qué estudiantes están avanzando y cuáles necesitan apoyo."
+                },
+                {
+                    id: 47,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a empezar tu plan de micro-learning?",
+                    options: ["Una secuencia semanal de 3-4 cápsulas encadenadas", "Un sistema simple de seguimiento de quién vio cada cápsula", "Definir mis propios indicadores de éxito antes de empezar"]
                 }
             ]
         }
