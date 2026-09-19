@@ -1623,6 +1623,17 @@ function renderCard() {
                             // Racha de quizzes correctos seguidos
                             if (!progress.dailyMissions) progress.dailyMissions = {};
                             progress.dailyMissions.quizStreak = (progress.dailyMissions.quizStreak || 0) + 1;
+                            // Micro-logro visible cada vez que se cierra un bloque de
+                            // 2-3 tarjetas con un quiz — al estilo Google Primer:
+                            // premio chico e inmediato en vez de esperar al final del
+                            // módulo. Solo se muestra desde la 2da racha para que no
+                            // aparezca en el primer quiz del módulo (sin impacto aún).
+                            if (progress.dailyMissions.quizStreak >= 2) {
+                                feedbackDiv.innerHTML += `<div style="margin-top:8px;display:flex;align-items:center;gap:6px;background:#fef9c3;border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;color:#a16207">
+                                    <span style="display:inline-flex;width:14px;height:14px">${ICONS?.bolt || '⚡'}</span>
+                                    Racha de ${progress.dailyMissions.quizStreak} bloques seguidos
+                                </div>`;
+                            }
                             _removeFromWrong(card.id ?? (currentModule+'-'+currentCardIndex));
                             updateMissionProgress("quizzes", 1);
                             // Misión semanal de quizzes
