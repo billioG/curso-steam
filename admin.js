@@ -36,7 +36,7 @@ const STATIC_COURSES = [
     { id:'herramientas-tec',  title:'Herramientas Tecnológicas para Docentes', durationHours:3,  totalCards:57, modules:4, ruta:'creativo',     masterCert:true  },
     { id:'m-learning',        title:'Mobile Learning · Aprender con el Celular',durationHours:3, totalCards:52, modules:4, ruta:'metodologias', masterCert:true  },
     { id:'flipped-classroom', title:'Flipped Classroom · El Aula Invertida',   durationHours:3,  totalCards:52, modules:4, ruta:'metodologias', masterCert:true  },
-    { id:'abv',               title:'Aprendizaje Basado en Videos',            durationHours:3,  totalCards:35, modules:4, ruta:'metodologias', masterCert:true  },
+    { id:'abv',               title:'Aprendizaje Basado en Videos',            durationHours:3,  totalCards:47, modules:4, ruta:'metodologias', masterCert:true  },
     { id:'micro-learning',    title:'Micro-learning · Aprender en Pequeñas Dosis', durationHours:3, totalCards:35, modules:4, ruta:'metodologias', masterCert:true  },
     { id:'ia-fundamentos',    title:'Docente y la Inteligencia Artificial',        durationHours:4, totalCards:35, modules:4, ruta:'ia', masterCert:true  },
     { id:'ia-tiempo',         title:'IA para Ahorrar Tiempo',                      durationHours:3, totalCards:22, modules:4, ruta:'ia', masterCert:true  },
