@@ -34,7 +34,7 @@ const STATIC_COURSES = [
     { id:'storytelling',     title:'Storytelling para Docentes',           durationHours:4,  totalCards:64, modules:5, ruta:'steam20',      masterCert:false },
     { id:'creatividad',       title:'Despertando la Creatividad',              durationHours:4,  totalCards:65, modules:5, ruta:'creativo',     masterCert:true  },
     { id:'herramientas-tec',  title:'Herramientas Tecnológicas para Docentes', durationHours:3,  totalCards:57, modules:4, ruta:'creativo',     masterCert:true  },
-    { id:'m-learning',        title:'Mobile Learning · Aprender con el Celular',durationHours:3, totalCards:40, modules:4, ruta:'metodologias', masterCert:true  },
+    { id:'m-learning',        title:'Mobile Learning · Aprender con el Celular',durationHours:3, totalCards:52, modules:4, ruta:'metodologias', masterCert:true  },
     { id:'flipped-classroom', title:'Flipped Classroom · El Aula Invertida',   durationHours:3,  totalCards:40, modules:4, ruta:'metodologias', masterCert:true  },
     { id:'abv',               title:'Aprendizaje Basado en Videos',            durationHours:3,  totalCards:35, modules:4, ruta:'metodologias', masterCert:true  },
     { id:'micro-learning',    title:'Micro-learning · Aprender en Pequeñas Dosis', durationHours:3, totalCards:35, modules:4, ruta:'metodologias', masterCert:true  },
