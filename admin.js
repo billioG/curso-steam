@@ -27,7 +27,7 @@ const LEARNING_PATHS = [
 
 const STATIC_COURSES = [
     { id:'steam',            title:'Metodología STEAM 2.0',               durationHours:5,  totalCards:114, modules:5, ruta:'steam20',  masterCert:true  },
-    { id:'abp',              title:'Aprendizaje Basado en Proyectos',      durationHours:4,  totalCards:61, modules:5, ruta:'steam20',  masterCert:true  },
+    { id:'abp',              title:'Aprendizaje Basado en Proyectos',      durationHours:4,  totalCards:90, modules:5, ruta:'steam20',  masterCert:true  },
     { id:'design-thinking',  title:'Design Thinking para Docentes',        durationHours:3,  totalCards:45, modules:4, ruta:'steam20',  masterCert:true  },
     { id:'evaluacion',       title:'Evaluación Formativa',                 durationHours:3,  totalCards:38, modules:4, ruta:'steam20',  masterCert:true  },
     { id:'tipos-estudiantes',title:'Conoce a Quien Enseñas',               durationHours:5,  totalCards:60, modules:5, ruta:'steam20',  masterCert:true  },
