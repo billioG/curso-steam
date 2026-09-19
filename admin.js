@@ -50,7 +50,7 @@ const STATIC_COURSES = [
     { id:'bienestar-docente',     title:'Bienestar Docente: Prevención del Desgaste',  durationHours:3, totalCards:48, modules:4, ruta:'convivencia', masterCert:true  },
     { id:'educacion-inclusiva',   title:'Educación Inclusiva y Necesidades Educativas Especiales', durationHours:5, totalCards:42, modules:5, ruta:'inclusion', masterCert:false },
     { id:'tea-profundidad',       title:'TEA en el Aula: Estrategias Avanzadas',        durationHours:4, totalCards:32, modules:4, ruta:'inclusion', masterCert:false },
-    { id:'discapacidad-down-tdah', title:'Síndrome de Down y TDAH: Estrategias para el Aula', durationHours:4, totalCards:20, modules:4, ruta:'inclusion', masterCert:false },
+    { id:'discapacidad-down-tdah', title:'Síndrome de Down y TDAH: Estrategias para el Aula', durationHours:4, totalCards:32, modules:4, ruta:'inclusion', masterCert:false },
     { id:'lengua-senas-docentes', title:'Lengua de Señas para Docentes: Fundamentos Prácticos', durationHours:3, totalCards:20, modules:4, ruta:'inclusion', masterCert:false },
 ];
 
