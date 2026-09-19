@@ -852,7 +852,7 @@ const allCourses = [
   prerequisite: null,
   status: 'available',
   durationHours: 5,
-  totalCards: 60,
+  totalCards: 65,
   modules: [
     // MÓDULO 1: El Mapa del Aula (12 tarjetas)
     {
@@ -889,7 +889,8 @@ const allCourses = [
             make: ['La ficha de perfil de 5 estudiantes', 'El mapa visual del aula con los cuatro perfiles coloreados', 'Una tabla de acciones: perfil → estrategia específica para tu aula'],
             improve: ['¿Cómo actualizarás el mapa a mitad del año?', '¿Puedes invitar a tus estudiantes a reflexionar sobre su propio perfil de aprendizaje?', '¿Cómo compartirías este mapa con la familia de forma útil y no estigmatizante?']
           }
-        }
+        },
+        { id: 'te-m1-t1', type: 'takeaway', title: 'Próximos pasos', prompt: '¿Con qué vas a empezar esta semana?', options: ['Observar a los 5 estudiantes que más dudas me generan', 'Completar la ficha de perfil de al menos 3 estudiantes', 'Diseñar una acción concreta para el estudiante "invisible" de mi aula'] }
       ]
     },
     // MÓDULO 2: Estilos y Ritmos de Aprendizaje (12 tarjetas)
@@ -908,7 +909,8 @@ const allCourses = [
         { id: 'te-m2-c9', type: 'content', title: '🤝 Inteligencias interpersonal e intrapersonal', content: '**Inteligencia Interpersonal:**\n• Lee las emociones de los demás con facilidad\n• Es el mediador natural de los conflictos del grupo\n• Lidera sin necesidad de imposición\n• Estrategia: trabajo cooperativo, roles de liderazgo, mediación de pares\n\n**Inteligencia Intrapersonal:**\n• Se conoce a sí mismo con profundidad\n• Necesita tiempo para reflexionar antes de actuar\n• Puede parecer "distante" pero está procesando\n• Estrategia: diarios de aprendizaje, portafolios reflexivos, tiempo para procesar antes de responder públicamente\n\n**Ojo:** El estudiante intrapersonal en un aula muy grupal puede agotarse y retraerse. No es arrogancia — es diferencia de procesamiento.', extra: { tip: 'El liderazgo estudiantil frecuentemente va a los estudiantes con inteligencia interpersonal alta. Pero el estudiante intrapersonal puede ser un líder silencioso igualmente valioso, especialmente en procesos de toma de decisiones reflexivas.', activity: '¿Cuánto espacio de reflexión individual ofreces en tu clase? ¿Alguna vez das tiempo para pensar antes de pedir respuestas públicas?' } },
         { id: 'te-m2-c10', type: 'simulation', title: '🎭 Diego no quiere leer', scenario: '**Diego**, 11 años, es uno de los estudiantes más brillantes cuando habla. Puede explicar conceptos complejos verbalmente con claridad y usa vocabulario sofisticado. Sin embargo, cada vez que le pides que lea en voz alta o que complete ejercicios escritos, se niega, se distrae o entrega páginas en blanco.\n\nSu nota en "Comprensión Lectora" es 45. Pero sus respuestas orales en clase son de nivel avanzado.', statement: 'Diego tiene dificultades de aprendizaje que requieren evaluación especializada antes de que yo pueda hacer algo diferente.', correctSwipe: 'left', rightOutcome: 'Antes de derivar a evaluación especializada (que en muchos contextos guatemaltecos no está disponible rápidamente), el docente puede hacer muchísimo. La discrepancia entre el desempeño oral y escrito puede ser dislexia, pero también puede ser preferencia auditiva extrema, dificultad con la mecánica de la escritura, o simplemente que Diego nunca ha sido enseñado desde su canal de fortaleza. La evaluación especializada es valiosa pero no es prerrequisito para actuar.', leftOutcome: '✅ Acertado. El docente puede actuar AHORA: evaluar oralmente a Diego, pedirle que dicte sus respuestas, usar el texto a voz, o permitirle demostrar comprensión de formas alternativas. Documentar las observaciones ayudará si eventualmente se necesita derivación, pero el estudiante no debe esperar que el "sistema" lo atienda para recibir apoyo adaptado.', extra: { tip: 'La diferencia entre dislexia y preferencia auditiva es clínica y requiere evaluación. Pero la respuesta pedagógica inmediata es similar: usar el canal de fortaleza del estudiante mientras se trabaja el canal débil gradualmente.', activity: '¿Tienes un "Diego" en tu aula? ¿Cómo estás evaluando su aprendizaje real versus su desempeño escrito?' } },
         { id: 'te-m2-c11', type: 'quiz', title: '🎯 Gardner en el aula', question: 'Una estudiante destaca por mediar conflictos entre compañeros, entender las emociones de los demás y organizar al grupo. ¿Qué inteligencia predomina en ella?', options: ['Intrapersonal', 'Lingüística', 'Interpersonal', 'Espacial'], correct: 2, explanation: 'La inteligencia interpersonal implica la capacidad de entender las emociones, motivaciones y perspectivas de otras personas, y de relacionarse con ellas de manera efectiva. Esta estudiante es una líder social natural.' },
-        { id: 'te-m2-c12', type: 'content', title: '⏱️ Ritmos de aprendizaje: lento no es malo', content: 'Dentro de un mismo canal y una misma inteligencia, los estudiantes procesan a velocidades distintas.\n\n**Procesamiento rápido:**\n• Termina antes que los demás\n• Puede aburrirse y distraer a otros\n• Necesita extensiones, no repetición\n\n**Procesamiento lento:**\n• Necesita más tiempo para conectar la información nueva con lo que ya sabe\n• El sistema escolar lo penaliza constantemente (exámenes con tiempo fijo, avance grupal)\n• **Importante:** procesamiento lento NO equivale a menor capacidad. Algunos de los pensadores más profundos procesan lento porque conectan más antes de responder.\n\n**La velocidad no es el objetivo. La comprensión sí.**', extra: { tip: 'Albert Einstein no habló hasta los 4 años y fue expulsado de la escuela por "lento". Charles Darwin era considerado alumno mediocre. El ritmo de aprendizaje no predice el techo del aprendizaje.', activity: '¿Tienes estudiantes que necesitan más tiempo y los estás "esperando" o los estás dejando atrás? ¿Qué cambiarías?' } }
+        { id: 'te-m2-c12', type: 'content', title: '⏱️ Ritmos de aprendizaje: lento no es malo', content: 'Dentro de un mismo canal y una misma inteligencia, los estudiantes procesan a velocidades distintas.\n\n**Procesamiento rápido:**\n• Termina antes que los demás\n• Puede aburrirse y distraer a otros\n• Necesita extensiones, no repetición\n\n**Procesamiento lento:**\n• Necesita más tiempo para conectar la información nueva con lo que ya sabe\n• El sistema escolar lo penaliza constantemente (exámenes con tiempo fijo, avance grupal)\n• **Importante:** procesamiento lento NO equivale a menor capacidad. Algunos de los pensadores más profundos procesan lento porque conectan más antes de responder.\n\n**La velocidad no es el objetivo. La comprensión sí.**', extra: { tip: 'Albert Einstein no habló hasta los 4 años y fue expulsado de la escuela por "lento". Charles Darwin era considerado alumno mediocre. El ritmo de aprendizaje no predice el techo del aprendizaje.', activity: '¿Tienes estudiantes que necesitan más tiempo y los estás "esperando" o los estás dejando atrás? ¿Qué cambiarías?' } },
+        { id: 'te-m2-t1', type: 'takeaway', title: 'Próximos pasos', prompt: '¿Qué vas a ajustar en tu próxima clase?', options: ['Presentar el mismo contenido de 2 formas distintas (visual + auditivo)', 'Dar más tiempo a un estudiante de ritmo lento sin señalarlo', 'Identificar qué inteligencia de Gardner no suelo activar en mis clases'] }
       ]
     },
     // MÓDULO 3: Perfiles Emocionales y Motivacionales (12 tarjetas)
@@ -927,7 +929,8 @@ const allCourses = [
         { id: 'te-m3-c9', type: 'content', title: '💔 El estudiante que "odia la escuela"', content: '"Odio la escuela" es una de las frases más informativas que un docente puede escuchar — si decide escucharla.\n\n**¿Qué está diciendo realmente?**\n• "Me siento incompetente en este espacio"\n• "Nadie aquí me conoce ni le importo"\n• "Lo que aprendo no tiene ninguna conexión con mi vida"\n• "Fui humillado aquí y no lo olvidé"\n• "Tengo miedo y prefiero el rechazo al fracaso"\n\n**El error:** Responder con argumento racional ("la escuela es importante para tu futuro"). El problema no es cognitivo — es relacional y emocional.\n\n**La respuesta:** "¿Qué parte es la que más odias? Cuéntame." Escuchar sin defender al sistema. Esa conversación es el primer paso real.', extra: { tip: 'Un estudiante que dice "odio la escuela" frente al docente está tomando un riesgo. Podría estar callado. Si elige decirlo, está (inconscientemente) invitando a una respuesta humana.', activity: '¿Cuándo fue la última vez que un estudiante te dijo algo similar? ¿Cómo respondiste? ¿Cómo responderías ahora?' } },
         { id: 'te-m3-c10', type: 'content', title: '🚨 Señales de trauma en el aula', content: 'El trauma — por violencia, pérdida, abuso o experiencias de vida extremas — afecta directamente la capacidad de aprender. El cerebro en estado de alerta no puede acceder a las funciones cognitivas superiores.\n\n**Señales en el aula:**\n• Hiper-vigilancia (saltan ante ruidos, miran constantemente hacia la puerta)\n• Dificultad para concentrarse aunque quieran\n• Reacciones desproporcionadas ante situaciones pequeñas\n• Flashbacks o "ausencias" durante la clase\n• Comportamiento regresivo (actúan más jóvenes que su edad)\n\n**El docente no es terapeuta.** Pero puede:\n• Crear ambientes predecibles y seguros\n• No reaccionar con castigo ante conductas derivadas del trauma\n• Hacer derivación a orientador o psicólogo cuando existe\n• Mantener la relación aun cuando el estudiante se comporta difícil', extra: { tip: 'La educación informada por el trauma (Trauma-Informed Education) no requiere que el docente conozca el detalle del trauma. Requiere que sepa que PUEDE EXISTIR y adapte su respuesta en consecuencia.', activity: '¿Tu escuela tiene un protocolo para manejar indicios de violencia o trauma en estudiantes? ¿Sabes cómo derivar?' } },
         { id: 'te-m3-c11', type: 'simulation', title: '🎭 Carlos lleva tres semanas sin entregar tareas', scenario: '**Carlos**, 10 años, solía ser un estudiante regular. En las últimas tres semanas no ha entregado ninguna tarea. En clase parece cansado, a veces se duerme, y cuando le preguntas dice "no sé" o "me olvidé". Hoy su cuaderno está vacío.\n\nUna colega dice: "Carlos siempre fue flojo. Hay que llamar a los padres ya para que lo pongan a trabajar."', statement: 'Lo correcto es llamar a los padres inmediatamente y comunicarles que Carlos está incumpliendo con sus responsabilidades escolares.', correctSwipe: 'left', rightOutcome: 'Llamar a los padres sin investigar primero puede empeorar la situación: si Carlos tiene problemas en casa, alertar a sus padres sin conocer el contexto puede aumentar su riesgo. Además, el reporte negativo puede fortalecer la etiqueta de "flojo" sin abordar la causa real del cambio de conducta.', leftOutcome: '✅ Antes de llamar a los padres, el paso correcto es una conversación privada con Carlos. Preguntas clave: "¿Has comido hoy?", "¿Estás durmiendo bien?", "¿Algo está pasando en casa?". El cambio brusco de comportamiento en tres semanas raramente es flojera — es señal de algo. Investiga antes de reportar.', extra: { tip: 'El cambio brusco de comportamiento en un periodo de 2-4 semanas es una bandera roja pedagógica. La "flojera" es rara — los cambios tienen causas. Las más frecuentes en contextos guatemaltecos: trabajo infantil aumentado, problema familiar, inicio de bullying, o problema de salud.', activity: '¿Has tenido un estudiante con cambio brusco de comportamiento? ¿Qué encontraste cuando indagaste?' } },
-        { id: 'te-m3-c12', type: 'content', title: '📋 Síntesis: Los cinco perfiles emocionales', content: 'Antes de pasar a los casos de estudio, sistematicemos los cinco perfiles emocionales principales:\n\n**1. Comprometido motivado:** Alto desempeño, motivación intrínseca. Necesita: desafío y autonomía.\n\n**2. Perfeccionista ansioso:** Alto desempeño, miedo al error. Necesita: cultura de error positivo.\n\n**3. Conformista desconectado:** Desempeño mínimo, motivación extrínseca débil. Necesita: conexión con propósito.\n\n**4. Desafiante comunicativo:** Conducta difícil como lenguaje. Necesita: relación 1a1 y rol de responsabilidad.\n\n**5. Retraído en riesgo:** Aislamiento progresivo. Necesita: intervención activa y derivación si persiste.\n\nEn el siguiente módulo, verás estos perfiles en acción con casos reales del aula guatemalteca.', extra: { tip: 'Un estudiante puede moverse entre perfiles según el tema, el docente o el momento del año. Los perfiles son un mapa orientativo, no una etiqueta permanente.', activity: '¿Cuántos estudiantes de cada perfil tienes en tu aula ahora mismo? Haz la cuenta mentalmente.' } }
+        { id: 'te-m3-c12', type: 'content', title: '📋 Síntesis: Los cinco perfiles emocionales', content: 'Antes de pasar a los casos de estudio, sistematicemos los cinco perfiles emocionales principales:\n\n**1. Comprometido motivado:** Alto desempeño, motivación intrínseca. Necesita: desafío y autonomía.\n\n**2. Perfeccionista ansioso:** Alto desempeño, miedo al error. Necesita: cultura de error positivo.\n\n**3. Conformista desconectado:** Desempeño mínimo, motivación extrínseca débil. Necesita: conexión con propósito.\n\n**4. Desafiante comunicativo:** Conducta difícil como lenguaje. Necesita: relación 1a1 y rol de responsabilidad.\n\n**5. Retraído en riesgo:** Aislamiento progresivo. Necesita: intervención activa y derivación si persiste.\n\nEn el siguiente módulo, verás estos perfiles en acción con casos reales del aula guatemalteca.', extra: { tip: 'Un estudiante puede moverse entre perfiles según el tema, el docente o el momento del año. Los perfiles son un mapa orientativo, no una etiqueta permanente.', activity: '¿Cuántos estudiantes de cada perfil tienes en tu aula ahora mismo? Haz la cuenta mentalmente.' } },
+        { id: 'te-m3-t1', type: 'takeaway', title: 'Próximos pasos', prompt: '¿A qué perfil emocional le vas a prestar más atención?', options: ['Al estudiante perfeccionista que se paraliza ante el error', 'Al estudiante retraído que pasa desapercibido', 'Voy a buscar señales de trauma que antes no consideraba'] }
       ]
     },
     // MÓDULO 4: Casos de Estudio: Escenas del Aula Real (12 tarjetas)
@@ -946,7 +949,8 @@ const allCourses = [
         { id: 'te-m4-c9', type: 'simulation', title: '🎭 Pedro termina todo rápido y se aburre', scenario: '**Pedro** terminó la prueba de matemáticas en 8 minutos (de 40 asignados). Se acerca a tu escritorio y susurra: "Ya terminé. ¿Qué hago?"\n\nEl resto del grupo sigue trabajando. Tienes que decidir rápido.', statement: 'Lo correcto es decirle a Pedro que revise su prueba varias veces para aprovechar el tiempo restante.', correctSwipe: 'left', rightOutcome: '"Revisa" es la respuesta más fácil para el docente y la menos útil para Pedro. Si Pedro terminó en 8 minutos, revisará en 2 y volverá a pedirte algo que hacer. La revisión repetida de trabajo que ya considera correcto no es un desafío — es tiempo muerto con apariencia de productividad.', leftOutcome: '✅ Correcto. Opciones mejores que "revisa": tener preparado un desafío de extensión relacionado con el tema (un problema más complejo, una pregunta abierta), permitirle iniciar el próximo tema de forma autónoma, darle un proyecto personal de investigación acumulativo, o pedirle que diseñe una pregunta adicional para el examen. La clave es que la actividad sea genuinamente desafiante, no relleno de tiempo.', extra: { tip: 'El enriquecimiento (enrichment) no requiere tener un programa formal. Un cuaderno de "desafíos" con preguntas abiertas por tema, preparado una vez al inicio del año, puede servir como banco de actividades para Pedro durante todo el ciclo.', activity: '¿Tienes preparado algo para los estudiantes que terminan antes? Si no, ¿qué podrías preparar para la próxima semana?' } },
         { id: 'te-m4-c10', type: 'content', title: '📚 Caso: Ixchel, 8 años, bilingüe', content: '**Ixchel** habla Q\'eqchi\' como lengua materna. Aprendió español en la escuela. Cuando habla en Q\'eqchi\' con sus compañeros que comparten el idioma, usa oraciones complejas, hace chistes sofisticados y explica conceptos con claridad.\n\nEn clase, cuando la docente pregunta en español, Ixchel a veces responde correctamente pero en estructuras gramaticales que suenan "raras" en español. La docente la corrige públicamente con frecuencia.\n\nEn el examen escrito, Ixchel sacó 55/100 en comprensión lectora. Pero cuando la docente le leyó las mismas preguntas en voz alta y le permitió responder oralmente, Ixchel respondió correctamente 9 de 10 preguntas.\n\nEl expediente dice: "Dificultades en lenguaje. Comprensión lectora deficiente."', extra: { tip: 'El caso de Ixchel ilustra la diferencia entre BICS (Basic Interpersonal Communication Skills — fluencia conversacional, tarda 1-2 años) y CALP (Cognitive Academic Language Proficiency — lenguaje académico, tarda 5-7 años en una segunda lengua). Ixchel tiene BICS pero está desarrollando CALP. Eso no es deficiencia — es proceso normal de bilingüismo.', activity: '¿Cuántos de tus estudiantes están en proceso de adquisición del español académico? ¿Cómo adaptas tu evaluación para no medir el idioma cuando quieres medir el contenido?' } },
         { id: 'te-m4-c11', type: 'simulation', title: '🎭 Ixchel entiende pero no puede expresarlo en español', scenario: '**Ixchel** levanta la mano en clase de Ciencias para responder. Comienza a hablar pero mezcla estructuras del Q\'eqchi\' con el español y su respuesta resulta difícil de seguir. Algunos compañeros se ríen.\n\nLa docente anterior solía decirle: "Habla bien, en español correcto, porque aquí estamos en clase de español."', statement: 'Es correcto pedirle a Ixchel que reformule su respuesta en "español correcto" antes de continuar, para que aprenda la norma lingüística.', correctSwipe: 'left', rightOutcome: 'Corregir el código lingüístico de Ixchel en el momento en que levantó la mano y tomó el riesgo de participar envía un mensaje claro: "Tu forma de hablar no es aceptable aquí." Esto desincentiva la participación futura y asocia el aula con vergüenza lingüística. La corrección de la forma en el momento de la participación oral prioriza la gramática sobre el aprendizaje.', leftOutcome: '✅ Correcto. La respuesta más efectiva: primero, reconocer el contenido de la respuesta de Ixchel ("Muy bien, lo que Ixchel está diciendo es..."). Luego, en privado o en otro momento, trabajar la forma del español académico. Además, la risa de los compañeros requiere intervención inmediata: "En esta clase respetamos todas las formas de expresarse. Ixchel, ¿puedes continuar?"', extra: { tip: 'La corrección de errores lingüísticos en segunda lengua es más efectiva de forma implícita (el docente repite la idea con la estructura correcta) que explícita (señalar el error públicamente). La corrección explícita pública activa vergüenza, que cierra el canal de aprendizaje.', activity: '¿Cómo respondes actualmente cuando un estudiante se expresa con estructuras de su lengua materna en una clase en español? ¿Cambiarías algo?' } },
-        { id: 'te-m4-c12', type: 'content', title: '🗺️ Síntesis: El mapa de decisiones del docente', content: 'Después de 5 casos, emerge un patrón de decisiones que el docente efectivo toma consistentemente:\n\n**Antes de actuar:**\n• ¿Tengo suficiente información o estoy asumiendo?\n• ¿Qué dice el contexto (familia, idioma, historia escolar)?\n• ¿La conducta es el problema o es la señal del problema real?\n\n**Al diseñar la respuesta:**\n• ¿Esta acción fortalece o debilita la relación con el estudiante?\n• ¿Estoy respondiendo a la causa o al síntoma?\n• ¿Hay algo que pueda adaptar en mi diseño para que este estudiante tenga más oportunidades de éxito?\n\n**Al evaluar el resultado:**\n• ¿Mejoró algo? ¿Cómo lo sé?\n• ¿Necesito involucrar a alguien más (familia, orientador, colega)?\n• ¿Qué aprendí de este caso para el próximo?\n\nNo existe la decisión perfecta. Existe la decisión más informada posible, tomada con intención.', extra: { tip: 'Documentar brevemente tus decisiones y resultados convierte tu práctica en investigación acción. No necesitas publicarlo — basta con que te ayude a mejorar.', activity: '¿Cuál de los 5 casos de este módulo se pareció más a tu realidad actual? ¿Qué decisión tomarías mañana?' } }
+        { id: 'te-m4-c12', type: 'content', title: '🗺️ Síntesis: El mapa de decisiones del docente', content: 'Después de 5 casos, emerge un patrón de decisiones que el docente efectivo toma consistentemente:\n\n**Antes de actuar:**\n• ¿Tengo suficiente información o estoy asumiendo?\n• ¿Qué dice el contexto (familia, idioma, historia escolar)?\n• ¿La conducta es el problema o es la señal del problema real?\n\n**Al diseñar la respuesta:**\n• ¿Esta acción fortalece o debilita la relación con el estudiante?\n• ¿Estoy respondiendo a la causa o al síntoma?\n• ¿Hay algo que pueda adaptar en mi diseño para que este estudiante tenga más oportunidades de éxito?\n\n**Al evaluar el resultado:**\n• ¿Mejoró algo? ¿Cómo lo sé?\n• ¿Necesito involucrar a alguien más (familia, orientador, colega)?\n• ¿Qué aprendí de este caso para el próximo?\n\nNo existe la decisión perfecta. Existe la decisión más informada posible, tomada con intención.', extra: { tip: 'Documentar brevemente tus decisiones y resultados convierte tu práctica en investigación acción. No necesitas publicarlo — basta con que te ayude a mejorar.', activity: '¿Cuál de los 5 casos de este módulo se pareció más a tu realidad actual? ¿Qué decisión tomarías mañana?' } },
+        { id: 'te-m4-t1', type: 'takeaway', title: 'Próximos pasos', prompt: '¿Qué caso se parece más a un estudiante tuyo?', options: ['Uno que no habla en clase, como Lucía', 'Uno que interrumpe constantemente, como Marcos', 'Uno que termina rápido y se aburre, como Pedro'] }
       ]
     },
     // MÓDULO 5: Estrategias para Cada Estudiante (12 tarjetas)
@@ -985,7 +989,8 @@ const allCourses = [
             make: ['Unidad planificada con 2+ formas de representación', '2+ opciones de evaluación para la misma competencia', 'Fichas de perfil actualizadas de 5 estudiantes', 'Calendario de check-ins individuales de la unidad'],
             improve: ['¿Cómo involucrarías a los estudiantes en el diseño de cómo quieren aprender?', '¿Cómo compartirías este enfoque con un colega para que lo implemente también?', '¿Qué soporte necesitarías de tu dirección para implementar esto de forma sostenible?']
           }
-        }
+        },
+        { id: 'te-m5-t1', type: 'takeaway', title: 'Próximos pasos', prompt: '¿Cuál microacción vas a implementar mañana mismo?', options: ['Aprender y usar el nombre correcto de cada estudiante todos los días', 'Dar una forma alternativa de demostrar aprendizaje a quien lo necesite', 'Empezar mi sistema simple de seguimiento individual'] }
       ]
     }
   ],
@@ -1027,7 +1032,7 @@ const allCourses = [
     prerequisite: null,
     status: 'available',
     durationHours: 4,
-    totalCards: 50,
+    totalCards: 64,
     modules: [
         // MÓDULO 1: El poder de las historias en el aula (10 tarjetas)
         {
@@ -1043,7 +1048,10 @@ const allCourses = [
                 { id: 'st-m1-c7', type: 'quiz', question: 'Una docente describe tres opciones para iniciar su clase sobre la Revolución de 1944 en Guatemala. ¿Cuál usa storytelling de forma más efectiva?', options: ['Escribe en el pizarrón: "Revolución de 1944: causas, desarrollo y consecuencias."', '"Hoy veremos un evento histórico muy importante para Guatemala que ocurrió en 1944."', '"Era octubre de 1944. Jacobo Árbenz, un joven militar, miraba por la ventana y se preguntaba si era demasiado tarde para cambiar su país."', '"Abran el libro en la página 87 y lean el resumen de la Revolución de 1944."'], correct: 2, explanation: 'La opción C tiene los tres elementos narrativos: personaje (Jacobo Árbenz), conflicto (¿es demasiado tarde?) y apertura emocional (la incertidumbre). Crea imagen mental, tensión y deseo de saber qué pasó. Las otras opciones anuncian información pero no generan experiencia.' },
                 { id: 'st-m1-c8', type: 'quiz', question: '¿Cuál de los siguientes enfoques pedagógicos se basa principalmente en los principios del storytelling?', options: ['Dictar el resumen del tema mientras los estudiantes copian.', 'Hacer que los estudiantes memoricen definiciones y las repitan en voz alta.', 'Presentar el contenido mediante un caso real narrado con personaje, conflicto y resolución.', 'Poner un video explicativo sobre el tema y luego hacer un cuestionario.'], correct: 2, explanation: 'El storytelling pedagógico se distingue por incorporar personaje, conflicto y resolución como vehículo del contenido. No es solo "usar ejemplos" — es construir una narrativa que hace que el contenido sea la respuesta a una pregunta que el estudiante quiere responder.' },
                 { id: 'st-m1-c9', type: 'quiz', question: '¿Por qué las historias son neurológicamente más efectivas que las listas de datos para el aprendizaje?', options: ['Porque son más entretenidas y los estudiantes se aburren menos.', 'Porque activan múltiples áreas cerebrales simultáneamente, incluyendo las neuronas espejo y la memoria episódica.', 'Porque los docentes las cuentan con más entusiasmo.', 'Porque son más cortas y fáciles de recordar.'], correct: 1, explanation: 'Las historias activan hasta 7 áreas cerebrales (incluyendo áreas motoras, sensoriales y emocionales) mientras que los datos activan principalmente el área del lenguaje. Las neuronas espejo crean una experiencia vicaria que la memoria episódica consolida con mucha mayor efectividad.' },
-                { id: 'st-m1-c10', type: 'content', title: '🪝 El gancho: abrir clase con una historia', content: 'Durante décadas, los libros de pedagogía recomendaron iniciar la clase declarando el objetivo: "Al final de esta clase, el estudiante será capaz de...". La neurociencia del aprendizaje sugiere lo opuesto: el cerebro necesita curiosidad antes de estar dispuesto a recibir información. Un gancho narrativo crea esa curiosidad. En lugar de "Hoy aprenderemos sobre la célula", di: "En 1665, Robert Hooke miró por un microscopio primitivo y vio algo que nadie había visto antes. Lo que vio cambió todo lo que creíamos saber sobre los seres vivos."', extra: { tip: 'El gancho no tiene que ser largo. Puede ser una sola frase que genere curiosidad o una pregunta que solo la historia puede responder. Lo esencial es que el estudiante quiera saber qué pasa antes de que empiece el contenido.', activity: 'Practica reescribir el inicio de tu próxima clase. En lugar de declarar el objetivo, crea un gancho narrativo de 3-4 oraciones con personaje, situación y pregunta abierta.' } }
+                { id: 'st-m1-c10', type: 'content', title: '🪝 El gancho: abrir clase con una historia', content: 'Durante décadas, los libros de pedagogía recomendaron iniciar la clase declarando el objetivo: "Al final de esta clase, el estudiante será capaz de...". La neurociencia del aprendizaje sugiere lo opuesto: el cerebro necesita curiosidad antes de estar dispuesto a recibir información. Un gancho narrativo crea esa curiosidad. En lugar de "Hoy aprenderemos sobre la célula", di: "En 1665, Robert Hooke miró por un microscopio primitivo y vio algo que nadie había visto antes. Lo que vio cambió todo lo que creíamos saber sobre los seres vivos."', extra: { tip: 'El gancho no tiene que ser largo. Puede ser una sola frase que genere curiosidad o una pregunta que solo la historia puede responder. Lo esencial es que el estudiante quiera saber qué pasa antes de que empiece el contenido.', activity: 'Practica reescribir el inicio de tu próxima clase. En lugar de declarar el objetivo, crea un gancho narrativo de 3-4 oraciones con personaje, situación y pregunta abierta.' } },
+                { id: 'st-m1-pr1', type: 'project', title: 'Diseña el gancho de tu próxima clase', description: 'Convertí el inicio de tu próxima clase en una historia de 2-3 oraciones, en vez de explicar el tema directamente.', objective: 'Reemplazar UN inicio de clase expositivo por un gancho narrativo real.', materials: ['El tema de tu próxima clase'], steps: ['Elegí un tema que normalmente explicás directo ("hoy veremos...").', 'Buscá una historia, anécdota o pregunta narrativa que lo introduzca.', 'Escribila en 2-3 oraciones máximo.', 'Usala mañana como apertura, antes de explicar nada.'], think: ['¿Qué historia real (tuya, de un estudiante, de la comunidad) se conecta con este tema?', '¿Cómo generás curiosidad sin revelar el final?'], make: ['Un gancho narrativo de 2-3 oraciones, listo para usar'], improve: ['Anotá si notaste más atención al inicio de la clase que de costumbre'] },
+                { id: 'st-m1-sim1', type: 'simulation', title: '¿Vale la pena "perder" 2 minutos en una historia?', scenario: 'Tenés poco tiempo de clase y un tema denso que cubrir. Pensás que contar una historia de 2 minutos te va a quitar tiempo valioso de contenido.', statement: 'Vale la pena invertir esos 2 minutos en una historia antes de explicar el contenido denso.', correctSwipe: 'right', rightOutcome: '**Correcto.** El contenido presentado como historia se recuerda muchas veces más que el mismo contenido explicado directo. Esos 2 minutos no son tiempo perdido — son la inversión que hace que el resto del contenido SÍ se quede.', leftOutcome: 'Saltarse la historia para "ganar tiempo" suena eficiente, pero si el contenido explicado directo se olvida rápido, ese tiempo se pierde igual cuando hay que repasar. Los 2 minutos de historia son parte de lo que hace que el contenido se quede.' },
+                { id: 'st-m1-tk1', type: 'takeaway', title: 'Próximos pasos', prompt: '¿Qué vas a narrar en tu próxima clase?', options: ['Un gancho de 2-3 oraciones para abrir el tema', 'Una historia guatemalteca conectada con mi contenido', 'Voy a personificar un concepto abstracto de mi materia'] }
             ]
         },
         // MÓDULO 2: Estructura narrativa para clase (10 tarjetas)
@@ -1060,7 +1068,10 @@ const allCourses = [
                 { id: 'st-m2-c7', type: 'quiz', question: 'Una docente planifica su clase sobre la división con residuos usando este inicio: "La comunidad de Chajul necesita distribuir 253 bolsas de semillas entre 8 familias. Todas deben recibir lo mismo. ¿Cuántas bolsas sobran?" ¿Qué elemento narrativo está usando?', options: ['El viaje del héroe completo.', 'El arco problema-tensión-resolución con contexto guatemalteco.', 'La estructura de 5 actos completa.', 'El clímax narrativo sin exposición previa.'], correct: 1, explanation: 'La docente usa el arco problema-tensión-resolución: hay un problema concreto (distribuir semillas), una tensión (¿cuántas sobran?, implica que el número no divide exactamente) y el contenido — la división con residuos — es la resolución. El contexto guatemalteco hace el problema auténtico.' },
                 { id: 'st-m2-c8', type: 'content', title: '🎭 Personificar conceptos abstractos', content: 'Un concepto abstracto se vuelve memorable cuando tiene nombre, personalidad y problema. Las fracciones pueden ser "hermanas que deben compartir exactamente igual". Los números negativos pueden ser "deudas que persiguen al protagonista". Las células pueden ser "ciudades con alcalde (núcleo), trabajadores (organelos) y muros (membrana)". En Guatemala, personificar conceptos usando animales o figuras del calendario maya (los nahuales) crea conexiones culturalmente resonantes que la clase memoriza sin esfuerzo.', extra: { tip: 'La personificación no "simplifica" el concepto — lo hace accesible. La profundidad se agrega sobre la personificación, no en lugar de ella. Primero el personaje, luego el rigor.', activity: 'Elige un concepto abstracto de tu asignatura. Dale un nombre, una personalidad y un problema. ¿Cómo cambia la forma en que lo enseñarías?' } },
                 { id: 'st-m2-c9', type: 'content', title: '🔚 El cliffhanger: dejar la historia incompleta', content: 'Los mejores episodios de las series terminan en el momento de mayor tensión, justo cuando el espectador más quiere saber qué pasa. Esta técnica — el cliffhanger — es poderosa en educación. En lugar de cerrar completamente la clase, déjala en el punto de mayor tensión. "Mañana descubriremos si la comunidad logró resolver el problema..." El cerebro del estudiante seguirá procesando el conflicto después de clases — sin tarea adicional, solo con la tensión narrativa no resuelta.', extra: { tip: 'El cliffhanger pedagógico funciona mejor cuando la tensión es genuina: el estudiante realmente quiere saber la respuesta. Si el conflicto fue artificialmente construido o no conecta con su realidad, el efecto se pierde.', activity: '¿Cómo podrías terminar tu próxima clase con un cliffhanger en lugar de un cierre completo? ¿Qué pregunta dejarías sin responder hasta la siguiente sesión?' } },
-                { id: 'st-m2-c10', type: 'quiz', question: 'Un docente quiere convertir el objetivo "el estudiante identificará las causas de la Independencia de Guatemala" en un gancho narrativo. ¿Cuál es la mejor versión?', options: ['"El objetivo de hoy es identificar las causas de la Independencia de Guatemala de 1821."', '"En 1821, un grupo de personas en Ciudad de Guatemala debatía en secreto si firmar un documento que podría costarles la vida o la libertad. ¿Qué los llevó a ese momento?"', '"Hoy veremos un hecho histórico muy importante: la Independencia de Guatemala."', '"Abran el libro y lean las causas de la Independencia en la página 45."'], correct: 1, explanation: 'La opción B convierte el objetivo en una historia: tiene personaje (un grupo de personas), conflicto (el riesgo de firmar), tensión (¿qué los llevó ahí?) y genera curiosidad antes de que el contenido empiece. Las causas de la Independencia se convierten en la respuesta a una pregunta que el estudiante quiere responder.' }
+                { id: 'st-m2-c10', type: 'quiz', question: 'Un docente quiere convertir el objetivo "el estudiante identificará las causas de la Independencia de Guatemala" en un gancho narrativo. ¿Cuál es la mejor versión?', options: ['"El objetivo de hoy es identificar las causas de la Independencia de Guatemala de 1821."', '"En 1821, un grupo de personas en Ciudad de Guatemala debatía en secreto si firmar un documento que podría costarles la vida o la libertad. ¿Qué los llevó a ese momento?"', '"Hoy veremos un hecho histórico muy importante: la Independencia de Guatemala."', '"Abran el libro y lean las causas de la Independencia en la página 45."'], correct: 1, explanation: 'La opción B convierte el objetivo en una historia: tiene personaje (un grupo de personas), conflicto (el riesgo de firmar), tensión (¿qué los llevó ahí?) y genera curiosidad antes de que el contenido empiece. Las causas de la Independencia se convierten en la respuesta a una pregunta que el estudiante quiere responder.' },
+                { id: 'st-m2-pr1', type: 'project', title: 'Convierte un tema en mini-relato de 3 oraciones', description: 'Tomá un contenido de tu planificación y convertilo en un mini-relato de exactamente 3 oraciones, usando problema-tensión-resolución.', objective: 'Practicar la estructura narrativa más corta y aplicable de este módulo.', materials: ['Un tema de tu planificación'], steps: ['Elegí un concepto o proceso de tu materia.', 'Oración 1: plantea un problema o pregunta.', 'Oración 2: la tensión (por qué es difícil, qué está en juego).', 'Oración 3: la resolución que conecta con lo que van a aprender.'], think: ['¿Qué contenido de tu materia tiene un "problema" natural escondido?', '¿Cómo dejarías la resolución incompleta (cliffhanger) para enganchar más?'], make: ['Un mini-relato de 3 oraciones sobre tu tema'], improve: ['Probalo con un colega antes de usarlo en clase — ¿genera curiosidad real?'] },
+                { id: 'st-m2-sim1', type: 'simulation', title: '¿Dejás la historia incompleta?', scenario: 'Estás contando una historia para introducir un tema y llegás al momento de mayor tensión. Podrías resolverla ahí mismo o dejarla incompleta hasta después de explicar el contenido.', statement: 'Vale la pena dejar la historia sin resolver (cliffhanger) hasta después de dar el contenido.', correctSwipe: 'right', rightOutcome: '**Correcto.** El cliffhanger mantiene la atención activa durante todo el contenido que sigue — los estudiantes quieren saber cómo termina, y esa curiosidad sostiene su atención mejor que resolver todo de inmediato.', leftOutcome: 'Resolver la historia de inmediato da satisfacción rápida, pero pierde la herramienta más poderosa del cliffhanger: mantener la atención enganchada durante todo el contenido que viene después.' },
+                { id: 'st-m2-tk1', type: 'takeaway', title: 'Próximos pasos', prompt: '¿Qué estructura narrativa vas a usar esta semana?', options: ['Un mini-relato de 3 oraciones para un tema difícil', 'Un cliffhanger que resuelvo después de explicar el contenido', 'Personificar un concepto abstracto de mi materia'] }
             ]
         },
         // MÓDULO 3: El docente como narrador (10 tarjetas)
@@ -1077,7 +1088,10 @@ const allCourses = [
                 { id: 'st-m3-c7', type: 'quiz', question: '¿Cuál de estas acciones representa un uso efectivo de técnicas de narración en el aula?', options: ['Leer el texto del libro en voz alta con buena pronunciación.', 'Bajar la voz al llegar al momento más tenso de la historia, hacer una pausa de 3 segundos y luego continuar.', 'Hablar más rápido para cubrir más contenido en menos tiempo.', 'Permanecer detrás del escritorio para proyectar autoridad mientras se narra.'], correct: 1, explanation: 'Bajar la voz (contraste de volumen) y la pausa dramática son técnicas de narración que crean tensión y señalan importancia. El cerebro del estudiante interpreta el contraste como "esto es lo que debo recordar". Hablar más rápido o quedarse detrás del escritorio reduce el impacto narrativo.' },
                 { id: 'st-m3-c8', type: 'content', title: '🎨 Mostrar, no decir', content: 'El principio fundamental de la escritura creativa aplica perfectamente a la docencia: "Show, don\'t tell" — muestra, no digas. En lugar de decir "la pobreza en el siglo XIX era terrible", muestra: "En 1890, una familia de Ciudad de Guatemala desayunaba con agua caliente y tortillas secas, si tenía suerte, antes de caminar dos horas hasta el trabajo." El primer enunciado es un juicio. El segundo es una imagen. Las imágenes viven en el cerebro; los juicios, no.', extra: { tip: 'Transformar tus "decires" en "mostrados" es un ejercicio que mejora con la práctica. Cada vez que vayas a hacer una afirmación abstracta ("esto fue importante", "fue difícil", "cambió todo"), pregúntate: ¿cómo se veía eso? ¿Qué detalle concreto lo muestra?', activity: 'Toma tres afirmaciones de tu planificación actual. Por cada una, escribe la imagen concreta que la muestra sin decirla directamente.' } },
                 { id: 'st-m3-c9', type: 'content', title: '🔁 Repetición y callback para reforzar', content: 'Los mejores narradores usan dos técnicas de refuerzo: REPETICIÓN (repetir una frase clave en momentos distintos de la historia: "como dijimos al principio...") y CALLBACK (volver al inicio al final: "¿recuerdan a Tecún Umán esta mañana? Ahora entendemos por qué hizo lo que hizo"). En educación, el callback conecta el gancho inicial con la resolución final, cerrando el círculo narrativo. El cerebro obtiene satisfacción de ese cierre — y esa satisfacción refuerza la consolidación del aprendizaje.', extra: { tip: 'El callback es especialmente poderoso porque cumple una función doble: cierra la historia narrativamente y consolida el contenido pedagógico. El estudiante siente que "cerró algo" — y ese cierre emocional ayuda a la memoria.', activity: 'Planifica el callback de tu próxima clase con gancho narrativo. ¿Cómo volverás al personaje o situación del inicio cuando el contenido esté completo?' } },
-                { id: 'st-m3-c10', type: 'quiz', question: '¿Qué error de narración "rompe la inmersión" de una historia en el aula de forma más severa?', options: ['Usar un ejemplo guatemalteco en lugar de uno internacional.', 'Interrumpir la historia en el momento de mayor tensión para pasar lista o dar un anuncio administrativo.', 'Contar una historia que el docente no vivió personalmente.', 'Usar gestos mientras se narra.'], correct: 1, explanation: 'Interrumpir la tensión narrativa para asuntos administrativos destruye la inmersión. El cerebro del estudiante sale del estado de "historia" y entra al estado de "clase rutinaria" — y es difícil volver a entrar. La planificación debe proteger el arco narrativo de interrupciones predecibles.' }
+                { id: 'st-m3-c10', type: 'quiz', question: '¿Qué error de narración "rompe la inmersión" de una historia en el aula de forma más severa?', options: ['Usar un ejemplo guatemalteco en lugar de uno internacional.', 'Interrumpir la historia en el momento de mayor tensión para pasar lista o dar un anuncio administrativo.', 'Contar una historia que el docente no vivió personalmente.', 'Usar gestos mientras se narra.'], correct: 1, explanation: 'Interrumpir la tensión narrativa para asuntos administrativos destruye la inmersión. El cerebro del estudiante sale del estado de "historia" y entra al estado de "clase rutinaria" — y es difícil volver a entrar. La planificación debe proteger el arco narrativo de interrupciones predecibles.' },
+                { id: 'st-m3-pr1', type: 'project', title: 'Practica una técnica de narración oral', description: 'Elegí UNA técnica de narración (silencio dramático, cambio de voz, lenguaje corporal) y practicala conscientemente esta semana.', objective: 'Notar la diferencia real en la atención de tus estudiantes al usar una técnica de narración a propósito.', materials: ['Una historia o explicación que ya ibas a contar'], steps: ['Elegí una técnica: pausa de silencio antes de un momento clave, cambio de voz para un personaje, o gesto corporal deliberado.', 'Practicala antes de la clase, aunque sea una vez en voz alta a solas.', 'Usala conscientemente en tu próxima narración.', 'Observá la reacción de tus estudiantes en ese momento exacto.'], think: ['¿Cuál técnica te da más vergüenza probar? — probablemente esa es la que más impacto tiene.', '¿Cómo leés si el aula está perdiendo atención mientras narrás?'], make: ['Una narración con al menos una técnica usada a propósito'], improve: ['Anotá qué reacción notaste en el momento exacto donde la usaste'] },
+                { id: 'st-m3-sim1', type: 'simulation', title: '¿Contás la historia personal difícil?', scenario: 'Estás por contar una historia personal difícil (un fracaso propio) para ilustrar un tema de perseverancia, pero te da vergüenza mostrarte vulnerable frente a tus estudiantes.', statement: 'Vale la pena contar la historia personal aunque te haga sentir vulnerable.', correctSwipe: 'right', rightOutcome: '**Correcto.** Las historias personales del docente —incluyendo fracasos— son de las más memorables y humanizantes para los estudiantes. La vulnerabilidad genuina genera más conexión y credibilidad que una historia perfecta o ajena.', leftOutcome: 'Evitar la vulnerabilidad protege tu imagen, pero te priva de una de las herramientas narrativas más poderosas: los estudiantes conectan y recuerdan más las historias personales genuinas, fracasos incluidos.' },
+                { id: 'st-m3-tk1', type: 'takeaway', title: 'Próximos pasos', prompt: '¿Qué técnica de narración vas a practicar?', options: ['Una pausa de silencio antes de un momento clave', 'Contar una historia personal genuina, aunque me dé vergüenza', 'Mostrar en vez de decir en mi próxima explicación'] }
             ]
         },
         // MÓDULO 4: Historias con propósito pedagógico (10 tarjetas)
@@ -1094,7 +1108,10 @@ const allCourses = [
                 { id: 'st-m4-c7', type: 'quiz', question: 'Una docente quiere evaluar si sus estudiantes comprendieron el ciclo del agua. En lugar de un examen escrito, les pide que narren la historia de "una gota de agua que comienza en el lago Atitlán y viaja hasta volver al punto de partida". ¿Qué tipo de evaluación es esta?', options: ['Una actividad de relajación sin valor pedagógico.', 'Una evaluación narrativa que mide comprensión profunda del ciclo del agua a través de la síntesis y la secuencia.', 'Un juego que reemplaza irresponsablemente la evaluación formal.', 'Una evaluación solo apta para estudiantes con habilidades artísticas.'], correct: 1, explanation: 'Para narrar el viaje completo de la gota, el estudiante debe dominar la secuencia del ciclo del agua, sus etapas, los cambios de estado y los factores ambientales. La narrativa es el vehículo; la comprensión del ciclo es el contenido evaluado. Es evaluación auténtica y culturalmente contextualizada.' },
                 { id: 'st-m4-c8', type: 'content', title: '🌍 Ética del storytelling: representar bien', content: 'El storytelling pedagógico tiene responsabilidades éticas. SENSIBILIDAD CULTURAL: evitar usar culturas, comunidades o grupos como "ejemplos exóticos" o como escenarios de problemas sin agencia. EVITAR ESTEREOTIPOS: no reducir a personajes guatemaltecos, indígenas o rurales a pobreza, conflicto o tragedia — sus historias también incluyen ingenuidad, resiliencia, innovación y alegría. REPRESENTAR CON DIGNIDAD: si usas una historia real, verifica que los protagonistas estarían de acuerdo con cómo los representas. La historia poderosa no explota — ilumina.', extra: { tip: 'En contextos mayas guatemaltecos, ciertas historias sagradas o ceremoniales no deben ser reproducidas fuera de su contexto ritual. Antes de usar una historia comunitaria en clase, consulta con un anciano o líder comunitario. El permiso cultural es parte de la ética del storytelling.', activity: '¿Hay alguna historia que hayas contado en clase que, revisándola ahora, podría haber sido inapropiada o estereotipante? ¿Cómo la contarías diferente hoy?' } },
                 { id: 'st-m4-c9', type: 'content', title: '🎓 Adaptar la historia para diferentes edades', content: 'La misma historia puede contarse en distintos niveles de complejidad. En primaria: personajes simples, conflicto concreto, resolución rápida y emocional. En básicos: personajes con dilemas morales, conflicto que requiere razonamiento, resolución abierta a debate. En diversificado: personajes históricamente complejos, conflicto sistémico, resolución ambigua que invita al análisis crítico. La fotosíntesis puede narrarse como "la hoja que aprende a cocinar su propia comida" para primaria, o como "el mecanismo que los seres vivos desarrollaron para independizarse de depender de otros para alimentarse" para diversificado.', extra: { tip: 'El nivel de complejidad narrativa no está solo en el vocabulario — está en la complejidad moral del personaje y la ambigüedad de la resolución. Los niños pequeños necesitan resoluciones claras; los adolescentes pueden procesar (y de hecho prefieren) resoluciones ambiguas y preguntas abiertas.', activity: '¿Tienes una historia que cuentas para un grado específico? ¿Cómo la adaptarías para un grado 3 años menor o 3 años mayor que el tuyo?' } },
-                { id: 'st-m4-c10', type: 'quiz', question: '¿Cuál es la diferencia entre un objetivo de aprendizaje "embebido" en una historia y uno "declarado" antes de la clase?', options: ['No hay diferencia real: el contenido es el mismo de cualquier forma.', 'El objetivo embebido convierte el contenido en la respuesta a una pregunta que el estudiante ya quiere responder; el declarado lo presenta como una tarea externa.', 'El objetivo embebido es menos riguroso porque no se enuncia explícitamente.', 'El objetivo declarado es mejor porque todos los estándares educativos lo requieren.'], correct: 1, explanation: 'Cuando el objetivo se embebe en la historia, el estudiante aprende porque quiere resolver el conflicto narrativo — y el contenido es la clave para resolverlo. Eso es motivación intrínseca. Cuando se declara antes, el estudiante aprende porque el docente lo indicó. El contenido es el mismo; la motivación y la retención son muy distintas.' }
+                { id: 'st-m4-c10', type: 'quiz', question: '¿Cuál es la diferencia entre un objetivo de aprendizaje "embebido" en una historia y uno "declarado" antes de la clase?', options: ['No hay diferencia real: el contenido es el mismo de cualquier forma.', 'El objetivo embebido convierte el contenido en la respuesta a una pregunta que el estudiante ya quiere responder; el declarado lo presenta como una tarea externa.', 'El objetivo embebido es menos riguroso porque no se enuncia explícitamente.', 'El objetivo declarado es mejor porque todos los estándares educativos lo requieren.'], correct: 1, explanation: 'Cuando el objetivo se embebe en la historia, el estudiante aprende porque quiere resolver el conflicto narrativo — y el contenido es la clave para resolverlo. Eso es motivación intrínseca. Cuando se declara antes, el estudiante aprende porque el docente lo indicó. El contenido es el mismo; la motivación y la retención son muy distintas.' },
+                { id: 'st-m4-pr1', type: 'project', title: 'Diseña una evaluación a través de storytelling', description: 'En vez de una pregunta directa, diseñá una forma de evaluar comprensión pidiendo a tus estudiantes que cuenten o creen una historia sobre el tema.', objective: 'Usar el storytelling como herramienta de evaluación, no solo de enseñanza.', materials: ['Un tema ya enseñado que querés evaluar'], steps: ['Elegí un tema que ya diste.', 'En vez de preguntar "¿qué es X?", pedí: "contame una historia donde X sea importante".', 'Aplicalo con un grupo pequeño o toda la clase.', 'Evaluá qué tan bien la historia refleja comprensión real del concepto.'], think: ['¿Qué tema se presta mejor para evaluarse así — uno de proceso o uno de definición?', '¿Cómo distinguís una historia creativa de una que realmente demuestra comprensión?'], make: ['Una consigna de evaluación narrativa aplicada'], improve: ['Anotá si esta evaluación reveló algo que una pregunta directa no hubiera mostrado'] },
+                { id: 'st-m4-sim1', type: 'simulation', title: '¿Investigás antes de contar esa historia?', scenario: 'Vas a contar una historia sobre una cultura o comunidad que no es la tuya para ilustrar un tema, y no estás seguro de representarla con precisión y respeto.', statement: 'Vale la pena investigar más o consultar con alguien de esa comunidad antes de contar la historia, aunque eso retrase tu clase.', correctSwipe: 'right', rightOutcome: '**Correcto.** Contar una historia con estereotipos o datos incorrectos hace más daño que no contarla. Investigar o consultar antes, aunque tome más tiempo, es parte responsable de narrar bien.', leftOutcome: 'Contar la historia sin verificar su precisión ahorra tiempo, pero arriesga transmitir estereotipos o errores sobre una comunidad real. Vale la pena el tiempo extra de investigar.' },
+                { id: 'st-m4-tk1', type: 'takeaway', title: 'Próximos pasos', prompt: '¿Cómo vas a usar el storytelling para evaluar?', options: ['Pedir a mis estudiantes que cuenten el proceso como una historia', 'Dejar que un estudiante narre lo aprendido a sus compañeros', 'Revisar una historia que uso para representar bien a la comunidad que menciono'] }
             ]
         },
         // MÓDULO 5: Práctica y diseño de tu historia docente (10 tarjetas)
@@ -1111,7 +1128,9 @@ const allCourses = [
                 { id: 'st-m5-c7', type: 'quiz', question: 'Una docente comparte su gancho narrativo con un colega usando el protocolo "Noté / Me pregunté / ¿Qué pasaría si...?". El colega dice: "Noté que el conflicto se resuelve muy rápido en tu historia, en la segunda oración." ¿Qué debería hacer la docente con este feedback?', options: ['Ignorarlo: el protocolo no permite críticas directas.', 'Agradecer la observación y considerar extender la tensión del conflicto antes de ofrecer la resolución.', 'Defender su historia explicando por qué la resolución rápida es intencional.', 'Cambiar completamente la historia para que el colega quede satisfecho.'], correct: 1, explanation: 'El protocolo "Noté" es una observación descriptiva que da información útil sin juzgar. La resolución prematura del conflicto es efectivamente un riesgo narrativo: si la tensión no se sostiene lo suficiente, el cerebro no se involucra. La docente debe considerar cómo extender la tensión para que el conflicto "duela" un poco más antes de resolverse.' },
                 { id: 'st-m5-c8', type: 'content', title: '🏘️ Historias que construyen comunidad de aula', content: 'Las historias compartidas crean identidad de grupo. Cuando el aula tiene sus propias historias — "¿recuerdan cuando don Pedro nos contó sobre la cosecha?" o "¿recuerdan la historia de la gota de agua que empezó en el Atitlán?" — esas referencias compartidas se convierten en el pegamento cultural del grupo. Los docentes que narran regularmente construyen aulas con memoria colectiva, y esa memoria colectiva es el tejido de la comunidad de aprendizaje. En Guatemala, donde la tradición oral comunitaria es central, esta práctica reconecta la escuela con la cultura.', extra: { tip: 'Las historias de aula más poderosas son las que el grupo creó o vivió junto. Una historia que "pasó en esta aula" tiene un peso emocional y mnemónico que ninguna historia externa puede igualar.', activity: '¿Qué historias tiene tu aula actual? ¿Hay momentos compartidos, experiencias de clase o proyectos que ya se han convertido en referencias comunes del grupo? Nómbralos.' } },
                 { id: 'st-m5-c9', type: 'content', title: '🌿 La espina de la historia (Story Spine)', content: 'La "story spine" o espina de la historia es una técnica de improvisación teatral adaptada para el aula. Tiene 7 frases conector que generan una historia completa: "Había una vez..." (personaje y mundo), "Cada día..." (rutina, lo normal), "Hasta que un día..." (el detonante), "Por eso..." (primera consecuencia), "Hasta que finalmente..." (clímax y resolución), "Y desde entonces..." (el mundo transformado). Esta técnica puede usarse para crear historias pedagógicas, como actividad de cierre de clase o como proyecto de escritura narrativa.', extra: { tip: 'La story spine es especialmente útil para estudiantes que "no saben qué escribir". La estructura les da el andamiaje para construir una historia completa sin partir de cero. También puede adaptarse con personajes del Popol Vuh o de la historia guatemalteca.', activity: 'Completa ahora una story spine sobre un concepto de tu asignatura. Usa los 7 conectores y llena cada uno con detalles de tu contexto guatemalteco.' } },
-                { id: 'st-m5-c10', type: 'quiz', question: 'Usas la "story spine" para planificar un gancho sobre la fotosíntesis. ¿Cuál de estas versiones sigue correctamente la estructura?', options: ['"La fotosíntesis es el proceso por el cual las plantas producen su alimento usando luz solar, agua y dióxido de carbono."', '"Había una vez una hoja de maíz en Quetzaltenango. Cada día absorbía luz del sol y agua de la lluvia. Hasta que un día llegó una semana sin sol. Por eso, la hoja tuvo que buscar una manera de sobrevivir. Hasta que finalmente encontró reservas en su tallo. Y desde entonces, las plantas aprendieron a guardar energía para los días oscuros."', '"La planta es verde porque tiene clorofila. La clorofila absorbe luz y produce glucosa."', '"Hoy estudiaremos la fotosíntesis, que es muy importante para entender cómo crecen las plantas."'], correct: 1, explanation: 'La opción B sigue exactamente la estructura de la story spine: personaje (hoja de maíz en Quetzaltenango), rutina (absorber sol y agua), detonante (semana sin sol), consecuencia (buscar solución), resolución (reservas en el tallo) y transformación (aprendieron a guardar energía). El contenido científico —fotosíntesis y almacenamiento de energía— está embebido en la narrativa.' }
+                { id: 'st-m5-c10', type: 'quiz', question: 'Usas la "story spine" para planificar un gancho sobre la fotosíntesis. ¿Cuál de estas versiones sigue correctamente la estructura?', options: ['"La fotosíntesis es el proceso por el cual las plantas producen su alimento usando luz solar, agua y dióxido de carbono."', '"Había una vez una hoja de maíz en Quetzaltenango. Cada día absorbía luz del sol y agua de la lluvia. Hasta que un día llegó una semana sin sol. Por eso, la hoja tuvo que buscar una manera de sobrevivir. Hasta que finalmente encontró reservas en su tallo. Y desde entonces, las plantas aprendieron a guardar energía para los días oscuros."', '"La planta es verde porque tiene clorofila. La clorofila absorbe luz y produce glucosa."', '"Hoy estudiaremos la fotosíntesis, que es muy importante para entender cómo crecen las plantas."'], correct: 1, explanation: 'La opción B sigue exactamente la estructura de la story spine: personaje (hoja de maíz en Quetzaltenango), rutina (absorber sol y agua), detonante (semana sin sol), consecuencia (buscar solución), resolución (reservas en el tallo) y transformación (aprendieron a guardar energía). El contenido científico —fotosíntesis y almacenamiento de energía— está embebido en la narrativa.' },
+                { id: 'st-m5-sim1', type: 'simulation', title: '¿Descartás la plantilla por sonar genérica?', scenario: 'Usaste la "story spine" para diseñar tu gancho narrativo, pero el resultado te suena genérico y no como tu propia voz.', statement: 'Vale la pena usar la plantilla como punto de partida y luego ajustarla con tu voz, en vez de descartarla por sonar genérica.', correctSwipe: 'right', rightOutcome: '**Correcto.** Las plantillas narrativas existen para dar estructura, no para reemplazar tu voz — el primer borrador de cualquier plantilla suena genérico hasta que le agregás tus propios detalles y forma de hablar.', leftOutcome: 'Descartar la plantilla por sonar genérica en el primer intento le quita a la técnica su verdadero valor: darte una estructura sobre la cual construir TU versión, en vez de partir de cero cada vez.' },
+                { id: 'st-m5-tk1', type: 'takeaway', title: 'Próximos pasos', prompt: '¿Cómo vas a seguir con el storytelling en tu aula?', options: ['Diseñar un gancho narrativo nuevo cada semana con los 5 pasos', 'Usar la story spine con mis estudiantes como actividad de cierre', 'Empezar mi biblioteca personal de historias pedagógicas'] }
             ]
         }
     ]
@@ -1130,7 +1149,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 4,
-    totalCards: 50,
+    totalCards: 65,
     modules: [
         {
             id: 1,
@@ -1226,6 +1245,35 @@ const allCourses = [
                     ],
                     correct: 1,
                     explanation: "El ciclo creativo comienza con la Preparación (acumular experiencias e información), sigue con la Incubación (procesamiento inconsciente), luego viene la Iluminación (la idea surge) y finalmente la Verificación (se evalúa y perfecciona la idea)."
+                },
+                {
+                    id: 51,
+                    type: "project",
+                    title: "Detecta un mito de la creatividad en tu propia práctica",
+                    description: "Revisá tu semana de clases pasada e identificá si actuaste bajo alguno de los mitos de creatividad que viste.",
+                    objective: "Reconocer un mito propio y reemplazarlo por una acción concreta esta semana.",
+                    materials: ["Tu planificación de la semana pasada"],
+                    steps: ["Repasá los mitos de creatividad de este módulo.", "Identificá cuál mito aplicaste sin darte cuenta (ej: \"solo los artistas son creativos\", \"la creatividad no se puede enseñar\").", "Elegí UNA actividad de tu próxima semana para hacerla de forma más creativa.", "Anotá qué cambiarías exactamente."],
+                    think: ["¿Qué mito de creatividad te resultó más incómodo reconocer en vos mismo?", "¿Cómo se lo transmitís sin querer a tus estudiantes?"],
+                    make: ["Una actividad de tu planificación rediseñada sin ese mito"],
+                    improve: ["Después de probarla, anotá qué cambió en la participación de tus estudiantes"]
+                },
+                {
+                    id: 52,
+                    type: "simulation",
+                    title: "¿Dejás que uno piense por todos?",
+                    scenario: "En una actividad grupal, un estudiante muy creativo domina las ideas del equipo y los demás solo asienten. El producto final es bueno, pero solo una persona pensó.",
+                    statement: "Vale la pena intervenir para que otros del equipo propongan ideas, aunque eso baje la calidad inicial de las propuestas.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** La creatividad colectiva no es que el más creativo piense por todos — es que TODOS practiquen pensar. Si dejás que uno domine, los demás pierden justo la práctica que la actividad buscaba darles, aunque el producto final se vea mejor a corto plazo.",
+                    leftOutcome: "Dejar que el estudiante más creativo domine da un mejor producto inmediato, pero le quita a los demás la práctica de generar ideas propias — exactamente la habilidad que una actividad creativa grupal debería desarrollar en todos, no solo en uno."
+                },
+                {
+                    id: 53,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer distinto esta semana?",
+                    options: ["Rediseñar una actividad para sacarle un mito de creatividad", "Asegurar que todos en un grupo propongan al menos una idea", "Explicarles a mis estudiantes que la creatividad se entrena, no es un don"]
                 }
             ]
         },
@@ -1323,6 +1371,35 @@ const allCourses = [
                     ],
                     correct: 1,
                     explanation: "La incubación es la fase en que dejamos de esforzarnos conscientemente en un problema y el cerebro sigue procesando en segundo plano. Ocurre durante descansos, paseos o el sueño, y con frecuencia produce los 'momentos eureka'."
+                },
+                {
+                    id: 54,
+                    type: "project",
+                    title: "Aplica pensamiento divergente y convergente",
+                    description: "Diseñá un momento de tu próxima clase que use primero pensamiento divergente (muchas ideas) y después convergente (elegir una).",
+                    objective: "Practicar la secuencia divergente→convergente con tus estudiantes, no solo entenderla en teoría.",
+                    materials: ["Un tema de tu planificación de esta semana"],
+                    steps: ["Elegí un problema o pregunta de tu tema.", "Dales 5 minutos para generar TODAS las ideas posibles, sin juzgar ninguna (divergente).", "Después, dales 5 minutos para elegir y justificar la mejor idea (convergente).", "Observá si alguno se salta directo a converger sin divergir primero."],
+                    think: ["¿Tus estudiantes suelen saltar directo a \"la respuesta correcta\" sin explorar otras?", "¿Qué pasa si les das más tiempo para divergir del que te sientas cómodo dando?"],
+                    make: ["Un momento de clase con las 2 fases claramente separadas"],
+                    improve: ["Anotá si separar las fases cambió la cantidad o calidad de ideas"]
+                },
+                {
+                    id: 55,
+                    type: "simulation",
+                    title: "¿Pausa o pista fuerte?",
+                    scenario: "Tus estudiantes llevan 20 minutos atascados en un problema creativo sin avanzar. Sentís la presión de darles la respuesta o una pista fuerte para no \"perder tiempo de clase\".",
+                    statement: "Vale la pena hacer una pausa de 5 minutos (cambiar de actividad) en vez de intervenir con una pista fuerte.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** La incubación —alejarse del problema y volver después— es un mecanismo real del cerebro creativo, no una pérdida de tiempo. Una pausa de 5 minutos con otra actividad suele generar más avances que 20 minutos más de presión directa sobre el mismo problema.",
+                    leftOutcome: "Dar una pista fuerte resuelve el atasco inmediato, pero les quita la experiencia de incubación — dejar reposar el problema y volver con la mente más fresca, que es exactamente cómo funciona la creatividad real."
+                },
+                {
+                    id: 56,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a probar esta semana?",
+                    options: ["Separar un momento de pensamiento divergente y uno convergente", "Dar una pausa de incubación cuando un grupo se atasca, en vez de una pista", "Incluir un momento de juego libre antes de una tarea creativa"]
                 }
             ]
         },
@@ -1420,6 +1497,35 @@ const allCourses = [
                     ],
                     correct: 1,
                     explanation: "Las restricciones enfocan la mente y la obligan a ser ingeniosa dentro de límites específicos. Paradójicamente, tener recursos o posibilidades ilimitadas puede inhibir la creatividad, mientras que las restricciones claras la activan."
+                },
+                {
+                    id: 57,
+                    type: "project",
+                    title: "Elige una técnica y aplícala a un problema real",
+                    description: "De todas las técnicas de este módulo, elegí UNA y usala esta semana con un problema real (no un ejercicio inventado).",
+                    objective: "Tener una experiencia real de aplicar una técnica creativa, no solo conocerla en teoría.",
+                    materials: ["Un problema real de tu aula o planificación", "Papel o pizarra según la técnica elegida"],
+                    steps: ["Elegí la técnica que más te llamó la atención (SCAMPER, mapas mentales, pensamiento lateral, etc.).", "Aplicala a un problema real: ¿cómo motivo a un grupo desanimado? ¿cómo enseño X tema de forma distinta?", "Anotá al menos 3 ideas que te dio la técnica.", "Elegí una para probar esta semana."],
+                    think: ["¿Por qué elegiste esa técnica y no otra?", "¿Qué restricción (tiempo, materiales) podés usar a tu favor, en vez de en contra?"],
+                    make: ["3 o más ideas generadas con la técnica elegida"],
+                    improve: ["Anotá si la técnica te resultó natural o forzada — probá otra la próxima vez si fue forzada"]
+                },
+                {
+                    id: 58,
+                    type: "simulation",
+                    title: "¿Cancelás la actividad por falta de recursos?",
+                    scenario: "Querés hacer una actividad creativa pero solo tenés 15 minutos y ningún material especial. Estás por cancelarla y hacer una clase expositiva en su lugar.",
+                    statement: "Vale la pena hacer la actividad creativa igual, usando la restricción de tiempo y materiales como parte del reto.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** Las restricciones (poco tiempo, pocos materiales) no son un obstáculo para la creatividad — son un motor que la activa. Plantear el reto como \"¿qué pueden lograr en 15 minutos con lo que hay?\" suele generar más creatividad que dar tiempo y recursos ilimitados.",
+                    leftOutcome: "Cancelar la actividad por falta de tiempo o materiales asume que la creatividad necesita condiciones ideales — pero la restricción bien planteada es justo lo que la activa. Vale la pena intentarlo con lo que hay."
+                },
+                {
+                    id: 59,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué técnica vas a probar esta semana?",
+                    options: ["SCAMPER sobre una actividad que ya uso", "Un mapa mental para explicar un tema complejo", "Plantear un reto creativo con una restricción de tiempo o materiales"]
                 }
             ]
         },
@@ -1517,6 +1623,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "Los portafolios documentan el proceso creativo a lo largo del tiempo: muestran borradores, errores, revisiones y aprendizajes. Esto los hace mucho más ricos para evaluar la creatividad que un examen que solo captura un momento final."
+                },
+                {
+                    id: 60,
+                    type: "project",
+                    title: "Rediseña un aspecto de tu ambiente de aula",
+                    description: "Elegí UN aspecto de tu aula (espacio físico, tipo de preguntas, manejo del error) y cambialo esta semana.",
+                    objective: "Hacer un cambio concreto y observable en tu ambiente de clase, no solo leer sobre ambientes creativos.",
+                    materials: ["Tu aula tal como está hoy"],
+                    steps: ["Elegí: espacio físico, tipo de preguntas, o manejo del error.", "Si es espacio: reorganizá algo. Si es preguntas: convertí 3 preguntas cerradas en abiertas. Si es error: definí un ritual para celebrarlo como aprendizaje.", "Aplicalo esta semana.", "Observá una reacción distinta en tus estudiantes."],
+                    think: ["¿Cuál de los 3 aspectos es el más fácil de cambiar en tu contexto real?", "¿Qué reacción esperás de tus estudiantes al principio?"],
+                    make: ["Un cambio concreto implementado en tu aula"],
+                    improve: ["Anotá qué reacción tuviste de tus estudiantes — ¿fue la esperada?"]
+                },
+                {
+                    id: 61,
+                    type: "simulation",
+                    title: "¿Detenés la clase por una risa?",
+                    scenario: "Un estudiante comete un error creativo frente a toda la clase (una idea que no funciona) y varios compañeros se ríen. Tenés que decidir qué hacer en ese momento.",
+                    statement: "Vale la pena detener la clase un momento para reencuadrar el error como parte del proceso, aunque eso \"rompa el ritmo\" de la clase.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** Ese momento es exactamente donde se construye (o se destruye) un ambiente creativo seguro. Detenerse 30 segundos para decir \"eso es exactamente lo que se supone que pase cuando probamos algo nuevo\" vale más que mantener el ritmo a costa de que ese estudiante no vuelva a arriesgarse.",
+                    leftOutcome: "Seguir de largo mantiene el ritmo de la clase, pero deja pasar el momento más importante para construir un ambiente donde arriesgarse esté bien — varios estudiantes aprenden, sin que se los digas, que es mejor no intentar nada nuevo frente a los demás."
+                },
+                {
+                    id: 62,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a cambiar en tu ambiente de aula?",
+                    options: ["Reorganizar el espacio físico para favorecer el trabajo creativo", "Convertir preguntas cerradas en preguntas abiertas", "Crear un ritual para celebrar el error como aprendizaje"]
                 }
             ]
         },
@@ -1614,6 +1749,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "Este curso sostiene que la creatividad es una habilidad universal, cultivable, que va mucho más allá del arte. Cuando un docente la práctica conscientemente —usando técnicas, creando ambientes seguros y modelándola con su propia actitud— transforma profundamente la experiencia de aprendizaje de sus estudiantes."
+                },
+                {
+                    id: 63,
+                    type: "project",
+                    title: "Tu plan de creatividad docente",
+                    description: "Cerrá el curso con un plan concreto de cómo vas a seguir siendo un docente más creativo, no solo con lo que aprendiste esta semana.",
+                    objective: "Tener un plan simple y sostenible para seguir desarrollando tu creatividad docente.",
+                    materials: ["Todo lo que viste en el curso"],
+                    steps: ["Elegí UNA técnica o práctica de todo el curso que más te sirvió.", "Definí cuándo y cómo la vas a seguir usando.", "Decidí si vas a empezar un diario creativo docente, aunque sea 1 línea por día.", "Identificá con quién de tus colegas podrías compartir esto."],
+                    think: ["¿Qué te da más miedo al ser un docente más creativo frente a tus estudiantes?", "¿Cómo vas a sostener esto cuando la rutina vuelva a apretar?"],
+                    make: ["Tu plan de creatividad docente, en una frase concreta y accionable"],
+                    improve: ["En un mes, revisá si seguiste con el plan o si necesita ajustarse"]
+                },
+                {
+                    id: 64,
+                    type: "simulation",
+                    title: "¿Te animás aunque salga mal?",
+                    scenario: "Querés probar una actividad creativa nueva frente a tus estudiantes, pero te preocupa que no funcione y quedar \"en ridículo\" frente a ellos.",
+                    statement: "Vale la pena intentarlo igual, aunque exista el riesgo de que no salga bien.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** Un docente que se anima a intentar algo nuevo frente a sus estudiantes —y que si no sale bien, lo reconoce con humor y sigue— es exactamente el modelo de creatividad que este módulo describe. Los estudiantes aprenden más de verte intentar y ajustar que de verte siempre seguro y perfecto.",
+                    leftOutcome: "Evitar el riesgo protege tu imagen a corto plazo, pero les enseña a tus estudiantes que solo vale la pena intentar cosas cuando el éxito está garantizado — exactamente lo opuesto de lo que un docente creativo modela."
+                },
+                {
+                    id: 65,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a seguir siendo un docente más creativo?",
+                    options: ["Empezar un diario creativo docente, aunque sea 1 línea al día", "Usar la técnica que más me sirvió del curso, cada semana", "Compartir esto con un colega para formar una pequeña comunidad de práctica"]
                 }
             ]
         }
@@ -1630,7 +1794,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 4,
-    totalCards: 45,
+    totalCards: 57,
     modules: [
         {
             id: 1,
@@ -1747,6 +1911,35 @@ const allCourses = [
                     ],
                     correct: 1,
                     explanation: "La efectividad no viene de usar muchas herramientas, sino de usar pocas bien. Dominar a fondo herramientas seleccionadas permite al docente usarlas con más confianza, creatividad y propósito pedagógico claro."
+                },
+                {
+                    id: 46,
+                    type: "project",
+                    title: "Ubica una actividad tuya en el modelo SAMR",
+                    description: "Tomá una actividad que ya usás con tecnología y ubicala en el modelo SAMR (Sustitución, Aumento, Modificación, Redefinición).",
+                    objective: "Identificar en qué nivel SAMR estás realmente, y subir un nivel si es posible.",
+                    materials: ["Una actividad que ya hacés con tecnología"],
+                    steps: ["Elegí una actividad donde uses tecnología (ej: presentación en PowerPoint en vez de cartel).", "¿Solo sustituye una herramienta análoga? ¿Aumenta algo? ¿Modifica la tarea? ¿La redefine?", "Pensá qué cambiaría para subir un nivel.", "Anotá también tu plan B si la tecnología falla ese día."],
+                    think: ["¿La mayoría de tu uso de tecnología está en Sustitución o más arriba?", "¿Qué actividad podría redefinirse completamente con tecnología?"],
+                    make: ["Una actividad ubicada en SAMR + su plan B"],
+                    improve: ["Anotá un paso concreto para subir un nivel en esa actividad"]
+                },
+                {
+                    id: 47,
+                    type: "simulation",
+                    title: "¿Confiás en que la conexión va a andar?",
+                    scenario: "Preparaste una clase completa dependiendo de internet en la escuela, y justo el día de la clase se corta la conexión.",
+                    statement: "Vale la pena tener siempre un plan B sin conexión, aunque eso signifique preparar doble trabajo.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** En el contexto guatemalteco, la conectividad intermitente es la norma, no la excepción — un plan B no es trabajo extra desperdiciado, es parte real de planificar con tecnología acá. Sin él, la clase completa se cae cuando falla algo que no controlás.",
+                    leftOutcome: "Confiar en que la conexión va a funcionar es un riesgo real en el contexto guatemalteco. El \"doble trabajo\" del plan B se paga una sola vez, pero te salva cada vez que la conexión falla — y va a fallar."
+                },
+                {
+                    id: 48,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a revisar antes de tu próxima clase con tecnología?",
+                    options: ["En qué nivel SAMR está mi actividad y cómo subirlo", "Mi plan B si falla la conexión o el equipo", "Si todos mis estudiantes tienen acceso real a lo que voy a pedir"]
                 }
             ]
         },
@@ -1858,6 +2051,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "La nube de palabras de Mentimeter es especialmente poderosa al inicio de clase: activa el conocimiento previo, hace visible lo que los estudiantes ya saben, genera curiosidad y permite al docente ajustar su clase según las respuestas en tiempo real."
+                },
+                {
+                    id: 49,
+                    type: "project",
+                    title: "Crea tu primer recurso con una herramienta nueva",
+                    description: "Elegí UNA herramienta de este módulo que nunca usaste y creá un recurso real para tu próxima clase.",
+                    objective: "Tener un recurso digital real, no solo haber visto cómo funciona la herramienta.",
+                    materials: ["Computadora o celular con internet", "Un tema de tu próxima clase"],
+                    steps: ["Elegí una herramienta que nunca probaste (Canva, Genially, Mentimeter, etc.).", "Creá un recurso simple para tu próxima clase.", "No busques que quede perfecto — buscá terminarlo.", "Probalo con tus estudiantes esta semana."],
+                    think: ["¿Por qué elegiste esa herramienta y no otra?", "¿Qué tan disponible es esta herramienta para tus estudiantes fuera de tu control?"],
+                    make: ["Un recurso digital terminado y usado en clase real"],
+                    improve: ["Anotá qué parte de la herramienta te costó más — ahí es donde practicar la próxima vez"]
+                },
+                {
+                    id: 50,
+                    type: "simulation",
+                    title: "¿Creás desde cero o usás lo que ya existe?",
+                    scenario: "Encontrás un video educativo excelente ya hecho sobre tu tema, pero pensabas crear el tuyo propio con Genially. Crear el tuyo tomaría 2 horas más.",
+                    statement: "Vale la pena usar el recurso ya existente en vez de invertir 2 horas más creando uno propio.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** La curación de contenido de calidad —encontrar y adaptar lo que ya existe— es una habilidad tan válida como crear desde cero, y mucho más sostenible en el tiempo. Las 2 horas ahorradas se invierten mejor en planificar cómo usás ese video en tu clase.",
+                    leftOutcome: "Crear tu propio recurso desde cero tiene valor, pero no siempre — si ya existe algo de calidad, curarlo y adaptarlo es más sostenible que reinventar todo cada vez. El tiempo docente es limitado."
+                },
+                {
+                    id: 51,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué herramienta vas a usar esta semana?",
+                    options: ["Canva o Genially para crear un recurso visual nuevo", "Mentimeter para una pregunta interactiva en clase", "Curar y adaptar un video ya existente en vez de crear el mío"]
                 }
             ]
         },
@@ -1969,6 +2191,35 @@ const allCourses = [
                     ],
                     correct: 1,
                     explanation: "Para recoger reflexiones escritas abiertas, Google Forms con preguntas de texto largo o Padlet son las opciones más adecuadas. Kahoot y Quizizz están diseñados principalmente para preguntas cerradas de opción múltiple, no para reflexiones elaboradas."
+                },
+                {
+                    id: 52,
+                    type: "project",
+                    title: "Tu primera evaluación formativa digital",
+                    description: "Elegí una herramienta de evaluación formativa digital y usala esta semana para revisar comprensión, no para calificar.",
+                    objective: "Usar una herramienta digital de evaluación formativa real, con datos reales de tus estudiantes.",
+                    materials: ["Computadora o celular, proyector si es posible", "Un tema reciente de tu planificación"],
+                    steps: ["Elegí una herramienta (Kahoot, Quizizz, Padlet, Socrative o Forms).", "Creá 3-5 preguntas sobre un tema que ya diste.", "Aplicala AL FINAL de una clase, no como examen — como diagnóstico.", "Usá los resultados para decidir qué repasar mañana."],
+                    think: ["¿Por qué elegiste esa herramienta sobre las demás?", "¿Qué vas a hacer distinto mañana según lo que muestren los resultados?"],
+                    make: ["Una evaluación formativa digital aplicada con datos reales"],
+                    improve: ["Anotá si la herramienta funcionó bien con la conectividad real de tu escuela"]
+                },
+                {
+                    id: 53,
+                    type: "simulation",
+                    title: "¿Ajustás el ranking público?",
+                    scenario: "Usaste Kahoot para evaluar comprensión, y un estudiante que suele tener buenas notas quedó último en el ranking del juego, visible para toda la clase, por los nervios de la competencia cronometrada.",
+                    statement: "Vale la pena ajustar cómo usás estas herramientas gamificadas para que el ranking público no desmotive a quien no rinde bien bajo presión de tiempo.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** La gamificación motiva a muchos, pero el ranking público cronometrado puede medir velocidad y manejo de la presión más que comprensión real. Opciones como ocultar el ranking, dar más tiempo, o usar el modo sin competencia resuelven esto sin abandonar la herramienta.",
+                    leftOutcome: "Dejar el ranking público tal como está mantiene la emoción del juego para la mayoría, pero para algunos convierte una evaluación formativa en una experiencia de humillación pública que no mide lo que realmente se quiere evaluar."
+                },
+                {
+                    id: 54,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer con tu próxima evaluación digital?",
+                    options: ["Usar una herramienta nueva de evaluación formativa esta semana", "Ajustar el modo competitivo para que no desmotive a nadie", "Usar los resultados para decidir qué repasar, no solo para calificar"]
                 }
             ]
         },
@@ -2080,6 +2331,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "Este curso sostiene que la tecnología no es magia ni sustituto de la buena pedagogía: es una herramienta poderosa cuando se elige con criterio, se usa con propósito claro de aprendizaje y se acompaña de responsabilidad digital. El docente que integra tecnología con estos principios transforma su práctica de manera sostenible."
+                },
+                {
+                    id: 55,
+                    type: "project",
+                    title: "Refuerza la seguridad digital de tu aula",
+                    description: "Revisá y mejorá un aspecto real de seguridad digital con tus estudiantes esta semana.",
+                    objective: "Que tus estudiantes practiquen UN hábito concreto de seguridad digital, no solo lo escuchen en teoría.",
+                    materials: ["Acceso a las cuentas o plataformas que usan tus estudiantes"],
+                    steps: ["Elegí un tema: contraseñas seguras, o ciudadanía digital.", "Diseñá una actividad corta (10-15 min) sobre eso.", "Aplicala esta semana con tus estudiantes.", "Pedirles que la apliquen ellos mismos (ej: cambiar una contraseña débil)."],
+                    think: ["¿Qué hábito de seguridad digital ves más descuidado en tus estudiantes?", "¿Cómo lo explicás sin generar miedo excesivo a la tecnología?"],
+                    make: ["Una actividad de seguridad o ciudadanía digital aplicada"],
+                    improve: ["Anotá si notaste algún cambio de comportamiento después"]
+                },
+                {
+                    id: 56,
+                    type: "simulation",
+                    title: "¿Hablás con toda la clase o sancionás a uno?",
+                    scenario: "Un estudiante entregó un trabajo que sospechás fue generado con inteligencia artificial, sin decírtelo.",
+                    statement: "Vale la pena hablar abiertamente con la clase sobre el uso de IA antes de sancionar a ese estudiante en particular.",
+                    correctSwipe: "right",
+                    rightOutcome: "**Correcto.** La mayoría de los estudiantes usa IA sin reglas claras porque el docente nunca las estableció — sancionar a uno sin haber hablado del tema con todos es injusto y no resuelve el problema de fondo. Establecer reglas claras de uso previene esto hacia adelante para toda la clase.",
+                    leftOutcome: "Sancionar solo a ese estudiante sin haber hablado nunca de reglas de uso de IA con la clase es inconsistente — probablemente otros hicieron lo mismo sin ser detectados. Establecer reglas claras primero es más justo y efectivo."
+                },
+                {
+                    id: 57,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a cerrar este curso de herramientas?",
+                    options: ["Aplicar una regla clara de uso de IA con mis estudiantes", "Reforzar un hábito de seguridad digital esta semana", "Elegir 2 herramientas del curso para dominar bien, no 10 a medias"]
                 }
             ]
         }
