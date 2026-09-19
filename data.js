@@ -2380,7 +2380,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 3,
-    totalCards: 40,
+    totalCards: 52,
     modules: [
 
         // ══════════════════════════════════════════════════════════════════════
@@ -2473,6 +2473,35 @@ const allCourses = [
                     title: "🚀 El rol del docente en el m-learning",
                     content: "En el m-learning, el docente deja de ser el único transmisor del conocimiento y se convierte en curador y guía. Tu rol es elegir las mejores apps, diseñar las actividades, establecer normas de uso y acompañar el proceso. El celular es la herramienta; tú sigues siendo el corazón del aprendizaje.",
                     extra: "Cita para reflexionar: 'La tecnología no reemplaza al maestro, pero el maestro que usa tecnología puede reemplazar al que no la usa.' — Adaptación del principio de Prensky."
+                },
+                {
+                    id: 41,
+                    type: "project",
+                    title: "Diseña tu primera actividad de microaprendizaje",
+                    description: "Diseñá una actividad de 5 minutos usando el celular, aprovechando el microaprendizaje.",
+                    objective: "Tener una actividad móvil de 5 minutos lista para usar.",
+                    materials: ["Un tema de tu planificación", "Celulares de los estudiantes"],
+                    steps: ["Elegí un contenido puntual (un dato, una fórmula, una fecha).", "Diseñá una actividad de máximo 5 minutos con el celular.", "Probala en tu próxima clase.", "Observá si cambia la actitud de \"guarda el celular\" a \"saca el celular\"."],
+                    think: ["¿Qué contenido tuyo se presta para 5 minutos, no para una clase entera?", "¿Cómo evitás que se distraigan con otra cosa en el celular?"],
+                    make: ["Una actividad móvil de 5 minutos"],
+                    improve: ["Anotá si la actitud del grupo cambió al usar el celular con propósito"]
+                },
+                {
+                    id: 42,
+                    type: "simulation",
+                    title: "¿Preguntás antes de pedir que lo guarde?",
+                    scenario: "Ves a un estudiante con el celular en la mano durante la clase y tu primer instinto es pedirle que lo guarde, aunque no sabés para qué lo está usando.",
+                    statement: "Vale la pena preguntar primero para qué lo usa antes de pedirle que lo guarde.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. El reflejo de \"guarda el celular\" asume mal uso automático, pero el m-learning parte de la idea contraria: el celular puede ser una herramienta si tiene propósito. Preguntar primero te da información real y modela el cambio cultural del \"guarda\" al \"saca con propósito\".",
+                    leftOutcome: "Pedir que guarde el celular sin preguntar es el reflejo tradicional, pero asume mal uso sin verificar — y refuerza la idea de que el celular siempre es una distracción, nunca una herramienta."
+                },
+                {
+                    id: 43,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer con el celular en tu próxima clase?",
+                    options: ["Diseñar una actividad de microaprendizaje de 5 minutos", "Preguntar antes de pedir que lo guarden", "Explicarles cuándo SÍ pueden usarlo y para qué"]
                 }
             ]
         },
@@ -2567,6 +2596,35 @@ const allCourses = [
                     title: "🗺️ Google Maps y Earth: geografía viva",
                     content: "Google Maps y Google Earth son apps gratuitas que transforman la geografía en una experiencia interactiva. Tus estudiantes pueden explorar departamentos de Guatemala, ver imágenes satelitales de volcanes, ríos y comunidades, o medir distancias reales. Sin salir del aula, viajan a cualquier lugar del mundo.",
                     extra: "Actividad: pide a tus estudiantes que localicen su municipio en Google Earth y describan dos características geográficas que ven. Es una actividad concreta, visual y sin costo."
+                },
+                {
+                    id: 44,
+                    type: "project",
+                    title: "Prueba una app nueva con un criterio claro",
+                    description: "Elegí una app educativa de este módulo que nunca usaste y probala con un criterio de selección claro.",
+                    objective: "Evaluar si una app realmente sirve para tu contexto, no solo si es popular.",
+                    materials: ["Celular con la app instalada", "Un tema de tu planificación"],
+                    steps: ["Elegí una app (Duolingo, Khan Academy, YouTube curado, WhatsApp, Forms).", "Aplicá los criterios de selección: ¿funciona sin buena conexión? ¿es gratis? ¿es fácil de usar?", "Probala con un grupo pequeño primero.", "Decidí si la vas a seguir usando."],
+                    think: ["¿Qué criterio de selección es el más importante en tu contexto real?", "¿La app reemplaza algo que ya hacías o agrega algo nuevo?"],
+                    make: ["Una app probada con un grupo real"],
+                    improve: ["Anotá si la conectividad de tu escuela permitió usarla bien"]
+                },
+                {
+                    id: 45,
+                    type: "simulation",
+                    title: "¿Usás WhatsApp con tus estudiantes?",
+                    scenario: "Pensás usar un grupo de WhatsApp para enviar tareas y recordatorios a tus estudiantes, pero te preocupa que se vuelva un canal de mensajes fuera de horario o mal uso.",
+                    statement: "Vale la pena usar WhatsApp igual, estableciendo reglas claras de horario y uso desde el principio.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. WhatsApp es una de las herramientas más accesibles en el contexto guatemalteco y el riesgo de mal uso se maneja con reglas claras (horario de atención, qué se comparte), no evitando la herramienta por completo.",
+                    leftOutcome: "Evitar WhatsApp por miedo al mal uso descarta la herramienta más accesible que tenés disponible. El riesgo real se resuelve con reglas claras desde el principio."
+                },
+                {
+                    id: 46,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué app vas a incorporar esta semana?",
+                    options: ["Una app de las que vimos, con un grupo pequeño primero", "WhatsApp con reglas claras de horario y uso", "YouTube curado — una lista de videos que ya revisé yo"]
                 }
             ]
         },
@@ -2661,6 +2719,35 @@ const allCourses = [
                     title: "📋 Plantilla de actividad móvil",
                     content: "Toda actividad de m-learning bien diseñada responde estas preguntas: ¿Qué aprenderán? (objetivo), ¿Qué harán con el celular? (tarea), ¿Cuánto tiempo tienen? (duración), ¿Cómo sabrás que aprendieron? (evaluación), ¿Qué pasa si no tienen internet? (plan B). Siempre diseña pensando en el plan B.",
                     extra: "El plan B es clave en Guatemala: si un estudiante no tiene datos ese día, ¿puede hacer la actividad de otra manera? Diseña actividades que tengan versión digital Y versión análoga, para no excluir a nadie."
+                },
+                {
+                    id: 47,
+                    type: "project",
+                    title: "Diseña tu actividad con la Plantilla de actividad móvil",
+                    description: "Usá la Plantilla de actividad móvil de este módulo para diseñar una actividad real con tus estudiantes.",
+                    objective: "Tener una actividad móvil completa, no solo conocer las herramientas por separado.",
+                    materials: ["La plantilla de actividad móvil (tarjeta anterior)", "Celulares de los estudiantes"],
+                    steps: ["Elegí un formato: microvideo, podcast, cacería de pistas, o evidencia fotográfica.", "Completá la plantilla con tu tema real.", "Aplicala con tus estudiantes.", "Recolectá la evidencia que produjeron."],
+                    think: ["¿Qué formato se ajusta mejor a tu tema — grabar, fotografiar, o buscar?", "¿Cómo vas a evaluar lo que produzcan?"],
+                    make: ["Una actividad móvil completa aplicada con evidencia real"],
+                    improve: ["Anotá qué parte de la plantilla tuviste que ajustar a tu contexto"]
+                },
+                {
+                    id: 48,
+                    type: "simulation",
+                    title: "¿Ya es una mejora significativa?",
+                    scenario: "Vas a pedirles a tus estudiantes que tomen una foto de su tarea y la envíen por WhatsApp, en vez de entregarla en papel.",
+                    statement: "Tomar la foto y enviarla por WhatsApp es apenas el nivel más básico (Sustitución) del modelo SAMR, aunque parezca \"usar tecnología\".",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Cambiar papel por foto es Sustitución pura — la tarea es idéntica, solo cambió el medio. No está mal como punto de partida, pero conviene apuntar a niveles más altos: pedir un video explicando el proceso, o compartir el trabajo con una audiencia real.",
+                    leftOutcome: "Es tentador sentir que cualquier uso de celular ya es \"innovador\", pero fotografiar y enviar por WhatsApp sin cambiar la tarea en sí es apenas Sustitución en el modelo SAMR — el nivel más bajo. Vale la pena apuntar más alto."
+                },
+                {
+                    id: 49,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué formato móvil vas a probar?",
+                    options: ["Un microvideo o podcast corto sobre mi tema", "Una cacería de pistas con el celular", "Subir mi actividad un nivel en el modelo SAMR"]
                 }
             ]
         },
@@ -2762,6 +2849,35 @@ const allCourses = [
                     ],
                     correct: 2,
                     explanation: "El éxito del m-learning se mide en aprendizaje, no en tecnología. La cantidad de apps o la velocidad de internet son medios, no fines. Lo que importa es si los estudiantes comprenden mejor y participan más activamente en su proceso educativo."
+                },
+                {
+                    id: 50,
+                    type: "project",
+                    title: "Diseña tu plan de conectividad limitada",
+                    description: "Diseñá una versión de tu actividad móvil favorita que funcione SIN conexión a internet o con datos muy limitados.",
+                    objective: "Que tu actividad móvil no excluya a estudiantes con poca o ninguna conectividad.",
+                    materials: ["Una actividad móvil que ya diseñaste"],
+                    steps: ["Tomá una actividad móvil de este curso.", "Preguntate: ¿qué pasa si un estudiante no tiene datos o buen celular?", "Diseñá una alternativa: función sin conexión, o trabajo en pareja con quien sí tiene.", "Aplicala asegurando que nadie quede fuera."],
+                    think: ["¿Cuántos de tus estudiantes tienen conectividad real y confiable?", "¿Cómo evitás que la brecha digital se vuelva una brecha de aprendizaje?"],
+                    make: ["Una versión de tu actividad accesible sin buena conectividad"],
+                    improve: ["Anotá cómo resolviste la inclusión de quienes no tienen celular propio"]
+                },
+                {
+                    id: 51,
+                    type: "simulation",
+                    title: "¿Rediseñás o asumís que todos tienen celular?",
+                    scenario: "Vas a pedir una tarea que requiere celular con internet, pero sabés que 3 de tus 30 estudiantes no tienen acceso a uno en casa.",
+                    statement: "Vale la pena rediseñar la tarea para que también se pueda hacer sin celular propio, en vez de asumir que todos tienen acceso.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Asumir que \"todos tienen celular\" cuando 3 de 30 no lo tienen convierte una herramienta de inclusión en una fuente de exclusión. Rediseñar para incluir alternativas es la equidad digital real, no una excepción molesta.",
+                    leftOutcome: "Asumir que la mayoría tiene celular y seguir adelante deja afuera exactamente a quienes más necesitan que la escuela sea un espacio equitativo — 3 de 30 no es un caso aislado, es una brecha real que la actividad debería resolver."
+                },
+                {
+                    id: 52,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a cerrar este curso de m-learning?",
+                    options: ["Rediseñar una actividad para que funcione sin buena conectividad", "Establecer normas claras de uso del celular en mi aula", "Enseñar un hábito concreto de ciudadanía digital"]
                 }
             ]
         }
