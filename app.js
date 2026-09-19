@@ -1144,7 +1144,7 @@ function loadDailyMissions() {
                 portfolioAiTotal, portfolioScores, portfolioFeedback, portfolioSummary,
                 portfolioAttempts, portfolioLastAttempt,
                 // persistentes entre días:
-                cardNotes, appliedCards, pinnedCards, streakFreezes, lastFreezeWeek,
+                cardNotes, appliedCards, pinnedCards, takeawayChoices, streakFreezes, lastFreezeWeek,
                 weeklyMissions, weeklyMissionsDate, weeklyXP, quizStreak, earlyBirdCards, xpLog } = savedMissions;
         // Snapshot del XP del día que termina, para la gráfica de Progreso (histórico acumulativo)
         const prevXpLog = Array.isArray(xpLog) ? xpLog : [];
@@ -1186,6 +1186,7 @@ function loadDailyMissions() {
             ...(cardNotes       && { cardNotes }),
             ...(appliedCards    && { appliedCards }),
             ...(pinnedCards     && { pinnedCards }),
+            ...(takeawayChoices && { takeawayChoices }),
             ...(streakFreezes !== undefined && { streakFreezes }),
             ...(lastFreezeWeek  && { lastFreezeWeek }),
             ...(weeklyMissions  && { weeklyMissions }),
@@ -1429,6 +1430,22 @@ function _mdToHtml(text) {
         .replace(/\n/g, '<br>');
 }
 
+// Puntos de control del módulo actual (uno por quiz/takeaway) — hace visible
+// de un vistazo cuántos "mini-logros" lleva el docente en este módulo, sin
+// esperar al trofeo grande de fin de módulo. Estilo Google Primer: progreso
+// constante y chico, no solo una meta lejana.
+function _moduleCheckpointDots() {
+    const module = modulesData?.[currentModule - 1];
+    if (!module) return '';
+    const checkpoints = module.cards.filter(c => c.type === 'quiz' || c.type === 'takeaway');
+    if (checkpoints.length < 2) return '';
+    const dots = checkpoints.map(c => {
+        const done = progress.completedCards.includes(String(c.id));
+        return `<span style="width:6px;height:6px;border-radius:50%;background:currentColor;opacity:${done ? 1 : .3};flex-shrink:0"></span>`;
+    }).join('');
+    return `<div style="display:flex;gap:4px;margin-top:5px">${dots}</div>`;
+}
+
 // ==================== FUNCIONES BASE DEL CURSO ====================
 function renderCard() {
     const module = modulesData[currentModule - 1];
@@ -1479,6 +1496,7 @@ function renderCard() {
             <div class="card-banner" style="background:${theme.primary}">
                 <div class="card-banner-svg">${illus}</div>
                 <p class="card-banner-sub">${module.title} &nbsp;·&nbsp; ${currentCardIndex + 1} de ${totalCards}</p>
+                ${_moduleCheckpointDots()}
             </div>
             <div class="card-body">
                 <h2>${card.title}</h2>
@@ -1585,6 +1603,7 @@ function renderCard() {
             <div class="card-banner" style="background:${quizThemePrimary}">
                 <div class="card-banner-svg">${quizSvg}</div>
                 <p class="card-banner-sub">✅ &nbsp;Quiz · Módulo ${currentModule}</p>
+                ${_moduleCheckpointDots()}
             </div>
             <div class="card-body">
                 <h2>${card.question}</h2>
@@ -1806,6 +1825,64 @@ function renderCard() {
                 </div>` : ''}
             </div>
         </div>`;
+    } else if (card.type === 'takeaway') {
+        // Cierre de mini-curso estilo Google Primer: no es examen, es un
+        // compromiso de aplicación de un solo tap. Se pinea solo — es
+        // justo lo que Primer llama "guardar conclusiones para consultar
+        // después".
+        if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = '0.4'; }
+
+        const _tw = (typeof getCourseThemeAndIllus !== 'undefined')
+            ? getCourseThemeAndIllus(currentCourseId || 'steam', currentModule)
+            : { theme: { primary: '#D97706', soft: '#FEF3C7' }, illus: '' };
+        const twTheme = _tw.theme;
+        const cardKey = card.id ? String(card.id) : `${currentModule}-${currentCardIndex}`;
+        const savedChoice = progress.dailyMissions?.takeawayChoices?.[cardKey];
+        if (savedChoice !== undefined && nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = '1'; }
+
+        const optionsHtml = (card.options || []).map((opt, idx) => `
+            <button class="takeaway-option w-full text-left p-3 rounded-2xl mb-2" data-idx="${idx}"
+                style="border:2px solid ${savedChoice === idx ? twTheme.primary : '#e2e8f0'};background:${savedChoice === idx ? twTheme.soft : 'white'};display:flex;align-items:center;gap:10px;cursor:pointer">
+                <span style="width:18px;height:18px;border-radius:50%;border:2px solid ${savedChoice === idx ? twTheme.primary : '#cbd5e1'};background:${savedChoice === idx ? twTheme.primary : 'transparent'};flex-shrink:0"></span>
+                <span style="font-size:.88rem;color:#374151;font-weight:600">${esc(opt)}</span>
+            </button>`).join('');
+
+        container.innerHTML = `
+        <div class="content-card" id="activeCard">
+            <div class="card-banner" style="background:${twTheme.primary}">
+                <div class="card-banner-svg">${_tw.illus}</div>
+                <p class="card-banner-sub" style="display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:14px;height:14px">${ICONS?.target || ''}</span>Próximos pasos · Módulo ${currentModule}</p>
+                ${_moduleCheckpointDots()}
+            </div>
+            <div class="card-body">
+                <h2>${esc(card.title || '¿Qué vas a aplicar?')}</h2>
+                <p style="font-size:.92rem;color:#475569;margin-bottom:14px">${esc(card.prompt || '')}</p>
+                <div id="takeawayOptions">${optionsHtml}</div>
+                ${savedChoice !== undefined ? `<p style="font-size:11px;color:${twTheme.primary};font-weight:700;margin-top:6px;display:flex;align-items:center;gap:4px"><span style="display:inline-flex;width:11px;height:11px">${ICONS?.pin || ''}</span>Guardado en tu tablero de apuntes</p>` : ''}
+            </div>
+        </div>`;
+
+        document.querySelectorAll('.takeaway-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx);
+                if (!progress.dailyMissions) progress.dailyMissions = {};
+                if (!progress.dailyMissions.takeawayChoices) progress.dailyMissions.takeawayChoices = {};
+                progress.dailyMissions.takeawayChoices[cardKey] = idx;
+                if (!progress.completedCards.includes(cardKey)) {
+                    progress.completedCards.push(cardKey);
+                    addXP(20, 'Compromiso de aplicación');
+                }
+                if (!progress.dailyMissions.pinnedCards) progress.dailyMissions.pinnedCards = [];
+                const _courseIdTw = currentCourseId || 'steam';
+                if (!progress.dailyMissions.pinnedCards.some(p => p.cardId === cardKey && p.courseId === _courseIdTw)) {
+                    progress.dailyMissions.pinnedCards.push({ cardId: cardKey, courseId: _courseIdTw, date: new Date().toISOString() });
+                }
+                _haptic(15);
+                saveProgress();
+                checkBadges();
+                renderCard();
+            });
+        });
     }
     // Registrar swipe en cada tarjeta nueva (touch + mouse)
     initSwipe();
@@ -2903,7 +2980,12 @@ document.getElementById('closePinBoardBtn')?.addEventListener('click', () => {
     document.getElementById('pinBoardModal')?.classList.add('hidden');
 });
 
-function _pinSnippet(card) {
+function _pinSnippet(card, pin) {
+    if (card.type === 'takeaway') {
+        const choiceIdx = progress?.dailyMissions?.takeawayChoices?.[pin?.cardId];
+        const choice = (card.options || [])[choiceIdx];
+        return choice ? `Tu compromiso: "${choice}"` : (card.prompt || '');
+    }
     const raw = card.content || card.question || card.scenario || card.description || '';
     const text = String(raw).replace(/[*_#>`]/g, '').replace(/\n+/g, ' ').trim();
     return text.length > 140 ? text.slice(0, 140) + '…' : text;
@@ -2941,7 +3023,7 @@ function _renderPinBoard() {
                     class="text-slate-300 hover:text-red-500 flex-shrink-0" style="line-height:1">&times;</button>
             </div>
             <p class="text-sm font-bold text-slate-800 mb-1">${esc(card.title || card.question || 'Nota guardada')}</p>
-            <p class="text-xs text-slate-500 leading-relaxed mb-2">${esc(_pinSnippet(card))}</p>
+            <p class="text-xs text-slate-500 leading-relaxed mb-2">${esc(_pinSnippet(card, p))}</p>
             <button onclick="_jumpToPinnedCard('${p.courseId}','${p.cardId}')"
                 class="text-xs font-bold text-amber-700 hover:underline flex items-center gap-1">
                 Repasar tarjeta <span data-icon="arrowRight" style="display:inline-flex;width:11px;height:11px"></span>
