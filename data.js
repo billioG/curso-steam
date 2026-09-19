@@ -3891,7 +3891,7 @@ const allCourses = [
     prerequisite: [],
     status: 'available',
     durationHours: 3,
-    totalCards: 35,
+    totalCards: 47,
     modules: [
 
         // ══════════════════════════════════════════════════════════════════════
@@ -3977,6 +3977,35 @@ const allCourses = [
                     title: "✨ El principio clave: un concepto, una cápsula",
                     content: "La regla de oro del micro-learning es: una cápsula, un objetivo, una acción. Cada unidad de aprendizaje responde a una sola pregunta o enseña una sola habilidad. Este principio parece sencillo, pero rompe con la tradición educativa que mezcla varios conceptos en una misma clase.",
                     extra: "Ejercicio de reflexión: piensa en tu próxima clase. ¿Cuántos conceptos distintos planeas enseñar? Si son más de 3, es candidata perfecta para convertirse en una secuencia de micro-cápsulas en lugar de una clase tradicional."
+                },
+                {
+                    id: 36,
+                    type: "project",
+                    title: "Diseña tu primera micro-cápsula",
+                    description: "Convertí un concepto de tu tema en una micro-cápsula: un concepto, una cápsula.",
+                    objective: "Aplicar el principio \"un concepto, una cápsula\" a un tema real.",
+                    materials: ["Un tema de tu planificación"],
+                    steps: ["Elegí UN concepto puntual (no un tema completo).", "Escribilo en el formato más simple posible: 1 idea, 1 ejemplo.", "Definí en qué momento de tu clase la vas a usar.", "Probala esta semana."],
+                    think: ["¿Qué concepto de tu tema suele generar más confusión y se beneficiaría de aislarse?", "¿Por qué menos contenido a la vez puede enseñar más?"],
+                    make: ["Una micro-cápsula de un solo concepto"],
+                    improve: ["Anotá si aislar el concepto ayudó a que se entendiera mejor"]
+                },
+                {
+                    id: 37,
+                    type: "simulation",
+                    title: "¿Traés de vuelta un concepto olvidado?",
+                    scenario: "Diste un concepto importante hace 2 semanas y no lo volviste a mencionar. Sospechás que la mayoría ya lo olvidó.",
+                    statement: "Vale la pena traerlo de vuelta con una micro-cápsula de repaso, aunque no esté en tu planificación de esta semana.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. Según la curva del olvido de Ebbinghaus, sin repaso la mayoría del contenido se pierde en pocos días — una micro-cápsula corta de repaso combate esto directamente, sin necesitar una clase completa.",
+                    leftOutcome: "Seguir adelante sin repasar asume que lo aprendido hace 2 semanas se quedó, pero la curva del olvido muestra que sin refuerzo la mayoría ya se perdió."
+                },
+                {
+                    id: 38,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a hacer con tu próximo concepto difícil?",
+                    options: ["Aislarlo en una micro-cápsula de un solo concepto", "Programar un repaso corto 2 semanas después de enseñarlo", "Usar un ejemplo concreto como corazón de la cápsula"]
                 }
             ]
         },
@@ -4064,6 +4093,35 @@ const allCourses = [
                     title: "🧩 De la cápsula al concepto complejo: planificación en capas",
                     content: "Un concepto complejo se puede enseñar en micro-capas: Día 1: ¿Qué es? (definición y ejemplo). Día 2: ¿Cómo funciona? (proceso o mecanismo). Día 3: ¿Por qué importa? (aplicación y relevancia). Día 4: ¿Cómo lo uso yo? (práctica guiada). Día 5: Repaso integrador. Así, en 5 cápsulas de 5-8 minutos, has cubierto un concepto complejo con profundidad real.",
                     extra: "Este enfoque en capas es especialmente útil para conceptos científicos abstractos, gramática compleja o procesos matemáticos de varios pasos. Cada capa debe ser comprensible por sí sola, pero también conectar con las capas anteriores."
+                },
+                {
+                    id: 39,
+                    type: "project",
+                    title: "Diseña una cápsula con repetición espaciada",
+                    description: "Diseñá una secuencia de 3 micro-cápsulas sobre el mismo concepto, espaciadas en el tiempo.",
+                    objective: "Aplicar la repetición espaciada, no solo enseñar el concepto una vez.",
+                    materials: ["Un concepto de tu planificación"],
+                    steps: ["Elegí un concepto que valga la pena reforzar.", "Diseñá la cápsula inicial (día 1).", "Diseñá una cápsula de repaso corta para unos días después (día 4-5).", "Diseñá una última cápsula de repaso más espaciada (día 10-12)."],
+                    think: ["¿Qué formato le conviene a cada repaso?", "¿Cómo cambia la cápsula de repaso respecto a la inicial?"],
+                    make: ["Una secuencia de 3 cápsulas espaciadas sobre un mismo concepto"],
+                    improve: ["Anotá si al tercer repaso los estudiantes recordaban mejor que con un solo repaso"]
+                },
+                {
+                    id: 40,
+                    type: "simulation",
+                    title: "¿Resistís agregar más contexto?",
+                    scenario: "Estás escribiendo una micro-cápsula y sentís que necesitás agregar 2 párrafos más de contexto para que quede \"completa\".",
+                    statement: "Vale la pena resistir la tentación y mantenerla corta, aunque sientas que falta contexto.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. El arte de la brevedad en micro-learning es justamente resistir agregar \"un poco más\" — una cápsula que crece pierde su función. Si hace falta más contexto, eso es material para OTRA cápsula.",
+                    leftOutcome: "Agregar más contexto para que \"quede completa\" es la forma más común de que una micro-cápsula deje de serlo — el contexto extra puede ir en otra cápsula separada."
+                },
+                {
+                    id: 41,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué vas a diseñar esta semana?",
+                    options: ["Una secuencia de 3 cápsulas con repetición espaciada", "Una cápsula bien breve, resistiendo agregar más contexto", "Un ejemplo concreto como corazón de mi próxima cápsula"]
                 }
             ]
         },
@@ -4151,6 +4209,35 @@ const allCourses = [
                     title: "🗂️ Organiza tu banco de micro-cápsulas",
                     content: "Conforme crees micro-cápsulas, necesitas organizarlas para reutilizarlas. Estrategia sencilla: crea una carpeta en Google Drive con subcarpetas por grado y materia. Usa nombres descriptivos: '5to_primaria_fracciones_que_es.mp4'. Comparte la carpeta con colegas del mismo grado para construir un banco colectivo de recursos.",
                     extra: "Un banco colectivo de micro-cápsulas entre docentes del mismo colegio puede ahorrarte horas de trabajo: si tu colega ya creó una cápsula excelente sobre el sistema respiratorio, puedes usarla directamente o adaptarla, en lugar de crearla desde cero."
+                },
+                {
+                    id: 42,
+                    type: "project",
+                    title: "Elige un canal y crea tu primera cápsula ahí",
+                    description: "Elegí UN canal (WhatsApp, infografía, audio, tarjeta digital) y creá tu primera micro-cápsula real ahí.",
+                    objective: "Tener una micro-cápsula publicada en un canal real, no solo diseñada en papel.",
+                    materials: ["Celular o computadora", "Un concepto ya diseñado"],
+                    steps: ["Elegí el canal más accesible para tus estudiantes.", "Adaptá tu cápsula al formato de ese canal.", "Publicala o compartila con un grupo real.", "Empezá tu banco de micro-cápsulas guardando esta primera."],
+                    think: ["¿Qué canal usan ya tus estudiantes todos los días?", "¿Cómo vas a organizar tu banco para no perder las cápsulas que ya hiciste?"],
+                    make: ["Una micro-cápsula publicada en un canal real, más el inicio de tu banco"],
+                    improve: ["Anotá qué canal generó más interacción de tus estudiantes"]
+                },
+                {
+                    id: 43,
+                    type: "simulation",
+                    title: "¿WhatsApp simple o infografía elaborada?",
+                    scenario: "Te entusiasma crear infografías elaboradas con una app de diseño, pero requiere que los estudiantes tengan buena conexión, mientras que WhatsApp lo tienen todos y funciona con poca conexión.",
+                    statement: "Vale la pena empezar con WhatsApp aunque sea menos vistoso, en vez de una infografía elaborada que no todos pueden ver bien.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. La accesibilidad real del canal importa más que lo vistoso del formato — una cápsula simple que TODOS pueden ver vale más que una elaborada que solo algunos pueden cargar bien.",
+                    leftOutcome: "Priorizar lo vistoso sobre lo accesible deja afuera a quienes tienen menos conectividad — el canal más simple y accesible para todos es mejor punto de partida."
+                },
+                {
+                    id: 44,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Qué canal vas a usar esta semana?",
+                    options: ["WhatsApp, por ser el más accesible para mis estudiantes", "Una infografía o tarjeta digital simple", "Empezar a organizar mi banco de micro-cápsulas"]
                 }
             ]
         },
@@ -4231,6 +4318,35 @@ const allCourses = [
                     title: "🚀 Tu plan de micro-learning: empieza esta semana",
                     content: "Para implementar micro-learning esta semana: (1) Identifica un concepto que tus estudiantes encuentran difícil. (2) Diseña 3 cápsulas de 5-7 minutos: qué es, cómo funciona, para qué sirve. (3) Elige un formato para cada una (video, audio o infografía). (4) Crea la primera cápsula hoy. (5) Compártela mañana. Evalúa con un ticket de salida. (6) Mejora la siguiente cápsula con lo que aprendiste. El micro-learning también es iterativo.",
                     extra: "Recuerda: el objetivo no es la perfección técnica, sino el aprendizaje de tus estudiantes. Una nota de voz de 5 minutos enviada por WhatsApp esta noche puede ser tu primera micro-cápsula. ¡El momento para empezar es ahora!"
+                },
+                {
+                    id: 45,
+                    type: "project",
+                    title: "Diseña tu secuencia semanal de micro-learning",
+                    description: "Planificá una secuencia de micro-cápsulas para una semana completa de un tema.",
+                    objective: "Tener un plan semanal de micro-learning, no cápsulas sueltas sin conexión entre sí.",
+                    materials: ["Un tema que dura toda una semana en tu planificación"],
+                    steps: ["Elegí el tema de la semana.", "Dividilo en 3-4 micro-cápsulas encadenadas.", "Definí cómo vas a evaluar rápido al final de la semana.", "Aplicalo y ajustá según cómo respondan tus estudiantes."],
+                    think: ["¿Cómo se conecta cada cápsula con la siguiente en la secuencia?", "¿Qué estrategia rápida de evaluación se ajusta a esta semana?"],
+                    make: ["Una secuencia semanal de micro-cápsulas encadenadas"],
+                    improve: ["Anotá qué indicador de éxito usarías para saber si la secuencia funcionó"]
+                },
+                {
+                    id: 46,
+                    type: "simulation",
+                    title: "¿Invertís tiempo en seguimiento digital?",
+                    scenario: "Tenés la opción de llevar un seguimiento digital detallado de qué cápsulas vio cada estudiante, pero te toma tiempo extra configurarlo.",
+                    statement: "Vale la pena invertir ese tiempo en el seguimiento digital, aunque sea trabajo extra al principio.",
+                    correctSwipe: "right",
+                    rightOutcome: "Correcto. El seguimiento digital te da información real de quién está avanzando y quién necesita apoyo — sin él, estás enseñando \"a ciegas\". El tiempo de configuración inicial se recupera con mejores decisiones después.",
+                    leftOutcome: "Saltarse el seguimiento ahorra tiempo al principio, pero te deja sin información real de qué estudiantes están avanzando y cuáles necesitan apoyo."
+                },
+                {
+                    id: 47,
+                    type: "takeaway",
+                    title: "Próximos pasos",
+                    prompt: "¿Cómo vas a empezar tu plan de micro-learning?",
+                    options: ["Una secuencia semanal de 3-4 cápsulas encadenadas", "Un sistema simple de seguimiento de quién vio cada cápsula", "Definir mis propios indicadores de éxito antes de empezar"]
                 }
             ]
         }
