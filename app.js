@@ -1884,8 +1884,10 @@ function renderCard() {
             });
         });
     }
-    // Registrar swipe en cada tarjeta nueva (touch + mouse)
-    initSwipe();
+    // Registrar swipe en cada tarjeta nueva (touch + mouse).
+    // Las tarjetas de simulación tienen su propio gesto dedicado
+    // (izquierda/derecha = decisión, no navegación) — no combinar los dos.
+    if (card.type !== 'simulation') initSwipe();
 }
 
 function handleSimulation(direction) {
