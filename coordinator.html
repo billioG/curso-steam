@@ -126,6 +126,18 @@
   <!-- ═══ TAB DASHBOARD ═══ -->
   <div id="tabDash" class="view active space-y-5">
 
+    <!-- Aplicación real en aula — la métrica que importa, no solo finalización -->
+    <div id="applicationRateCard" class="rounded-2xl p-5 flex items-center justify-between gap-4 flex-wrap" style="background:linear-gradient(135deg,#0f4c5c,#147a8f)">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-wide" style="color:rgba(255,255,255,.75)">Aplicación real en aula, no solo finalización</p>
+        <p class="text-3xl font-black text-white mt-1" id="kpiApplicationRate">—</p>
+        <p class="text-xs mt-1" id="kpiApplicationDetail" style="color:rgba(255,255,255,.7)"></p>
+      </div>
+      <div class="text-xs text-right" style="color:rgba(255,255,255,.7);max-width:220px">
+        % de docentes que reportaron haber aplicado su compromiso de tarjeta, 7-30 días después de comprometerse.
+      </div>
+    </div>
+
     <!-- KPIs -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="kpi-card">
@@ -284,29 +296,38 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const COURSES = [
-  { id:'steam',            title:'STEAM',              modules:5, totalCards:73,  prefix:null,   ranges:[[1,13],[14,27],[28,41],[42,55],[56,73]] },
-  { id:'abp',              title:'ABP',                modules:5, totalCards:61,  prefix:'abp-'  },
-  { id:'design-thinking',  title:'Design Thinking',    modules:5, totalCards:45,  prefix:'dt-'   },
-  { id:'evaluacion',       title:'Evaluación',         modules:5, totalCards:38,  prefix:'ev-'   },
-  { id:'tipos-estudiantes',title:'Tipos Estudiantes',  modules:5, totalCards:60,  prefix:'te-'   },
-  { id:'storytelling',     title:'Storytelling',       modules:5, totalCards:50,  prefix:'st-'   },
+  // moduleCardIds: los ids de tarjeta ya no son rangos contiguos por módulo
+  // (los ciclos project/simulation/takeaway y los splits de tarjetas densas
+  // insertaron ids nuevos fuera de secuencia) — se listan explícitos.
+  { id:'steam', title:'STEAM', modules:5, totalCards:127, prefix:null, moduleCardIds:[
+      [1,2,3,4,5,6,7,8,9,10,11,12,13,74,75,76,100,101,102,115,120,121],
+      [14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,77,78,79,103,104,105,116],
+      [30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,80,81,82,89,90,91,106,107,108,117,122,123],
+      [46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,83,84,85,109,110,111,118,124,125],
+      [61,62,63,64,65,66,67,68,69,70,71,72,73,86,87,88,92,93,94,95,96,97,98,99,112,113,114,119,126,127],
+  ] },
+  { id:'abp',              title:'ABP',                modules:5, totalCards:105, prefix:'abp-'  },
+  { id:'design-thinking',  title:'Design Thinking',    modules:5, totalCards:80,  prefix:'dt-'   },
+  { id:'evaluacion',       title:'Evaluación',         modules:5, totalCards:73,  prefix:'ev-'   },
+  { id:'tipos-estudiantes',title:'Tipos Estudiantes',  modules:5, totalCards:65,  prefix:'te-'   },
+  { id:'storytelling',     title:'Storytelling',       modules:5, totalCards:64,  prefix:'st-'   },
   // Cursos nuevos: sus tarjetas se guardan como '<courseId>-<n>' (ver normalización en app.js)
-  { id:'creatividad',       title:'Creatividad',        modules:5, totalCards:50, prefix:'creatividad-'       },
-  { id:'herramientas-tec',  title:'Herramientas Tec.',  modules:4, totalCards:45, prefix:'herramientas-tec-'  },
-  { id:'m-learning',        title:'Mobile Learning',    modules:4, totalCards:40, prefix:'m-learning-'        },
-  { id:'flipped-classroom', title:'Flipped Classroom',  modules:4, totalCards:40, prefix:'flipped-classroom-' },
-  { id:'abv',               title:'AB Videos',          modules:4, totalCards:35, prefix:'abv-'               },
-  { id:'micro-learning',    title:'Micro-learning',     modules:4, totalCards:35, prefix:'micro-learning-'    },
-  { id:'ia-fundamentos',    title:'Docente y la IA',    modules:4, totalCards:35, prefix:'ia-fundamentos-'    },
-  { id:'ia-tiempo',         title:'IA: Ahorro Tiempo',  modules:4, totalCards:22, prefix:'ia-tiempo-'         },
-  { id:'ia-herramientas',   title:'Herramientas IA',    modules:4, totalCards:19, prefix:'ia-herramientas-'   },
-  { id:'ia-inclusion',      title:'IA e Inclusión',     modules:4, totalCards:18, prefix:'ia-inclusion-'      },
-  { id:'ia-ciudadania',     title:'Ciudadanía Digital IA', modules:4, totalCards:17, prefix:'ia-ciudadania-'  },
-  { id:'manejo-conductas',  title:'Conductas Desafiantes', modules:4, totalCards:31, prefix:'manejo-conductas-' },
-  { id:'sel-docentes',      title:'SEL Docentes',       modules:4, totalCards:26, prefix:'sel-docentes-'       },
-  { id:'comunicacion-asertiva', title:'Comunicación Asertiva', modules:4, totalCards:25, prefix:'comunicacion-asertiva-' },
-  { id:'disciplina-positiva',   title:'Disciplina Positiva',   modules:4, totalCards:24, prefix:'disciplina-positiva-'   },
-  { id:'bienestar-docente',     title:'Bienestar Docente',     modules:4, totalCards:24, prefix:'bienestar-docente-'     },
+  { id:'creatividad',       title:'Creatividad',        modules:5, totalCards:65, prefix:'creatividad-'       },
+  { id:'herramientas-tec',  title:'Herramientas Tec.',  modules:4, totalCards:57, prefix:'herramientas-tec-'  },
+  { id:'m-learning',        title:'Mobile Learning',    modules:4, totalCards:52, prefix:'m-learning-'        },
+  { id:'flipped-classroom', title:'Flipped Classroom',  modules:4, totalCards:52, prefix:'flipped-classroom-' },
+  { id:'abv',               title:'AB Videos',          modules:4, totalCards:47, prefix:'abv-'               },
+  { id:'micro-learning',    title:'Micro-learning',     modules:4, totalCards:47, prefix:'micro-learning-'    },
+  { id:'ia-fundamentos',    title:'Docente y la IA',    modules:4, totalCards:47, prefix:'ia-fundamentos-'    },
+  { id:'ia-tiempo',         title:'IA: Ahorro Tiempo',  modules:4, totalCards:48, prefix:'ia-tiempo-'         },
+  { id:'ia-herramientas',   title:'Herramientas IA',    modules:4, totalCards:48, prefix:'ia-herramientas-'   },
+  { id:'ia-inclusion',      title:'IA e Inclusión',     modules:4, totalCards:48, prefix:'ia-inclusion-'      },
+  { id:'ia-ciudadania',     title:'Ciudadanía Digital IA', modules:4, totalCards:48, prefix:'ia-ciudadania-'  },
+  { id:'manejo-conductas',  title:'Conductas Desafiantes', modules:4, totalCards:48, prefix:'manejo-conductas-' },
+  { id:'sel-docentes',      title:'SEL Docentes',       modules:4, totalCards:48, prefix:'sel-docentes-'       },
+  { id:'comunicacion-asertiva', title:'Comunicación Asertiva', modules:4, totalCards:48, prefix:'comunicacion-asertiva-' },
+  { id:'disciplina-positiva',   title:'Disciplina Positiva',   modules:4, totalCards:48, prefix:'disciplina-positiva-'   },
+  { id:'bienestar-docente',     title:'Bienestar Docente',     modules:4, totalCards:48, prefix:'bienestar-docente-'     },
 ];
 
 // Rutas de aprendizaje — mismo agrupamiento que LEARNING_PATHS en app.js.
@@ -549,7 +570,32 @@ async function loadTeachers() {
     _allTeachers = (teachers || [])
         .filter(t => t.user_id !== selfId)
         .map(t => ({ ...t, _schoolName: userSchoolMap[t.user_id] || '—' }));
+
+    await loadApplicationRate(userIds);
     renderAll();
+}
+
+// ── Tasa de aplicación real en aula (Fase 1 del roadmap de impacto) ──
+// A diferencia de "tarjetas completadas", esto mide si el docente
+// reportó haber aplicado su compromiso de la tarjeta 'takeaway',
+// 7 y 30 días después. Ver migrations/application-followups.sql.
+let _applicationRate = null; // { respondidos, aplicaron, pendientes, pct }
+async function loadApplicationRate(userIds) {
+    try {
+        const { data, error } = await sb.from('application_followups')
+            .select('applied, responded_at')
+            .in('user_id', userIds);
+        if (error || !data) { _applicationRate = null; return; }
+        const respondidos = data.filter(f => f.responded_at !== null);
+        const aplicaron = respondidos.filter(f => f.applied === true);
+        const pendientes = data.length - respondidos.length;
+        _applicationRate = {
+            respondidos: respondidos.length,
+            aplicaron: aplicaron.length,
+            pendientes,
+            pct: respondidos.length ? Math.round(aplicaron.length / respondidos.length * 100) : null,
+        };
+    } catch (_) { _applicationRate = null; }
 }
 
 function renderAll() {
@@ -624,6 +670,24 @@ function renderKPIs() {
     set('kpiHours',     hours + 'h');
     set('kpiXP',        xpTotal.toLocaleString());
     set('kpiAvgCards',  t.length ? Math.round(cards / t.length) : 0);
+
+    renderApplicationRate();
+}
+
+function renderApplicationRate() {
+    const el = document.getElementById('kpiApplicationRate');
+    const detailEl = document.getElementById('kpiApplicationDetail');
+    if (!el || !detailEl) return;
+    if (!_applicationRate || _applicationRate.respondidos === 0) {
+        el.textContent = 'Sin datos aún';
+        detailEl.textContent = _applicationRate?.pendientes
+            ? `${_applicationRate.pendientes} seguimiento(s) pendiente(s) de respuesta`
+            : 'Los seguimientos se activan 7 y 30 días después de cada compromiso';
+        return;
+    }
+    el.textContent = _applicationRate.pct + '%';
+    detailEl.textContent = `${_applicationRate.aplicaron} de ${_applicationRate.respondidos} respondieron que sí lo aplicaron` +
+        (_applicationRate.pendientes ? ` · ${_applicationRate.pendientes} pendiente(s)` : '');
 }
 
 // ── Module chart ──────────────────────────────────────────────
@@ -639,9 +703,8 @@ function renderModuleChart() {
             (p.completed_cards||[]).some(id => /^\d+$/.test(String(id)))
         );
         enrolled = enrolledTeachers.length || 1;
-        labels = course.ranges.map((_,i) => `Módulo ${i+1}`);
-        data   = course.ranges.map(([s,e]) => {
-            const ids = Array.from({length: e-s+1}, (_,k) => s+k);
+        labels = course.moduleCardIds.map((_,i) => `Módulo ${i+1}`);
+        data   = course.moduleCardIds.map(ids => {
             const c = enrolledTeachers.filter(p => {
                 const done = new Set((p.completed_cards||[]).map(id => parseInt(id)));
                 return ids.every(id => done.has(id));

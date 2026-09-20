@@ -613,6 +613,7 @@ async function checkExistingSession() {
         await loadAppConfig();
         _updatePushToggleUI();
         _checkOnboardingRequirements(() => _landOnAppropriateScreen());
+        checkPendingFollowups();
         return true;
     }
     return false;
@@ -623,6 +624,114 @@ function showLoginError(msg) {
     errorDiv.textContent = msg;
     errorDiv.classList.remove("hidden");
     setTimeout(() => errorDiv.classList.add("hidden"), 3000);
+}
+
+// ==================== SEGUIMIENTO DE APLICACIÓN EN AULA ====================
+// Fase 1 del roadmap de impacto: pregunta a 7 y 30 días si el docente
+// aplicó de verdad el compromiso que hizo en una tarjeta 'takeaway'.
+// Las filas las crea la edge function application-followup-check
+// (cron diario); acá solo las leemos y respondemos.
+
+function _findCardTitle(courseId, cardId) {
+    const course = (typeof allCourses !== 'undefined' ? allCourses : []).find(c => c.id === courseId);
+    if (!course) return null;
+    for (const mod of course.modules || []) {
+        const card = (mod.cards || []).find(c => String(c.id) === String(cardId));
+        if (card) return card.prompt || card.title || null;
+    }
+    return null;
+}
+
+async function checkPendingFollowups() {
+    if (!currentUser) return;
+    try {
+        // Deep-link desde el correo de seguimiento (?followup=<id>) tiene prioridad.
+        const params = new URLSearchParams(window.location.search);
+        const deepLinkId = params.get('followup');
+        let query = supabase.from('application_followups')
+            .select('id, card_id, course_id, days_after, committed_at')
+            .eq('user_id', currentUser.id)
+            .is('responded_at', null);
+
+        if (deepLinkId) {
+            query = query.eq('id', deepLinkId);
+        } else {
+            query = query.order('created_at', { ascending: true }).limit(1);
+        }
+
+        const { data, error } = await query;
+        if (error || !data || !data.length) return;
+        _showFollowupModal(data[0]);
+    } catch (_) { /* seguimiento es best-effort, nunca bloquea el login */ }
+}
+
+function _showFollowupModal(followup) {
+    if (document.getElementById('followupModal')) return;
+    const cardTitle = _findCardTitle(followup.course_id, followup.card_id) || `esta tarjeta del curso ${followup.course_id}`;
+    const question = followup.days_after === 7
+        ? '¿Ya aplicaste lo que te propusiste hace una semana?'
+        : '¿Aplicaste lo que te propusiste hace un mes?';
+
+    const el = document.createElement('div');
+    el.id = 'followupModal';
+    el.className = 'modal-sheet';
+    el.style.zIndex = '9999';
+    el.innerHTML = `<div class="modal-inner" style="max-height:80vh">
+        <div class="modal-drag"></div>
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-bold text-slate-800">🎯 ${esc(question)}</h3>
+        </div>
+        <div style="background:#f0fdfa;border-left:4px solid #0f4c5c;border-radius:12px;padding:12px 14px;margin-bottom:14px">
+            <p style="margin:0;font-size:.88rem;color:#0f4c5c;font-weight:600">${esc(cardTitle)}</p>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:12px">
+            <button id="followupYes" style="flex:1;padding:12px 0;border-radius:14px;background:#0f4c5c;color:#fff;font-weight:700;border:none;cursor:pointer">Sí, lo apliqué</button>
+            <button id="followupNo" style="flex:1;padding:12px 0;border-radius:14px;background:#f1f5f9;color:#475569;font-weight:700;border:none;cursor:pointer">Aún no</button>
+        </div>
+        <textarea id="followupNote" placeholder="Opcional: contanos qué pasó…" rows="2" style="width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;font-size:.85rem;resize:none"></textarea>
+        <button id="followupSubmit" style="width:100%;margin-top:10px;padding:10px 0;border-radius:14px;background:#e2e8f0;color:#94a3b8;font-weight:700;border:none;cursor:not-allowed" disabled>Elegí una opción arriba</button>
+    </div>`;
+    document.getElementById('mainApp').appendChild(el);
+
+    let chosen = null;
+    const yesBtn = el.querySelector('#followupYes');
+    const noBtn = el.querySelector('#followupNo');
+    const submitBtn = el.querySelector('#followupSubmit');
+    const select = (applied, btn) => {
+        chosen = applied;
+        [yesBtn, noBtn].forEach(b => b.style.outline = 'none');
+        btn.style.outline = '3px solid #0f4c5c55';
+        submitBtn.disabled = false;
+        submitBtn.style.background = '#0f4c5c';
+        submitBtn.style.color = '#fff';
+        submitBtn.style.cursor = 'pointer';
+        submitBtn.textContent = 'Enviar respuesta';
+    };
+    yesBtn.addEventListener('click', () => select(true, yesBtn));
+    noBtn.addEventListener('click', () => select(false, noBtn));
+    submitBtn.addEventListener('click', async () => {
+        if (chosen === null) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando…';
+        const note = el.querySelector('#followupNote').value.trim();
+        try {
+            await supabase.from('application_followups').update({
+                applied: chosen,
+                outcome_note: note || null,
+                responded_at: new Date().toISOString(),
+            }).eq('id', followup.id);
+            showToast('¡Gracias por contarnos!', 'success');
+        } catch (_) {
+            showToast('No se pudo enviar, intenta de nuevo más tarde', 'error');
+        }
+        el.remove();
+        // Limpia el ?followup=<id> de la URL sin recargar
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('followup')) {
+            url.searchParams.delete('followup');
+            window.history.replaceState({}, '', url);
+        }
+    });
 }
 
 // ==================== FUNCIONES DE GAMIFICACIÓN ====================
