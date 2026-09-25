@@ -16,22 +16,46 @@ function unsubscribeUrl(userId: string, email: string): string {
   return `${SUPABASE_URL}/functions/v1/unsubscribe-email?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`;
 }
 
+// Lista y totalCards generados desde data.js (node -e, ver auditoría) — antes
+// solo cubría los 5 cursos originales con totales viejos (steam:73, abp:61...),
+// así que el % de avance salía inflado y los 21 cursos agregados después nunca
+// aparecían en el correo semanal.
 const COURSES = [
-  { id: 'steam',             title: 'Metodología STEAM',        prefix: null    },
-  { id: 'abp',               title: 'ABP',                      prefix: 'abp-'  },
-  { id: 'design-thinking',   title: 'Design Thinking',          prefix: 'dt-'   },
-  { id: 'evaluacion',        title: 'Evaluación Formativa',     prefix: 'ev-'   },
-  { id: 'tipos-estudiantes', title: 'Conoce a Quien Enseñas',   prefix: 'te-'   },
+  { id: 'steam', title: 'Metodología STEAM', prefix: null, totalCards: 127 },
+  { id: 'abp', title: 'ABP', prefix: 'abp-', totalCards: 105 },
+  { id: 'design-thinking', title: 'Design Thinking', prefix: 'dt-', totalCards: 80 },
+  { id: 'evaluacion', title: 'Evaluación Formativa', prefix: 'ev-', totalCards: 73 },
+  { id: 'tipos-estudiantes', title: 'Conoce a Quien Enseñas', prefix: 'te-', totalCards: 65 },
+  { id: 'storytelling', title: 'Storytelling', prefix: 'st-', totalCards: 64 },
+  { id: 'creatividad', title: 'Creatividad', prefix: 'creatividad-', totalCards: 65 },
+  { id: 'herramientas-tec', title: 'Herramientas Tecnológicas', prefix: 'herramientas-tec-', totalCards: 57 },
+  { id: 'm-learning', title: 'Mobile Learning', prefix: 'm-learning-', totalCards: 52 },
+  { id: 'flipped-classroom', title: 'Flipped Classroom', prefix: 'flipped-classroom-', totalCards: 52 },
+  { id: 'abv', title: 'AB Videos', prefix: 'abv-', totalCards: 47 },
+  { id: 'micro-learning', title: 'Micro-learning', prefix: 'micro-learning-', totalCards: 47 },
+  { id: 'ia-fundamentos', title: 'Docente y la IA', prefix: 'ia-fundamentos-', totalCards: 47 },
+  { id: 'ia-tiempo', title: 'IA: Ahorro de Tiempo', prefix: 'ia-tiempo-', totalCards: 48 },
+  { id: 'ia-herramientas', title: 'Herramientas de IA', prefix: 'ia-herramientas-', totalCards: 48 },
+  { id: 'ia-inclusion', title: 'IA e Inclusión', prefix: 'ia-inclusion-', totalCards: 48 },
+  { id: 'ia-ciudadania', title: 'Ciudadanía Digital con IA', prefix: 'ia-ciudadania-', totalCards: 48 },
+  { id: 'manejo-conductas', title: 'Manejo de Conductas Desafiantes', prefix: 'manejo-conductas-', totalCards: 48 },
+  { id: 'sel-docentes', title: 'SEL para Docentes', prefix: 'sel-docentes-', totalCards: 48 },
+  { id: 'comunicacion-asertiva', title: 'Comunicación Asertiva', prefix: 'comunicacion-asertiva-', totalCards: 48 },
+  { id: 'disciplina-positiva', title: 'Disciplina Positiva', prefix: 'disciplina-positiva-', totalCards: 48 },
+  { id: 'bienestar-docente', title: 'Bienestar Docente', prefix: 'bienestar-docente-', totalCards: 48 },
+  { id: 'educacion-inclusiva', title: 'Educación Inclusiva', prefix: 'educacion-inclusiva-', totalCards: 42 },
+  { id: 'tea-profundidad', title: 'TEA en Profundidad', prefix: 'tea-profundidad-', totalCards: 32 },
+  { id: 'discapacidad-down-tdah', title: 'Síndrome de Down y TDAH', prefix: 'discapacidad-down-tdah-', totalCards: 32 },
+  { id: 'lengua-senas-docentes', title: 'Lengua de Señas para Docentes', prefix: 'lengua-senas-docentes-', totalCards: 32 },
 ];
 
 function getCoursePct(completedCards: string[], course: typeof COURSES[0]): number {
-  const TOTALS: Record<string, number> = { steam: 73, abp: 61, 'design-thinking': 45, evaluacion: 38, 'tipos-estudiantes': 60 };
   const done = completedCards.filter(id => {
     const s = String(id);
     if (course.id === 'steam') return /^\d+$/.test(s);
     return course.prefix && s.startsWith(course.prefix);
   }).length;
-  return Math.min(100, Math.round(done / (TOTALS[course.id] || 1) * 100));
+  return Math.min(100, Math.round(done / (course.totalCards || 1) * 100));
 }
 
 function hasCert(p: any, courseId: string): boolean {
@@ -67,8 +91,15 @@ function buildEmail(p: any, unsubUrl: string): string {
   const certCount = COURSES.filter(c => hasCert(p, c.id)).length;
   const hours = Math.round(cards * 3 / 60);
 
-  const courseRows = COURSES.map(c => {
-    const pct = getCoursePct(p.completed_cards || [], c);
+  // Con 26 cursos, listar todos en el correo es demasiado — solo los que el
+  // docente ya empezó, con el más avanzado primero (máx. 8 filas).
+  const startedCourses = COURSES
+    .map(c => ({ course: c, pct: getCoursePct(p.completed_cards || [], c) }))
+    .filter(({ pct, course }) => pct > 0 || hasCert(p, course.id))
+    .sort((a, b) => b.pct - a.pct)
+    .slice(0, 8);
+
+  const courseRows = startedCourses.map(({ course: c, pct }) => {
     const cert = hasCert(p, c.id);
     return `
       <tr>
@@ -154,7 +185,9 @@ function buildEmail(p: any, unsubUrl: string): string {
         <!-- Progreso por curso -->
         <tr><td style="background:white;padding:20px 32px 8px">
           <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#374151">Tu progreso en los cursos</p>
-          <table width="100%" cellpadding="0" cellspacing="0">${courseRows}</table>
+          ${courseRows
+            ? `<table width="100%" cellpadding="0" cellspacing="0">${courseRows}</table>`
+            : '<p style="margin:0;font-size:13px;color:#6b7280">Aún no empiezas ningún curso — ¡esta semana es un buen momento!</p>'}
         </td></tr>
 
         <!-- Horas -->
@@ -192,13 +225,22 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { data: users, error } = await sb
-      .from('progress')
-      .select('user_id, email, xp, streak, completed_cards, last_activity_date, daily_missions')
-      .not('email', 'is', null)
-      .is('unsubscribed_at', null);
-
-    if (error) throw error;
+    // PostgREST corta en 1000 filas por consulta — paginar para no ignorar
+    // docentes en silencio si la base crece más allá de eso.
+    const PAGE_SIZE = 1000;
+    const users: any[] = [];
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data, error } = await sb
+        .from('progress')
+        .select('user_id, email, xp, streak, completed_cards, last_activity_date, daily_missions')
+        .not('email', 'is', null)
+        .is('unsubscribed_at', null)
+        .order('user_id')
+        .range(from, from + PAGE_SIZE - 1);
+      if (error) throw error;
+      users.push(...(data || []));
+      if (!data || data.length < PAGE_SIZE) break;
+    }
 
     let sent = 0, failed = 0;
 
