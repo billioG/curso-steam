@@ -613,7 +613,6 @@ async function checkExistingSession() {
         await loadAppConfig();
         _updatePushToggleUI();
         _checkOnboardingRequirements(() => _landOnAppropriateScreen());
-        checkPendingFollowups();
         return true;
     }
     return false;
@@ -632,18 +631,21 @@ function showLoginError(msg) {
 // Las filas las crea la edge function application-followup-check
 // (cron diario); acá solo las leemos y respondemos.
 
-function _findCardTitle(courseId, cardId) {
+let _followupDismissedThisSession = false;
+
+function _findCommitment(courseId, cardId) {
     const course = (typeof allCourses !== 'undefined' ? allCourses : []).find(c => c.id === courseId);
-    if (!course) return null;
-    for (const mod of course.modules || []) {
+    for (const mod of course?.modules || []) {
         const card = (mod.cards || []).find(c => String(c.id) === String(cardId));
-        if (card) return card.prompt || card.title || null;
+        if (!card) continue;
+        const idx = progress?.dailyMissions?.takeawayChoices?.[String(cardId)];
+        return { prompt: card.prompt || card.title || '', commitment: (card.options || [])[idx] || '' };
     }
-    return null;
+    return { prompt: '', commitment: '' };
 }
 
 async function checkPendingFollowups() {
-    if (!currentUser) return;
+    if (!currentUser || _followupDismissedThisSession) return;
     try {
         // Deep-link desde el correo de seguimiento (?followup=<id>) tiene prioridad.
         const params = new URLSearchParams(window.location.search);
@@ -667,7 +669,8 @@ async function checkPendingFollowups() {
 
 function _showFollowupModal(followup) {
     if (document.getElementById('followupModal')) return;
-    const cardTitle = _findCardTitle(followup.course_id, followup.card_id) || `esta tarjeta del curso ${followup.course_id}`;
+    const { prompt, commitment } = _findCommitment(followup.course_id, followup.card_id);
+    const cardTitle = commitment || prompt || `tu compromiso del curso ${followup.course_id}`;
     const question = followup.days_after === 7
         ? '¿Ya aplicaste lo que te propusiste hace una semana?'
         : '¿Aplicaste lo que te propusiste hace un mes?';
@@ -681,6 +684,7 @@ function _showFollowupModal(followup) {
         <div class="flex justify-between items-center mb-3">
             <h3 class="text-lg font-bold text-slate-800">🎯 ${esc(question)}</h3>
         </div>
+        <p style="margin:0 0 6px;font-size:.8rem;color:#64748b">Te comprometiste a:</p>
         <div style="background:#f0fdfa;border-left:4px solid #0f4c5c;border-radius:12px;padding:12px 14px;margin-bottom:14px">
             <p style="margin:0;font-size:.88rem;color:#0f4c5c;font-weight:600">${esc(cardTitle)}</p>
         </div>
@@ -690,6 +694,7 @@ function _showFollowupModal(followup) {
         </div>
         <textarea id="followupNote" placeholder="Opcional: contanos qué pasó…" rows="2" style="width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;font-size:.85rem;resize:none"></textarea>
         <button id="followupSubmit" style="width:100%;margin-top:10px;padding:10px 0;border-radius:14px;background:#e2e8f0;color:#94a3b8;font-weight:700;border:none;cursor:not-allowed" disabled>Elegí una opción arriba</button>
+        <button id="followupLater" style="width:100%;margin-top:6px;padding:8px 0;border:none;background:none;color:#94a3b8;font-size:.8rem;font-weight:600;cursor:pointer">Recordarme después</button>
     </div>`;
     document.getElementById('mainApp').appendChild(el);
 
@@ -707,30 +712,38 @@ function _showFollowupModal(followup) {
         submitBtn.style.cursor = 'pointer';
         submitBtn.textContent = 'Enviar respuesta';
     };
-    yesBtn.addEventListener('click', () => select(true, yesBtn));
-    noBtn.addEventListener('click', () => select(false, noBtn));
-    submitBtn.addEventListener('click', async () => {
-        if (chosen === null) return;
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Enviando…';
-        const note = el.querySelector('#followupNote').value.trim();
-        try {
-            await supabase.from('application_followups').update({
-                applied: chosen,
-                outcome_note: note || null,
-                responded_at: new Date().toISOString(),
-            }).eq('id', followup.id);
-            showToast('¡Gracias por contarnos!', 'success');
-        } catch (_) {
-            showToast('No se pudo enviar, intenta de nuevo más tarde', 'error');
-        }
+    const close = () => {
         el.remove();
-        // Limpia el ?followup=<id> de la URL sin recargar
         const url = new URL(window.location.href);
         if (url.searchParams.has('followup')) {
             url.searchParams.delete('followup');
             window.history.replaceState({}, '', url);
         }
+    };
+    yesBtn.addEventListener('click', () => select(true, yesBtn));
+    noBtn.addEventListener('click', () => select(false, noBtn));
+    el.querySelector('#followupLater').addEventListener('click', () => {
+        _followupDismissedThisSession = true;
+        close();
+    });
+    submitBtn.addEventListener('click', async () => {
+        if (chosen === null) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando…';
+        const note = el.querySelector('#followupNote').value.trim();
+        const { error } = await supabase.from('application_followups').update({
+            applied: chosen,
+            outcome_note: note || null,
+            responded_at: new Date().toISOString(),
+        }).eq('id', followup.id);
+        if (error) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Reintentar';
+            showToast('No se pudo enviar. Revisa tu conexión e intenta de nuevo.', 'error');
+            return;
+        }
+        showToast('¡Gracias por contarnos!', 'success');
+        close();
     });
 }
 
@@ -1938,8 +1951,12 @@ function renderCard() {
                 }
                 if (!progress.dailyMissions.pinnedCards) progress.dailyMissions.pinnedCards = [];
                 const _courseIdTw = currentCourseId || 'steam';
-                if (!progress.dailyMissions.pinnedCards.some(p => p.cardId === cardKey && p.courseId === _courseIdTw)) {
-                    progress.dailyMissions.pinnedCards.push({ cardId: cardKey, courseId: _courseIdTw, date: new Date().toISOString() });
+                const _commitment = (card.options || [])[idx] || '';
+                const _existingPin = progress.dailyMissions.pinnedCards.find(p => p.cardId === cardKey && p.courseId === _courseIdTw);
+                if (_existingPin) {
+                    _existingPin.commitment = _commitment;
+                } else {
+                    progress.dailyMissions.pinnedCards.push({ cardId: cardKey, courseId: _courseIdTw, date: new Date().toISOString(), commitment: _commitment });
                 }
                 _haptic(15);
                 saveProgress();
@@ -6291,6 +6308,7 @@ function _landOnAppropriateScreen() {
     } else {
         showCourseSelector(); // primera vez, o el curso guardado ya no existe/está disponible
     }
+    checkPendingFollowups();
 }
 
 function _renderCourseSelector() {
