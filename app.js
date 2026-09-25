@@ -1138,62 +1138,17 @@ function loadDailyMissions() {
 
     if (savedMissions.date !== today) {
         const newMissions = dailyMissionsList.map(m => ({ ...m, current: 0, completed: false, claimed: false }));
-        // Preservar campos de perfil, exámenes y desbloqueos de módulos que también viven en dailyMissions
-        const { fullName, profilePhoto, examScores, examScore, examDates, masterExamScore, masterExamScores,
-                masterExamDate, masterExamDates, coursePositions, diagResult, diagDone, onboardingDone, portfolioByPath,
-                portfolioAiTotal, portfolioScores, portfolioFeedback, portfolioSummary,
-                portfolioAttempts, portfolioLastAttempt,
-                // persistentes entre días:
-                cardNotes, appliedCards, pinnedCards, takeawayChoices, streakFreezes, lastFreezeWeek,
-                weeklyMissions, weeklyMissionsDate, weeklyXP, quizStreak, earlyBirdCards, xpLog } = savedMissions;
         // Snapshot del XP del día que termina, para la gráfica de Progreso (histórico acumulativo)
-        const prevXpLog = Array.isArray(xpLog) ? xpLog : [];
+        const prevXpLog = Array.isArray(savedMissions.xpLog) ? savedMissions.xpLog : [];
         const newXpLog = savedMissions.date
             ? [...prevXpLog, { date: savedMissions.date, xp: savedMissions.dailyXP || 0 }].slice(-60)
             : prevXpLog;
-        // Extraer todas las claves de bloqueo de módulos (moduleStart_* y moduleEarlyUnlock_*)
-        const moduleKeys = {};
-        Object.keys(savedMissions).forEach(k => {
-            if (k.startsWith('moduleStart_') || k.startsWith('moduleEarlyUnlock_')) {
-                moduleKeys[k] = savedMissions[k];
-            }
-        });
+        // Conservar todo y reiniciar solo lo diario: una lista blanca borraba cada campo nuevo olvidado.
         progress.dailyMissions = {
-            date: today, missions: newMissions,
-            dailyXP: 0, // reinicia XP diario
-            ...moduleKeys,
-            ...(fullName        && { fullName }),
-            ...(profilePhoto    && { profilePhoto }),
-            ...(examScores      && { examScores }),
-            ...(examScore !== undefined && { examScore }),
-            ...(examDates       && { examDates }),
-            ...(masterExamScore !== undefined && { masterExamScore }),
-            ...(masterExamScores && { masterExamScores }),
-            ...(masterExamDate  && { masterExamDate }),
-            ...(masterExamDates && { masterExamDates }),
-            ...(coursePositions && { coursePositions }),
-            ...(diagResult      && { diagResult }),
-            ...(diagDone        && { diagDone }),
-            ...(onboardingDone  && { onboardingDone }),
-            ...(portfolioByPath && { portfolioByPath }),
-            ...(portfolioAiTotal !== undefined && { portfolioAiTotal }),
-            ...(portfolioScores  && { portfolioScores }),
-            ...(portfolioFeedback && { portfolioFeedback }),
-            ...(portfolioSummary && { portfolioSummary }),
-            ...(portfolioAttempts !== undefined && { portfolioAttempts }),
-            ...(portfolioLastAttempt && { portfolioLastAttempt }),
-            // persistentes:
-            ...(cardNotes       && { cardNotes }),
-            ...(appliedCards    && { appliedCards }),
-            ...(pinnedCards     && { pinnedCards }),
-            ...(takeawayChoices && { takeawayChoices }),
-            ...(streakFreezes !== undefined && { streakFreezes }),
-            ...(lastFreezeWeek  && { lastFreezeWeek }),
-            ...(weeklyMissions  && { weeklyMissions }),
-            ...(weeklyMissionsDate && { weeklyMissionsDate }),
-            ...(weeklyXP !== undefined && { weeklyXP }),
-            ...(quizStreak !== undefined && { quizStreak }),
-            ...(earlyBirdCards !== undefined && { earlyBirdCards }),
+            ...savedMissions,
+            date: today,
+            missions: newMissions,
+            dailyXP: 0,
             ...(newXpLog.length && { xpLog: newXpLog }),
         };
         saveProgress();
