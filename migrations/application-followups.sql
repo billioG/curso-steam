@@ -64,7 +64,10 @@ create policy "followups_select_coordinator" on application_followups
 -- Vista de agregado por curso, lista para el panel de coordinador.
 -- % aplicado = respondidos con applied=true / total respondidos (no
 -- cuenta los que aún no contestaron, para no diluir la tasa real).
-create or replace view application_followup_rates as
+-- security_invoker: la vista aplica el RLS de quien consulta; sin esto
+-- cualquiera con la anon key vería los agregados de todos los colegios.
+create or replace view application_followup_rates
+with (security_invoker = true) as
 select
   course_id,
   days_after,
