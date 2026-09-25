@@ -31,22 +31,39 @@ Deno.serve(async (_req) => {
     const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
     const today = todayGuatemala();
 
-    const { data: subs, error: subsErr } = await sb
-      .from('push_subscriptions')
-      .select('id, user_id, endpoint, p256dh, auth');
-    if (subsErr) throw subsErr;
-    if (!subs || subs.length === 0) {
+    // PostgREST corta en 1000 filas por consulta — paginar para no ignorar
+    // suscripciones en silencio si la base crece más allá de eso.
+    const PAGE_SIZE = 1000;
+    const subs: any[] = [];
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data, error: subsErr } = await sb
+        .from('push_subscriptions')
+        .select('id, user_id, endpoint, p256dh, auth')
+        .order('id')
+        .range(from, from + PAGE_SIZE - 1);
+      if (subsErr) throw subsErr;
+      subs.push(...(data || []));
+      if (!data || data.length < PAGE_SIZE) break;
+    }
+    if (subs.length === 0) {
       return json({ sent: 0, total: 0, skipped: 0, expired: 0, reason: 'sin suscripciones activas' });
     }
 
+    // .in() también corta en 1000 filas de respuesta, y una lista de miles de
+    // ids en la URL puede pasar el límite del gateway — se consulta en lotes.
     const userIds = [...new Set(subs.map((s) => s.user_id))];
-    const { data: progressRows, error: progErr } = await sb
-      .from('progress')
-      .select('user_id, last_activity_date')
-      .in('user_id', userIds);
-    if (progErr) throw progErr;
+    const progressRows: any[] = [];
+    for (let i = 0; i < userIds.length; i += PAGE_SIZE) {
+      const batch = userIds.slice(i, i + PAGE_SIZE);
+      const { data, error: progErr } = await sb
+        .from('progress')
+        .select('user_id, last_activity_date')
+        .in('user_id', batch);
+      if (progErr) throw progErr;
+      progressRows.push(...(data || []));
+    }
 
-    const lastActivityByUser = new Map((progressRows || []).map((p) => [p.user_id, p.last_activity_date]));
+    const lastActivityByUser = new Map(progressRows.map((p) => [p.user_id, p.last_activity_date]));
     const inactiveToday = subs.filter((s) => lastActivityByUser.get(s.user_id) !== today);
 
     const payload = JSON.stringify({
