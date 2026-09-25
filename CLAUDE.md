@@ -53,6 +53,7 @@ Si no se regenera, las clases nuevas simplemente no van a tener estilo (el
 CSS es estático, no JIT en el navegador como el CDN viejo).
 
 ## Convenciones de código
-- IDs de tarjetas por curso: STEAM=numérico, ABP=`abp-`, DT=`dt-`, EV=`ev-`, TE=`te-`
+- IDs de tarjetas por curso: STEAM=numérico, ABP=`abp-`, DT=`dt-`, EV=`ev-`, TE=`te-`, Storytelling=`st-`. Los demás cursos usan ids numéricos en `data.js` que `app.js` normaliza al cargar a `<courseId>-<n>` (así se guardan en `completed_cards`); los ids solo deben ser únicos dentro de su curso.
+- `totalCards` de cada curso está duplicado en `data.js`, `admin.js` (`STATIC_COURSES`), `coordinator.html` (`COURSES`) y `supabase-functions/weekly-stats`: al agregar o quitar tarjetas, actualiza los cuatro.
 - `examScores` (objeto por courseId) es el campo principal; `examScore` (singular) es legacy solo para STEAM
 - Dropdowns dentro de contenedores `overflow:auto` deben usar `position:fixed` + `getBoundingClientRect()`
