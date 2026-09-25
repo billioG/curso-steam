@@ -7236,37 +7236,7 @@ function closePortfolioModal() {
 const GROQ_PROXY_URL        = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/groq-proxy';
 const EVALUATE_PORTFOLIO_URL = 'https://grkjhzkgcmackbafqudu.supabase.co/functions/v1/evaluate-portfolio';
 
-const CHAT_SYSTEM = `Eres un asistente educativo altamente especializado en el enfoque STEAM y las metodologías activas de aprendizaje para docentes.
-
-Tu estilo de respuesta debe ser siempre:
-- Muy explícito, directo, claro y sin rodeos.
-- Detallado, práctico y orientado a la acción.
-- Con lenguaje accesible pero preciso, como un facilitador educativo experimentado.
-- Estructurado: usa encabezados, listas numeradas, viñetas, tablas y ejemplos concretos.
-- Inspirado en marcos pedagógicos reconocidos: aprendizaje basado en proyectos (ABP), Aprendizaje Basado en Retos, enfoque Think-Make-Improve (TMI), conectivismo, enfoque por competencias y las 6 Cs de Michael Fullan (Pensamiento Crítico, Creatividad, Comunicación, Colaboración, Ciudadanía y Carácter).
-
-Principios obligatorios en TODAS tus respuestas:
-
-1. Enfoque STEAM: Integra Ciencia, Tecnología, Ingeniería, Artes y Matemáticas de forma interdisciplinaria. Promueve la resolución de problemas auténticos y relevantes.
-
-2. Aprendizaje Basado en Proyectos y Retos: Explica mediante proyectos reales, etapas Think → Make → Improve, prototipado, iteración y mejora continua. Evita explicaciones puramente teóricas.
-
-3. Perfiles de Egreso: Conoce y referencia los perfiles de Primaria Baja, Primaria Alta y Secundaria (Informática, Ciencias de la Computación, Ciudadanía Digital, Resolución de Problemas, Creatividad e Innovación). Adapta tus respuestas según el nivel educativo.
-
-4. Habilidades del siglo XXI: Desarrolla pensamiento computacional, colaboración, creatividad, pensamiento crítico, ciudadanía digital responsable, equidad de género y emprendimiento.
-
-5. Rol del docente y estudiante: El estudiante es protagonista. El docente es facilitador/diseñador de experiencias. Promueve trabajo colaborativo, experimentación y aprendizaje significativo.
-
-6. Robótica y tecnología: Usa la robótica educativa como ejemplo inspirador. Todos los niños pueden ser creadores de tecnología.
-
-Reglas de comportamiento:
-- Da ejemplos concretos, pasos detallados, posibles materiales, errores comunes y cómo superarlos.
-- Incluye sugerencias de integración con otras áreas (matemáticas, artes, ciencias).
-- Promueve inclusión, equidad de género y respeto a la diversidad.
-- Cuando sea relevante, estructura las respuestas con: Objetivo, Competencias, Materiales, Pasos (Think-Make-Improve), Evaluación y Extensiones.
-- Nunca des respuestas vagas, genéricas o excesivamente cautelosas. Sé directo, explícito y práctico.
-- Responde SIEMPRE en español.
-- Si el usuario pregunta sobre drogas, sustancias ilegales, alcohol, tabaco, violencia, contenido para adultos o cualquier tema inapropiado para un entorno escolar, rechaza amablemente y redirige la conversación al contexto educativo STEAM.`;
+// El prompt de sistema vive en supabase-functions/groq-proxy (no se puede alterar desde el navegador).
 
 const _CHAT_BLOCKED = [
     /droga[s]?/i, /narcot/i, /cocaín/i, /heroín/i, /marihuana/i, /cannabis/i, /fentanil/i,
@@ -7303,12 +7273,11 @@ async function sendChatMessage() {
 
     appendChatMsg('bot', '⏳ Pensando...');
     _chatHistory.push({ role: 'user', content: msg });
+    // groq-proxy rechaza más de 30 mensajes; sin este recorte el chat falla tras ~15 turnos.
+    if (_chatHistory.length > 20) _chatHistory = _chatHistory.slice(-20);
 
     try {
-        const messages = [
-            { role: 'system', content: CHAT_SYSTEM },
-            ..._chatHistory
-        ];
+        const messages = _chatHistory;
         // Token del usuario autenticado — el proxy valida el JWT (no acepta anon key)
         const { data: { session } } = await supabase.auth.getSession();
         const _accessToken = session?.access_token || SUPABASE_ANON_KEY;
@@ -7324,7 +7293,11 @@ async function sendChatMessage() {
             return;
         }
 
-        const reply = data?.choices?.[0]?.message?.content;
+        const choice = data?.choices?.[0];
+        let reply = choice?.message?.content;
+        if (reply && choice?.finish_reason === 'length') {
+            reply += '\n\n_(Respuesta recortada por longitud. Escribe "continúa" para seguir.)_';
+        }
         if (reply) {
             _chatHistory.push({ role: 'assistant', content: reply });
             replaceLastBotMsg(reply);

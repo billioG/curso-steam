@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
       ? `\n\nAmbienta los casos dentro de estas materias del Currículo Nacional Base de Guatemala (repártelas entre los casos, puedes combinar más de una): ${cnbAreas.map((a) => CNB_LABELS[a]).join(', ')}. La situación debe ocurrir en una clase de esa materia, pero lo que se evalúa sigue siendo la práctica docente (las 4 áreas de arriba), no el contenido académico de la materia.`
       : '';
 
-    const systemPrompt = `Eres un especialista en selección de personal docente. Diseñas casos de estudio realistas de aula para evaluar candidatos a un puesto de facilitador/docente. Los casos evalúan siempre práctica docente general (didáctica, pedagogía, manejo de grupo, tecnología educativa) — nunca menciones marcas comerciales, kits o robots específicos. Siempre respondes ÚNICAMENTE con JSON válido, sin texto adicional, sin bloques de código markdown.`;
+    const systemPrompt = `Eres un especialista en selección de personal docente. Diseñas casos de estudio realistas de aula para evaluar candidatos a un puesto de facilitador/docente. Los casos evalúan siempre práctica docente general (didáctica, pedagogía, manejo de grupo, tecnología educativa) — nunca menciones marcas comerciales, kits o robots específicos. Respondes con un objeto JSON.`;
 
     const userPrompt = `Genera ${CASES_TO_GENERATE} casos de estudio cortos (una situación de aula realista + una pregunta abierta) para evaluar a un candidato a facilitador docente. Reparte los casos entre estas áreas (puede repetirse un área si hacen falta más casos que áreas):
 
@@ -124,10 +124,12 @@ Cada caso debe tener:
 - Una pregunta abierta que invite a explicar CÓMO actuaría el candidato
 - Nada de menciones a marcas, kits o robots — general para cualquier docente
 
-Responde ÚNICAMENTE con este JSON (array de exactamente ${CASES_TO_GENERATE} objetos, sin texto antes ni después):
-[
-  { "id": "caso-1", "title": "Título corto del caso", "prompt": "Situación + pregunta abierta" }
-]`;
+Responde con este objeto JSON; "cases" tiene exactamente ${CASES_TO_GENERATE} elementos:
+{
+  "cases": [
+    { "id": "caso-1", "title": "Título corto del caso", "prompt": "Situación + pregunta abierta" }
+  ]
+}`;
 
     let cases = FALLBACK_CASES.slice(0, CASES_TO_GENERATE);
 
@@ -146,12 +148,12 @@ Responde ÚNICAMENTE con este JSON (array de exactamente ${CASES_TO_GENERATE} ob
           ],
           max_tokens: 1200,
           temperature: 0.7,
+          response_format: { type: 'json_object' },
         }),
       });
       const groqData = await groqRes.json();
       const raw = groqData.choices?.[0]?.message?.content || '';
-      const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const parsed = JSON.parse(jsonStr);
+      const parsed = JSON.parse(raw)?.cases;
 
       if (Array.isArray(parsed) && parsed.length > 0) {
         const valid = parsed
