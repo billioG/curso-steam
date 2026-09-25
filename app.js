@@ -242,13 +242,18 @@ function saveToLocalCache(userId, data) {
     });
 }
 
+// Devuelve el progreso guardado con su timestamp adjunto (progress.updatedAt),
+// para poder compararlo contra la fecha de la fila de Supabase al cargar.
 function loadFromLocalCache(userId) {
     return initDB().then(db => {
         return new Promise((resolve, reject) => {
             const tx = db.transaction("progressCache", "readonly");
             const store = tx.objectStore("progressCache");
             const request = store.get(userId);
-            request.onsuccess = () => resolve(request.result?.data);
+            request.onsuccess = () => {
+                const row = request.result;
+                resolve(row ? { ...row.data, updatedAt: row.updatedAt } : undefined);
+            };
             request.onerror = () => reject(request.error);
         });
     });
@@ -303,6 +308,15 @@ async function syncWithSupabase() {
 async function loadFromSupabase() {
     if (!currentUser) return null;
 
+    // Progreso local sin sincronizar (guardado por saveProgress mientras estaba
+    // offline) puede ser más nuevo que la fila de Supabase — saveToLocalCache
+    // solo confirma que se sincronizó DESPUÉS de un upsert exitoso, así que si
+    // el caché local es más reciente que la nube, la nube todavía no lo tiene.
+    // Sin esta comparación, entrar con conexión después de estudiar sin
+    // conexión siempre pisaba el progreso local con la nube desactualizada.
+    let local = null;
+    try { local = await loadFromLocalCache(currentUser.id); } catch (_) {}
+
     try {
         const { data, error } = await supabase
             .from('progress')
@@ -313,6 +327,11 @@ async function loadFromSupabase() {
         if (error) throw error;
 
         if (data) {
+            const cloudUpdatedAt = data.updated_at ? new Date(data.updated_at).getTime() : 0;
+            if (local?.updatedAt && local.updatedAt > cloudUpdatedAt) {
+                console.warn('Progreso local más reciente que la nube — se usa el local y se re-sincroniza.');
+                return { ...local, _needsResync: true };
+            }
             return {
                 current_module: data.current_module || 1,
                 current_card: data.current_card || 0,
@@ -330,10 +349,10 @@ async function loadFromSupabase() {
                 npsHistory: data.nps_history || []
             };
         }
-        return null;
+        return local;
     } catch (error) {
         console.error("Error loading:", error);
-        return await loadFromLocalCache(currentUser.id);
+        return local;
     }
 }
 
@@ -369,6 +388,8 @@ async function loginWithEmail(email, password) {
             progress = cloudProgress;
             currentModule = cloudProgress.current_module || 1;
             currentCardIndex = cloudProgress.current_card || 0;
+            // Progreso local sin sincronizar (ver loadFromSupabase) — súbelo ya.
+            if (cloudProgress._needsResync) syncWithSupabase();
         } else {
             progress = {
                 completedCards: [],
@@ -574,6 +595,8 @@ async function checkExistingSession() {
             progress = cloudProgress;
             currentModule = cloudProgress.current_module || 1;
             currentCardIndex = cloudProgress.current_card || 0;
+            // Progreso local sin sincronizar (ver loadFromSupabase) — súbelo ya.
+            if (cloudProgress._needsResync) syncWithSupabase();
         } else {
             progress = {
                 completedCards: [], moduleFeedback: {}, npsHistory: [], xp: 0, level: 1,
