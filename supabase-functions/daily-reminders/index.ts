@@ -14,6 +14,10 @@ const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')!;
 // Costo en XP para desbloquear un módulo (ajusta si cambia en app.js)
 const MODULE_UNLOCK_COST = 50;
 
+// Límites acumulados reales de módulo para STEAM (suma de tarjetas por
+// módulo 1..5). Generado desde data.js — actualizar si cambia el contenido.
+const STEAM_MODULE_BOUNDARIES = [22, 45, 73, 97, 127];
+
 // Link de un clic para dejar de recibir estos correos (unsubscribe-email
 // function) — se usa como header List-Unsubscribe (RFC 8058, one-click)
 // y como texto visible en el footer. Sin esto los proveedores de correo
@@ -169,11 +173,22 @@ Deno.serve(async (req) => {
     const today     = localDate(0);
     const yesterday = localDate(-1);
 
-    const { data: users } = await sb
-      .from('progress')
-      .select('user_id, email, xp, streak, completed_cards, last_activity_date, daily_missions, last_reminder_date')
-      .not('email', 'is', null)
-      .is('unsubscribed_at', null);
+    // PostgREST corta en 1000 filas por consulta — paginar para no ignorar
+    // docentes en silencio si la base crece más allá de eso.
+    const PAGE_SIZE = 1000;
+    const users: any[] = [];
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data, error: pageErr } = await sb
+        .from('progress')
+        .select('user_id, email, xp, streak, completed_cards, last_activity_date, daily_missions, last_reminder_date')
+        .not('email', 'is', null)
+        .is('unsubscribed_at', null)
+        .order('user_id')
+        .range(from, from + PAGE_SIZE - 1);
+      if (pageErr) throw pageErr;
+      users.push(...(data || []));
+      if (!data || data.length < PAGE_SIZE) break;
+    }
 
     let inactiveSent = 0, lockedSent = 0, failed = 0, skipped = 0;
 
@@ -223,10 +238,15 @@ Deno.serve(async (req) => {
       // Solo enviar si estuvo activo ayer (usuario comprometido pero no desbloqueó)
       const wasActiveYesterday = last === yesterday;
       const hasEnoughXP = (user.xp || 0) >= MODULE_UNLOCK_COST;
-      // Heurística: si tiene menos tarjetas que el módulo siguiente esperaría
-      const cards = (user.completed_cards || []).length;
+      // Heurística: terminó justo un módulo de STEAM (cae en uno de los
+      // límites acumulados reales de módulo) pero no el curso completo.
+      // Antes usaba "steamCards % 13 === 0 && < 73" — steam tenía 73 tarjetas
+      // en 5 módulos de ~13-14; hoy tiene 127 en módulos irregulares
+      // (22/23/28/24/30) y ese resto nunca cae justo, así que este correo
+      // dejó de enviarse. STEAM_MODULE_BOUNDARIES = límites acumulados
+      // reales (ver data.js) — actualizar si cambia el contenido de STEAM.
       const steamCards = (user.completed_cards || []).filter((id: string) => /^\d+$/.test(String(id))).length;
-      const isLikelyBlocked = steamCards > 0 && steamCards < 73 && steamCards % 13 === 0;
+      const isLikelyBlocked = STEAM_MODULE_BOUNDARIES.includes(steamCards) && steamCards < STEAM_MODULE_BOUNDARIES[STEAM_MODULE_BOUNDARIES.length - 1];
 
       // !sentToUser: si ya recibió el de inactividad, no lo doble-emaileamos.
       if (!sentToUser && wasActiveYesterday && hasEnoughXP && isLikelyBlocked) {
