@@ -582,7 +582,20 @@ async function logout() {
     document.getElementById("mainApp").classList.add("hidden");
 }
 
+// Un enlace de "olvidé mi contraseña" hace que Supabase cree una sesión
+// temporal antes de que este script termine de cargar — esa sesión es real
+// y getSession() la devuelve como cualquier otra. Sin esta bandera,
+// checkExistingSession() la trataba como un login normal, ocultaba toda la
+// pantalla de login (donde vive el formulario de nueva contraseña) y
+// mandaba directo a la app: el docente nunca llegaba a cambiar la
+// contraseña. Supabase agrega type=recovery a la URL del enlace (en el
+// hash con el flujo implícito, o en la query con PKCE) — se revisan ambos.
+function _isPasswordRecoveryLink() {
+    return /type=recovery/.test(window.location.hash) || /type=recovery/.test(window.location.search);
+}
+
 async function checkExistingSession() {
+    if (_isPasswordRecoveryLink()) return false;
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
         currentUser = session.user;
@@ -5561,6 +5574,9 @@ supabase.auth.onAuthStateChange(async (event, session) => {
         const allForms = ['emailLoginForm','forgotForm','registerForm'];
         allForms.forEach(id => document.getElementById(id)?.classList.add('hidden'));
         document.getElementById('resetPasswordForm')?.classList.remove('hidden');
+        // Por si algo ya había mostrado la app antes de que llegara este evento.
+        document.getElementById('loginScreen')?.classList.remove('hidden');
+        document.getElementById('mainApp')?.classList.add('hidden');
     }
 });
 
