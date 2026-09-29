@@ -7,12 +7,12 @@ const SUPABASE_URL = "https://grkjhzkgcmackbafqudu.supabase.co";
 // Rutas de aprendizaje — el admin puede modificar masterCert desde el panel
 // Se sobreescribe con config de Supabase al cargar (ver loadAppConfig)
 let LEARNING_PATHS = [
-    { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4', gradient:'linear-gradient(135deg,#1A6B68,#07B0E4)',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
-    { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp','storytelling'] },
-    { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
-    { id:'ia',            label:'Docente y la IA',        color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)',  courses:['ia-fundamentos','ia-tiempo','ia-herramientas','ia-inclusion','ia-ciudadania'] },
-    { id:'convivencia',   label:'Clima y Convivencia Escolar', color:'#0891B2', gradient:'linear-gradient(135deg,#155E75,#0891B2)',  courses:['manejo-conductas','sel-docentes','comunicacion-asertiva','disciplina-positiva','bienestar-docente'] },
-    { id:'inclusion',     label:'Educación Inclusiva',    color:'#8B5CF6', gradient:'linear-gradient(135deg,#5B21B6,#8B5CF6)',  courses:['educacion-inclusiva','tea-profundidad','discapacidad-down-tdah','lengua-senas-docentes'] },
+    { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
+    { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D',  courses:['creatividad','herramientas-tec','abp','storytelling'] },
+    { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
+    { id:'ia',            label:'Docente y la IA',        color:'#10B981',  courses:['ia-fundamentos','ia-tiempo','ia-herramientas','ia-inclusion','ia-ciudadania'] },
+    { id:'convivencia',   label:'Clima y Convivencia Escolar', color:'#0891B2',  courses:['manejo-conductas','sel-docentes','comunicacion-asertiva','disciplina-positiva','bienestar-docente'] },
+    { id:'inclusion',     label:'Educación Inclusiva',    color:'#8B5CF6',  courses:['educacion-inclusiva','tea-profundidad','discapacidad-down-tdah','lengua-senas-docentes'] },
 ];
 // IDs de cursos requeridos para el certificado maestro (ruta steam20)
 // Admin puede cambiarlos desde el panel → se guardan en Supabase tabla app_config
@@ -857,7 +857,7 @@ function updateUI() {
         if (!_examBanner) {
             _examBanner = document.createElement('div');
             _examBanner.id = _examBannerId;
-            _examBanner.style.cssText = 'margin:12px 16px 0;padding:14px 16px;background:linear-gradient(135deg,#5C35C5,#7C3AED);border-radius:16px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:0 4px 16px rgba(92,53,197,.35)';
+            _examBanner.style.cssText = 'margin:12px 16px 0;padding:14px 16px;background:#5C35C5;border-radius:16px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:0 4px 16px rgba(92,53,197,.25)';
             _examBanner.onclick = () => _showExamPrompt();
             _examBanner.innerHTML = '<span style="font-size:24px">🎓</span><div style="flex:1"><div style="color:white;font-weight:800;font-size:14px">¡Listo para el examen final!</div><div style="color:rgba(255,255,255,.8);font-size:12px">Completa tu certificado — toca aquí para evaluar</div></div><span style="color:white;font-size:18px">→</span>';
             const _insertAfter = document.getElementById('courseProgressPercent')?.closest('.flex') || document.getElementById('courseProgressBar')?.parentElement;
@@ -940,7 +940,7 @@ function renderBadgesGrid() {
             : `<span style="font-size:22px;line-height:1">${b.icon}</span>`;
         return `<button class="badge-grid-item${done?' earned':''}" onclick="showBadgeDetail('${b.id}')">
             <div style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-                background:${done?'linear-gradient(135deg,#f3e8ff,#ede9fe)':'#f1f5f9'};
+                background:${done?'#EDE7F6':'#f1f5f9'};
                 ${done?'':'filter:grayscale(1);opacity:.45'}">
                 ${svg}
             </div>
@@ -1427,7 +1427,7 @@ function renderDailyMissions() {
                 <span id="dailyXPLabel" class="text-[11px] font-bold text-yellow-600">${dailyXP}/${dailyGoal} XP hoy</span>
             </div>
             <div class="w-full bg-yellow-100 rounded-full h-2">
-                <div id="dailyXPBar" class="h-2 rounded-full transition-all" style="width:${dailyPct}%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div>
+                <div id="dailyXPBar" class="h-2 rounded-full transition-all" style="width:${dailyPct}%;background:#F59E0B"></div>
             </div>
             ${dailyPct >= 100 ? `<div class="text-[10px] text-green-600 font-bold mt-1 text-center" style="display:flex;align-items:center;justify-content:center;gap:4px"><span style="display:inline-flex;width:12px;height:12px">${ICONS.checkCircle}</span>¡Meta del día alcanzada!</div>` : ''}
         </div>
@@ -2381,7 +2381,7 @@ function renderModulesTab() {
 
     // ── Modo repaso ──────────────────────────────────────────────────
     if (wrongQuizzes.length > 0) {
-        html += `<div onclick="startRepasoMode()" style="margin-bottom:12px;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid #fbbf24;border-radius:16px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px">
+        html += `<div onclick="startRepasoMode()" style="margin-bottom:12px;background:#FEF3C7;border:1.5px solid #fbbf24;border-radius:16px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px">
             <div style="width:44px;height:44px;background:#f59e0b;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🔁</div>
             <div style="flex:1">
                 <p style="font-weight:800;font-size:14px;color:#92400e;margin:0">Modo Repaso</p>
@@ -3050,7 +3050,7 @@ function _renderTotalRanking(data) {
     const flat = [...data].sort((a,b)=>(b.level||1)-(a.level||1)||(b.xp||0)-(a.xp||0));
     const _avatar = (u,size=44) => u.profile_photo
         ? `<img src="${_escHtml(u.profile_photo)}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
-        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#a78bfa);display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0"><span style="display:inline-flex;width:${size*.5}px;height:${size*.5}px">${ICONS.profile}</span></div>`;
+        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#7C3AED;display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0"><span style="display:inline-flex;width:${size*.5}px;height:${size*.5}px">${ICONS.profile}</span></div>`;
 
     const top3=flat.slice(0,3); const podiumOrder=[top3[1],top3[0],top3[2]].filter(Boolean);
     const podiumPos=top3[1]?[2,1,3]:[1]; const podiumH=['64px','88px','52px']; const podiumColors=['#5b21b6','#4c1d95','#6d28d9'];
@@ -3064,7 +3064,7 @@ function _renderTotalRanking(data) {
     else flat.slice(3).forEach((user,i)=>{
         const rank=i+4;const isMe=user.user_id===currentUser?.id;const name=_escHtml(user.full_name||user.nombre_usuario||`Docente ${rank}`);
         const lvl=user.level||1;const league=getLeague(lvl);
-        listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'linear-gradient(135deg,#ede9fe,#ddd6fe)':'#f8fafc'};border:${isMe?'2px solid #a78bfa':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#6d28d9':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#4c1d95':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#7c3aed">(Tú)</span>':''}</p><span style="font-size:10px;font-weight:600;color:${league.color};display:inline-flex;align-items:center;gap:3px">${_leagueIconSvg(league.name.replace('Liga ',''),11)}${league.name}</span></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#6d28d9;display:flex;align-items:center;gap:3px;justify-content:flex-end"><span style="display:inline-flex;width:12px;height:12px">${ICONS.bolt}</span>${(user.xp||0).toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">Nv. ${lvl}</p></div></div>`;
+        listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'#EDE7F6':'#f8fafc'};border:${isMe?'2px solid #a78bfa':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#6d28d9':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#4c1d95':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#7c3aed">(Tú)</span>':''}</p><span style="font-size:10px;font-weight:600;color:${league.color};display:inline-flex;align-items:center;gap:3px">${_leagueIconSvg(league.name.replace('Liga ',''),11)}${league.name}</span></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#6d28d9;display:flex;align-items:center;gap:3px;justify-content:flex-end"><span style="display:inline-flex;width:12px;height:12px">${ICONS.bolt}</span>${(user.xp||0).toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">Nv. ${lvl}</p></div></div>`;
     });
     listEl.innerHTML = listHtml;
 }
@@ -3106,7 +3106,7 @@ async function _renderWeeklyRanking() {
 
     const _avatar = (u,size=44) => u.profile_photo
         ? `<img src="${_escHtml(u.profile_photo)}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`
-        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#d97706,#fbbf24);display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0"><span style="display:inline-flex;width:${size*.5}px;height:${size*.5}px">${ICONS.profile}</span></div>`;
+        : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#D97706;display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0"><span style="display:inline-flex;width:${size*.5}px;height:${size*.5}px">${ICONS.profile}</span></div>`;
 
     const top3=weekly.slice(0,3); const podiumOrder=[top3[1],top3[0],top3[2]].filter(Boolean);
     const podiumPos=top3[1]?[2,1,3]:[1]; const podiumH=['64px','88px','52px']; const podiumColors=['#b45309','#92400e','#d97706'];
@@ -3119,7 +3119,7 @@ async function _renderWeeklyRanking() {
     if(weekly.length<=3) listHtml=`<p style="text-align:center;color:#94a3b8;font-size:12px;padding:16px 0">¡Solo los del podio esta semana!</p>`;
     else weekly.slice(3).forEach((user,i)=>{
         const rank=i+4;const isMe=user.user_id===currentUser?.id;const name=_escHtml(user.full_name||`Docente ${rank}`);
-        listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'linear-gradient(135deg,#fef3c7,#fde68a)':'#f8fafc'};border:${isMe?'2px solid #fbbf24':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#d97706':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#92400e':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#d97706">(Tú)</span>':''}</p></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#d97706">${user.weeklyXP.toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">XP esta semana</p></div></div>`;
+        listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'#FEF3C7':'#f8fafc'};border:${isMe?'2px solid #fbbf24':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#d97706':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#92400e':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#d97706">(Tú)</span>':''}</p></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#d97706">${user.weeklyXP.toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">XP esta semana</p></div></div>`;
     });
     listEl.innerHTML = listHtml;
 
@@ -6221,7 +6221,7 @@ function _checkOnboardingRequirements(onComplete) {
                     style="width:100%;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px 14px;font-size:14px;background:#f8fafc;outline:none;box-sizing:border-box">
                 <div id="_ob_schoolDrop" style="display:none;position:fixed;background:#fff;border:1.5px solid #e2e8f0;border-top:none;border-radius:0 0 14px 14px;max-height:200px;overflow-y:auto;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.18)"></div>
             </div>
-            <button id="_ob_profileSave" style="width:100%;padding:14px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;font-weight:800;font-size:14px;border:none;border-radius:14px;cursor:pointer">
+            <button id="_ob_profileSave" style="width:100%;padding:14px;background:#1A73E8;color:#fff;font-weight:800;font-size:14px;border:none;border-radius:14px;cursor:pointer">
                 Guardar y continuar →
             </button>
             <p id="_ob_profileErr" style="color:#ef4444;font-size:12px;text-align:center;margin:8px 0 0;display:none">Por favor completa ambos campos.</p>
@@ -6414,7 +6414,7 @@ function _renderCourseSelector() {
         // acento azul reservado para la ruta en progreso (ni completada ni
         // sin empezar) — así el color vuelve a significar algo en vez de
         // ser puramente decorativo por ruta.
-        const ACCENT = '#1A73E8', ACCENT_SOFT = '#E8F0FE', ACCENT_BORDER = '#C5DAFC';
+        const ACCENT_SOFT = '#E8F0FE', ACCENT_BORDER = '#C5DAFC';
         const NEUTRAL_BG = '#F6F6F5', NEUTRAL_BORDER = '#E7E5E2', TEXT_MUTED = '#5F6368';
         const GOOD = '#1E8E3E', GOOD_SOFT = '#E6F4EA';
 
@@ -6438,9 +6438,9 @@ function _renderCourseSelector() {
                 const isHighlight = path.id === highlightId;
                 const bg     = allDone ? GOOD_SOFT : (isHighlight ? ACCENT_SOFT : NEUTRAL_BG);
                 const border = allDone ? '#B7E1C3' : (isHighlight ? ACCENT_BORDER : NEUTRAL_BORDER);
-                const iconBg = allDone ? GOOD : (isHighlight ? ACCENT : '#9AA0A6');
-                const barFill = allDone ? GOOD : ACCENT;
-                const numColor = allDone ? GOOD : (isHighlight ? ACCENT : TEXT_MUTED);
+                const iconBg = allDone ? GOOD : path.color;
+                const barFill = allDone ? GOOD : path.color;
+                const numColor = allDone ? GOOD : (isHighlight ? path.color : TEXT_MUTED);
                 return `
                 <div onclick="_selectPath('${path.id}')"
                      class="cursor-pointer active:scale-95 transition-all border rounded-2xl p-4 mb-3"
