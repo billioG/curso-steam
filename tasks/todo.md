@@ -4,15 +4,15 @@ Ver `tasks/plan.md` para contexto completo, criterios de aceptación y verificac
 
 ## Fase 1: Eliminar duplicación de totalCards/IDs de tarjeta
 
-- [ ] Tarea 1: `coordinator.html` deriva `COURSES` desde `data.js` en runtime
-- [ ] Tarea 2: Confirmar si la tabla `courses` refleja `data.js` (spike)
-- [ ] Tarea 3: Script `scripts/sync-course-totals.mjs` para `weekly-stats`
-- [ ] Tarea 4: Aplicar el script y marcar los límites de sync en `weekly-stats/index.ts` + `CLAUDE.md`
+- [x] Tarea 1: `coordinator.html` deriva `COURSES` desde `data.js` en runtime
+- [x] Tarea 2: Confirmar si la tabla `courses` refleja `data.js` (spike) — resuelto por inspección de código: `admin.js:990-996` combina `courses` como cursos *adicionales* del CMS, distintos de `STATIC_COURSES`; no espeja los 26 cursos estáticos. Se descarta como fuente de verdad.
+- [x] Tarea 3: Script `scripts/sync-course-totals.mjs` para `weekly-stats`
+- [x] Tarea 4: Aplicar el script y marcar los límites de sync en `weekly-stats/index.ts` + `CLAUDE.md`
 
 ### Checkpoint: Fase 1
-- [ ] `coordinator.html` muestra los mismos totales que `data.js`/`admin.js`
-- [ ] `node scripts/sync-course-totals.mjs --check` pasa en verde
-- [ ] `weekly-stats` devuelve los mismos números que antes del cambio
+- [x] `coordinator.html` muestra los mismos totales que `data.js`/`admin.js` (verificado: los 26 cursos dan `moduleCardIds` y `totalCards` idénticos al array hardcodeado que reemplazaron)
+- [x] `node scripts/sync-course-totals.mjs --check` pasa en verde
+- [x] `weekly-stats` devuelve los mismos números que antes del cambio (verificado: drift simulado detectado y corregido, diff contra el original da 0 diferencias)
 - [ ] Revisión con el usuario antes de continuar a Fase 2
 
 ## Fase 2: Endurecer la integridad de `progress` a nivel de base de datos

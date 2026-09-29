@@ -74,17 +74,17 @@ El agente `code-reviewer` revisó toda la app y ya se corrigieron los 2 hallazgo
 
 ## Lista de tareas
 
-### Fase 1: Eliminar duplicación de totalCards/IDs de tarjeta
+### Fase 1: Eliminar duplicación de totalCards/IDs de tarjeta — ✅ COMPLETA
 
-- [ ] Tarea 1: `coordinator.html` deriva `COURSES` desde `data.js` en runtime
-- [ ] Tarea 2: Confirmar si la tabla `courses` refleja `data.js` (spike corto)
-- [ ] Tarea 3: Script `scripts/sync-course-totals.mjs` para `weekly-stats`
-- [ ] Tarea 4: Aplicar el script y actualizar `weekly-stats/index.ts`
+- [x] Tarea 1: `coordinator.html` deriva `COURSES` desde `data.js` en runtime
+- [x] Tarea 2: Confirmar si la tabla `courses` refleja `data.js` (spike corto)
+- [x] Tarea 3: Script `scripts/sync-course-totals.mjs` para `weekly-stats`
+- [x] Tarea 4: Aplicar el script y actualizar `weekly-stats/index.ts`
 
-### Checkpoint: Fase 1
-- [ ] `coordinator.html` muestra los mismos totales que `data.js`/`admin.js` para los 3 cursos con más y menos tarjetas
-- [ ] `node scripts/sync-course-totals.mjs --check` pasa en verde contra el `weekly-stats/index.ts` actualizado
-- [ ] `supabase-functions/weekly-stats` devuelve los mismos números que antes del cambio (no debería haber cambiado ningún total real)
+### Checkpoint: Fase 1 — ✅ verificado
+- [x] `coordinator.html` muestra los mismos totales que `data.js`/`admin.js` para los 26 cursos (no solo 3 — se verificaron todos, incluyendo `moduleCardIds` elemento por elemento, no solo el conteo)
+- [x] `node scripts/sync-course-totals.mjs --check` pasa en verde contra el `weekly-stats/index.ts` actualizado
+- [x] `supabase-functions/weekly-stats` devuelve los mismos números que antes del cambio (drift simulado con `sed`, detectado por `--check`, corregido por el script, diff contra el original = 0)
 - [ ] Revisión con el usuario antes de continuar a Fase 2
 
 ### Fase 2: Endurecer la integridad de `progress` a nivel de base de datos
