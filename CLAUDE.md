@@ -54,6 +54,6 @@ CSS es estático, no JIT en el navegador como el CDN viejo).
 
 ## Convenciones de código
 - IDs de tarjetas por curso: STEAM=numérico, ABP=`abp-`, DT=`dt-`, EV=`ev-`, TE=`te-`, Storytelling=`st-`. Los demás cursos usan ids numéricos en `data.js` que `app.js` normaliza al cargar a `<courseId>-<n>` (así se guardan en `completed_cards`); los ids solo deben ser únicos dentro de su curso.
-- `totalCards` de cada curso está duplicado en `data.js`, `admin.js` (`STATIC_COURSES`), `coordinator.html` (`COURSES`) y `supabase-functions/weekly-stats`: al agregar o quitar tarjetas, actualiza los cuatro.
+- `totalCards` de cada curso vive en `data.js` como fuente única. `admin.js` (`STATIC_COURSES`) y `coordinator.html` (`COURSES`) lo recalculan solos en runtime porque ambos cargan `data.js` — no hay nada que actualizar a mano ahí. `supabase-functions/weekly-stats` es una Edge Function Deno aislada que no puede cargar `data.js`, así que mantiene su propia copia de `totalCards`: después de agregar o quitar tarjetas en `data.js`, corré `node scripts/sync-course-totals.mjs` para regenerarla (o `--check` para verificar sin escribir, útil antes de un deploy).
 - `examScores` (objeto por courseId) es el campo principal; `examScore` (singular) es legacy solo para STEAM
 - Dropdowns dentro de contenedores `overflow:auto` deben usar `position:fixed` + `getBoundingClientRect()`
