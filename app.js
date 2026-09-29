@@ -1568,6 +1568,10 @@ function renderCard() {
     const container = document.getElementById("cardContainer");
     if (!container) return;
 
+    // Cartas fantasma del mazo — puramente visuales, initSwipe() las anima
+    // en vivo durante el arrastre (ver estilos en index.html).
+    const _cardGhosts = '<div class="card-stack-ghost card-stack-ghost-2"></div><div class="card-stack-ghost card-stack-ghost-1"></div>';
+
     // Iniciar tracking de tiempo
     if (currentCardId) stopCardTracking();
     currentCardId = card.id || `${currentModule}-${currentCardIndex}`;
@@ -1605,6 +1609,7 @@ function renderCard() {
         const cardExtra = _mdToHtml(_rawExtra.replace(/Profe Billy/g, profeName));
 
         container.innerHTML = `
+        ${_cardGhosts}
         <div class="content-card" id="activeCard">
             <div class="card-banner" style="background:${theme.primary}">
                 <div class="card-banner-svg">${illus}</div>
@@ -1712,6 +1717,7 @@ function renderCard() {
         const quizThemePrimary = '#4f46e5';
 
         container.innerHTML = `
+        ${_cardGhosts}
         <div class="quiz-card" id="activeCard">
             <div class="card-banner" style="background:${quizThemePrimary}">
                 <div class="card-banner-svg">${quizSvg}</div>
@@ -1812,6 +1818,7 @@ function renderCard() {
         const simTheme = _courseTheme.theme;
 
         container.innerHTML = `
+        ${_cardGhosts}
         <div class="simulation-card" id="activeCard">
             <div class="card-banner" style="background:${simTheme.primary}">
                 <div class="card-banner-svg">${_courseTheme.illus}</div>
@@ -1853,6 +1860,7 @@ function renderCard() {
                 _simTouchY = e.touches[0].clientY;
                 _simDragging = true;
                 _simCard.style.transition = 'none';
+                _setDeckGhostsTransition('none');
             }, { passive: true });
             _simCard.addEventListener('touchmove', e => {
                 if (!_simDragging) return;
@@ -1861,6 +1869,7 @@ function renderCard() {
                 if (Math.abs(diffX) > Math.abs(diffY)) {
                     const rotation = diffX / 12;
                     _simCard.style.transform = `translateX(${diffX}px) rotate(${rotation}deg)`;
+                    _setDeckGhostsProgress(diffX);
                 }
             }, { passive: true });
             _simCard.addEventListener('touchend', e => {
@@ -1878,6 +1887,7 @@ function renderCard() {
                         _simCard.style.opacity = '1';
                         void _simCard.offsetWidth; // trigger reflow
                         _simCard.style.transition = 'transform 0.25s ease, opacity 0.2s ease';
+                        _resetDeckGhosts();
                     }, 250);
                 } else if (diffX < -80) {
                     _simCard.style.transform = 'translateX(-120%) rotate(-10deg)';
@@ -1889,9 +1899,11 @@ function renderCard() {
                         _simCard.style.opacity = '1';
                         void _simCard.offsetWidth; // trigger reflow
                         _simCard.style.transition = 'transform 0.25s ease, opacity 0.2s ease';
+                        _resetDeckGhosts();
                     }, 250);
                 } else {
                     _simCard.style.transform = 'translateX(0) rotate(0deg)';
+                    _resetDeckGhosts();
                 }
             });
         }
@@ -1919,7 +1931,8 @@ function renderCard() {
             </div>` : '';
 
         container.innerHTML = `
-        <div id="activeCard" style="border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08)">
+        ${_cardGhosts}
+        <div id="activeCard" style="border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08);position:relative;z-index:2;background:white">
             <div style="background:${pt.primary};padding:20px 20px 16px;position:relative">
                 <div style="position:absolute;inset:0;opacity:.12">${_ct.illus}</div>
                 <p style="color:rgba(255,255,255,.75);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">🛠️ Proyecto · Módulo ${currentModule}</p>
@@ -1961,6 +1974,7 @@ function renderCard() {
             </button>`).join('');
 
         container.innerHTML = `
+        ${_cardGhosts}
         <div class="content-card" id="activeCard">
             <div class="card-banner" style="background:${twTheme.primary}">
                 <div class="card-banner-svg">${_tw.illus}</div>
@@ -2596,9 +2610,43 @@ let _swipeStartX = 0;
 let _swipeStartY = 0;
 let _swipeActive = false;
 
+// Mientras se arrastra cualquier tarjeta (navegación o simulación), las
+// cartas del mazo detrás "suben" un paso cada una — da la sensación física
+// de que la siguiente tarjeta viene detrás, en vez de que la tarjeta activa
+// flote sola sobre el fondo. Compartido entre initSwipe() y el swipe propio
+// de las tarjetas de simulación.
+const _DECK_SWIPE_THRESHOLD = 80;
+function _deckGhosts() {
+    const container = document.getElementById('cardContainer');
+    return {
+        ghost1: container?.querySelector('.card-stack-ghost-1'),
+        ghost2: container?.querySelector('.card-stack-ghost-2'),
+    };
+}
+function _setDeckGhostsTransition(value) {
+    const { ghost1, ghost2 } = _deckGhosts();
+    if (ghost1) ghost1.style.transition = value;
+    if (ghost2) ghost2.style.transition = value;
+}
+function _setDeckGhostsProgress(diffX) {
+    const { ghost1, ghost2 } = _deckGhosts();
+    if (!ghost1 || !ghost2) return;
+    const p = Math.min(1, Math.abs(diffX) / _DECK_SWIPE_THRESHOLD);
+    ghost1.style.transform = `translateY(${10 - 10 * p}px) scale(${0.96 + 0.04 * p})`;
+    ghost1.style.opacity = String(0.95 + 0.05 * p);
+    ghost2.style.transform = `translateY(${20 - 10 * p}px) scale(${0.92 + 0.04 * p})`;
+    ghost2.style.opacity = String(0.7 + 0.15 * p);
+}
+function _resetDeckGhosts() {
+    const { ghost1, ghost2 } = _deckGhosts();
+    if (ghost1) { ghost1.style.transition = ''; ghost1.style.transform = ''; ghost1.style.opacity = ''; }
+    if (ghost2) { ghost2.style.transition = ''; ghost2.style.transform = ''; ghost2.style.opacity = ''; }
+}
+
 function initSwipe() {
     const card = document.getElementById('activeCard');
     if (!card) return;
+    const THRESHOLD = _DECK_SWIPE_THRESHOLD;
 
     // ── Helpers compartidos touch + mouse ──────────────────
     function onStart(clientX, clientY) {
@@ -2607,6 +2655,7 @@ function initSwipe() {
         _swipeActive = true;
         card.style.transition = 'none';
         card.style.cursor = 'grabbing';
+        _setDeckGhostsTransition('none');
     }
 
     function onMove(clientX, clientY) {
@@ -2618,6 +2667,7 @@ function initSwipe() {
             card.style.transform = `translateX(${diffX}px) rotate(${rotation}deg)`;
             // Indicador visual de dirección
             card.style.opacity = String(Math.max(0.6, 1 - Math.abs(diffX) / 400));
+            _setDeckGhostsProgress(diffX);
         }
     }
 
@@ -2626,7 +2676,6 @@ function initSwipe() {
         _swipeActive = false;
         card.style.cursor = '';
         const diffX = clientX - _swipeStartX;
-        const THRESHOLD = 80;
         card.style.transition = 'transform 0.28s cubic-bezier(0.175,0.885,0.32,1.275), opacity 0.22s ease';
 
         if (diffX > THRESHOLD) {
@@ -2641,15 +2690,17 @@ function initSwipe() {
                 card.style.transform = 'translateX(0) rotate(0deg)';
                 card.style.opacity = '1';
                 showToast('Responde el quiz antes de continuar', 'error');
+                _resetDeckGhosts();
             } else {
                 card.style.transform = 'translateX(-130%) rotate(-12deg)';
                 card.style.opacity = '0';
                 setTimeout(() => goToNextCard(false), 260);
             }
         } else {
-            // Vuelve al centro con spring
+            // Vuelve al centro con spring — el mazo vuelve a su reposo con ella
             card.style.transform = 'translateX(0) rotate(0deg)';
             card.style.opacity = '1';
+            _resetDeckGhosts();
         }
     }
 
@@ -6359,22 +6410,43 @@ function _renderCourseSelector() {
         const scores = progress?.dailyMissions?.examScores || {};
         const _legacySteam = progress?.dailyMissions?.examScore; // legacy single-score for steam
         const _getScore = id => id === 'steam' ? (scores['steam'] ?? _legacySteam) : scores[id];
+        // Paleta contenida: gris neutro para todas las rutas, con un solo
+        // acento azul reservado para la ruta en progreso (ni completada ni
+        // sin empezar) — así el color vuelve a significar algo en vez de
+        // ser puramente decorativo por ruta.
+        const ACCENT = '#1A73E8', ACCENT_SOFT = '#E8F0FE', ACCENT_BORDER = '#C5DAFC';
+        const NEUTRAL_BG = '#F6F6F5', NEUTRAL_BORDER = '#E7E5E2', TEXT_MUTED = '#5F6368';
+        const GOOD = '#1E8E3E', GOOD_SOFT = '#E6F4EA';
+
+        const pathsInfo = LEARNING_PATHS.map(path => {
+            const pathCourses = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(Boolean);
+            const available   = pathCourses.filter(c => c.status === 'available');
+            const passed      = available.filter(c => (_getScore(c.id) ?? 0) >= 70).length;
+            const pct         = available.length ? Math.round(passed / available.length * 100) : 0;
+            const totalHours  = pathCourses.reduce((a, c) => a + (c.durationHours || 0), 0);
+            const allDone     = available.length > 0 && passed === available.length;
+            return { path, pathCourses, available, passed, pct, totalHours, allDone };
+        });
+        // La ruta "en curso" (más avanzada entre las que no están ni en 0% ni completas) recibe el acento.
+        const inProgress = pathsInfo.filter(p => p.pct > 0 && !p.allDone).sort((a, b) => b.pct - a.pct);
+        const highlightId = inProgress[0]?.path.id;
+
         list.innerHTML = `
             <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;margin:0 0 14px">Elige tu ruta de formación</p>
             <div class="lp-grid">
-            ${LEARNING_PATHS.map(path => {
-                const pathCourses = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(Boolean);
-                const available   = pathCourses.filter(c => c.status === 'available');
-                const passed      = available.filter(c => (_getScore(c.id) ?? 0) >= 70).length;
-                const pct         = available.length ? Math.round(passed / available.length * 100) : 0;
-                const totalHours  = pathCourses.reduce((a, c) => a + (c.durationHours || 0), 0);
-                const allDone     = available.length > 0 && passed === available.length;
+            ${pathsInfo.map(({ path, pathCourses, available, passed, pct, totalHours, allDone }) => {
+                const isHighlight = path.id === highlightId;
+                const bg     = allDone ? GOOD_SOFT : (isHighlight ? ACCENT_SOFT : NEUTRAL_BG);
+                const border = allDone ? '#B7E1C3' : (isHighlight ? ACCENT_BORDER : NEUTRAL_BORDER);
+                const iconBg = allDone ? GOOD : (isHighlight ? ACCENT : '#9AA0A6');
+                const barFill = allDone ? GOOD : ACCENT;
+                const numColor = allDone ? GOOD : (isHighlight ? ACCENT : TEXT_MUTED);
                 return `
                 <div onclick="_selectPath('${path.id}')"
                      class="cursor-pointer active:scale-95 transition-all border rounded-2xl p-4 mb-3"
-                     style="background:${path.color}14;border-color:${path.color}40">
+                     style="background:${bg};border-color:${border}">
                     <div class="flex items-center gap-3">
-                        <div style="width:44px;height:44px;border-radius:14px;background:${path.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <div style="width:44px;height:44px;border-radius:14px;background:${iconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0">
                             ${(typeof PATH_SVG !== 'undefined' && PATH_SVG[path.id]) ? PATH_SVG[path.id] : '<svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12 H32 V32 H12 Z" stroke-width="2"/><path d="M12 12 L22 20 L32 12" stroke-width="2"/></svg>'}
                         </div>
                         <div class="flex-1 min-w-0">
@@ -6385,9 +6457,9 @@ function _renderCourseSelector() {
                             <p style="font-size:11px;color:#64748b;margin:2px 0 6px">${pathCourses.length} cursos · ${totalHours}h de formación</p>
                             <div style="display:flex;align-items:center;gap:8px">
                                 <div style="flex:1;height:4px;background:#e2e8f0;border-radius:99px;overflow:hidden">
-                                    <div style="width:${pct}%;height:100%;background:${path.color};border-radius:99px;transition:width .4s"></div>
+                                    <div style="width:${pct}%;height:100%;background:${barFill};border-radius:99px;transition:width .4s"></div>
                                 </div>
-                                <span style="font-size:10px;font-weight:700;color:${path.color};flex-shrink:0">${passed}/${available.length} aprobados</span>
+                                <span style="font-size:10px;font-weight:700;color:${numColor};flex-shrink:0">${passed}/${available.length} aprobados</span>
                             </div>
                         </div>
                         <span style="color:#cbd5e1;font-size:18px">›</span>
