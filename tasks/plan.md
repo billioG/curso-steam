@@ -87,16 +87,16 @@ El agente `code-reviewer` revisó toda la app y ya se corrigieron los 2 hallazgo
 - [x] `supabase-functions/weekly-stats` devuelve los mismos números que antes del cambio (drift simulado con `sed`, detectado por `--check`, corregido por el script, diff contra el original = 0)
 - [ ] Revisión con el usuario antes de continuar a Fase 2
 
-### Fase 2: Endurecer la integridad de `progress` a nivel de base de datos
+### Fase 2: Endurecer la integridad de `progress` a nivel de base de datos — ✅ COMPLETA
 
-- [ ] Tarea 5: Migración SQL con trigger de validación de rango en `progress`
-- [ ] Tarea 6: Manejar en el cliente el error si el trigger rechaza un guardado
-- [ ] Tarea 7: Documentar el riesgo residual (examen calificado en cliente) en CLAUDE.md
+- [x] Tarea 5: Migración SQL con trigger de validación de rango en `progress` (`migrations/progress-value-guard.sql`)
+- [x] Tarea 6: Manejar en el cliente el error si el trigger rechaza un guardado (`app.js` `syncWithSupabase`)
+- [x] Tarea 7: Documentar el riesgo residual (examen calificado en cliente) en CLAUDE.md
 
-### Checkpoint: Fase 2
-- [ ] Un `UPDATE` manual con `xp: 999999` o `examScores: {steam: 150}` es rechazado por Postgres
-- [ ] El flujo normal de completar tarjetas/exámenes en la app sigue guardando sin errores
-- [ ] Revisión con el usuario — decidir si se agenda la Pregunta Abierta como proyecto aparte
+### Checkpoint: Fase 2 — ✅ verificado contra Postgres 16 local
+- [x] Un `UPDATE`/upsert manual con `xp: 999999` o `examScores: {steam: 150}` es rechazado por Postgres
+- [x] El flujo normal de completar tarjetas/exámenes en la app sigue guardando sin errores — **bug real encontrado y corregido**: la primera versión del trigger comparaba contra `OLD.xp`, pero Postgres dispara `BEFORE INSERT` (OLD nulo) antes de resolver el `ON CONFLICT DO UPDATE` que usa `app.js`, así que habría rechazado el upsert de todo usuario con >1000 XP acumulado. Se corrigió con un `SELECT` propio de la fila existente. Ver `tasks/todo.md` para el detalle de los 8 casos probados.
+- [x] Decisión tomada — Pregunta Abierta 1 (calificación server-side de exámenes): no se persigue por ahora, riesgo aceptado y documentado en CLAUDE.md.
 
 ## Detalle de tareas
 

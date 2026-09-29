@@ -300,7 +300,18 @@ async function syncWithSupabase() {
 
     } catch (error) {
         console.error("Error sync:", error);
-        updateSyncStatus("offline", "⚠️ Sin conexión");
+        // El trigger progress_guard_values (migrations/progress-value-guard.sql)
+        // rechaza valores implausibles (xp/examScores fuera de rango, etc.) con
+        // RAISE EXCEPTION — Postgres lo reporta como SQLSTATE P0001. Eso NO es
+        // un problema de conexión: si lo tratamos igual que "sin conexión", el
+        // progreso legítimo queda atascado en el caché local para siempre sin
+        // que nadie se entere de que el guardado real está fallando.
+        if (error?.code === 'P0001') {
+            console.error('[progress] Guardado rechazado por validación server-side:', error.message);
+            showToast('No se pudo guardar tu progreso — hay un valor inválido. Si esto persiste, contáctanos.', 'error');
+        } else {
+            updateSyncStatus("offline", "⚠️ Sin conexión");
+        }
         if (_user?.id) await saveToLocalCache(_user.id, _prog);
     }
 }

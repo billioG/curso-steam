@@ -57,3 +57,25 @@ CSS es estático, no JIT en el navegador como el CDN viejo).
 - `totalCards` de cada curso vive en `data.js` como fuente única. `admin.js` (`STATIC_COURSES`) y `coordinator.html` (`COURSES`) lo recalculan solos en runtime porque ambos cargan `data.js` — no hay nada que actualizar a mano ahí. `supabase-functions/weekly-stats` es una Edge Function Deno aislada que no puede cargar `data.js`, así que mantiene su propia copia de `totalCards`: después de agregar o quitar tarjetas en `data.js`, corré `node scripts/sync-course-totals.mjs` para regenerarla (o `--check` para verificar sin escribir, útil antes de un deploy).
 - `examScores` (objeto por courseId) es el campo principal; `examScore` (singular) es legacy solo para STEAM
 - Dropdowns dentro de contenedores `overflow:auto` deben usar `position:fixed` + `getBoundingClientRect()`
+
+## Integridad de `progress` — riesgo conocido y aceptado
+La tabla `progress` tiene un trigger (`migrations/progress-value-guard.sql`,
+función `guard_progress_values`) que rechaza valores implausibles: `xp`
+negativo o que suba más de 1000 en una sola escritura, `examScores` fuera de
+0-100, `completed_cards` con IDs de formato inválido. Esto bloquea la
+manipulación burda desde la consola del navegador (`xp: 999999`, etc.).
+
+**Lo que NO evita:** los exámenes se califican 100% en el cliente
+(`app.js` `showExamResults()`) y las respuestas correctas viven en texto
+plano en `data.js` (campo `correct`). Alguien con conocimientos técnicos
+podría, en teoría, fabricar un `examScores` "aprobado" dentro del rango
+válido (0-100) sin haber rendido el examen de verdad, y comprar un
+certificado (Q10-Q50) con esa nota falsa. Cerrar esto de verdad requeriría
+calificar los exámenes en el servidor (dejar de enviar `correct` al
+cliente) — un cambio de arquitectura grande que toca los 26 cursos,
+`app.js` y necesitaría una nueva Edge Function.
+
+**Decisión (evaluada en `tasks/plan.md`):** no se persigue ese cambio por
+ahora — el valor económico en juego (Q10-Q50 por certificado) no justifica
+el esfuerzo. Si en el futuro aparece evidencia de abuso real (certificados
+sospechosos, patrones raros en `examScores`), revisar esa decisión.
