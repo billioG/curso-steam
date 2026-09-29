@@ -4455,8 +4455,6 @@ async function requestCertificate(certType, courseId, score) {
     if (!paidCertType) return;
 
     const refId = params.get('ref') || null;
-    const courseIdParam = params.get('course') || null;
-    const scoreParam = Number(params.get('score'));
 
     // Limpiar los query params de inmediato — un refresh no debe re-disparar esto.
     history.replaceState(null, '', location.pathname + location.hash);
@@ -4480,7 +4478,7 @@ async function requestCertificate(certType, courseId, score) {
         for (let attempt = 0; attempt < 8; attempt++) {
             const { data: rows } = await supabase
                 .from('certificate_payments')
-                .select('status')
+                .select('status, course_id')
                 .eq('user_id', user.id)
                 .eq('cert_type', paidCertType)
                 .eq('ref_id', refId)
@@ -4495,7 +4493,22 @@ async function requestCertificate(certType, courseId, score) {
                     if (typeof _checkMasterCert === 'function') _checkMasterCert();
                     if (typeof generateMasterCertificate === 'function') generateMasterCertificate();
                 } else if (typeof generateCertificateFromExam === 'function') {
-                    generateCertificateFromExam(Number.isFinite(scoreParam) ? scoreParam : 70, courseIdParam || refId);
+                    // El curso y la nota NUNCA se toman de la URL de retorno del
+                    // checkout (editable a mano) — se leen de la fila de pago ya
+                    // validada (course_id) y del examScore real guardado por el
+                    // usuario, para que no se pueda fabricar un diploma de otro
+                    // curso o con otra nota cambiando los query params.
+                    const realCourseId = data.course_id || refId;
+                    let realScore = 70;
+                    const { data: progRows } = await supabase
+                        .from('progress')
+                        .select('daily_missions')
+                        .eq('user_id', user.id)
+                        .limit(1);
+                    const dm = progRows?.[0]?.daily_missions;
+                    const storedScore = dm?.examScores?.[realCourseId] ?? (realCourseId === 'steam' ? dm?.examScore : undefined);
+                    if (Number.isFinite(storedScore)) realScore = Math.min(100, Math.max(0, storedScore));
+                    generateCertificateFromExam(realScore, realCourseId);
                 }
                 return;
             }
