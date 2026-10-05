@@ -223,6 +223,7 @@
             <option value="tea-profundidad">TEA en Profundidad</option>
             <option value="discapacidad-down-tdah">Down y TDAH</option>
             <option value="lengua-senas-docentes">Lengua de Señas</option>
+            <option value="fundamentos-pisa">Fundamentos PISA</option>
           </select>
         </div>
         <canvas id="moduleChart" height="200"></canvas>
@@ -337,6 +338,7 @@ const COURSES_META = [
   { id:'tea-profundidad', title:'TEA en Profundidad', prefix:'tea-profundidad-' },
   { id:'discapacidad-down-tdah', title:'Down y TDAH', prefix:'discapacidad-down-tdah-' },
   { id:'lengua-senas-docentes', title:'Lengua de Señas', prefix:'lengua-senas-docentes-' },
+  { id:'fundamentos-pisa', title:'Fundamentos PISA', prefix:'fundamentos-pisa-' },
 ];
 
 // Deriva { modules, totalCards, moduleCardIds } desde allCourses (data.js) —
@@ -366,6 +368,7 @@ const ROUTE_GROUPS = [
     { id: 'metodologias', label: 'Metodologías Activas',        courses: ['m-learning', 'flipped-classroom', 'abv', 'micro-learning'] },
     { id: 'ia',           label: 'Docente y la IA',             courses: ['ia-fundamentos', 'ia-tiempo', 'ia-herramientas', 'ia-inclusion', 'ia-ciudadania'] },
     { id: 'convivencia',  label: 'Clima y Convivencia Escolar', courses: ['manejo-conductas', 'sel-docentes', 'comunicacion-asertiva', 'disciplina-positiva', 'bienestar-docente'] },
+    { id: 'fundamentos',  label: 'Fundamentos PISA',            courses: ['fundamentos-pisa'] },
 ];
 
 // Empiezan todas colapsadas — el coordinador expande solo la ruta que le interesa.
