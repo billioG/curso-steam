@@ -22,6 +22,7 @@ const LEARNING_PATHS = [
     { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
     { id:'ia',            label:'Docente y la IA',        color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)',  courses:['ia-fundamentos','ia-tiempo','ia-herramientas','ia-inclusion','ia-ciudadania'] },
     { id:'convivencia',   label:'Clima y Convivencia Escolar', color:'#0891B2', gradient:'linear-gradient(135deg,#155E75,#0891B2)',  courses:['manejo-conductas','sel-docentes','comunicacion-asertiva','disciplina-positiva','bienestar-docente'] },
+    { id:'fundamentos',   label:'Fundamentos PISA',       color:'#DC2626', gradient:'linear-gradient(135deg,#991B1B,#DC2626)',  courses:['fundamentos-pisa'] },
     { id:'inclusion',     label:'Educación Inclusiva',    color:'#8B5CF6', gradient:'linear-gradient(135deg,#5B21B6,#8B5CF6)',  courses:['educacion-inclusiva','tea-profundidad','discapacidad-down-tdah','lengua-senas-docentes'] },
 ];
 
@@ -2630,6 +2631,8 @@ async function loadLearningPaths() {
     _lpState = data?.[0]?.value
         ? JSON.parse(JSON.stringify(data[0].value))
         : JSON.parse(JSON.stringify(LEARNING_PATHS));
+    // Rutas nuevas del código que aún no están en lo guardado (ej. 'fundamentos').
+    LEARNING_PATHS.forEach(d => { if (!_lpState.some(p => p.id === d.id)) _lpState.push(JSON.parse(JSON.stringify(d))); });
     _renderLearningPaths();
 }
 
