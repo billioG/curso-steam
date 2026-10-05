@@ -1,9 +1,9 @@
 // ============================================================
-// sw.js — Service Worker · Curso STEAM 2.0
+// sw.js — Service Worker · Yo Aprendo
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v159';
+const CACHE_VERSION  = 'steam-v160';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -18,6 +18,7 @@ const CRITICAL_ASSETS = [
     './iconos.js',
     './ilustraciones.js',
     './manifest.json',
+    './logo-yoaprendo-mark.svg',
     './robot.png',
     './mbot.png',
     './firma.png',
@@ -220,9 +221,9 @@ self.addEventListener('message', event => {
 self.addEventListener('push', event => {
     let data = {};
     try { data = event.data ? event.data.json() : {}; } catch (_) {
-        data = { title: 'Formación Docente', body: event.data ? event.data.text() : '' };
+        data = { title: 'Yo Aprendo', body: event.data ? event.data.text() : '' };
     }
-    const title = data.title || 'Formación Docente';
+    const title = data.title || 'Yo Aprendo';
     const options = {
         body: data.body || '',
         icon: './icon.svg',

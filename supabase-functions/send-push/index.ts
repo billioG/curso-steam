@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     if (subsErr) throw subsErr;
 
     const payload = JSON.stringify({
-      title: title || 'Formación Docente',
+      title: title || 'Yo Aprendo',
       body: body || '',
       url: url || './index.html',
     });

@@ -130,7 +130,7 @@ function buildEmail(p: any, unsubUrl: string): string {
         <tr><td style="background:linear-gradient(135deg,#1A6B68 0%,#059669 100%);border-radius:20px 20px 0 0;padding:32px 32px 24px;text-align:center">
           <div style="font-size:40px;margin-bottom:8px">🎓</div>
           <h1 style="color:white;margin:0;font-size:22px;font-weight:900">Tu resumen semanal</h1>
-          <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Formación Docente · Pedagogía Innovadora</p>
+          <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Yo Aprendo · Pedagogía Innovadora</p>
         </td></tr>
 
         <!-- Saludo -->
@@ -209,7 +209,7 @@ function buildEmail(p: any, unsubUrl: string): string {
 
         <!-- Footer -->
         <tr><td style="background:#f9fafb;border-radius:0 0 20px 20px;padding:20px 32px;text-align:center">
-          <p style="margin:0;font-size:11px;color:#9ca3af">Formación Docente en Pedagogía Innovadora · Guatemala</p>
+          <p style="margin:0;font-size:11px;color:#9ca3af">Yo Aprendo — Formación Docente en Pedagogía Innovadora · Guatemala</p>
           <p style="margin:6px 0 0;font-size:11px;color:#9ca3af">Este correo se envía automáticamente cada semana con tu progreso.</p>
           <p style="margin:8px 0 0;font-size:11px;color:#9ca3af"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline">Dejar de recibir este resumen</a></p>
         </td></tr>
@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: `Formación Docente <${FROM_EMAIL}>`,
+          from: `Yo Aprendo <${FROM_EMAIL}>`,
           to: [user.email],
           subject: `Tu resumen semanal, ${name} — sigue aprendiendo`,
           html,

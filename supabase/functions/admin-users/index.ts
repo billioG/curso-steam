@@ -84,7 +84,7 @@ async function sendAccessEmail(admin: ReturnType<typeof createClient>, email: st
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: `Formación Docente <${FROM_EMAIL}>`, to: [email], subject: 'Tienes acceso — Formación Docente', html }),
+    body: JSON.stringify({ from: `Yo Aprendo <${FROM_EMAIL}>`, to: [email], subject: 'Tienes acceso — Yo Aprendo', html }),
   })
 }
 
