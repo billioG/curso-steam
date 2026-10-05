@@ -888,6 +888,15 @@ function updateUI() {
     const cardsCountDisplay = document.getElementById("cardsCountDisplay");
     if (cardsCountDisplay) cardsCountDisplay.innerText = progress.completedCards?.length || 0;
 
+    // Resumen de estadísticas en Perfil (mismos datos que renderProgresoTab) —
+    // antes Perfil solo mostraba el avatar y ajustes, sin ningún número.
+    const perfilXP = document.getElementById("perfilXP");
+    if (perfilXP) perfilXP.innerText = progress.xp || 0;
+    const perfilLevel = document.getElementById("perfilLevel");
+    if (perfilLevel) perfilLevel.innerText = progress.level || 1;
+    const perfilCards = document.getElementById("perfilCards");
+    if (perfilCards) perfilCards.innerText = progress.completedCards?.length || 0;
+
     // Mostrar nombre/email y foto en perfil
     if (currentUser) {
         const emailEl = document.getElementById("userEmailDisplay");
@@ -1298,6 +1307,8 @@ function _isoWeek(d) {
 function updateStreakDisplay() {
     const streakSpan = document.getElementById("streakDisplay");
     if (streakSpan) streakSpan.innerText = progress.streak || 0;
+    const perfilStreak = document.getElementById("perfilStreak");
+    if (perfilStreak) perfilStreak.innerText = progress.streak || 0;
 }
 
 // ==================== MISIONES DIARIAS ====================

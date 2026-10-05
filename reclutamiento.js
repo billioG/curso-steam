@@ -68,7 +68,7 @@ async function checkAdminAuth() {
     }
 
     if (tenant && !isSuperAdmin) {
-        document.getElementById('adminHomeLink').style.display = 'none'; // el admin de un tenant no entra al panel de 1bot
+        document.getElementById('adminHomeLink').style.display = 'none'; // el admin de un tenant no entra al panel de Yo Aprendo
     }
     if (tenant) {
         document.getElementById('settingsBtn').style.display = 'flex'; // salario/áreas CNB son configuración propia del colegio

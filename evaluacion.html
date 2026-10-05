@@ -130,7 +130,7 @@
         ${casesHtml}
         <button id="submitBtn">Enviar evaluación</button>
         <p class="err" id="errMsg"></p>
-        <p class="footer">${window.TENANT?.name || '1bot'} · Guatemala</p>
+        <p class="footer">${window.TENANT?.name || 'Yo Aprendo'} · Guatemala</p>
       `;
 
       document.getElementById('submitBtn').addEventListener('click', () => submitEvaluation(token));
@@ -203,7 +203,7 @@
         <button id="continuarBtn">Deseo continuar el proceso</button>
         <button id="retirarBtn" class="secondary">Ya no deseo continuar</button>
         <p class="err" id="errMsg2"></p>
-        <p class="footer">${window.TENANT?.name || '1bot'} · Guatemala</p>
+        <p class="footer">${window.TENANT?.name || 'Yo Aprendo'} · Guatemala</p>
       `;
 
       document.getElementById('continuarBtn').addEventListener('click', () => submitDecision(token, 'continuar'));
@@ -228,7 +228,7 @@
           <p class="sub" style="margin-bottom:20px">${decision === 'continuar'
             ? 'Gracias por continuar en el proceso. El equipo de reclutamiento revisará tu evaluación y se pondrá en contacto contigo.'
             : 'Gracias por tu tiempo. Te deseamos éxito en tu búsqueda.'}</p>
-          <p class="footer">${window.TENANT?.name || '1bot'} · Guatemala</p>`;
+          <p class="footer">${window.TENANT?.name || 'Yo Aprendo'} · Guatemala</p>`;
       } catch (networkErr) {
         errMsg2.textContent = 'No se pudo conectar. Intenta de nuevo.';
       }

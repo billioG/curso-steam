@@ -4,7 +4,7 @@
 -- ============================================================
 
 -- Presupuesto informativo mostrado al candidato + tope real del filtro
--- duro. NULL = usa los defaults actuales (Q3,100 / Q3,200), así 1bot no
+-- duro. NULL = usa los defaults actuales (Q3,100 / Q3,200), así Yo Aprendo no
 -- cambia de comportamiento si no configura estos campos.
 ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS salario_presupuesto numeric;
 ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS salario_maximo numeric;

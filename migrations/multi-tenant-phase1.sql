@@ -32,7 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_tenants_slug ON public.tenants(slug);
 -- ============================================================
 -- 2. user_roles: agregar tenant_id, permitir un rol POR tenant
 -- ============================================================
--- tenant_id IS NULL = 1bot original (billy@1bot.org). Filas existentes
+-- tenant_id IS NULL = Yo Aprendo original (billy@1bot.org). Filas existentes
 -- quedan con tenant_id NULL automáticamente — cero cambio de comportamiento
 -- para el uso actual. UNIQUE(user_id) se reemplaza por UNIQUE(tenant_id,
 -- user_id) porque un mismo login podría, en teoría, administrar más de un
@@ -66,7 +66,7 @@ END $$;
 -- ============================================================
 -- 3. candidates / candidate_evaluations: agregar tenant_id
 -- ============================================================
--- tenant_id NULL = candidatos que postularon antes de esta fase (1bot).
+-- tenant_id NULL = candidatos que postularon antes de esta fase (Yo Aprendo).
 -- Sigue sin haber políticas RLS — el acceso pasa por submit-application /
 -- evaluate-candidate / admin-users (service-role), que ahora filtran por
 -- tenant_id en el código de la función, no en Postgres.

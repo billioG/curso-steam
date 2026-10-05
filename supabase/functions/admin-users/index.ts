@@ -111,7 +111,7 @@ serve(async (req) => {
 
     // 2. Verificar rol del caller — un mismo usuario puede tener una fila
     // por tenant en user_roles (composite unique tenant_id+user_id).
-    // - "super admin" = fila con tenant_id NULL y role='admin' (1bot,
+    // - "super admin" = fila con tenant_id NULL y role='admin' (Yo Aprendo,
     //   billy@1bot.org como hoy) — puede actuar sobre CUALQUIER tenant.
     // - "admin de tenant" = fila con tenant_id = ese colegio y role='admin'
     //   — SOLO puede usar las acciones de reclutamiento para SU tenant, no
@@ -261,7 +261,7 @@ serve(async (req) => {
     }
 
     // ── Listar invitaciones enviadas — admin del tenant (o super admin) ──
-    // tenantId null/omitido = invitaciones del 1bot original. Cruza
+    // tenantId null/omitido = invitaciones del Yo Aprendo original. Cruza
     // user_roles (quién quedó asignado a este tenant) con auth.users (para
     // ver el correo y si ya usó el link de invitación) — no hay tabla
     // propia de invitaciones, la fuente de verdad es auth.users.
@@ -311,7 +311,7 @@ serve(async (req) => {
     // ── Quitar acceso de admin a un colegio — solo super admin ──────
     // Borra SOLO la fila (tenant_id, user_id) de user_roles — no borra la
     // cuenta de auth.users. Si esa persona es admin/estudiante de OTRO
-    // colegio o del 1bot original, esas filas quedan intactas; solo pierde
+    // colegio o del Yo Aprendo original, esas filas quedan intactas; solo pierde
     // acceso a ESTE tenant específico.
     if (action === 'revokeTenantAccess') {
       const { targetUserId } = body
@@ -474,7 +474,7 @@ serve(async (req) => {
     }
 
     // ── Listar candidatos de reclutamiento ───────────────────
-    // tenantId null/omitido = candidatos del 1bot original.
+    // tenantId null/omitido = candidatos del Yo Aprendo original.
     if (action === 'listCandidates') {
       let query = admin
         .from('candidates')

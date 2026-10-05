@@ -16,7 +16,7 @@
 --
 -- tenant_id se deja NULL aquí a propósito: este trigger corre para CUALQUIER
 -- alta en auth.users, incluida gente que se registra directo (sin invite de
--- colegio) — esas siguen siendo cuentas de 1bot/plataforma general. Las
+-- colegio) — esas siguen siendo cuentas de Yo Aprendo/plataforma general. Las
 -- invitaciones CON tenant (admin-users → invite/provisionCandidate) ya
 -- hacen su propio upsert después con el tenant_id correcto, sobrescribiendo
 -- esta fila inicial vía el mismo onConflict:'tenant_id,user_id'.
