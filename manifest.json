@@ -1,7 +1,7 @@
 {
     "name": "Yo Aprendo",
     "short_name": "Yo Aprendo",
-    "description": "Formación continua para docentes de Guatemala — cursos interactivos, certificación incluida, gamificación, logros y más.",
+    "description": "Formación continua para docentes — cursos interactivos, certificación incluida, gamificación, logros y más.",
     "start_url": "./index.html",
     "scope": "./",
     "display": "standalone",
