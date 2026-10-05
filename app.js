@@ -775,8 +775,8 @@ function _showFollowupModal(followup) {
             <button id="followupYes" style="flex:1;padding:12px 0;border-radius:14px;background:#0f4c5c;color:#fff;font-weight:700;border:none;cursor:pointer">Sí, lo apliqué</button>
             <button id="followupNo" style="flex:1;padding:12px 0;border-radius:14px;background:#f1f5f9;color:#475569;font-weight:700;border:none;cursor:pointer">Aún no</button>
         </div>
-        <textarea id="followupNote" placeholder="Opcional: contanos qué pasó…" rows="2" style="width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;font-size:.85rem;resize:none"></textarea>
-        <button id="followupSubmit" style="width:100%;margin-top:10px;padding:10px 0;border-radius:14px;background:#e2e8f0;color:#94a3b8;font-weight:700;border:none;cursor:not-allowed" disabled>Elegí una opción arriba</button>
+        <textarea id="followupNote" placeholder="Opcional: cuéntanos qué pasó…" rows="2" style="width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;font-size:.85rem;resize:none"></textarea>
+        <button id="followupSubmit" style="width:100%;margin-top:10px;padding:10px 0;border-radius:14px;background:#e2e8f0;color:#94a3b8;font-weight:700;border:none;cursor:not-allowed" disabled>Elige una opción arriba</button>
         <button id="followupLater" style="width:100%;margin-top:6px;padding:8px 0;border:none;background:none;color:#94a3b8;font-size:.8rem;font-weight:600;cursor:pointer">Recordarme después</button>
     </div>`;
     document.getElementById('mainApp').appendChild(el);

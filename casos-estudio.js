@@ -1586,7 +1586,7 @@ const CASE_STUDIES = [
       'cs6_n4b': {
         type: 'scenario',
         text: 'La circular fue leída por pocos padres. En la reunión mensual, el tema del celular surgió de todas formas y Mario tuvo que explicarlo sin la preparación adecuada. Algunos padres expresaron preocupación, otros apoyaron. El ambiente quedó incómodo.',
-        context: 'La directora le dice a Mario en privado: "La próxima vez que hagamos algo así, avisame antes para que yo también pueda respaldarte."',
+        context: 'La directora le dice a Mario en privado: "La próxima vez que hagamos algo así, avísame antes para que yo también pueda respaldarte."',
         choices: [
           { text: 'Aprender de la situación: documentar mejor las actividades y presentarlas de forma proactiva.', next: 'cs6_n5a', points: 6 },
           { text: 'Reducir las actividades con celular para evitar más conflictos con padres.', next: 'cs6_n5c', points: 2 }
