@@ -13,6 +13,7 @@ let LEARNING_PATHS = [
     { id:'ia',            label:'Docente y la IA',        color:'#10B981',  courses:['ia-fundamentos','ia-tiempo','ia-herramientas','ia-inclusion','ia-ciudadania'] },
     { id:'convivencia',   label:'Clima y Convivencia Escolar', color:'#0891B2',  courses:['manejo-conductas','sel-docentes','comunicacion-asertiva','disciplina-positiva','bienestar-docente'] },
     { id:'inclusion',     label:'Educación Inclusiva',    color:'#8B5CF6',  courses:['educacion-inclusiva','tea-profundidad','discapacidad-down-tdah','lengua-senas-docentes'] },
+    { id:'fundamentos',   label:'Fundamentos PISA',       color:'#DC2626',  courses:['fundamentos-pisa'] },
 ];
 // IDs de cursos requeridos para el certificado maestro (ruta steam20)
 // Admin puede cambiarlos desde el panel → se guardan en Supabase tabla app_config
