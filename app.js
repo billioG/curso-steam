@@ -2004,9 +2004,9 @@ function renderCard() {
                 ${card.steps?.length ? `<div style="margin-bottom:14px"><p style="font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;color:${pt.primary};margin-bottom:8px">📋 Pasos</p><ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px">${card.steps.map(s => `<li style="font-size:.9rem;color:#374151;line-height:1.5">${s}</li>`).join('')}</ol></div>` : ''}
                 ${card.think?.length || card.make?.length || card.improve?.length ? `
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px">
-                    ${card.think?.length ? `<div style="background:#eff6ff;border-radius:12px;padding:10px"><p style="font-weight:700;font-size:.75rem;color:#1d4ed8;margin-bottom:6px">💭 Think</p><ul style="margin:0;padding-left:14px">${card.think.map(t=>`<li style="font-size:.75rem;color:#374151;line-height:1.45;margin-bottom:3px">${t}</li>`).join('')}</ul></div>` : ''}
-                    ${card.make?.length  ? `<div style="background:#f0fdf4;border-radius:12px;padding:10px"><p style="font-weight:700;font-size:.75rem;color:#15803d;margin-bottom:6px">🔨 Make</p><ul style="margin:0;padding-left:14px">${card.make.map(m=>`<li style="font-size:.75rem;color:#374151;line-height:1.45;margin-bottom:3px">${m}</li>`).join('')}</ul></div>` : ''}
-                    ${card.improve?.length ? `<div style="background:#fefce8;border-radius:12px;padding:10px"><p style="font-weight:700;font-size:.75rem;color:#a16207;margin-bottom:6px">🔄 Improve</p><ul style="margin:0;padding-left:14px">${card.improve.map(i=>`<li style="font-size:.75rem;color:#374151;line-height:1.45;margin-bottom:3px">${i}</li>`).join('')}</ul></div>` : ''}
+                    ${card.think?.length ? `<div style="background:#eff6ff;border-radius:12px;padding:10px"><p style="font-weight:700;font-size:.75rem;color:#1d4ed8;margin-bottom:6px">💭 Pienso</p><ul style="margin:0;padding-left:14px">${card.think.map(t=>`<li style="font-size:.75rem;color:#374151;line-height:1.45;margin-bottom:3px">${t}</li>`).join('')}</ul></div>` : ''}
+                    ${card.make?.length  ? `<div style="background:#f0fdf4;border-radius:12px;padding:10px"><p style="font-weight:700;font-size:.75rem;color:#15803d;margin-bottom:6px">🔨 Creo</p><ul style="margin:0;padding-left:14px">${card.make.map(m=>`<li style="font-size:.75rem;color:#374151;line-height:1.45;margin-bottom:3px">${m}</li>`).join('')}</ul></div>` : ''}
+                    ${card.improve?.length ? `<div style="background:#fefce8;border-radius:12px;padding:10px"><p style="font-weight:700;font-size:.75rem;color:#a16207;margin-bottom:6px">🔄 Mejoro</p><ul style="margin:0;padding-left:14px">${card.improve.map(i=>`<li style="font-size:.75rem;color:#374151;line-height:1.45;margin-bottom:3px">${i}</li>`).join('')}</ul></div>` : ''}
                 </div>` : ''}
             </div>
         </div>`;
@@ -3681,7 +3681,7 @@ function showAvatarSelector() {
     });
 }
 
-// ==================== MODAL DE PROYECTO (Think·Make·Improve) ====================
+// ==================== MODAL DE PROYECTO (Pienso·Creo·Mejoro) ====================
 function showProjectModal(card) {
     const p = card.project;
     if (!p) return;
@@ -3696,11 +3696,11 @@ function showProjectModal(card) {
 
     const tmiSection = (p.think && p.make && p.improve) ? `
         <div class="mt-5 border-t border-gray-100 pt-4">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Ciclo Think · Make · Improve</p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Ciclo Pienso · Creo · Mejoro</p>
             <div class="rounded-2xl overflow-hidden border border-slate-100 mb-1">
                 <div class="bg-blue-50 px-4 py-2 flex items-center gap-2">
                     <span class="text-lg">🧠</span>
-                    <span class="font-bold text-blue-700 text-sm">THINK — Investiga y planifica</span>
+                    <span class="font-bold text-blue-700 text-sm">PIENSO — Investiga y planifica</span>
                 </div>
                 ${p.think.map((s, i) => `<div class="flex gap-3 px-4 py-2.5 border-t border-blue-50">
                     <div class="w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${i + 1}</div>
@@ -3710,7 +3710,7 @@ function showProjectModal(card) {
             <div class="rounded-2xl overflow-hidden border border-slate-100 mb-1">
                 <div class="bg-amber-50 px-4 py-2 flex items-center gap-2">
                     <span class="text-lg">🔨</span>
-                    <span class="font-bold text-amber-700 text-sm">MAKE — Construye y experimenta</span>
+                    <span class="font-bold text-amber-700 text-sm">CREO — Construye y experimenta</span>
                 </div>
                 ${p.make.map((s, i) => `<div class="flex gap-3 px-4 py-2.5 border-t border-amber-50">
                     <div class="w-5 h-5 rounded-full bg-amber-100 text-amber-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${i + 1}</div>
@@ -3720,7 +3720,7 @@ function showProjectModal(card) {
             <div class="rounded-2xl overflow-hidden border border-slate-100">
                 <div class="bg-green-50 px-4 py-2 flex items-center gap-2">
                     <span class="text-lg">✨</span>
-                    <span class="font-bold text-green-700 text-sm">IMPROVE — Reflexiona y mejora</span>
+                    <span class="font-bold text-green-700 text-sm">MEJORO — Reflexiona y mejora</span>
                 </div>
                 ${p.improve.map((s, i) => `<div class="flex gap-3 px-4 py-2.5 border-t border-green-50">
                     <div class="w-5 h-5 rounded-full bg-green-100 text-green-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">${i + 1}</div>
@@ -4782,7 +4782,7 @@ const COURSE_RESOURCES = {
         { name: 'Guía de Proyectos STEAM',        desc: 'Plantillas y ejemplos de proyectos interdisciplinarios', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/steam-guia-proyectos.html' },
         { name: 'Rúbricas de Evaluación STEAM',    desc: 'Instrumentos de evaluación por competencias',           icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>', url: 'recursos/steam-rubricas.html' },
         { name: 'Banco de 30 Actividades STEAM',   desc: 'Actividades listas para aplicar en el aula',            icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>', url: 'recursos/steam-banco-actividades.html' },
-        { name: 'Infografía Think-Make-Improve',   desc: 'Resumen visual del ciclo de diseño',                    icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>', url: 'recursos/steam-infografia-tmi.html' },
+        { name: 'Infografía Pienso-Creo-Mejoro',   desc: 'Resumen visual del ciclo de diseño',                    icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>', url: 'recursos/steam-infografia-pcm.html' },
     ],
     'abp': [
         { name: 'Guía ABP Paso a Paso',            desc: 'Metodología completa con ejemplos para adaptar a tu contexto',       icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/abp-guia.html' },

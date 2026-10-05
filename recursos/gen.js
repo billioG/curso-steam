@@ -80,17 +80,17 @@ function renderProject(proj) {
     html += `</ol>`;
   }
   if (proj.think && proj.think.length) {
-    html += `<p><strong>🤔 Pensar (Think):</strong></p><ul>`;
+    html += `<p><strong>🤔 Pienso:</strong></p><ul>`;
     proj.think.forEach(t => html += `<li>${esc(t)}</li>`);
     html += `</ul>`;
   }
   if (proj.make && proj.make.length) {
-    html += `<p><strong>🛠️ Hacer (Make):</strong></p><ul>`;
+    html += `<p><strong>🛠️ Creo:</strong></p><ul>`;
     proj.make.forEach(m => html += `<li>${esc(m)}</li>`);
     html += `</ul>`;
   }
   if (proj.improve && proj.improve.length) {
-    html += `<p><strong>🔄 Mejorar (Improve):</strong></p><ul>`;
+    html += `<p><strong>🔄 Mejoro:</strong></p><ul>`;
     proj.improve.forEach(i => html += `<li>${esc(i)}</li>`);
     html += `</ul>`;
   }
