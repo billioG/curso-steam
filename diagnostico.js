@@ -1,5 +1,5 @@
 // ==================== EXAMEN DIAGNÓSTICO ====================
-// Based on CNB Guatemala, UNESCO Education Framework, ISTE Standards
+// Inspirado en el Marco de Competencias TIC para Docentes (UNESCO) y en los estándares ISTE para educadores
 
 const DIAG_DOMAINS = {
     steam: { label: 'Educación STEAM', color: '#1A6B68', icon: '🔬' },
@@ -219,42 +219,42 @@ const DIAG_QUESTIONS = [
     },
     {
         id: 'dq29', domain: 'metodologias',
-        text: '¿Cuál es una ventaja del mobile learning (m-learning) en el contexto guatemalteco?',
+        text: '¿Cuál es una ventaja del mobile learning (m-learning) en contextos con acceso limitado a computadoras?',
         options: ['Exige computadoras de última generación', 'Aprovecha el celular, el dispositivo más accesible en muchos hogares', 'Solo funciona con internet de fibra óptica', 'Reemplaza por completo al docente'],
         correct: 1,
         explanation: 'En muchas comunidades el celular es el único dispositivo con conexión; el m-learning lo convierte en herramienta de aprendizaje.'
     }
 ];
 
-// Semaphore levels — CNB Guatemala + UNESCO + ISTE reference framework
+// Niveles tipo semáforo — escala de referencia propia del programa
 const DIAG_LEVELS = [
     {
         min: 0,  max: 49,
         key: 'inicial', label: 'Nivel Inicial', emoji: '🔴',
         color: '#DC2626', bg: '#FEF2F2',
         desc: 'Los cursos te brindarán las bases conceptuales y prácticas para transformar tu aula. Es el momento ideal para comenzar con fundamentos sólidos.',
-        ref: 'Equivale a "Insatisfactorio" en el CNB / "Novice" en el marco ISTE.'
+        ref: 'Escala de referencia del programa: nivel inicial (0–49 %).'
     },
     {
         min: 50, max: 69,
         key: 'proceso', label: 'Nivel En Proceso', emoji: '🟡',
         color: '#D97706', bg: '#FFFBEB',
         desc: 'Tienes conocimientos iniciales que puedes profundizar. Los cursos conectarán y ampliarán lo que ya sabes para llevarlo al aula.',
-        ref: 'Equivale a "Satisfactorio" en el CNB / "Developing" en el marco ISTE.'
+        ref: 'Escala de referencia del programa: nivel en proceso (50–69 %).'
     },
     {
         min: 70, max: 84,
         key: 'satisfactorio', label: 'Nivel Satisfactorio', emoji: '🟢',
         color: '#16A34A', bg: '#F0FDF4',
         desc: 'Comprensión sólida de los conceptos clave. Los cursos te ayudarán a aplicar y sistematizar lo que ya sabes en tu práctica.',
-        ref: 'Equivale a "Muy Satisfactorio" en el CNB / "Proficient" en el marco ISTE.'
+        ref: 'Escala de referencia del programa: nivel satisfactorio (70–84 %).'
     },
     {
         min: 85, max: 100,
         key: 'destacado', label: 'Nivel Destacado', emoji: '💜',
         color: '#7C3AED', bg: '#F5F3FF',
         desc: 'Dominio avanzado de los fundamentos pedagógicos. Estás listo para profundizar en estrategias de alto impacto y ser referente en tu comunidad.',
-        ref: 'Equivale a "Excelente" en el CNB / "Expert" en el marco ISTE.'
+        ref: 'Escala de referencia del programa: nivel destacado (85–100 %).'
     }
 ];
 
@@ -479,7 +479,7 @@ function _showDiagnosticResults() {
             <h3 class="diag-domains-title">Resultados por área pedagógica</h3>
             <div class="diag-domains-list">${domainHtml}</div>
             <div class="diag-legend">
-                <strong>Semaforización de niveles</strong> (CNB Guatemala · UNESCO · ISTE)<br>
+                <strong>Semaforización de niveles</strong> (escala de referencia del programa)<br>
                 🔴 Inicial (0–49%) · 🟡 En Proceso (50–69%) · 🟢 Satisfactorio (70–84%) · 💜 Destacado (85–100%)
             </div>
             <button class="diag-primary-btn" onclick="closeDiagnostic()" style="background:${level.color}">
