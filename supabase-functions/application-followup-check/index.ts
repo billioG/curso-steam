@@ -61,7 +61,7 @@ function buildFollowupEmail(rawName: string, rawCardTitle: string, daysAfter: nu
           </a>
         </td></tr>
         <tr><td style="background:#f9fafb;border-radius:0 0 20px 20px;padding:20px 32px;text-align:center">
-          <p style="margin:0;font-size:11px;color:#9ca3af">Formación Docente en Pedagogía Innovadora · Guatemala</p>
+          <p style="margin:0;font-size:11px;color:#9ca3af">Yo Aprendo — Formación Docente en Pedagogía Innovadora · Guatemala</p>
           <p style="margin:8px 0 0;font-size:11px;color:#9ca3af"><a href="${unsubUrl}" style="color:#9ca3af;text-decoration:underline">Dejar de recibir estos correos</a></p>
         </td></tr>
       </table>
@@ -144,7 +144,7 @@ Deno.serve(async (_req) => {
               method: 'POST',
               headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                from: `Formación Docente <${FROM_EMAIL}>`,
+                from: `Yo Aprendo <${FROM_EMAIL}>`,
                 to: [user.email],
                 subject: daysAfter === 7 ? '¿Ya lo aplicaste?' : '¿Cómo te fue aplicándolo?',
                 html,

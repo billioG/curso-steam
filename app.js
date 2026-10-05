@@ -2815,7 +2815,7 @@ async function shareBadgeImage(badgeId) {
     ctx.fillText(badge.desc || '', W / 2, 510, 560);
     ctx.font = '700 16px Arial, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,.7)';
-    ctx.fillText(`${getDisplayName()} · Formación Docente`, W / 2, 590);
+    ctx.fillText(`${getDisplayName()} · Yo Aprendo`, W / 2, 590);
 
     const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
     if (!blob) { showToast('No se pudo generar la imagen', 'warning'); return; }
@@ -2823,7 +2823,7 @@ async function shareBadgeImage(badgeId) {
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-            await navigator.share({ files: [file], title: badge.name, text: `¡Desbloqueé la insignia "${badge.name}" en Formación Docente!` });
+            await navigator.share({ files: [file], title: badge.name, text: `¡Desbloqueé la insignia "${badge.name}" en Yo Aprendo!` });
             return;
         } catch (e) { /* usuario canceló el share nativo — cae al fallback de descarga */ }
     }
@@ -3338,11 +3338,11 @@ async function shareApp() {
     }
 
     const link = getReferralLink();
-    const text = '🚀 Estoy aprendiendo metodología STEAM con el Curso STEAM 2.0. ¡Únete gratis y transforma tu aula!';
+    const text = '🚀 Estoy aprendiendo con Yo Aprendo. ¡Únete gratis y transforma tu aula!';
 
     if (navigator.share) {
         try {
-            await navigator.share({ title: 'Curso STEAM 2.0', text, url: link });
+            await navigator.share({ title: 'Yo Aprendo', text, url: link });
         } catch (e) {
             // El usuario canceló el diálogo — no es error
             if (e?.name !== 'AbortError') {
@@ -4628,7 +4628,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
         _loadCertSignaturesForUser()
     ]);
 
-    const logoHtml = `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:${courseColor}">Formación Docente</span>`;
+    const logoHtml = `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:${courseColor}">Yo Aprendo</span>`;
 
     const certCode = await getOrCreateCertCode(_cid2, 'course', nombre, percentage);
     const { qrImg, verifyUrl } = buildVerifyQRHtml(certCode);
@@ -4704,7 +4704,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
       <div class="brand-area">
         ${logoHtml}
         <button class="print-btn" onclick="window.print()">⬇ Guardar PDF</button>
-        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle + ' · Formación Docente')}&organizationName=${encodeURIComponent('Formación Docente')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
+        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle + ' · Yo Aprendo')}&organizationName=${encodeURIComponent('Yo Aprendo')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
       </div>
     </div>
   </div>
@@ -5361,7 +5361,7 @@ async function generateMasterCertificate() {
 
     // Solo los cursos de la RUTA activa (no todo el catálogo)
     const _path = _activeMasterPath || LEARNING_PATHS[0];
-    const _pathLabel = _path?.label || 'Programa de Formación Docente';
+    const _pathLabel = _path?.label || 'Programa de Yo Aprendo';
 
     // Fecha de EMISIÓN = cuándo se aprobó el examen maestro de ESTA ruta,
     // no cuándo se genera/descarga el certificado.
@@ -5375,7 +5375,7 @@ async function generateMasterCertificate() {
         _imgToBase64('firma.png'),
         _loadCertSignaturesForUser()
     ]);
-    const logoHtml = `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:#7C3AED">Formación Docente</span>`;
+    const logoHtml = `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:#7C3AED">Yo Aprendo</span>`;
 
     const _pathCourseIds = _path?.courses || [];
     const availableCourses = allCourses.filter(c => c.status === 'available' && _pathCourseIds.includes(c.id));
@@ -5458,7 +5458,7 @@ async function generateMasterCertificate() {
   <div class="cert-top">
     <div class="cert-badge">★ Certificación de Excelencia — ${esc(_pathLabel)} ★</div>
     <h1 class="cert-title">${esc(_pathLabel)}</h1>
-    <p class="cert-subtitle">Ruta de Formación Docente en Pedagogía Innovadora · Guatemala</p>
+    <p class="cert-subtitle">Yo Aprendo — Formación Docente en Pedagogía Innovadora · Guatemala</p>
   </div>
   <div class="cert-body">
     <p class="cert-otorga">Se otorga con distinción máxima a</p>
@@ -5482,7 +5482,7 @@ async function generateMasterCertificate() {
       <div class="brand-area">
         ${logoHtml}
         <button class="print-btn" onclick="window.print()">⬇ Guardar PDF</button>
-        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(_pathLabel + ' · Certificación Maestra de Formación Docente')}&organizationName=${encodeURIComponent('Formación Docente')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
+        ${certCode ? `<a class="linkedin-btn" target="_blank" href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(_pathLabel + ' · Certificación Maestra de Yo Aprendo')}&organizationName=${encodeURIComponent('Yo Aprendo')}&issueYear=${_issueYear}&issueMonth=${_issueMonth}&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certCode)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>Agregar a LinkedIn</a>` : ''}
       </div>
     </div>
   </div>
