@@ -2038,7 +2038,43 @@
                 </div>
             </div>
 
-            <p class="text-center text-[11px] text-slate-300 mt-2 mb-1" id="appVersionBadge">Versión —</p>
+            <!-- ── Acerca de: versión de la app y accesos a paneles externos.
+                 Coordinador/Admin solo se muestran a quien tiene permiso
+                 (ver loadPanelAccess() en app.js). ── -->
+            <div class="perfil-section" id="aboutSection">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Acerca de</p>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm" style="overflow:hidden">
+                    <div class="px-4 py-3 flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-slate-700">Versión de la app</p>
+                            <p class="text-xs text-slate-400">Yo Aprendo · Formación Continua</p>
+                        </div>
+                        <span id="appVersionBadge" class="text-sm font-black" style="color:#1E4976">—</span>
+                    </div>
+                    <a id="coordinatorLink" href="coordinator.html" target="_blank" rel="noopener"
+                        class="hidden px-4 py-3 flex items-center gap-3" style="border-top:1px solid #F1F5F9;text-decoration:none">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background:#E8EDF3">
+                            <span data-icon="progress" style="display:inline-flex;width:16px;height:16px;color:#1E4976"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-slate-700">Panel de coordinador</p>
+                            <p class="text-xs text-slate-400">Avance de los docentes de tu colegio. Entras con el mismo correo y contraseña.</p>
+                        </div>
+                        <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1"></span>
+                    </a>
+                    <a id="adminPanelLink" href="admin.html" target="_blank" rel="noopener"
+                        class="hidden px-4 py-3 flex items-center gap-3" style="border-top:1px solid #F1F5F9;text-decoration:none">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background:#E8EDF3">
+                            <span data-icon="compass" style="display:inline-flex;width:16px;height:16px;color:#1E4976"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-slate-700">Panel administrativo</p>
+                            <p class="text-xs text-slate-400">Usuarios, cursos y colegios. Desde Colegios abres el panel de cada coordinador.</p>
+                        </div>
+                        <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1"></span>
+                    </a>
+                </div>
+            </div>
 
         </div><!-- end perfil-grid -->
         </div><!-- end tabPerfil -->
