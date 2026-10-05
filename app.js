@@ -3281,7 +3281,8 @@ async function loadCourseRequests() {
                 ${req.description ? `<p class="text-xs text-slate-500 mt-0.5">${esc(req.description)}</p>` : ''}
             </div>
             <button onclick="voteCourseRequest(${req.id})"
-                class="flex flex-col items-center justify-center w-12 h-12 rounded-xl font-bold text-xs flex-shrink-0 transition ${iVoted ? 'bg-pink-500 text-white' : 'bg-white border border-slate-200 text-slate-500 hover:border-pink-300'}">
+                class="flex flex-col items-center justify-center w-12 h-12 rounded-xl font-bold text-xs flex-shrink-0 transition ${iVoted ? 'text-white' : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'}"
+                style="${iVoted ? 'background:#1E4976' : ''}">
                 <span>${iVoted ? '❤️' : '🤍'}</span>
                 <span>${req.votes || 0}</span>
             </button>
