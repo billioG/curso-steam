@@ -49,6 +49,7 @@ const COURSES = [
   { id: 'tea-profundidad', title: 'TEA en Profundidad', prefix: 'tea-profundidad-', totalCards: 32 },
   { id: 'discapacidad-down-tdah', title: 'Síndrome de Down y TDAH', prefix: 'discapacidad-down-tdah-', totalCards: 32 },
   { id: 'lengua-senas-docentes', title: 'Lengua de Señas para Docentes', prefix: 'lengua-senas-docentes-', totalCards: 32 },
+  { id: 'fundamentos-pisa', title: 'Fundamentos que Todo Estudiante Necesita', prefix: 'fundamentos-pisa-', totalCards: 49 },
 ];
 // SYNC:END
 
