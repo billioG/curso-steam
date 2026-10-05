@@ -1,6 +1,6 @@
 // casos-estudio.js
 // Branching Case Studies — Yo Aprendo — Formación Docente en Pedagogía Innovadora
-// Guatemala 2026
+// 2026
 
 const CASE_STUDIES = [
 
@@ -14,14 +14,14 @@ const CASE_STUDIES = [
     color: '#07B0E4',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>',
     duration: '20-25 min',
-    description: 'Mariana quiere hacer su primer proyecto STEAM en una escuela rural de Guatemala sin tecnología ni materiales comerciales. Acompáñala a tomar decisiones pedagógicas que transforman las limitaciones en oportunidades.',
+    description: 'Mariana quiere hacer su primer proyecto STEAM en una escuela rural sin tecnología ni materiales comerciales. Acompáñala a tomar decisiones pedagógicas que transforman las limitaciones en oportunidades.',
     start: 'cs1_n1',
     nodes: {
 
       // ── LEVEL 1: Choose the project ──────────────────────────────────────
       'cs1_n1': {
         type: 'scenario',
-        text: 'Mariana enseña cuarto grado en la Escuela Oficial Rural Mixta Cantón El Quetzal, en Chiquimula. Tiene 28 estudiantes, ninguna computadora, y un presupuesto mensual de Q40 para materiales. Esta semana escuchó sobre STEAM y se emocionó — pero al revisar su aula, ve pupitres de madera, tres marcadores y una ventana que da al monte. Quiere hacer un proyecto auténtico, no un experimento de ciencias de diez minutos.',
+        text: 'Mariana enseña cuarto grado en una escuela pública rural. Tiene 28 estudiantes, ninguna computadora, y un presupuesto mensual de apenas unos 5 dólares para materiales. Esta semana escuchó sobre STEAM y se emocionó — pero al revisar su aula, ve pupitres de madera, tres marcadores y una ventana que da al monte. Quiere hacer un proyecto auténtico, no un experimento de ciencias de diez minutos.',
         context: 'El director le ha dado tres semanas para presentar algo ante los padres de familia. Los estudiantes viven en comunidades cafetaleras y maiceras. Tienen acceso al río, al bosque, y a las tradiciones de sus abuelos.',
         choices: [
           {
@@ -54,8 +54,8 @@ const CASE_STUDIES = [
       // LEVEL 2 branch B (wrong path)
       'cs1_n2b': {
         type: 'feedback_wrong',
-        text: 'Este camino tiene varios problemas. Primero, los kits de robótica cuestan entre Q800 y Q3,000 — muy fuera del alcance de las familias. Segundo, pedir ese gasto a padres cafetaleros en época de baja cosecha crea tensión entre la escuela y la comunidad. Tercero, y más importante: reduce la "T" de STEAM a gadgets electrónicos, ignorando que la tecnología es cualquier solución humana a un problema. Mariana necesita replantear su concepción del proyecto.',
-        tip: 'Error común: confundir "tecnología" con "dispositivos digitales". En contextos rurales de Guatemala, un sistema de filtración de agua construido con materiales locales ES tecnología — y un proyecto STEAM más auténtico que un kit importado.',
+        text: 'Este camino tiene varios problemas. Primero, los kits de robótica cuestan entre 100 y 400 dólares — muy fuera del alcance de las familias. Segundo, pedir ese gasto a padres cafetaleros en época de baja cosecha crea tensión entre la escuela y la comunidad. Tercero, y más importante: reduce la "T" de STEAM a gadgets electrónicos, ignorando que la tecnología es cualquier solución humana a un problema. Mariana necesita replantear su concepción del proyecto.',
+        tip: 'Error común: confundir "tecnología" con "dispositivos digitales". En contextos rurales, un sistema de filtración de agua construido con materiales locales ES tecnología — y un proyecto STEAM más auténtico que un kit importado.',
         next: 'cs1_n3b',
         xp: 0
       },
@@ -153,7 +153,7 @@ const CASE_STUDIES = [
 
       'cs1_n4c': {
         type: 'feedback_wrong',
-        text: 'Ignorar a Don Rigoberto y enviarlo al director genera conflicto institucional innecesario. En comunidades rurales de Guatemala, la relación entre docente y familia es fundamental. Una respuesta defensiva puede convertir a un padre curioso en un oponente activo del proyecto — y del docente. Además, el director ahora enfrenta una queja sin contexto.',
+        text: 'Ignorar a Don Rigoberto y enviarlo al director genera conflicto institucional innecesario. En muchas comunidades rurales, la relación entre docente y familia es fundamental. Una respuesta defensiva puede convertir a un padre curioso en un oponente activo del proyecto — y del docente. Además, el director ahora enfrenta una queja sin contexto.',
         tip: 'Considerar: La participación de padres en el aula, aunque incómoda, puede convertirse en un recurso. La clave está en transformar la interrupción en colaboración, no en conflicto.',
         next: 'cs1_n5c',
         xp: 0
@@ -363,14 +363,14 @@ const CASE_STUDIES = [
     color: '#F59E0B',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
     duration: '20-25 min',
-    description: 'El proyecto ABP de Carlos sobre problemas urbanos de Guatemala City se ha estancado. Los estudiantes están desconectados, hay conflicto entre compañeros, y el plazo vence en dos semanas. ¿Puede salvarlo?',
+    description: 'El proyecto ABP de Carlos sobre problemas urbanos de su ciudad se ha estancado. Los estudiantes están desconectados, hay conflicto entre compañeros, y el plazo vence en dos semanas. ¿Puede salvarlo?',
     start: 'cs2_n1',
     nodes: {
 
       'cs2_n1': {
         type: 'scenario',
-        text: 'Carlos es docente de Ciencias Sociales en un instituto de secundaria en la zona 6 de Guatemala City. Hace tres semanas lanzó un proyecto ABP sobre "problemas urbanos de nuestra ciudad" con gran entusiasmo. Hoy, semana cuatro de seis, la realidad es dura: tres de cinco equipos no han avanzado más allá de buscar imágenes en internet, un equipo tiene dos estudiantes que no se hablan, y cuando Carlos pregunta "¿cómo va su investigación?", los estudiantes lo miran con indiferencia o con el teléfono en la mano.',
-        context: 'Faltan dos semanas para la presentación final ante una audiencia externa (la municipalidad de la zona). Carlos siente que algo falló desde el inicio pero no sabe exactamente qué.',
+        text: 'Carlos es docente de Ciencias Sociales en una escuela secundaria de un barrio popular de la capital. Hace tres semanas lanzó un proyecto ABP sobre "problemas urbanos de nuestra ciudad" con gran entusiasmo. Hoy, semana cuatro de seis, la realidad es dura: tres de cinco equipos no han avanzado más allá de buscar imágenes en internet, un equipo tiene dos estudiantes que no se hablan, y cuando Carlos pregunta "¿cómo va su investigación?", los estudiantes lo miran con indiferencia o con el teléfono en la mano.',
+        context: 'Faltan dos semanas para la presentación final ante una audiencia externa (el gobierno local del barrio). Carlos siente que algo falló desde el inicio pero no sabe exactamente qué.',
         choices: [
           {
             text: 'Reiniciar el proyecto desde cero con un nuevo tema y estructura — con dos semanas es mejor empezar limpio.',
@@ -383,7 +383,7 @@ const CASE_STUDIES = [
             isCorrect: true
           },
           {
-            text: 'Reducir el alcance del proyecto para que sea manejable: cancelar la presentación ante la municipalidad y convertirlo en una tarea individual escrita.',
+            text: 'Reducir el alcance del proyecto para que sea manejable: cancelar la presentación ante el gobierno local y convertirlo en una tarea individual escrita.',
             next: 'cs2_n2c',
             isCorrect: false
           }
@@ -400,7 +400,7 @@ const CASE_STUDIES = [
 
       'cs2_n2b': {
         type: 'feedback_correct',
-        text: 'Carlos hace algo valioso: reconoce que no puede resolver lo que no entiende. Dedica la siguiente clase a escuchar. Hace entrevistas rápidas con cada equipo (5 minutos por grupo) y hace una sola pregunta: "¿Qué tiene que ver este proyecto con tu vida real?" Las respuestas son reveladoras: "No sé", "Nada", "Los problemas de la zona 6 no me afectan a mí". La pregunta motriz — demasiado genérica — no conectó con las vidas reales de los estudiantes.',
+        text: 'Carlos hace algo valioso: reconoce que no puede resolver lo que no entiende. Dedica la siguiente clase a escuchar. Hace entrevistas rápidas con cada equipo (5 minutos por grupo) y hace una sola pregunta: "¿Qué tiene que ver este proyecto con tu vida real?" Las respuestas son reveladoras: "No sé", "Nada", "Los problemas del barrio no me afectan a mí". La pregunta motriz — demasiado genérica — no conectó con las vidas reales de los estudiantes.',
         tip: 'Principio ABP: La pregunta motriz es el corazón del proyecto. Si los estudiantes no pueden conectarla con algo que les importa personalmente, el proyecto nunca generará motivación intrínseca. La autenticidad del problema no la define el docente — la define el estudiante.',
         next: 'cs2_n3b',
         xp: 10
@@ -418,7 +418,7 @@ const CASE_STUDIES = [
 
       'cs2_n3a': {
         type: 'scenario',
-        text: 'Carlos reinicia el proyecto con un nuevo tema: "el transporte público en Guatemala City". Los equipos arrancan con algo más de energía inicial, pero en dos días el patrón se repite: los estudiantes buscan información sin propósito claro. Carlos nota que la "pregunta motriz" del nuevo proyecto tiene el mismo problema que el anterior: "¿Cómo podemos mejorar el transporte de nuestra ciudad?" es demasiado amplia y no conecta con su experiencia diaria.',
+        text: 'Carlos reinicia el proyecto con un nuevo tema: "el transporte público en nuestra ciudad". Los equipos arrancan con algo más de energía inicial, pero en dos días el patrón se repite: los estudiantes buscan información sin propósito claro. Carlos nota que la "pregunta motriz" del nuevo proyecto tiene el mismo problema que el anterior: "¿Cómo podemos mejorar el transporte de nuestra ciudad?" es demasiado amplia y no conecta con su experiencia diaria.',
         context: 'Carlos está en el mismo punto, ahora con menos tiempo. Pero ha identificado el patrón: la pregunta es el problema.',
         choices: [
           {
@@ -459,7 +459,7 @@ const CASE_STUDIES = [
 
       'cs2_n3c': {
         type: 'scenario',
-        text: 'La tarea individual escrita produce resultados previsibles: párrafos copiados de internet sobre "problemas del tráfico en Guatemala" sin análisis propio. Algunos estudiantes copian textualmente de Wikipedia. Carlos califica y saca a flote las notas, pero sabe que nadie aprendió nada significativo. El director nota que la presentación ante la municipalidad fue cancelada y pregunta por qué.',
+        text: 'La tarea individual escrita produce resultados previsibles: párrafos copiados de internet sobre "problemas del tráfico en las ciudades" sin análisis propio. Algunos estudiantes copian textualmente de Wikipedia. Carlos califica y saca a flote las notas, pero sabe que nadie aprendió nada significativo. El director nota que la presentación ante el gobierno local fue cancelada y pregunta por qué.',
         context: 'Carlos tiene que explicar la decisión y enfrentar la pregunta implícita: ¿podría haber hecho algo diferente?',
         choices: [
           {
@@ -537,11 +537,11 @@ const CASE_STUDIES = [
 
       'cs2_n5a': {
         type: 'scenario',
-        text: 'La audiencia ante la municipalidad fue reprogramada. Los equipos han trabajado con la nueva pregunta y tienen hallazgos reales: encuestas a vecinos, mapas de rutas problemáticas, testimonios. Pero tres días antes de la presentación, el funcionario municipal que coordinaba la visita cancela — "agenda apretada", dice el correo. Los estudiantes, que por primera vez estaban comprometidos, reciben la noticia con desolación.',
+        text: 'La audiencia ante el gobierno local fue reprogramada. Los equipos han trabajado con la nueva pregunta y tienen hallazgos reales: encuestas a vecinos, mapas de rutas problemáticas, testimonios. Pero tres días antes de la presentación, el funcionario del gobierno local que coordinaba la visita cancela — "agenda apretada", dice el correo. Los estudiantes, que por primera vez estaban comprometidos, reciben la noticia con desolación.',
         context: 'La audiencia real era parte del corazón del proyecto. Su cancelación amenaza con confirmar la sospecha de los estudiantes de que "esto no importa a nadie".',
         choices: [
           {
-            text: 'Reencuadrar la audiencia: presentar ante la comunidad escolar (padres, otros docentes, vecinos) y documentar la presentación en video para enviarla al funcionario municipal con una carta firmada por los estudiantes.',
+            text: 'Reencuadrar la audiencia: presentar ante la comunidad escolar (padres, otros docentes, vecinos) y documentar la presentación en video para enviarla al funcionario con una carta firmada por los estudiantes.',
             next: 'cs2_outcome_success',
             isCorrect: true
           },
@@ -556,7 +556,7 @@ const CASE_STUDIES = [
       'cs2_n5b': {
         type: 'scenario',
         text: 'Los estudiantes siguen los pasos pero sin energía. Producen presentaciones con datos de internet bien organizadas pero sin perspectiva propia. Cuando Carlos les pregunta "¿qué proponen ustedes?", los estudiantes quedan en silencio. Han investigado el problema pero no se sienten capaces de proponer soluciones.',
-        context: 'La presentación ante la municipalidad es en dos días. El trabajo es técnicamente aceptable pero vacío de voz propia.',
+        context: 'La presentación ante el gobierno local es en dos días. El trabajo es técnicamente aceptable pero vacío de voz propia.',
         choices: [
           {
             text: 'Dedicar las dos últimas clases exclusivamente a que cada equipo articule UNA propuesta concreta basada en su investigación, aunque sea pequeña e imperfecta.',
@@ -573,7 +573,7 @@ const CASE_STUDIES = [
 
       'cs2_n5c': {
         type: 'scenario',
-        text: 'El equipo de Andrea y Sebastián produce el trabajo más rico: un análisis del riesgo vial que integra datos de accidentes, testimonios personales y propuestas de señalización. Cuando presentan ante la municipalidad, el funcionario les hace preguntas reales y toma nota. Al final del evento, un estudiante que al inicio decía "esto no me importa" pregunta: "¿Podemos dar seguimiento a esto el próximo año?" Carlos tiene que decidir cómo cerrar el proyecto con intención.',
+        text: 'El equipo de Andrea y Sebastián produce el trabajo más rico: un análisis del riesgo vial que integra datos de accidentes, testimonios personales y propuestas de señalización. Cuando presentan ante el gobierno local, el funcionario les hace preguntas reales y toma nota. Al final del evento, un estudiante que al inicio decía "esto no me importa" pregunta: "¿Podemos dar seguimiento a esto el próximo año?" Carlos tiene que decidir cómo cerrar el proyecto con intención.',
         context: 'El proyecto funcionó. Pero el cierre importa tanto como la ejecución.',
         choices: [
           {
@@ -591,7 +591,7 @@ const CASE_STUDIES = [
 
       'cs2_n5d': {
         type: 'scenario',
-        text: 'La presentación del equipo 3 es el punto débil del evento. Andrea y Sebastián presentan por separado, casi sin mirarse, con diapositivas que duplican información sin integrarse. El funcionario municipal nota la incomodidad. Después, Carlos reflexiona: una intervención a tiempo habría cambiado el resultado para ambos estudiantes y para el equipo.',
+        text: 'La presentación del equipo 3 es el punto débil del evento. Andrea y Sebastián presentan por separado, casi sin mirarse, con diapositivas que duplican información sin integrarse. El funcionario nota la incomodidad. Después, Carlos reflexiona: una intervención a tiempo habría cambiado el resultado para ambos estudiantes y para el equipo.',
         context: 'El proyecto terminó pero la lección sobre manejo de conflictos sigue presente.',
         choices: [
           {
@@ -686,7 +686,7 @@ const CASE_STUDIES = [
 
       'cs3_n1': {
         type: 'scenario',
-        text: 'Ana lleva seis semanas en su primer año como docente en una escuela primaria urbana de Quetzaltenango. Tiene 30 estudiantes. Uno de ellos, Sofía, de 9 años, ha llamado su atención de una forma que la preocupa: nunca levanta la mano, rara vez mira al frente, y pasa los recreos dibujando sola en su cuaderno en lugar de jugar. Sus calificaciones están por debajo del promedio, aunque cuando Ana la observa dibujando, los detalles son extraordinarios — capta perspectiva, sombras, proporciones. En conversación directa, Sofía habla de forma sofisticada y articulada.',
+        text: 'Ana lleva seis semanas en su primer año como docente en una escuela primaria urbana. Tiene 30 estudiantes. Uno de ellos, Sofía, de 9 años, ha llamado su atención de una forma que la preocupa: nunca levanta la mano, rara vez mira al frente, y pasa los recreos dibujando sola en su cuaderno en lugar de jugar. Sus calificaciones están por debajo del promedio, aunque cuando Ana la observa dibujando, los detalles son extraordinarios — capta perspectiva, sombras, proporciones. En conversación directa, Sofía habla de forma sofisticada y articulada.',
         context: 'El boletín trimestral se entrega en dos semanas. Sofía está reprobando Matemáticas y Comunicación y Lenguaje. La madre de Sofía aún no ha sido contactada.',
         choices: [
           {
@@ -872,7 +872,7 @@ const CASE_STUDIES = [
 
       'cs3_n5b': {
         type: 'scenario',
-        text: 'La madre de Sofía nunca más se comunicó con Ana. Sofía pasó el trimestre con adaptaciones mínimas — Ana la sentó cerca del pizarrón y le dio más tiempo en los exámenes. Al final del año, Sofía aprueba con lo mínimo. Sigue sin participar. Sigue dibujando en su cuaderno. La historia no cambió — solo mejoró lo suficiente para no alarmar a nadie.',
+        text: 'La madre de Sofía nunca más se comunicó con Ana. Sofía pasó el trimestre con adaptaciones mínimas — Ana la sentó cerca de la pizarra y le dio más tiempo en los exámenes. Al final del año, Sofía aprueba con lo mínimo. Sigue sin participar. Sigue dibujando en su cuaderno. La historia no cambió — solo mejoró lo suficiente para no alarmar a nadie.',
         context: 'Ana siente que algo quedó incompleto. Tiene razón.',
         choices: [
           {
@@ -1003,7 +1003,7 @@ const CASE_STUDIES = [
 
       'cs4_n1': {
         type: 'scenario',
-        text: 'Roberto tiene 15 años de experiencia como docente de Matemáticas en un instituto de secundaria en Escuintla. Es respetado, sus estudiantes aprueban, y sus exámenes son conocidos por ser rigurosos. Pero en la última jornada pedagógica, la directora presentó un plan de "evaluación auténtica y formativa" para toda la escuela. Roberto no sabe exactamente qué significa, pero sabe que implica cambiar algo que le ha funcionado por años. Y para colmo, un supervisor del distrito viene a observar en tres semanas.',
+        text: 'Roberto tiene 15 años de experiencia como docente de Matemáticas en una escuela secundaria. Es respetado, sus estudiantes aprueban, y sus exámenes son conocidos por ser rigurosos. Pero en la última jornada pedagógica, la directora presentó un plan de "evaluación auténtica y formativa" para toda la escuela. Roberto no sabe exactamente qué significa, pero sabe que implica cambiar algo que le ha funcionado por años. Y para colmo, un supervisor del distrito viene a observar en tres semanas.',
         context: 'Roberto tiene miedo —no a enseñar, sino a ser evaluado como docente bajo criterios que no entiende del todo. Ese miedo es útil: es el mismo miedo que sienten sus estudiantes ante cada examen.',
         choices: [
           {
@@ -1314,14 +1314,14 @@ const CASE_STUDIES = [
     color: '#E83C8D',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 017 7c0 2.5-1.5 4.5-3 6l-1 1H9l-1-1C6.5 13.5 5 11.5 5 9a7 7 0 017-7z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="9.5" y1="7" x2="9" y2="5"/><line x1="14.5" y1="7" x2="15" y2="5"/><line x1="7" y1="9.5" x2="5" y2="9"/><line x1="17" y1="9.5" x2="19" y2="9"/></svg>',
     duration: '20-25 min',
-    description: 'Lucía es docente en una escuela urbana de Guatemala City y quiere aplicar técnicas de creatividad, pero sus estudiantes están acostumbrados a clases tradicionales. Acompáñala a transformar su aula en un espacio donde el error es bienvenido y la imaginación tiene lugar.',
+    description: 'Lucía es docente en una escuela urbana y quiere aplicar técnicas de creatividad, pero sus estudiantes están acostumbrados a clases tradicionales. Acompáñala a transformar su aula en un espacio donde el error es bienvenido y la imaginación tiene lugar.',
     start: 'cs5_n1',
     nodes: {
 
       'cs5_n1': {
         type: 'scenario',
-        text: 'Lucía da clases de Ciencias Sociales en el Instituto Nacional Mixto Central de Guatemala City. Sus 32 estudiantes de tercero básico son brillantes — pero callados. Acostumbrados a copiar del pizarrón y a responder solo cuando tienen la respuesta "correcta". Hoy Lucía quiere hacer su primera sesión de brainstorming sobre la identidad cultural guatemalteca.',
-        context: 'Cuando Lucía dice "escriban lo primero que se les venga a la mente cuando piensan en Guatemala", los estudiantes se miran entre sí. Silencio. Nadie escribe. Una niña en la fila de atrás pregunta: "¿Qué nota tiene esta actividad?"',
+        text: 'Lucía da clases de Ciencias Sociales en una escuela secundaria pública. Sus 32 estudiantes de tercero de secundaria son brillantes — pero callados. Acostumbrados a copiar de la pizarra y a responder solo cuando tienen la respuesta "correcta". Hoy Lucía quiere hacer su primera sesión de brainstorming sobre la identidad cultural de su país.',
+        context: 'Cuando Lucía dice "escriban lo primero que se les venga a la mente cuando piensan en nuestro país", los estudiantes se miran entre sí. Silencio. Nadie escribe. Una niña en la fila de atrás pregunta: "¿Qué nota tiene esta actividad?"',
         choices: [
           { text: 'Empezar con un ejemplo personal: compartir lo primero que a Lucía le viene a la mente y normalizar respuestas "imperfectas".', next: 'cs5_n2a', points: 10 },
           { text: 'Dar una lista de temas sugeridos para que los estudiantes elijan y "no se equivoquen".', next: 'cs5_n2b', points: 5 },
@@ -1331,17 +1331,17 @@ const CASE_STUDIES = [
 
       'cs5_n2a': {
         type: 'feedback_correct',
-        text: 'Lucía dice en voz alta: "Yo escribí: el olor de la marimba en la madrugada del 15 de septiembre". Los estudiantes ríen. Luego alguien escribe. Después otro. En cinco minutos el pizarrón está lleno: barriletes de Sumpango, el mercado de Chichicastenango, el ruido de los cohetillos, el frío del altiplano, el güipil de la abuela.',
+        text: 'Lucía dice en voz alta: "Yo escribí: el olor del pan recién hecho en la madrugada de las fiestas del pueblo". Los estudiantes ríen. Luego alguien escribe. Después otro. En cinco minutos la pizarra está llena: las cometas de papel, el mercado del pueblo, el ruido de los cohetes de las fiestas, el frío de la montaña, el chal tejido de la abuela.',
         feedback: 'La modelización docente rompe el bloqueo creativo mejor que cualquier instrucción. Cuando el docente muestra vulnerabilidad y normaliza la respuesta "rara", los estudiantes comprenden que el objetivo no es adivinar la respuesta correcta sino explorar ideas genuinas.',
         choices: [
-          { text: 'Usar las respuestas del pizarrón como base para clasificar y profundizar.', next: 'cs5_n3a', points: 10 },
+          { text: 'Usar las respuestas de la pizarra como base para clasificar y profundizar.', next: 'cs5_n3a', points: 10 },
           { text: 'Decirles que esas ideas son el "primer borrador" y que ahora hay que corregirlas.', next: 'cs5_n3b', points: 3 }
         ]
       },
 
       'cs5_n2b': {
         type: 'feedback_partial',
-        text: 'Los estudiantes eligen temas de la lista, pero las respuestas son predecibles: "quetzal", "lago Atitlán", "Tikal". El brainstorming funciona técnicamente, pero pierde su propósito: generar conexiones inesperadas y pensamiento divergente. La lista actúa como un techo cognitivo.',
+        text: 'Los estudiantes eligen temas de la lista, pero las respuestas son predecibles: "el escudo", "la bandera", "los monumentos". El brainstorming funciona técnicamente, pero pierde su propósito: generar conexiones inesperadas y pensamiento divergente. La lista actúa como un techo cognitivo.',
         feedback: 'Dar opciones cerradas en un brainstorming contradice su naturaleza. Los andamiajes de creatividad deben abrir posibilidades, no acotarlas. Una alternativa mejor sería dar categorías amplias ("sonidos", "olores", "recuerdos") en vez de respuestas específicas.',
         choices: [
           { text: 'Ampliar la actividad pidiendo que a cada idea le agreguen una sensación o recuerdo personal.', next: 'cs5_n3a', points: 7 },
@@ -1372,7 +1372,7 @@ const CASE_STUDIES = [
 
       'cs5_n3b': {
         type: 'scenario',
-        text: 'Las ideas del brainstorming se perdieron sin profundizarse. Lucía pasa directamente a la siguiente actividad: un cuestionario sobre "elementos de la cultura guatemalteca". Los estudiantes responden correctamente pero mecánicamente. Lucía siente que algo se perdió en la sesión.',
+        text: 'Las ideas del brainstorming se perdieron sin profundizarse. Lucía pasa directamente a la siguiente actividad: un cuestionario sobre "elementos de la cultura nacional". Los estudiantes responden correctamente pero mecánicamente. Lucía siente que algo se perdió en la sesión.',
         context: 'Al salir de clase, una estudiante le dice: "Maestra, esa actividad del principio estuvo bonita. ¿La vamos a volver a hacer?"',
         choices: [
           { text: 'Tomar nota de ese comentario y planificar una siguiente sesión que sí desarrolle las ideas del brainstorming.', next: 'cs5_n4a', points: 7 },
@@ -1392,7 +1392,7 @@ const CASE_STUDIES = [
 
       'cs5_n4a': {
         type: 'scenario',
-        text: 'La instalación artística quedó increíble. Hay un güipil de Nebaj colgado junto a una foto del lago Atitlán y un barrilete de papel china hecho a mano. Un estudiante trajo el bordado de su abuela; otro pegó una entrada al mercado de artesanías. Pero ahora llega el momento más difícil: ¿cómo evalúa Lucía esto sin poner una nota numérica que destruya el espíritu de la actividad?',
+        text: 'La instalación artística quedó increíble. Hay un tejido tradicional colgado junto a una foto de un lago cercano y una cometa de papel hecha a mano. Un estudiante trajo el bordado de su abuela; otro pegó una entrada al mercado de artesanías. Pero ahora llega el momento más difícil: ¿cómo evalúa Lucía esto sin poner una nota numérica que destruya el espíritu de la actividad?',
         context: 'El reglamento del instituto exige una nota de 0-100 en todas las actividades. La subdirectora le pregunta a Lucía cómo va a registrar esta actividad en el libro de calificaciones.',
         choices: [
           { text: 'Crear una rúbrica de proceso que evalúe criterios creativos: originalidad, conexión personal, uso de elementos culturales, colaboración — y no el resultado estético final.', next: 'cs5_n5a', points: 10 },
@@ -1423,8 +1423,8 @@ const CASE_STUDIES = [
 
       'cs5_n5a': {
         type: 'scenario',
-        text: 'Lucía quiere consolidar todo lo aprendido en un proyecto final: los estudiantes van a crear una "Cápsula de Creatividad Cultural" — una caja donde guardan un objeto, un texto y una imagen que representen algo único de su comunidad o familia. Lo presentarán ante sus compañeros en una exposición abierta, como si fuera un festival de barrilete pero de ideas.',
-        context: 'Algunos estudiantes traen tejidos de sus madres, semillas de milpa, fotografías de la marimba en una fiesta patronal. Otros traen cosas inesperadas: un silbato de barro, la letra de una canción que inventaron, una receta de pepián escrita a mano.',
+        text: 'Lucía quiere consolidar todo lo aprendido en un proyecto final: los estudiantes van a crear una "Cápsula de Creatividad Cultural" — una caja donde guardan un objeto, un texto y una imagen que representen algo único de su comunidad o familia. Lo presentarán ante sus compañeros en una exposición abierta, como si fuera un festival de cometas pero de ideas.',
+        context: 'Algunos estudiantes traen tejidos de sus madres, semillas de su huerta, fotografías de la música en una fiesta del pueblo. Otros traen cosas inesperadas: un silbato de barro, la letra de una canción que inventaron, una receta de pepián escrita a mano.',
         choices: [
           { text: 'Celebrar la diversidad de las cápsulas y crear un "museo de aula" donde todos puedan ver y escuchar cada historia.', next: 'cs5_nFIN_a', points: 10 },
           { text: 'Pedir que todas las cápsulas tengan el mismo formato para que sea más fácil de evaluar.', next: 'cs5_nFIN_b', points: 5 }
@@ -1457,7 +1457,7 @@ const CASE_STUDIES = [
         end: true,
         score: 100,
         title: 'Lucía: El aula que se convirtió en festival',
-        text: 'La exposición de las Cápsulas de Creatividad fue el momento más memorable del año escolar. Los padres de familia vinieron. Uno de ellos — un tejedor de Momostenango — enseñó a tres estudiantes un nudo tradicional durante la presentación. La marimba sonó en un video que grabó un estudiante en su teléfono. Lucía entendió que la creatividad no es una materia — es una manera de ver el mundo que se aprende cuando el aula se convierte en un lugar seguro para compartir lo que eres.',
+        text: 'La exposición de las Cápsulas de Creatividad fue el momento más memorable del año escolar. Los padres de familia vinieron. Uno de ellos — un tejedor de Momostenango — enseñó a tres estudiantes un nudo tradicional durante la presentación. La música de la fiesta sonó en un video que grabó un estudiante en su teléfono. Lucía entendió que la creatividad no es una materia — es una manera de ver el mundo que se aprende cuando el aula se convierte en un lugar seguro para compartir lo que eres.',
         badge: 'Docente Creativa',
         xpReward: 50
       },
@@ -1496,13 +1496,13 @@ const CASE_STUDIES = [
     color: '#F59E0B',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><path d="M8.5 7c.5-1 1.5-1.5 3-1.5s2.5.5 3 1.5"/><path d="M7 10c.8-2 2.5-3 5-3s4.2 1 5 3"/></svg>',
     duration: '20-25 min',
-    description: 'Mario enseña en un colegio de Quetzaltenango y quiere usar m-learning, pero solo la mitad de sus estudiantes tiene smartphone y hay problemas de conectividad. Acompáñalo a diseñar un modelo de aprendizaje móvil que sea equitativo, funcional y pedagógicamente sólido.',
+    description: 'Mario enseña en un colegio de una ciudad intermedia y quiere usar m-learning, pero solo la mitad de sus estudiantes tiene smartphone y hay problemas de conectividad. Acompáñalo a diseñar un modelo de aprendizaje móvil que sea equitativo, funcional y pedagógicamente sólido.',
     start: 'cs6_n1',
     nodes: {
 
       'cs6_n1': {
         type: 'scenario',
-        text: 'Mario es docente de Comunicación y Lenguaje en el Colegio Privado Mixto San Marcos, en Quetzaltenango. Su directora le ha pedido que "incorpore tecnología móvil" después de una capacitación sobre m-learning. Mario hace un diagnóstico rápido: de sus 35 estudiantes de segundo básico, 17 tienen smartphone, 10 tienen teléfono básico sin internet, y 8 no tienen ningún dispositivo. La conectividad del colegio es irregular — el wifi del aula cae varias veces al día.',
+        text: 'Mario es docente de Comunicación y Lenguaje en un colegio privado de una ciudad intermedia. Su directora le ha pedido que "incorpore tecnología móvil" después de una capacitación sobre m-learning. Mario hace un diagnóstico rápido: de sus 35 estudiantes de segundo de secundaria, 17 tienen smartphone, 10 tienen teléfono básico sin internet, y 8 no tienen ningún dispositivo. La conectividad del colegio es irregular — el wifi del aula cae varias veces al día.',
         context: 'Mario quiere ser innovador, pero antes de entusiasmarse demasiado, necesita tomar una decisión fundamental sobre cómo va a manejar la inequidad digital en su salón.',
         choices: [
           { text: 'Diseñar todas las actividades para que funcionen sin internet, usando el celular como herramienta offline (cámara, notas de voz, apps descargadas).', next: 'cs6_n2a', points: 10 },
@@ -1514,7 +1514,7 @@ const CASE_STUDIES = [
       'cs6_n2a': {
         type: 'feedback_correct',
         text: 'Mario decide que el celular en su aula va a ser una herramienta, no un requisito de conectividad. Planifica actividades donde los estudiantes usan la cámara para documentar, el micrófono para grabar, y apps descargadas previamente — sin depender del wifi. Para los 8 estudiantes sin dispositivo, negocia con la dirección el préstamo de 4 tablets antiguas del laboratorio.',
-        feedback: 'El m-learning efectivo en contextos de baja conectividad parte de un principio clave: el dispositivo móvil como herramienta cognitiva, no como ventana a internet. En zonas como el altiplano guatemalteco, donde los datos móviles son costosos y el wifi es inestable, el diseño offline-first no es un plan B — es la estrategia principal.',
+        feedback: 'El m-learning efectivo en contextos de baja conectividad parte de un principio clave: el dispositivo móvil como herramienta cognitiva, no como ventana a internet. En zonas montañosas o rurales, donde los datos móviles son costosos y el wifi es inestable, el diseño offline-first no es un plan B — es la estrategia principal.',
         choices: [
           { text: 'Empezar con una actividad de documentación fotográfica del entorno del colegio como práctica de escritura descriptiva.', next: 'cs6_n3a', points: 10 },
           { text: 'Comenzar enseñando a los estudiantes a usar WhatsApp como herramienta de aprendizaje colaborativo.', next: 'cs6_n3b', points: 6 }
@@ -1534,7 +1534,7 @@ const CASE_STUDIES = [
       'cs6_n2c': {
         type: 'feedback_incorrect',
         text: 'Un mes después, el wifi sigue igual. La directora pregunta por los avances en tecnología móvil. Mario no tiene nada que mostrar. La oportunidad de innovar se está convirtiendo en presión institucional sin avance pedagógico real.',
-        feedback: 'Esperar condiciones perfectas para implementar m-learning es una trampa común. Las condiciones perfectas rara vez llegan — especialmente en contextos educativos con recursos limitados. El m-learning exitoso en contextos como Quetzaltenango comienza con lo que ya existe: los dispositivos que los estudiantes ya tienen y las apps que ya conocen, como WhatsApp.',
+        feedback: 'Esperar condiciones perfectas para implementar m-learning es una trampa común. Las condiciones perfectas rara vez llegan — especialmente en contextos educativos con recursos limitados. El m-learning exitoso en contextos con conectividad limitada comienza con lo que ya existe: los dispositivos que los estudiantes ya tienen y las apps que ya conocen, como WhatsApp.',
         choices: [
           { text: 'Comenzar con lo disponible: hacer un diagnóstico de qué apps tienen instaladas los estudiantes y diseñar desde ahí.', next: 'cs6_n3a', points: 6 },
           { text: 'Pedir a los padres de familia que compren datos para que los estudiantes participen en actividades en línea.', next: 'cs6_n3c', points: 1 }
@@ -1555,10 +1555,10 @@ const CASE_STUDIES = [
       'cs6_n3b': {
         type: 'scenario',
         text: 'Mario decide usar WhatsApp como plataforma de aprendizaje: crea un grupo de clase y les pide a los estudiantes que envíen audios de dos minutos respondiendo preguntas de comprensión lectora. La actividad es un éxito parcial: 20 estudiantes participan activamente. Los 15 restantes no tienen datos o tienen teléfonos sin WhatsApp.',
-        context: 'Mario se da cuenta de que WhatsApp, siendo la app más usada en Guatemala (incluso en zonas con poco acceso a datos), puede ser su puente pedagógico — pero necesita diseñar para quienes no tienen acceso.',
+        context: 'Mario se da cuenta de que WhatsApp, siendo una de las apps más usadas de la región (incluso en zonas con poco acceso a datos), puede ser su puente pedagógico — pero necesita diseñar para quienes no tienen acceso.',
         choices: [
           { text: 'Crear versiones duales de cada actividad: digital (WhatsApp/audio) para quienes tienen acceso, y análoga (papel/oral en clase) para quienes no.', next: 'cs6_n4a', points: 8 },
-          { text: 'Pedir a los 15 estudiantes que busquen wifi en casa de un familiar o en un cyber para participar.', next: 'cs6_n4c', points: 2 }
+          { text: 'Pedir a los 15 estudiantes que busquen wifi en casa de un familiar o en un cibercafé para participar.', next: 'cs6_n4c', points: 2 }
         ]
       },
 
@@ -1586,7 +1586,7 @@ const CASE_STUDIES = [
       'cs6_n4b': {
         type: 'scenario',
         text: 'La circular fue leída por pocos padres. En la reunión mensual, el tema del celular surgió de todas formas y Mario tuvo que explicarlo sin la preparación adecuada. Algunos padres expresaron preocupación, otros apoyaron. El ambiente quedó incómodo.',
-        context: 'La directora le dice a Mario en privado: "La próxima vez que hagamos algo así, avisame antes para que yo también pueda respaldarte."',
+        context: 'La directora le dice a Mario en privado: "La próxima vez que hagamos algo así, avísame antes para que yo también pueda respaldarte."',
         choices: [
           { text: 'Aprender de la situación: documentar mejor las actividades y presentarlas de forma proactiva.', next: 'cs6_n5a', points: 6 },
           { text: 'Reducir las actividades con celular para evitar más conflictos con padres.', next: 'cs6_n5c', points: 2 }
@@ -1605,7 +1605,7 @@ const CASE_STUDIES = [
 
       'cs6_n5a': {
         type: 'scenario',
-        text: 'Las normas co-construidas funcionaron sorprendentemente bien. Los estudiantes propusieron reglas más estrictas de las que Mario hubiera impuesto — y las cumplieron mejor, porque eran propias. Ahora Mario diseña su proyecto final de m-learning: una "Guía de Quetzaltenango en Audio" donde cada estudiante graba un segmento sobre un lugar, tradición o personaje de la ciudad, usando solo el micrófono del celular y notas escritas a mano.',
+        text: 'Las normas co-construidas funcionaron sorprendentemente bien. Los estudiantes propusieron reglas más estrictas de las que Mario hubiera impuesto — y las cumplieron mejor, porque eran propias. Ahora Mario diseña su proyecto final de m-learning: una "Guía de Nuestra Ciudad en Audio" donde cada estudiante graba un segmento sobre un lugar, tradición o personaje de la ciudad, usando solo el micrófono del celular y notas escritas a mano.',
         context: 'El proyecto no requiere internet. Los audios se guardan en los dispositivos y se comparten en clase vía bluetooth o cables de audio. Es 100% offline. Pero Mario enfrenta la pregunta final: ¿cómo evalúa el aprendizaje en un proyecto así?',
         choices: [
           { text: 'Evaluar el proceso completo: planificación, grabación, edición oral y presentación — con retroalimentación entre pares.', next: 'cs6_nFIN_a', points: 10 },
@@ -1638,8 +1638,8 @@ const CASE_STUDIES = [
         outcome: 'success',
         end: true,
         score: 100,
-        title: 'Mario: La Guía de Quetzaltenango que nadie esperaba',
-        text: 'La "Guía de Quetzaltenango en Audio" se convirtió en el proyecto más memorable del año. Un estudiante grabó a su abuelo contando la historia del mercado La Democracia. Otro documentó la preparación del caldo de res de su mamá como "patrimonio culinario de Xela". Una estudiante entrevistó a una tejedora del barrio de La Democracia sobre los significados de los colores en el tejido. El celular dejó de ser el dispositivo que había que controlar y se convirtió en la herramienta que dio voz a las historias que nadie más estaba documentando.',
+        title: 'Mario: La guía de la ciudad que nadie esperaba',
+        text: 'La "Guía de Nuestra Ciudad en Audio" se convirtió en el proyecto más memorable del año. Un estudiante grabó a su abuelo contando la historia del mercado La Democracia. Otro documentó la preparación del caldo de res de su mamá como "patrimonio culinario de Xela". Una estudiante entrevistó a una tejedora del barrio de La Democracia sobre los significados de los colores en el tejido. El celular dejó de ser el dispositivo que había que controlar y se convirtió en la herramienta que dio voz a las historias que nadie más estaba documentando.',
         badge: 'Docente Mobile',
         xpReward: 50
       },
@@ -1650,7 +1650,7 @@ const CASE_STUDIES = [
         end: true,
         score: 70,
         title: 'Mario: El puente digital en construcción',
-        text: 'Mario no resolvió todos los problemas de equidad digital, no diseñó el modelo perfecto de m-learning y no convenció a todos los padres. Pero movió la aguja: sus estudiantes usaron el celular para aprender algo real, documentaron su entorno y descubrieron que la tecnología que tienen en el bolsillo puede ser una herramienta pedagógica. En Quetzaltenango, con wifi inestable y datos escasos, eso ya es un logro significativo.',
+        text: 'Mario no resolvió todos los problemas de equidad digital, no diseñó el modelo perfecto de m-learning y no convenció a todos los padres. Pero movió la aguja: sus estudiantes usaron el celular para aprender algo real, documentaron su entorno y descubrieron que la tecnología que tienen en el bolsillo puede ser una herramienta pedagógica. En un contexto con wifi inestable y datos escasos, eso ya es un logro significativo.',
         badge: 'Docente Móvil en Progreso',
         xpReward: 25
       },
@@ -1678,16 +1678,16 @@ const CASE_STUDIES = [
     color: '#EF4444',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 10l5-4 5 4" transform="rotate(180 12 9)"/><path d="M7 10l5 4 5-4"/></svg>',
     duration: '20-25 min',
-    description: 'Sofía quiere implementar el aula invertida en Escuintla, pero muchos estudiantes no tienen internet en casa y algunos no ven los videos. Acompáñala a diseñar un modelo flipped que funcione en contextos con conectividad limitada.',
+    description: 'Sofía quiere implementar el aula invertida en su escuela, pero muchos estudiantes no tienen internet en casa y algunos no ven los videos. Acompáñala a diseñar un modelo flipped que funcione en contextos con conectividad limitada.',
     start: 'cs7_n1',
     nodes: {
 
       'cs7_n1': {
         type: 'scenario',
-        text: 'Sofía es docente de Ciencias Naturales en el Instituto Nacional de Educación Básica de Escuintla. Acaba de conocer el modelo de aula invertida en una capacitación y está emocionada: grabar videos para que los estudiantes vean en casa y usar el tiempo de clase para profundizar. Tiene 38 estudiantes de segundo básico. Pero al hacer un sondeo rápido, descubre que solo 12 tienen internet en casa. Los otros 26 no tienen o tienen datos muy limitados en el celular familiar.',
-        context: 'La capacitación asumía que todos los estudiantes tienen acceso a internet en casa. La realidad de Escuintla es diferente: muchas familias viven en colonias periféricas donde el internet fijo es caro y los datos móviles se comparten entre varios miembros de la familia.',
+        text: 'Sofía es docente de Ciencias Naturales en una escuela secundaria pública. Acaba de conocer el modelo de aula invertida en una capacitación y está emocionada: grabar videos para que los estudiantes vean en casa y usar el tiempo de clase para profundizar. Tiene 38 estudiantes de segundo de secundaria. Pero al hacer un sondeo rápido, descubre que solo 12 tienen internet en casa. Los otros 26 no tienen o tienen datos muy limitados en el celular familiar.',
+        context: 'La capacitación asumía que todos los estudiantes tienen acceso a internet en casa. La realidad de su comunidad es diferente: muchas familias viven en colonias periféricas donde el internet fijo es caro y los datos móviles se comparten entre varios miembros de la familia.',
         choices: [
-          { text: 'Grabar los videos de todas formas y pedirle a los estudiantes sin internet que busquen wifi en el cyber o en casa de un vecino.', next: 'cs7_n2a', points: 2 },
+          { text: 'Grabar los videos de todas formas y pedirle a los estudiantes sin internet que busquen wifi en un cibercafé o en casa de un vecino.', next: 'cs7_n2a', points: 2 },
           { text: 'Diseñar una estrategia "sin internet" para distribuir el contenido: grabar los videos y copiarlos en USB o como archivos descargables, y también crear guías impresas como alternativa al video.', next: 'cs7_n2b', points: 10 },
           { text: 'Abandonar la idea del aula invertida porque no es viable sin internet — buscar otra metodología.', next: 'cs7_n2c', points: 1 }
         ]
@@ -1695,7 +1695,7 @@ const CASE_STUDIES = [
 
       'cs7_n2a': {
         type: 'feedback_incorrect',
-        text: 'La solución "busca wifi donde puedas" transfiere la responsabilidad de la brecha digital al estudiante y a su familia. En Escuintla, un cyber cobra Q3-5 por hora — un costo real para familias con ingresos mínimos. Además, pedir que el estudiante dependa de un tercero (vecino, familiar) para acceder al material del colegio no es una estrategia pedagógica: es esperar que el problema se resuelva solo. Dos semanas después, la mitad del grupo llega sin haber visto los videos.',
+        text: 'La solución "busca wifi donde puedas" transfiere la responsabilidad de la brecha digital al estudiante y a su familia. En muchas comunidades, un cibercafé cobra el equivalente a medio dólar por hora — un costo real para familias con ingresos mínimos. Además, pedir que el estudiante dependa de un tercero (vecino, familiar) para acceder al material del colegio no es una estrategia pedagógica: es esperar que el problema se resuelva solo. Dos semanas después, la mitad del grupo llega sin haber visto los videos.',
         feedback: 'El flipped classroom falla cuando el "flipping" asume condiciones que no existen. La responsabilidad de diseñar para el contexto real es del docente, no del estudiante.',
         choices: [
           { text: 'Reconocer el problema y rediseñar: copiar los videos en USB y crear guías impresas para quienes no puedan ver el video.', next: 'cs7_n3a', points: 8 },
@@ -1715,7 +1715,7 @@ const CASE_STUDIES = [
 
       'cs7_n2c': {
         type: 'feedback_incorrect',
-        text: 'Descartar el aula invertida ante el primer obstáculo es abandonar antes de explorar las adaptaciones posibles. En Guatemala, muchos docentes han implementado versiones "analógicas" del flipped classroom: la tarea de casa es una lectura o un ejercicio guiado en papel, no necesariamente un video. El principio — que el primer contacto con el contenido ocurra antes de la clase — puede funcionar sin internet.',
+        text: 'Descartar el aula invertida ante el primer obstáculo es abandonar antes de explorar las adaptaciones posibles. En muchas escuelas de la región, los docentes han implementado versiones "analógicas" del flipped classroom: la tarea de casa es una lectura o un ejercicio guiado en papel, no necesariamente un video. El principio — que el primer contacto con el contenido ocurra antes de la clase — puede funcionar sin internet.',
         feedback: 'El flipped classroom es un principio pedagógico, no una tecnología específica. El principio puede adaptarse al contexto. Lo que requiere internet es UNA forma de implementarlo — no la única.',
         choices: [
           { text: 'Reconsiderar: diseñar un flipped classroom "analógico" donde la tarea previa es una guía de lectura o un ejercicio en papel.', next: 'cs7_n3a', points: 7 },
@@ -1810,18 +1810,18 @@ const CASE_STUDIES = [
         text: 'El modelo de Sofía ha evolucionado: video de 7 minutos + guía impresa de 2 páginas + actividad presencial diseñada para lo que el video/guía no puede hacer (debate, experimento, resolución de casos). Los resultados son visibles. Pero llega el momento de la evaluación final de la unidad. Sofía quiere que la evaluación sea coherente con el modelo flipped: no un examen que mide solo memorización, sino algo que evidencie lo que pudieron hacer con el conocimiento que construyeron.',
         context: 'El sistema escolar exige una nota numérica. Sofía necesita un instrumento que sea auténtico pero que también sea reconocible por el sistema.',
         choices: [
-          { text: 'Diseñar una "evaluación aplicada": los estudiantes resuelven un caso real de Escuintla usando los conceptos de la unidad, y son evaluados con una rúbrica que incluye criterios de proceso y de producto.', next: 'cs7_nFIN_a', points: 10 },
+          { text: 'Diseñar una "evaluación aplicada": los estudiantes resuelven un caso real de su comunidad usando los conceptos de la unidad, y son evaluados con una rúbrica que incluye criterios de proceso y de producto.', next: 'cs7_nFIN_a', points: 10 },
           { text: 'Usar un examen tradicional pero incluir preguntas de análisis y aplicación además de memorización.', next: 'cs7_nFIN_b', points: 6 }
         ]
       },
 
       'cs7_n5b': {
         type: 'scenario',
-        text: 'Sofía usa videos de YouTube en español sobre los temas. Algunos son excelentes; otros tienen errores conceptuales o usan ejemplos de México o España que no conectan con la realidad guatemalteca. Un estudiante llega con una confusión que viene directamente de un dato incorrecto del video de YouTube que vio.',
+        text: 'Sofía usa videos de YouTube en español sobre los temas. Algunos son excelentes; otros tienen errores conceptuales o usan ejemplos de otros países que no conectan con la realidad de los estudiantes. Un estudiante llega con una confusión que viene directamente de un dato incorrecto del video de YouTube que vio.',
         context: 'Sofía se da cuenta de que los videos de terceros tienen el riesgo de no estar alineados con el currículo local ni con el contexto cultural de sus estudiantes.',
         choices: [
           { text: 'Grabar sus propios videos cortos para los temas más críticos, y usar YouTube solo como recurso complementario para quien quiera profundizar.', next: 'cs7_nFIN_b', points: 7 },
-          { text: 'Continuar usando YouTube y añadir al inicio de clase una revisión de "qué decía el video y qué ajustamos para Guatemala".', next: 'cs7_nFIN_b', points: 5 }
+          { text: 'Continuar usando YouTube y añadir al inicio de clase una revisión de "qué decía el video y qué ajustamos para nuestra realidad".', next: 'cs7_nFIN_b', points: 5 }
         ]
       },
 
@@ -1851,7 +1851,7 @@ const CASE_STUDIES = [
         end: true,
         score: 100,
         title: 'Sofía: El aula invertida que sí incluyó a todos',
-        text: 'El modelo de Sofía demostró que el flipped classroom no necesita internet universal ni producción profesional de video. Necesita un docente que entienda el principio (el primer contacto con el concepto ocurre antes de la clase) y que diseñe múltiples caminos para llegar a ese primer contacto. En Escuintla, con USB, guías impresas y videos de 7 minutos grabados junto a la ventana de su cocina, Sofía logró que sus estudiantes llegaran a clase listos para pensar — no solo para escuchar. La actividad presencial se convirtió en el mejor momento de la semana.',
+        text: 'El modelo de Sofía demostró que el flipped classroom no necesita internet universal ni producción profesional de video. Necesita un docente que entienda el principio (el primer contacto con el concepto ocurre antes de la clase) y que diseñe múltiples caminos para llegar a ese primer contacto. En su comunidad, con USB, guías impresas y videos de 7 minutos grabados junto a la ventana de su cocina, Sofía logró que sus estudiantes llegaran a clase listos para pensar — no solo para escuchar. La actividad presencial se convirtió en el mejor momento de la semana.',
         badge: 'Docente Flipped Contextualizada',
         xpReward: 50
       },
@@ -1896,7 +1896,7 @@ const CASE_STUDIES = [
 
       'cs8_n1': {
         type: 'scenario',
-        text: 'Pedro es docente de Ciencias en el Colegio Evangélico de Chiquimula. Sus 30 estudiantes de tercero básico tienen celular (la mayoría) o acceso al celular familiar. Pedro quiere usar videos de YouTube para enriquecer sus clases de biología. La semana pasada intentó proyectar un video sobre el sistema circulatorio: el projector tardó 10 minutos en conectarse, el video era en inglés con subtítulos en español, duraba 22 minutos, y para el minuto 8 ya había tres estudiantes mirando otros videos en sus propios celulares. El experimento fue un caos.',
+        text: 'Pedro es docente de Ciencias en un colegio de una zona rural. Sus 30 estudiantes de tercero de secundaria tienen celular (la mayoría) o acceso al celular familiar. Pedro quiere usar videos de YouTube para enriquecer sus clases de biología. La semana pasada intentó proyectar un video sobre el sistema circulatorio: el projector tardó 10 minutos en conectarse, el video era en inglés con subtítulos en español, duraba 22 minutos, y para el minuto 8 ya había tres estudiantes mirando otros videos en sus propios celulares. El experimento fue un caos.',
         context: 'Pedro sabe que el video PUEDE ser una herramienta poderosa. El problema no es el medio — es la forma en que lo está usando. Necesita replantear su enfoque completo.',
         choices: [
           { text: 'Buscar mejores videos: más cortos, en español, con animaciones. El problema fue la selección del video, no la estrategia.', next: 'cs8_n2a', points: 5 },
@@ -1927,7 +1927,7 @@ const CASE_STUDIES = [
 
       'cs8_n2c': {
         type: 'feedback_incorrect',
-        text: 'Abandonar el video como herramienta por la dificultad de la primera implementación es como descartar el pizarrón porque la primera vez que se usó un estudiante se durmió. El problema no era el video — era la falta de estructura pedagógica alrededor de él. Los videos son una de las herramientas más poderosas disponibles para un docente de ciencias en contextos con recursos limitados: permiten mostrar procesos invisibles (el interior de una célula, el movimiento de las placas tectónicas, el latido del corazón) que ningún libro de texto puede mostrar de la misma forma.',
+        text: 'Abandonar el video como herramienta por la dificultad de la primera implementación es como descartar la pizarra porque la primera vez que se usó un estudiante se durmió. El problema no era el video — era la falta de estructura pedagógica alrededor de él. Los videos son una de las herramientas más poderosas disponibles para un docente de ciencias en contextos con recursos limitados: permiten mostrar procesos invisibles (el interior de una célula, el movimiento de las placas tectónicas, el latido del corazón) que ningún libro de texto puede mostrar de la misma forma.',
         feedback: 'La herramienta no es el problema. La estructura pedagógica alrededor de la herramienta es lo que determina si produce aprendizaje o distracción.',
         choices: [
           { text: 'Intentar de nuevo con una guía de visualización que le dé estructura al momento del video.', next: 'cs8_n3a', points: 7 },
@@ -1938,10 +1938,10 @@ const CASE_STUDIES = [
       'cs8_n3a': {
         type: 'scenario',
         text: 'Pedro ha mejorado su selección de videos y usa una guía de visualización básica. El ambiente en clase es mejor pero sigue habiendo un problema: 8 estudiantes que no tienen datos en su celular no pueden ver los videos que Pedro a veces asigna para ver en casa. Y los videos que proyecta en clase dependen del wifi del colegio, que es irregular. Pedro necesita una estrategia para que el aprendizaje basado en videos sea equitativo.',
-        context: 'En Chiquimula, como en muchas áreas de Guatemala, el acceso a datos es desigual y costoso. Un plan de datos puede costar entre Q50-Q100 al mes — significativo para muchas familias.',
+        context: 'En muchas áreas rurales de la región, el acceso a datos es desigual y costoso. Un plan de datos puede costar entre 6 y 13 dólares al mes — significativo para muchas familias.',
         choices: [
           { text: 'Descargar los videos con anticipación y proyectarlos desde el celular o computadora sin depender del wifi, y para la tarea en casa, compartir el video descargado vía WhatsApp o USB.', next: 'cs8_n4a', points: 10 },
-          { text: 'Pedir a los estudiantes sin datos que vean los videos en el cyber del municipio fuera del horario escolar.', next: 'cs8_n4b', points: 2 },
+          { text: 'Pedir a los estudiantes sin datos que vean los videos en un cibercafé fuera del horario escolar.', next: 'cs8_n4b', points: 2 },
           { text: 'Crear versiones en texto de los videos para los estudiantes sin acceso — un resumen de lo que muestra el video.', next: 'cs8_n4c', points: 6 }
         ]
       },
@@ -1968,7 +1968,7 @@ const CASE_STUDIES = [
 
       'cs8_n4a': {
         type: 'scenario',
-        text: 'El modelo de Pedro está funcionando. Los videos son cortos (máximo 7 minutos), en español, descargados con anticipación para no depender del wifi, y compartidos por WhatsApp o USB para quien los necesite en casa. El ciclo antes-durante-después es consistente. Pero ahora Pedro quiere dar el siguiente paso: grabar sus propios videos. Tiene contenidos que no encuentra en YouTube en español o que necesitan contexto guatemalteco (por ejemplo, un video sobre la biodiversidad del Bosque Nuboso de Chiquimula, no de Costa Rica).',
+        text: 'El modelo de Pedro está funcionando. Los videos son cortos (máximo 7 minutos), en español, descargados con anticipación para no depender del wifi, y compartidos por WhatsApp o USB para quien los necesite en casa. El ciclo antes-durante-después es consistente. Pero ahora Pedro quiere dar el siguiente paso: grabar sus propios videos. Tiene contenidos que no encuentra en YouTube en español o que necesitan contexto local (por ejemplo, un video sobre la biodiversidad del bosque de su región, no de otro país).',
         context: 'Pedro tiene un celular con buena cámara pero nunca ha grabado un video educativo. No sabe por dónde empezar.',
         choices: [
           { text: 'Empezar con lo más simple: grabar un video de "experimento en casa" donde Pedro demuestra un concepto con materiales cotidianos — sin edición, sin título, solo él y el experimento.', next: 'cs8_n5a', points: 10 },
@@ -1979,7 +1979,7 @@ const CASE_STUDIES = [
 
       'cs8_n4b': {
         type: 'scenario',
-        text: 'Pedir a los estudiantes que vayan al cyber genera las mismas inequidades de siempre: los que pueden pagar van, los que no pueden no van. Después de dos semanas, Pedro nota que los 8 estudiantes sin datos tienen consistentemente menor participación en las actividades basadas en videos. La brecha de aprendizaje se amplía.',
+        text: 'Pedir a los estudiantes que vayan al cibercafé genera las mismas inequidades de siempre: los que pueden pagar van, los que no pueden no van. Después de dos semanas, Pedro nota que los 8 estudiantes sin datos tienen consistentemente menor participación en las actividades basadas en videos. La brecha de aprendizaje se amplía.',
         context: 'La equidad no se logra diciendo "ve a buscarlo donde puedas" — se logra diseñando para que el acceso no dependa de los recursos del estudiante.',
         choices: [
           { text: 'Cambiar el modelo: descargar todos los videos con anticipación y distribuirlos por USB o WhatsApp sin costo para los estudiantes.', next: 'cs8_n4a', points: 8 },
@@ -2009,7 +2009,7 @@ const CASE_STUDIES = [
 
       'cs8_n5a': {
         type: 'scenario',
-        text: 'Pedro graba su primer video: en el patio del colegio, con el celular en la mano, explica el proceso de fotosíntesis usando una planta de frijol. El video dura 6 minutos, tiene ruido de fondo de pájaros, y la imagen se mueve un poco. Pero el contenido es claro, la planta es reconocible para los estudiantes de Chiquimula, y Pedro habla con la naturalidad que tiene en clase. Cuando lo proyecta, algo notable ocurre: los estudiantes prestan más atención que con cualquier video de YouTube.',
+        text: 'Pedro graba su primer video: en el patio del colegio, con el celular en la mano, explica el proceso de fotosíntesis usando una planta de frijol. El video dura 6 minutos, tiene ruido de fondo de pájaros, y la imagen se mueve un poco. Pero el contenido es claro, la planta es reconocible para los estudiantes de su región, y Pedro habla con la naturalidad que tiene en clase. Cuando lo proyecta, algo notable ocurre: los estudiantes prestan más atención que con cualquier video de YouTube.',
         context: 'El video propio, aunque técnicamente imperfecto, tiene algo que los videos de YouTube no tienen: el docente familiar, el entorno reconocible, el lenguaje adaptado al grupo.',
         choices: [
           { text: 'Continuar grabando videos propios para los temas más importantes, y usar YouTube para complementar con animaciones o procesos que el celular no puede capturar.', next: 'cs8_nFIN_a', points: 10 },
@@ -2019,10 +2019,10 @@ const CASE_STUDIES = [
 
       'cs8_n5b': {
         type: 'scenario',
-        text: 'Esperando las herramientas perfectas, Pedro no graba ningún video propio durante el bimestre. Los videos de YouTube siguen siendo el único recurso visual. Al final del año, reflexiona sobre los momentos en que el aprendizaje fue más rico y recuerda que fueron las pocas veces que él mismo demostró algo en el pizarrón o en el patio — y que si hubiera grabado esos momentos, habrían sido videos perfectos sin necesitar ningún equipo adicional.',
+        text: 'Esperando las herramientas perfectas, Pedro no graba ningún video propio durante el bimestre. Los videos de YouTube siguen siendo el único recurso visual. Al final del año, reflexiona sobre los momentos en que el aprendizaje fue más rico y recuerda que fueron las pocas veces que él mismo demostró algo en la pizarra o en el patio — y que si hubiera grabado esos momentos, habrían sido videos perfectos sin necesitar ningún equipo adicional.',
         context: 'La perfección técnica es el enemigo del video educativo bueno y oportuno.',
         choices: [
-          { text: 'Comenzar el próximo año grabando los momentos de clase ya existentes — las demostraciones, los experimentos, las explicaciones en el pizarrón.', next: 'cs8_nFIN_b', points: 7 },
+          { text: 'Comenzar el próximo año grabando los momentos de clase ya existentes — las demostraciones, los experimentos, las explicaciones en la pizarra.', next: 'cs8_nFIN_b', points: 7 },
           { text: 'Aceptar que el video propio no es para todos los docentes y continuar con YouTube.', next: 'cs8_nFIN_c', points: 3 }
         ]
       },
@@ -2053,7 +2053,7 @@ const CASE_STUDIES = [
         end: true,
         score: 100,
         title: 'Pedro: El docente que convirtió el video en aprendizaje real',
-        text: 'Pedro descubrió que el aprendizaje basado en videos no es poner YouTube en el proyector — es diseñar un ciclo pedagógico donde el video es el detonador, no el destino. Sus estudiantes de Chiquimula terminaron el año habiendo visto docenas de videos, pero sobre todo habiendo creado sus propios: videos sobre la biodiversidad del bosque local, sobre los ríos de la región, sobre los cultivos de la familia. En el proceso de crear esos videos, aprendieron biología de una forma que ningún examen hubiera podido evaluar completamente.',
+        text: 'Pedro descubrió que el aprendizaje basado en videos no es poner YouTube en el proyector — es diseñar un ciclo pedagógico donde el video es el detonador, no el destino. Sus estudiantes terminaron el año habiendo visto docenas de videos, pero sobre todo habiendo creado sus propios: videos sobre la biodiversidad del bosque local, sobre los ríos de la región, sobre los cultivos de la familia. En el proceso de crear esos videos, aprendieron biología de una forma que ningún examen hubiera podido evaluar completamente.',
         badge: 'Docente de Video',
         xpReward: 50
       },
@@ -2092,14 +2092,14 @@ const CASE_STUDIES = [
     color: '#6366F1',
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M11.5 8l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5L8 13l2.5-1 1-2.5z" fill="currentColor" stroke="none"/><path d="M17 3l.5 1.5 1.5.5-1.5.5L17 7l-.5-1.5L15 5l1.5-.5L17 3z" fill="currentColor" stroke="none"/></svg>',
     duration: '20-25 min',
-    description: 'Carmen quiere enviar micro-cápsulas de aprendizaje por WhatsApp a sus estudiantes de bachillerato en San Marcos. Pero algunos padres se oponen y no todos tienen datos suficientes. Acompáñala a diseñar un modelo de micro-learning equitativo y efectivo.',
+    description: 'Carmen quiere enviar micro-cápsulas de aprendizaje por WhatsApp a sus estudiantes de educación media para adultos. Pero algunos padres se oponen y no todos tienen datos suficientes. Acompáñala a diseñar un modelo de micro-learning equitativo y efectivo.',
     start: 'cs9_n1',
     nodes: {
 
       'cs9_n1': {
         type: 'scenario',
-        text: 'Carmen es docente de Matemáticas en el Instituto de Bachillerato por Madurez de San Marcos. Sus 25 estudiantes son adultos jóvenes (18-28 años) que trabajan de día y estudian de noche. Muchos olvidan los conceptos entre una clase y otra porque pasan 3-4 días sin practicar. Carmen quiere enviar micro-cápsulas de aprendizaje por WhatsApp: un audio de 2 minutos, una imagen explicativa o un ejercicio rápido, entre lunes y viernes por la tarde.',
-        context: 'San Marcos está en el altiplano occidental. La conexión a internet es variable: algunos estudiantes tienen datos móviles, otros dependen del wifi del trabajo o de familiares. Además, Carmen ya tiene un grupo de WhatsApp de padres de familia del instituto — pero algunos padres han expresado preocupación por el uso de WhatsApp con fines escolares.',
+        text: 'Carmen es docente de Matemáticas en un programa de educación media para adultos, en una zona de montaña. Sus 25 estudiantes son adultos jóvenes (18-28 años) que trabajan de día y estudian de noche. Muchos olvidan los conceptos entre una clase y otra porque pasan 3-4 días sin practicar. Carmen quiere enviar micro-cápsulas de aprendizaje por WhatsApp: un audio de 2 minutos, una imagen explicativa o un ejercicio rápido, entre lunes y viernes por la tarde.',
+        context: 'La zona es montañosa y de conectividad irregular. La conexión a internet es variable: algunos estudiantes tienen datos móviles, otros dependen del wifi del trabajo o de familiares. Además, Carmen ya tiene un grupo de WhatsApp de padres de familia del instituto — pero algunos padres han expresado preocupación por el uso de WhatsApp con fines escolares.',
         choices: [
           { text: 'Comenzar a enviar cápsulas sin consultar a nadie — los estudiantes son adultos y pueden decidir solos.', next: 'cs9_n2a', points: 3 },
           { text: 'Hacer un diagnóstico primero: consultar a los estudiantes sobre acceso a datos, horarios disponibles y preferencia de formato antes de diseñar las cápsulas.', next: 'cs9_n2b', points: 10 },
@@ -2129,7 +2129,7 @@ const CASE_STUDIES = [
 
       'cs9_n2c': {
         type: 'feedback_incorrect',
-        text: 'Esperar una política institucional en un instituto de bachillerato por madurez de San Marcos puede significar esperar meses o años. Mientras tanto, el problema real — los estudiantes olvidan los conceptos entre clases — sigue sin solución. La autonomía docente incluye la capacidad de experimentar con herramientas nuevas sin esperar permiso institucional para todo, especialmente cuando la herramienta (WhatsApp) ya es de uso cotidiano para todos.',
+        text: 'Esperar una política institucional en un programa de educación para adultos puede significar esperar meses o años. Mientras tanto, el problema real — los estudiantes olvidan los conceptos entre clases — sigue sin solución. La autonomía docente incluye la capacidad de experimentar con herramientas nuevas sin esperar permiso institucional para todo, especialmente cuando la herramienta (WhatsApp) ya es de uso cotidiano para todos.',
         feedback: 'La innovación pedagógica responsable no espera aprobación institucional para cada herramienta. Lo que requiere es criterio pedagógico, diagnóstico de contexto y disposición a ajustar. La política institucional puede venir después de que haya evidencia de que la práctica funciona.',
         choices: [
           { text: 'Comenzar con un piloto pequeño: enviar cápsulas por dos semanas, documentar los resultados y presentarlos a la dirección.', next: 'cs9_n3a', points: 7 },
@@ -2223,7 +2223,7 @@ const CASE_STUDIES = [
         text: 'El modelo de Carmen ha madurado: cápsulas de audio de 2 minutos, lunes-miércoles-viernes a las 7:30 pm, con conexión explícita a la clase siguiente, y evaluación informal al inicio de cada sesión presencial. Los resultados en las pruebas bimensuales muestran una mejora notable: los estudiantes que escuchan las cápsulas regularmente tienen un 23% más de retención en los temas cubiertos. Carmen quiere documentar el modelo para compartirlo con sus colegas del instituto.',
         context: 'Carmen tiene práctica pedagógica valiosa que puede beneficiar a otros docentes. La documentación es el paso que transforma la experiencia individual en conocimiento compartido.',
         choices: [
-          { text: 'Crear una "guía de micro-learning para docentes de San Marcos": un documento de una página con los principios básicos, el horario recomendado, los formatos que funcionan, y los errores que evitar.', next: 'cs9_nFIN_a', points: 10 },
+          { text: 'Crear una "guía de micro-learning para docentes de la zona": un documento de una página con los principios básicos, el horario recomendado, los formatos que funcionan, y los errores que evitar.', next: 'cs9_nFIN_a', points: 10 },
           { text: 'Compartir el modelo verbalmente con sus colegas en la próxima reunión pedagógica — sin documento formal.', next: 'cs9_nFIN_b', points: 6 }
         ]
       },
@@ -2264,7 +2264,7 @@ const CASE_STUDIES = [
         end: true,
         score: 100,
         title: 'Carmen: Las cápsulas que transformaron el hábito de aprender',
-        text: 'Carmen demostró que el micro-learning en WhatsApp puede funcionar en San Marcos, en el altiplano occidental de Guatemala, con estudiantes que trabajan de día, tienen datos limitados y aprenden de noche. No fue fácil: hubo resistencia de padres, problemas de conectividad, semanas donde nada llegó a tiempo. Pero Carmen documentó lo que aprendió y lo compartió. El próximo año, tres colegas del instituto adoptaron el modelo. Lo que empezó como un experimento personal se convirtió en práctica institucional.',
+        text: 'Carmen demostró que el micro-learning en WhatsApp puede funcionar en zonas de montaña, con estudiantes que trabajan de día, tienen datos limitados y aprenden de noche. No fue fácil: hubo resistencia de padres, problemas de conectividad, semanas donde nada llegó a tiempo. Pero Carmen documentó lo que aprendió y lo compartió. El próximo año, tres colegas del instituto adoptaron el modelo. Lo que empezó como un experimento personal se convirtió en práctica institucional.',
         badge: 'Docente Micro-learning',
         xpReward: 50
       },
@@ -2275,7 +2275,7 @@ const CASE_STUDIES = [
         end: true,
         score: 70,
         title: 'Carmen: La cápsula que llegó a la mitad',
-        text: 'El modelo de Carmen funcionó para muchos de sus estudiantes, pero quedaron puntos sin resolver: la equidad de acceso, la medición del impacto, la consistencia en momentos de presión. Sin embargo, algo cambió: sus estudiantes adultos de bachillerato por madurez en San Marcos tuvieron, por primera vez, un contacto con el aprendizaje entre una clase y otra. Eso, en un modelo de educación acelerada donde el tiempo entre sesiones puede hacer olvidar semanas de contenido, es más valioso de lo que los números pueden mostrar.',
+        text: 'El modelo de Carmen funcionó para muchos de sus estudiantes, pero quedaron puntos sin resolver: la equidad de acceso, la medición del impacto, la consistencia en momentos de presión. Sin embargo, algo cambió: sus estudiantes adultos tuvieron, por primera vez, un contacto con el aprendizaje entre una clase y otra. Eso, en un modelo de educación acelerada donde el tiempo entre sesiones puede hacer olvidar semanas de contenido, es más valioso de lo que los números pueden mostrar.',
         badge: 'Docente Micro en Proceso',
         xpReward: 25
       },
@@ -2309,7 +2309,7 @@ const CASE_STUDIES = [
 
       'cs10_n1': {
         type: 'scenario',
-        text: 'Son las 9 de la noche. Diego enseña quinto grado en una escuela rural de Sololá y mañana debe entregar un examen de Ciencias Naturales que aún no ha preparado. Está exhausto — hoy tuvo reunión de padres, corrigió 30 cuadernos y todavía debe cocinar la cena. La semana pasada, un colega le mostró el chat de IA integrado en esta misma plataforma de formación docente.',
+        text: 'Son las 9 de la noche. Diego enseña quinto grado en una escuela rural y mañana debe entregar un examen de Ciencias Naturales que aún no ha preparado. Está exhausto — hoy tuvo reunión de padres, corrigió 30 cuadernos y todavía debe cocinar la cena. La semana pasada, un colega le mostró el chat de IA integrado en esta misma plataforma de formación docente.',
         context: 'Diego nunca ha usado IA para preparar material de clase. Tiene el chat abierto en su teléfono, y el cursor parpadeando, esperando su primera instrucción.',
         choices: [
           {
@@ -2355,7 +2355,7 @@ const CASE_STUDIES = [
       // ── Rama A: revisó el banco de preguntas ──
       'cs10_n3a': {
         type: 'scenario',
-        text: 'Diego revisa las 15 preguntas generadas. La mayoría están bien, pero una dice: "El Volcán de Fuego, en Guatemala, es un volcán inactivo desde 1970." Diego sabe que eso es falso — el Volcán de Fuego es uno de los más activos de Centroamérica y ha tenido erupciones recientes.',
+        text: 'Diego revisa las 15 preguntas generadas. La mayoría están bien, pero una dice: "El Etna, en Italia, es un volcán inactivo desde 1970." Diego sabe que eso es falso — el Etna es uno de los volcanes más activos del mundo y ha tenido erupciones recientes.',
         context: 'Son las 9:40pm. Diego está cansado y tentado a dejarlo pasar — es "solo una pregunta" de 15.',
         choices: [
           {
@@ -2432,7 +2432,7 @@ const CASE_STUDIES = [
         end: true,
         score: 100,
         title: 'Diego: El criterio que hace la diferencia',
-        text: 'Diego usó la IA exactamente como esta ruta lo propone: como un asistente que acelera el primer borrador, nunca como un sustituto de su propio juicio profesional. Detectar y corregir el dato falso sobre el Volcán de Fuego —en vez de dejarlo pasar por cansancio— es la diferencia entre un docente que delega su criterio y uno que lo conserva mientras aprovecha la velocidad de la herramienta. Sus estudiantes presentaron un examen correcto, y Diego durmió más esa noche que si hubiera escrito todo a mano.',
+        text: 'Diego usó la IA exactamente como esta ruta lo propone: como un asistente que acelera el primer borrador, nunca como un sustituto de su propio juicio profesional. Detectar y corregir el dato falso sobre el Etna —en vez de dejarlo pasar por cansancio— es la diferencia entre un docente que delega su criterio y uno que lo conserva mientras aprovecha la velocidad de la herramienta. Sus estudiantes presentaron un examen correcto, y Diego durmió más esa noche que si hubiera escrito todo a mano.',
         badge: 'Docente y la IA con Criterio',
         xpReward: 50
       },
@@ -2475,8 +2475,8 @@ const CASE_STUDIES = [
 
       'cs11_n1': {
         type: 'scenario',
-        text: 'Julia enseña sexto grado en una escuela urbana de Escuintla. Kevin, uno de sus estudiantes, lleva toda la mañana tenso: llegó tarde, no trajo materiales, y ahora un compañero se burla de él por eso. De pronto, Kevin se levanta, grita "¡ya cállate!" y empuja al compañero, tirando su silla al piso. Toda el aula se queda en silencio, mirando a Julia.',
-        context: 'Julia sabe, por conversaciones anteriores, que la mamá de Kevin viajó a trabajar a otro departamento hace tres semanas y él quedó al cuidado de su abuela.',
+        text: 'Julia enseña sexto grado en una escuela urbana. Kevin, uno de sus estudiantes, lleva toda la mañana tenso: llegó tarde, no trajo materiales, y ahora un compañero se burla de él por eso. De pronto, Kevin se levanta, grita "¡ya cállate!" y empuja al compañero, tirando su silla al piso. Toda el aula se queda en silencio, mirando a Julia.',
+        context: 'Julia sabe, por conversaciones anteriores, que la mamá de Kevin viajó a trabajar a otra región hace tres semanas y él quedó al cuidado de su abuela.',
         choices: [
           {
             text: 'Respirar, bajar el tono de voz, y acercarse con calma a Kevin antes de decir nada.',
@@ -2963,7 +2963,7 @@ const CASE_STUDIES = [
 
       'cs14_n1': {
         type: 'scenario',
-        text: 'Andrea, docente de sexto grado en Huehuetenango, decide introducir un círculo semanal donde cada estudiante comparte brevemente cómo llega esa semana. En el primer intento, varios estudiantes se ríen nerviosamente, dos dicen "paso" de forma burlona, y uno murmura "esto es cosa de niños chiquitos".',
+        text: 'Andrea, docente de sexto grado en una escuela rural, decide introducir un círculo semanal donde cada estudiante comparte brevemente cómo llega esa semana. En el primer intento, varios estudiantes se ríen nerviosamente, dos dicen "paso" de forma burlona, y uno murmura "esto es cosa de niños chiquitos".',
         context: 'Andrea siente que el primer intento no salió como esperaba, y tiene que decidir si continúa la práctica la próxima semana.',
         choices: [
           {
@@ -3124,7 +3124,7 @@ const CASE_STUDIES = [
 
       'cs15_n1': {
         type: 'scenario',
-        text: 'Pablo enseña tercer grado en Quetzaltenango. En septiembre, introdujo un sistema de estrellas por buena conducta y tareas completas, y funcionó muy bien las primeras semanas. Ahora, en marzo, los estudiantes apenas miran el cartel de estrellas, y la conducta que antes motivaba ya no genera ningún entusiasmo.',
+        text: 'Pablo enseña tercer grado en una escuela urbana. En septiembre, introdujo un sistema de estrellas por buena conducta y tareas completas, y funcionó muy bien las primeras semanas. Ahora, en marzo, los estudiantes apenas miran el cartel de estrellas, y la conducta que antes motivaba ya no genera ningún entusiasmo.',
         context: 'Pablo se pregunta si necesita premios más grandes, o si algo más profundo dejó de funcionar.',
         choices: [
           {
@@ -3285,7 +3285,7 @@ const CASE_STUDIES = [
 
       'cs16_n1': {
         type: 'scenario',
-        text: 'Marta enseña tercer grado en una escuela de Quetzaltenango. Andrés, uno de sus estudiantes, tiene TEA y suele regularse bien con las rutinas conocidas del aula. Hoy, sin ningún aviso previo, suena la alarma de un simulacro de incendio. Andrés se cubre los oídos de inmediato, empieza a mecerse cada vez más rápido, y su respiración se acelera visiblemente. El resto de la clase ya está formándose en fila para salir, siguiendo el protocolo.',
+        text: 'Marta enseña tercer grado en una escuela urbana. Andrés, uno de sus estudiantes, tiene TEA y suele regularse bien con las rutinas conocidas del aula. Hoy, sin ningún aviso previo, suena la alarma de un simulacro de incendio. Andrés se cubre los oídos de inmediato, empieza a mecerse cada vez más rápido, y su respiración se acelera visiblemente. El resto de la clase ya está formándose en fila para salir, siguiendo el protocolo.',
         context: 'El protocolo de evacuación exige que todos los estudiantes salgan del edificio en los próximos minutos, sin excepción — es un procedimiento de seguridad real, no algo que se pueda posponer.',
         choices: [
           {
