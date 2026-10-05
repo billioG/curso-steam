@@ -15,6 +15,7 @@ let LEARNING_PATHS = [
     { id:'inclusion',     label:'Educación Inclusiva',    color:'#8B5CF6',  courses:['educacion-inclusiva','tea-profundidad','discapacidad-down-tdah','lengua-senas-docentes'] },
     { id:'fundamentos',   label:'Fundamentos PISA',       color:'#DC2626',  courses:['fundamentos-pisa'] },
 ];
+const _DEFAULT_LEARNING_PATHS = JSON.parse(JSON.stringify(LEARNING_PATHS));
 // IDs de cursos requeridos para el certificado maestro (ruta steam20)
 // Admin puede cambiarlos desde el panel → se guardan en Supabase tabla app_config
 let MASTER_CERT_COURSES = ['steam','abp','design-thinking','evaluacion','tipos-estudiantes'];
@@ -6872,7 +6873,10 @@ async function loadAppConfig() {
         if (!data) return;
         data.forEach(row => {
             if (row.key === 'learning_paths' && Array.isArray(row.value) && row.value.length > 0) {
-                LEARNING_PATHS = row.value;
+                // La ruta guardada en Supabase gana, pero las rutas nuevas del código
+                // (ej. 'fundamentos') se agregan si el admin aún no las tiene guardadas.
+                const missing = _DEFAULT_LEARNING_PATHS.filter(d => !row.value.some(p => p.id === d.id));
+                LEARNING_PATHS = [...row.value, ...JSON.parse(JSON.stringify(missing))];
                 _checkMasterCert();
                 // Re-renderizar selector si ya está visible
                 if (!document.getElementById('courseSelector')?.classList.contains('hidden')) {
