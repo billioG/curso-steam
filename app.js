@@ -5106,7 +5106,6 @@ function _checkMasterCert() {
                 const s      = c.id === 'steam' ? steamScore : scores[c.id];
                 const passed = s !== undefined && s >= 70;
                 const started = (progress?.completedCards || []).some(id => _cardBelongsToCourse(c.id, id));
-                const col = courseColors[c.id] || '#4f46e5';
                 if (passed) {
                     // Botón de diploma POR CURSO (no depende de cuál sea el curso
                     // "activo" en ese momento) — antes solo existía un botón
@@ -5136,8 +5135,8 @@ function _checkMasterCert() {
                     </div>`;
                 } else if (started) {
                     return `<div style="display:flex;align-items:center;gap:10px;background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:12px;padding:8px 12px">
-                        <div style="width:28px;height:28px;border-radius:50%;background:${col}20;border:2px solid ${col};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                            <div style="width:8px;height:8px;border-radius:50%;background:${col}"></div>
+                        <div style="width:28px;height:28px;border-radius:50%;background:#E8EDF3;border:2px solid #1E4976;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#1E4976"></div>
                         </div>
                         <div style="flex:1;min-width:0">
                             <p style="font-size:12px;font-weight:700;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
@@ -5162,7 +5161,7 @@ function _checkMasterCert() {
             return `<div style="margin-bottom:12px">
                 <button class="perfil-section-toggle${startCollapsed ? ' collapsed' : ''}" onclick="togglePerfilSection(this)" style="width:100%">
                     <span style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-                        <span style="width:10px;height:10px;border-radius:50%;background:${path.color};flex-shrink:0"></span>
+                        <span style="width:10px;height:10px;border-radius:50%;background:#1E4976;flex-shrink:0"></span>
                         <span style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${path.label}</span>
                         ${pathAllPassed ? '<span style="font-size:10px;font-weight:700;color:#16a34a;background:#dcfce7;padding:2px 8px;border-radius:20px;flex-shrink:0">COMPLETADA</span>' : ''}
                     </span>
