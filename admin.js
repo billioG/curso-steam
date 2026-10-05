@@ -52,6 +52,7 @@ const STATIC_COURSES = [
     { id:'tea-profundidad',       title:'TEA en el Aula: Estrategias Avanzadas',        durationHours:4, totalCards:32, modules:4, ruta:'inclusion', masterCert:false },
     { id:'discapacidad-down-tdah', title:'Síndrome de Down y TDAH: Estrategias para el Aula', durationHours:4, totalCards:32, modules:4, ruta:'inclusion', masterCert:false },
     { id:'lengua-senas-docentes', title:'Lengua de Señas para Docentes: Fundamentos Prácticos', durationHours:3, totalCards:32, modules:4, ruta:'inclusion', masterCert:false },
+    { id:'fundamentos-pisa',      title:'Fundamentos que Todo Estudiante Necesita',     durationHours:3, totalCards:49, modules:4, ruta:'fundamentos', masterCert:false },
 ];
 
 // ────────────────────────────────────────────────────────────
