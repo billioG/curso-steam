@@ -25,7 +25,7 @@
             --brand-yellow: #FCC30A;
             --brand-red: #E52642;
             --brand-dark: #1A6B68;
-            --brand-light: #F8FAFC;
+            --brand-light: #EEF1F5;
         }
 
         * {
@@ -524,9 +524,9 @@
             position: absolute;
             left: 4%; right: 4%; top: 0; bottom: 0;
             background: #fff;
-            border: 1px solid #EFEFEF;
+            border: 1px solid #E2E8F0;
             border-radius: 24px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .08);
             pointer-events: none;
             transition: transform .28s cubic-bezier(0.175,0.885,0.32,1.275), opacity .28s ease;
         }
@@ -1902,7 +1902,7 @@
         <!-- ══════════════════════════════════════════ -->
         <!-- TAB: PERFIL                               -->
         <!-- ══════════════════════════════════════════ -->
-        <div id="tabPerfil" class="tab-panel hidden pb-28" style="background:#F8FAFC;min-height:100vh">
+        <div id="tabPerfil" class="tab-panel hidden pb-28" style="background:var(--brand-light);min-height:100vh">
 
         <!-- ── HERO ─────────────────────────────────────────────────── -->
         <div class="perfil-hero relative overflow-hidden pt-16 pb-6 px-5" style="background:#1E4976">
@@ -1958,7 +1958,7 @@
                 <button onclick="switchTab('progreso')" class="w-full text-left" aria-label="Ver progreso completo">
                     <div class="grid grid-cols-4 gap-2">
                         <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
-                            <div id="perfilXP" class="text-lg font-black" style="color:#EA580C">0</div>
+                            <div id="perfilXP" class="text-lg font-black" style="color:#1E4976">0</div>
                             <div class="text-[10px] text-slate-400 font-semibold mt-0.5">XP total</div>
                         </div>
                         <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
@@ -1966,11 +1966,11 @@
                             <div class="text-[10px] text-slate-400 font-semibold mt-0.5">Nivel</div>
                         </div>
                         <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
-                            <div id="perfilStreak" class="text-lg font-black" style="color:#E11D48">0</div>
+                            <div id="perfilStreak" class="text-lg font-black" style="color:#1E4976">0</div>
                             <div class="text-[10px] text-slate-400 font-semibold mt-0.5">Racha</div>
                         </div>
                         <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
-                            <div id="perfilCards" class="text-lg font-black" style="color:#16A34A">0</div>
+                            <div id="perfilCards" class="text-lg font-black" style="color:#1E4976">0</div>
                             <div class="text-[10px] text-slate-400 font-semibold mt-0.5">Tarjetas</div>
                         </div>
                     </div>
@@ -2067,20 +2067,20 @@
 
             <!-- Resumen de estadísticas — mismos datos que Perfil -->
             <div class="grid grid-cols-4 gap-2 mb-6">
-                <div class="rounded-2xl p-3 text-center" style="background:#FFF7ED">
-                    <div id="progresoXP" class="text-lg font-black" style="color:#EA580C">0</div>
+                <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
+                    <div id="progresoXP" class="text-lg font-black" style="color:#1E4976">0</div>
                     <div class="text-[10px] text-slate-400 font-semibold mt-0.5">XP total</div>
                 </div>
-                <div class="rounded-2xl p-3 text-center" style="background:#EFF6FF">
-                    <div id="progresoLevel" class="text-lg font-black" style="color:#2563EB">1</div>
+                <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
+                    <div id="progresoLevel" class="text-lg font-black" style="color:#1E4976">1</div>
                     <div class="text-[10px] text-slate-400 font-semibold mt-0.5">Nivel</div>
                 </div>
-                <div class="rounded-2xl p-3 text-center" style="background:#FFF1F2">
-                    <div id="progresoStreak" class="text-lg font-black" style="color:#E11D48">0</div>
+                <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
+                    <div id="progresoStreak" class="text-lg font-black" style="color:#1E4976">0</div>
                     <div class="text-[10px] text-slate-400 font-semibold mt-0.5">Racha</div>
                 </div>
-                <div class="rounded-2xl p-3 text-center" style="background:#F0FDF4">
-                    <div id="progresoCards" class="text-lg font-black" style="color:#16A34A">0</div>
+                <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
+                    <div id="progresoCards" class="text-lg font-black" style="color:#1E4976">0</div>
                     <div class="text-[10px] text-slate-400 font-semibold mt-0.5">Tarjetas</div>
                 </div>
             </div>
@@ -2232,7 +2232,7 @@
                 <div class="perfil-section-body collapsed">
                     <button id="examBtn"
                         class="w-full rounded-2xl p-4 mb-5 flex items-center gap-3 text-left shadow-sm active:scale-95 transition"
-                        style="background:#0891B2">
+                        style="background:#1E4976">
                         <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
                             <span data-icon="clipboard" style="display:inline-flex;width:20px;height:20px;color:white"></span>
                         </div>
@@ -2975,8 +2975,8 @@
             </div>
             <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
                 <div class="bg-slate-100 text-slate-700 rounded-2xl rounded-tl-sm px-3 py-2.5 text-sm max-w-[85%]">
-                    Hola 👋 Soy tu asistente STEAM. Puedo ayudarte con dudas sobre metodología STEAM, ABP, Design
-                    Thinking, evaluación y cómo aplicarlos en Guatemala. ¿Qué quieres saber?
+                    Hola 👋 Soy tu asesor pedagógico. Pensemos juntos tu próxima clase, un reto del aula o cómo aplicar
+                    lo que estás aprendiendo — STEAM, metodologías activas, convivencia, inclusión, IA y más. ¿Qué tenés en mente?
                 </div>
             </div>
             <div class="border-t border-slate-100 p-4 shrink-0 flex gap-2">
