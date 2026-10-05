@@ -1,7 +1,7 @@
 {
-    "name": "Curso STEAM 2.0",
-    "short_name": "STEAM 2.0",
-    "description": "Curso interactivo para docentes sobre metodología STEAM. Certificación incluida, gamificación, logros y más.",
+    "name": "Yo Aprendo",
+    "short_name": "Yo Aprendo",
+    "description": "Formación continua para docentes de Guatemala — cursos interactivos, certificación incluida, gamificación, logros y más.",
     "start_url": "./index.html",
     "scope": "./",
     "display": "standalone",

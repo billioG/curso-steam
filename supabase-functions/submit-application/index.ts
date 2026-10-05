@@ -127,7 +127,7 @@ async function notifyTenantAdmins(
           </a>
         </td></tr>
         <tr><td style="background:#f9fafb;border-radius:0 0 20px 20px;padding:20px 32px;text-align:center">
-          <p style="margin:0;font-size:11px;color:#9ca3af">Notificación automática · Formación Docente Guatemala</p>
+          <p style="margin:0;font-size:11px;color:#9ca3af">Notificación automática · Yo Aprendo Guatemala</p>
         </td></tr>
       </table>
     </td></tr>
@@ -139,7 +139,7 @@ async function notifyTenantAdmins(
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: `Formación Docente <${FROM_EMAIL}>`, to: [to], subject: `Nueva postulación: ${candidate.full_name}`, html }),
+      body: JSON.stringify({ from: `Yo Aprendo <${FROM_EMAIL}>`, to: [to], subject: `Nueva postulación: ${candidate.full_name}`, html }),
     });
   }
 }

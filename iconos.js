@@ -1,5 +1,5 @@
 // ============================================================
-// ICONOS SVG — Sistema de iconos contextual para Curso STEAM 2.0
+// ICONOS SVG — Sistema de iconos contextual para Yo Aprendo
 // Todos los iconos son inline SVG con currentColor para heredar color CSS.
 // Uso: elemento.innerHTML = ICONS.home  o  `${ICONS.checkCircle}`
 // ============================================================
