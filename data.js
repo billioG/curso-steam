@@ -3404,7 +3404,7 @@ const allCourses = [
 // ═══════════════════════════════════════════════════════════════════════════════
 //  CURSOS: ABV — Aprendizaje Basado en Videos
 //          MICRO-LEARNING — Aprender en Pequeñas Dosis
-//  Programa de Formación Docente — Guatemala
+//  Programa de Yo Aprendo — Guatemala
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // CURSO: abv

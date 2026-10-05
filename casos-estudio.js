@@ -1,5 +1,5 @@
 // casos-estudio.js
-// Branching Case Studies — Formación Docente en Pedagogía Innovadora
+// Branching Case Studies — Yo Aprendo — Formación Docente en Pedagogía Innovadora
 // Guatemala 2026
 
 const CASE_STUDIES = [

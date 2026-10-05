@@ -1,5 +1,5 @@
 // ============================================================
-// admin.js — Panel Administrativo · Formación Docente
+// admin.js — Panel Administrativo · Yo Aprendo
 // ============================================================
 
 const SUPABASE_URL  = "https://grkjhzkgcmackbafqudu.supabase.co";
@@ -2189,7 +2189,7 @@ async function generateExecutiveReport() {
     const html = `<div style="font-family:Georgia,serif;max-width:800px;margin:0 auto;color:#1e293b">
         <div style="background:#07B0E4;color:white;padding:40px;border-radius:16px;margin-bottom:32px">
             <p style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px">Informe Ejecutivo de Impacto</p>
-            <h1 style="font-size:28px;font-weight:900;margin:0 0 8px">Formación Docente en Pedagogía Innovadora</h1>
+            <h1 style="font-size:28px;font-weight:900;margin:0 0 8px">Yo Aprendo — Formación Docente en Pedagogía Innovadora</h1>
             <p style="opacity:.8;margin:0">Guatemala — ${now}</p>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px">
@@ -2236,7 +2236,7 @@ async function generateExecutiveReport() {
             </div>`).join('')}
         </div>
         <p style="font-size:11px;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;padding-top:20px">
-            Generado el ${now} · Plataforma de Formación Docente
+            Generado el ${now} · Plataforma Yo Aprendo
         </p>
     </div>`;
     showReportPreview(html);
@@ -2548,7 +2548,7 @@ async function sendPushBroadcast(titleOverride, bodyOverride, _skipLog) {
         const res = await fetch(`${sb.supabaseUrl}/functions/v1/send-push`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-            body: JSON.stringify({ title: title || 'Formación Docente', body: body || '' }),
+            body: JSON.stringify({ title: title || 'Yo Aprendo', body: body || '' }),
         });
         const data = await res.json();
         if (!res.ok) {

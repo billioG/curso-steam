@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Panel Administrativo — Formación Docente</title>
+    <title>Panel Administrativo — Yo Aprendo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="./data.js"></script>
@@ -170,10 +170,13 @@
 <aside id="sidebar" class="w-60 bg-white border-r border-slate-100 flex flex-col fixed top-0 left-0 h-screen z-40">
     <div class="px-4 py-5 border-b border-slate-100 flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background:#07B0E4">
-            <i class="fas fa-graduation-cap text-white text-sm"></i>
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+                <polygon points="50,12 86,32 86,68 50,88 14,68 14,32" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round"/>
+                <path d="M50,50 L14,32 M50,50 L86,32 M50,50 L50,88" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/>
+            </svg>
         </div>
         <div class="min-w-0">
-            <p class="text-sm font-bold text-slate-800 leading-tight">Formación Docente</p>
+            <p class="text-sm font-bold text-slate-800 leading-tight">Yo Aprendo</p>
             <p class="text-[10px] text-slate-400 mt-0.5">Panel administrativo</p>
         </div>
     </div>
@@ -256,7 +259,7 @@
 <div class="md:ml-60 flex flex-col min-h-screen">
     <div class="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex items-center gap-3 sticky top-0 z-20">
         <button id="menuBtn" class="text-slate-500 w-8 h-8 flex items-center justify-center"><i class="fas fa-bars"></i></button>
-        <span class="font-bold text-slate-800 text-sm">Admin — Formación Docente</span>
+        <span class="font-bold text-slate-800 text-sm">Admin — Yo Aprendo</span>
     </div>
 
     <main class="flex-1 p-5 md:p-8">
@@ -268,7 +271,7 @@
                 <div class="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5"></div>
                 <div class="absolute -bottom-6 -left-6 w-32 h-32 rounded-full bg-white/5"></div>
                 <p class="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">Programa activo</p>
-                <h1 class="text-2xl font-black mb-1">Formación Docente en Pedagogía Innovadora</h1>
+                <h1 class="text-2xl font-black mb-1">Yo Aprendo — Formación Docente en Pedagogía Innovadora</h1>
                 <p class="text-white/70 text-sm">Guatemala — <span id="dashPeriod">—</span></p>
                 <div class="impact-stats-grid flex flex-wrap gap-6 mt-5">
                     <div><p class="text-3xl font-black" id="impactDocentes">—</p><p class="text-xs opacity-70 mt-0.5">Docentes activos (7d)</p></div>

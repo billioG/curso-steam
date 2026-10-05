@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
 
         <!-- Body -->
         <tr><td style="background:white;padding:28px 32px">
-          <p style="margin:0 0 20px;font-size:15px;color:#374151">Un nuevo docente acaba de unirse a la plataforma de <strong>Formación Docente en Pedagogía Innovadora</strong>.</p>
+          <p style="margin:0 0 20px;font-size:15px;color:#374151">Un nuevo docente acaba de unirse a la plataforma de <strong>Yo Aprendo — Formación Docente en Pedagogía Innovadora</strong>.</p>
 
           <!-- Info del usuario -->
           <div style="background:#f8fafc;border-radius:16px;padding:20px 24px">
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
 
         <!-- Footer -->
         <tr><td style="background:#f9fafb;border-radius:0 0 20px 20px;padding:20px 32px;text-align:center">
-          <p style="margin:0;font-size:11px;color:#9ca3af">Notificación automática · Formación Docente Guatemala</p>
+          <p style="margin:0;font-size:11px;color:#9ca3af">Notificación automática · Yo Aprendo Guatemala</p>
         </td></tr>
 
       </table>
@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: `Formación Docente <${FROM_EMAIL}>`,
+        from: `Yo Aprendo <${FROM_EMAIL}>`,
         to: [ADMIN_EMAIL],
         subject: `Nuevo docente inscrito: ${name}`,
         html,
