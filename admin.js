@@ -2887,8 +2887,8 @@ function renderSchools() {
             ${s.director_name ? `<p class="text-xs text-indigo-500 mt-0.5"><i class="fas fa-signature mr-1"></i>${esc(s.director_name)}</p>` : ''}
         </div>
         <div class="flex items-center gap-2 ml-3">
-            <button onclick="toggleSchoolPlan('${s.id}','${s.plan || 'free'}')" class="text-xs font-semibold ${s.plan === 'paid' ? 'text-amber-500 hover:text-amber-600' : 'text-emerald-500 hover:text-emerald-600'}" title="${s.plan === 'paid' ? 'Pasar a plan gratuito' : 'Activar plan pagado'}">
-                <i class="fas ${s.plan === 'paid' ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+            <button onclick="toggleSchoolPlan('${s.id}','${s.plan || 'free'}')" class="text-[11px] font-bold px-2.5 py-1 rounded-lg border ${s.plan === 'paid' ? 'border-slate-300 text-slate-500 hover:bg-slate-100' : 'border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}" title="${s.plan === 'paid' ? 'Pasar a plan gratuito' : 'Activar plan pagado'}">
+                ${s.plan === 'paid' ? 'Pasar a gratis' : 'Activar plan pagado'}
             </button>
             <button onclick="openDirectorSigModal('${s.id}')" class="text-indigo-400 hover:text-indigo-600 text-xs" title="Firma del director"><i class="fas fa-signature"></i></button>
             <button onclick="deleteSchool('${s.id}')" class="text-red-400 hover:text-red-600 text-xs"><i class="fas fa-trash"></i></button>
@@ -2935,8 +2935,10 @@ async function deleteSchool(id) {
 async function toggleSchoolPlan(id, currentPlan) {
     const newPlan = currentPlan === 'paid' ? 'free' : 'paid';
     if (newPlan === 'free' && !confirm('¿Pasar este centro a plan gratuito? Perderá acceso a la reportería de coordinación y a la firma del director en los diplomas.')) return;
-    const { error } = await sb.from('schools').update({ plan: newPlan }).eq('id', id);
+    const { data: updated, error } = await sb.from('schools').update({ plan: newPlan }).eq('id', id).select('id');
     if (error) { toast('Error: ' + error.message, 'error'); return; }
+    // RLS puede dejar el UPDATE en 0 filas sin devolver error — no anunciar éxito en falso.
+    if (!updated?.length) { toast('No se pudo cambiar el plan: no tienes permiso sobre este centro (RLS).', 'error'); return; }
     toast(newPlan === 'paid' ? 'Centro activado como PAGADO — ya tiene reportería y firma de director.' : 'Centro pasado a plan gratuito.', 'success');
     await loadSchools();
 }
