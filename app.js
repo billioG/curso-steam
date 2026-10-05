@@ -528,6 +528,40 @@ async function checkUserAdminRole() {
     } catch (e) {
         currentUser.role = 'student';
     }
+    loadPanelAccess();
+}
+
+// Accesos a los paneles externos (coordinador / admin) en Perfil. Solo se
+// muestran a quien tiene permiso real: un docente común que tocara el enlace
+// caería en una pantalla de "sin acceso". Las mismas reglas que usa
+// coordinator.html: fila en `coordinators`, o admin de un colegio (user_roles
+// con school_id); super admin = admin sin tenant ni colegio.
+async function loadPanelAccess() {
+    if (!currentUser) return;
+    const uid = currentUser.id;
+    const access = { coordinator: false, admin: false };
+    try {
+        const [coordRes, roleRes] = await Promise.all([
+            supabase.from('coordinators').select('school_id').eq('user_id', uid).limit(1),
+            supabase.from('user_roles').select('role, tenant_id, school_id').eq('user_id', uid),
+        ]);
+        const roles = roleRes.data || [];
+        access.admin = roles.some(r => r.role === 'admin' && r.tenant_id === null && r.school_id === null);
+        const isSchoolAdmin = roles.some(r => r.role === 'admin' && r.school_id);
+        access.coordinator = (coordRes.data || []).length > 0 || isSchoolAdmin;
+    } catch (e) {
+        console.warn('loadPanelAccess:', e?.message);
+    }
+    if (currentUser?.id === uid) {
+        currentUser._panelAccess = access;
+        updatePanelAccessLinks();
+    }
+}
+
+function updatePanelAccessLinks() {
+    const a = currentUser?._panelAccess || {};
+    document.getElementById('coordinatorLink')?.classList.toggle('hidden', !a.coordinator);
+    document.getElementById('adminPanelLink')?.classList.toggle('hidden', !a.admin);
 }
 
 
@@ -924,6 +958,7 @@ function updateUI() {
     const _devBtn = document.getElementById('devModeBtn');
     if (_devBtn) _devBtn.classList.toggle('hidden', !_isAdmin);
     _updateDevModeBtn();
+    updatePanelAccessLinks();
 
     // Master certificate — visible si todos los cursos están aprobados
     _checkMasterCert();
@@ -5837,7 +5872,8 @@ if ('serviceWorker' in navigator) {
         const sw = navigator.serviceWorker.controller;
         if (!badge || !sw) return;
         const channel = new MessageChannel();
-        channel.port1.onmessage = e => { badge.textContent = `Versión ${e.data?.version || '—'}`; };
+        // El SW responde 'steam-v167'; en pantalla basta 'v167'.
+        channel.port1.onmessage = e => { badge.textContent = String(e.data?.version || '—').replace(/^steam-/, ''); };
         sw.postMessage({ type: 'GET_VERSION' }, [channel.port2]);
     }
     navigator.serviceWorker.ready.then(showAppVersion).catch(() => {});
