@@ -5,7 +5,7 @@
 // Recibe: { full_name, email, phone, jornada_disponible, pretension_salarial,
 //           acepta_jornada, interes_mineduc, compromiso_finalizar_programa, tenant_id }
 // `tenant_id` (uuid|null) viene de window.TENANT.id en el HTML — null para
-// candidatos del 1bot original. Se valida por la propia FK a `tenants`:
+// candidatos del Yo Aprendo original. Se valida por la propia FK a `tenants`:
 // un tenant_id inexistente hace fallar el insert, no hay que revalidarlo aquí.
 // Devuelve: { ok: true, passed_filter: boolean, rejection_reason: 'salario'|'jornada_compromiso'|null, access_token: string | null }
 //
@@ -15,7 +15,7 @@
 //
 // Presupuesto default: Q3,100/mes, tope default Q3,200 — usado cuando el
 // tenant no configuró su propio `salario_maximo` en la tabla `tenants`
-// (o para el 1bot original, tenant_id null). Si lo configuró, ESE valor
+// (o para el Yo Aprendo original, tenant_id null). Si lo configuró, ESE valor
 // (leído server-side, nunca del body) es el que manda. Por encima del
 // tope se rechaza con un mensaje específico de desajuste salarial.
 //
@@ -48,7 +48,7 @@ const SALARIO_MAXIMO_DEFAULT = 3200;
 // Avisa al/los admin del colegio que llegó una postulación nueva — NO se
 // dispara en reanudaciones ni en re-intentos sobre una fila existente
 // (ver comentario "Anti re-intento" más abajo), solo en la primera vez
-// que alguien aparece para ese tenant. tenant_id null = 1bot original,
+// que alguien aparece para ese tenant. tenant_id null = Yo Aprendo original,
 // se avisa directo a billy@1bot.org (mismo patrón que new-user-alert).
 async function notifyTenantAdmins(
   admin: ReturnType<typeof createClient>,

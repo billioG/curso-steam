@@ -5,7 +5,7 @@
 // ============================================================
 //
 // Sin tenant (uso directo, ej. yoaprendo.online/postulacion.html):
-// window.TENANT = null — comportamiento actual de 1bot, sin cambios.
+// window.TENANT = null — comportamiento actual de Yo Aprendo, sin cambios.
 //
 // Con tenant (ej. yoaprendo.online/vdf/postulacion.html, resuelto por
 // 404.html): window.TENANT = { id, slug, name, program_name,
@@ -14,7 +14,7 @@
 // reemplazan los elementos marcados con data-tenant="name|program|logo".
 //
 // El logo SIEMPRE se muestra: cada página pone su propio <img
-// data-tenant="logo" src="icon.svg"> con el ícono de 1bot como default;
+// data-tenant="logo" src="icon.svg"> con el ícono de Yo Aprendo como default;
 // si el tenant no subió logo propio, ese default se queda tal cual.
 //
 // window.svgIcon(name, sizePx) devuelve un <svg> inline listo para usar
@@ -78,7 +78,7 @@
       // Restaura la URL "bonita" /slug/pagina.html SOLO cuando el colegio
       // existe y está activo (la página real se sirvió desde la raíz vía el
       // redirect de 404.html). Si el slug no resolvió, la barra se queda en
-      // /pagina.html — honesto: se está renderizando como 1bot, no con la
+      // /pagina.html — honesto: se está renderizando como Yo Aprendo, no con la
       // marca de un colegio inexistente/inactivo.
       const currentPage = location.pathname.split('/').filter(Boolean).pop() || 'postulacion.html';
       if (location.pathname !== '/' + slug + '/' + currentPage) {
@@ -88,7 +88,7 @@
       applyBranding(tenant);
       return tenant;
     } catch (e) {
-      return null; // sin conexión / tenant inválido -> se ve como 1bot por defecto, no rompe la página
+      return null; // sin conexión / tenant inválido -> se ve como Yo Aprendo por defecto, no rompe la página
     }
   })();
 

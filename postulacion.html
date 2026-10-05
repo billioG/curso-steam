@@ -52,7 +52,7 @@
   <div class="card">
     <img class="tenant-logo" data-tenant="logo" src="default-logo.svg" alt="Logo">
     <div id="card">
-    <h1>Postulación Docente · <span data-tenant="name">1bot</span></h1>
+    <h1>Postulación Docente · <span data-tenant="name">Yo Aprendo</span></h1>
     <p class="sub" data-tenant="program">Programa de Reclutamiento Docente 4.0</p>
 
     <form id="form">
@@ -98,7 +98,7 @@
       <p class="err" id="errMsg"></p>
     </form>
 
-    <p class="footer"><span data-tenant="name">1bot</span> · Guatemala</p>
+    <p class="footer"><span data-tenant="name">Yo Aprendo</span> · Guatemala</p>
     </div>
   </div>
 
@@ -118,7 +118,7 @@
       errMsg.textContent = '';
 
       await window.TENANT_READY;
-      const tenantName = window.TENANT?.name || '1bot';
+      const tenantName = window.TENANT?.name || 'Yo Aprendo';
 
       const payload = {
         full_name: document.getElementById('full_name').value.trim(),

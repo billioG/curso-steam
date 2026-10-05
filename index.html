@@ -1951,6 +1951,33 @@
         <!-- ── CONTENIDO PRINCIPAL ───────────────────────────────────── -->
         <div class="perfil-grid">
 
+            <!-- ── Resumen de estadísticas (mismos datos que Progreso, ver
+                 app.js updateUI()/updateStreakDisplay()) — toca para ver el
+                 detalle completo (gráfica, misiones, ranking, insignias). ── -->
+            <div class="perfil-section">
+                <button onclick="switchTab('progreso')" class="w-full text-left" aria-label="Ver progreso completo">
+                    <div class="grid grid-cols-4 gap-2">
+                        <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
+                            <div id="perfilXP" class="text-lg font-black" style="color:#EA580C">0</div>
+                            <div class="text-[10px] text-slate-400 font-semibold mt-0.5">XP total</div>
+                        </div>
+                        <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
+                            <div id="perfilLevel" class="text-lg font-black" style="color:#1E4976">1</div>
+                            <div class="text-[10px] text-slate-400 font-semibold mt-0.5">Nivel</div>
+                        </div>
+                        <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
+                            <div id="perfilStreak" class="text-lg font-black" style="color:#E11D48">0</div>
+                            <div class="text-[10px] text-slate-400 font-semibold mt-0.5">Racha</div>
+                        </div>
+                        <div class="rounded-2xl p-3 text-center bg-white border border-slate-100 shadow-sm">
+                            <div id="perfilCards" class="text-lg font-black" style="color:#16A34A">0</div>
+                            <div class="text-[10px] text-slate-400 font-semibold mt-0.5">Tarjetas</div>
+                        </div>
+                    </div>
+                    <p class="text-center text-[11px] text-slate-400 mt-2">Ver progreso completo, insignias y ranking →</p>
+                </button>
+            </div>
+
             <!-- ── Diagnóstico pedagógico ── -->
             <div class="perfil-section">
                 <button id="diagProfileBtn"
@@ -2940,7 +2967,7 @@
                     </svg>
                     <div>
                         <h3 class="font-black text-slate-800">Asistente</h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Powered by Grok · Dudas sobre metodología STEAM</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Tu asesor pedagógico · Preguntame sobre tu aula</p>
                     </div>
                 </div>
                 <button onclick="toggleChat()"
