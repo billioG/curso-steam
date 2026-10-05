@@ -5869,13 +5869,24 @@ if ('serviceWorker' in navigator) {
 
     function showAppVersion() {
         const badge = document.getElementById('appVersionBadge');
-        const sw = navigator.serviceWorker.controller;
-        if (!badge || !sw) return;
-        const channel = new MessageChannel();
+        if (!badge) return;
         // El SW responde 'steam-v167'; en pantalla basta 'v167'.
-        channel.port1.onmessage = e => { badge.textContent = String(e.data?.version || '—').replace(/^steam-/, ''); };
+        const paint = v => { if (v) badge.textContent = String(v).replace(/^steam-/, ''); };
+        // Fallback: sin controller (recarga forzada con Ctrl+Shift+R, primera visita)
+        // o con un SW viejo que no responde — leer la versión directo de sw.js.
+        const fromFile = () => fetch('./sw.js', { cache: 'no-store' })
+            .then(r => r.text())
+            .then(t => paint(t.match(/CACHE_VERSION\s*=\s*'([^']+)'/)?.[1]))
+            .catch(() => {});
+        const sw = navigator.serviceWorker.controller;
+        if (!sw) { fromFile(); return; }
+        const channel = new MessageChannel();
+        let answered = false;
+        channel.port1.onmessage = e => { answered = true; paint(e.data?.version); };
         sw.postMessage({ type: 'GET_VERSION' }, [channel.port2]);
+        setTimeout(() => { if (!answered) fromFile(); }, 1500);
     }
+    showAppVersion();
     navigator.serviceWorker.ready.then(showAppVersion).catch(() => {});
     navigator.serviceWorker.addEventListener('controllerchange', showAppVersion);
 
