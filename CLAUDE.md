@@ -58,6 +58,13 @@ CSS es estático, no JIT en el navegador como el CDN viejo).
 - `examScores` (objeto por courseId) es el campo principal; `examScore` (singular) es legacy solo para STEAM
 - Dropdowns dentro de contenedores `overflow:auto` deben usar `position:fixed` + `getBoundingClientRect()`
 
+## Convenciones de contenido (cursos, recursos, glosario, casos)
+- **Español neutro con tuteo.** No usar voseo (`elegí`, `tenés`, `anotá`, `vos`, `sos`…) ni tratamiento de *usted* en instrucciones al docente. Los tuteos con clítico llevan tilde (`aplícalo`, `pídele`). Ortografía RAE: `guion` (sin tilde), `posponer`, `pizarra`.
+- **Sin dependencia de un país.** El contenido se dirige a docentes de cualquier país hispanohablante: usar "el currículo nacional de tu país", "el ministerio de educación", "lengua originaria", "secundaria baja/alta" (no CNB, MINEDUC, "básico/diversificado", quetzales ni departamentos). Guatemala solo puede aparecer como **caso de estudio explícito** (curso `fundamentos-pisa`, banco de historias, LSG como referencia) y señalado como tal.
+- **Rigor.** No inventar estudios, cifras ni "casos reales". Los ejemplos inventados se rotulan como *ilustrativos* o *hipotéticos*; las cifras deben poder citarse (ver `fuentes.html`). Evitar mitos conocidos (estilos de aprendizaje como método, "pirámide del aprendizaje", Mehrabian 7-38-55). Revisar la vigencia de herramientas (p. ej., Jamboard fue descontinuada en 2024).
+- **Títulos que prometen un número** (p. ej. "Banco de 12 actividades") deben coincidir con el contenido real del archivo.
+- Al agregar un curso nuevo, agregar también su sección en `fuentes.html`.
+
 ## Integridad de `progress` — riesgo conocido y aceptado
 La tabla `progress` tiene un trigger (`migrations/progress-value-guard.sql`,
 función `guard_progress_values`) que rechaza valores implausibles: `xp`
