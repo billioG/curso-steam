@@ -80,3 +80,12 @@ select
   , 1) as porcentaje_aplicacion
 from application_followups
 group by course_id, days_after;
+
+-- El CREATE OR REPLACE VIEW de arriba ya declara security_invoker=true,
+-- pero Supabase Advisor siguió marcando esta vista como "SECURITY DEFINER
+-- property" en producción (ver tasks/plan.md o el chat de la sesión que
+-- lo encontró) — señal de que el fix de arriba nunca se corrió en la
+-- base real, o quedó pisado por una recreación posterior de la vista sin
+-- la opción. ALTER VIEW la fija de forma inequívoca sin depender de ese
+-- comportamiento de CREATE OR REPLACE; seguro re-ejecutar.
+alter view application_followup_rates set (security_invoker = true);

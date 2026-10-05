@@ -3170,7 +3170,7 @@ async function searchCoordByEmail() {
         document.getElementById('coordUserId').value  = p.user_id;
         document.getElementById('coordNameInput').value = nombre;
         resultEl.className = 'rounded-xl px-4 py-3 text-sm bg-green-50 border border-green-200 text-green-700';
-        resultEl.innerHTML = `<i class="fas fa-check-circle mr-2"></i><strong>${nombre}</strong> encontrado — listo para asignar.`;
+        resultEl.innerHTML = `<i class="fas fa-check-circle mr-2"></i><strong>${esc(nombre)}</strong> encontrado — listo para asignar.`;
         btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
     } else {
         document.getElementById('coordUserId').value = '';

@@ -16,10 +16,12 @@ function unsubscribeUrl(userId: string, email: string): string {
   return `${SUPABASE_URL}/functions/v1/unsubscribe-email?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`;
 }
 
-// Lista y totalCards generados desde data.js (node -e, ver auditoría) — antes
-// solo cubría los 5 cursos originales con totales viejos (steam:73, abp:61...),
-// así que el % de avance salía inflado y los 21 cursos agregados después nunca
-// aparecían en el correo semanal.
+// id/title/prefix son curados a mano acá. totalCards se genera desde data.js
+// con `node scripts/sync-course-totals.mjs` — correlo después de agregar o
+// quitar tarjetas de cualquier curso en data.js (no editar totalCards a mano,
+// se sobreescribe). Ver scripts/sync-course-totals.mjs para el porqué esta
+// función no puede cargar data.js directamente (Edge Function Deno aislada).
+// SYNC:START (generado por scripts/sync-course-totals.mjs — no editar totalCards a mano)
 const COURSES = [
   { id: 'steam', title: 'Metodología STEAM', prefix: null, totalCards: 127 },
   { id: 'abp', title: 'ABP', prefix: 'abp-', totalCards: 105 },
@@ -48,6 +50,7 @@ const COURSES = [
   { id: 'discapacidad-down-tdah', title: 'Síndrome de Down y TDAH', prefix: 'discapacidad-down-tdah-', totalCards: 32 },
   { id: 'lengua-senas-docentes', title: 'Lengua de Señas para Docentes', prefix: 'lengua-senas-docentes-', totalCards: 32 },
 ];
+// SYNC:END
 
 function getCoursePct(completedCards: string[], course: typeof COURSES[0]): number {
   const done = completedCards.filter(id => {
