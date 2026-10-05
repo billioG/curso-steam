@@ -15,24 +15,28 @@
     --brand-dark: #12504D;
     --brand-light: #E8F4F3;
     --brand-mid: #2A8A87;
-    --steam: #07B0E4;
-    --steam-bg: #E6F7FD;
-    --steam-text: #055E78;
-    --abp: #2BA848;
-    --abp-bg: #E8F7EB;
-    --abp-text: #155A24;
-    --dt: #E83C8D;
-    --dt-bg: #FDEAF3;
-    --dt-text: #7A1447;
-    --eval: #E9A037;
-    --eval-bg: #FDF3E3;
-    --eval-text: #7A4E0A;
-    --cts: #7C3AED;
-    --cts-bg: #F0EBFD;
-    --cts-text: #3D1A7A;
-    --story: #F59E0B;
-    --story-bg: #FEF3DC;
-    --story-text: #7A4E00;
+    /* Antes cada categoría tenía su propio color (steam=cian, abp=verde,
+       dt=rosa, eval=naranja, cts=violeta, story=amber) — se unificaron a
+       un solo neutro oscuro (acorde al logo) a pedido explícito, aunque
+       eso significa perder la distinción visual rápida por categoría. */
+    --steam: #1E4976;
+    --steam-bg: #E8EDF3;
+    --steam-text: #1E3A5F;
+    --abp: #1E4976;
+    --abp-bg: #E8EDF3;
+    --abp-text: #1E3A5F;
+    --dt: #1E4976;
+    --dt-bg: #E8EDF3;
+    --dt-text: #1E3A5F;
+    --eval: #1E4976;
+    --eval-bg: #E8EDF3;
+    --eval-text: #1E3A5F;
+    --cts: #1E4976;
+    --cts-bg: #E8EDF3;
+    --cts-text: #1E3A5F;
+    --story: #1E4976;
+    --story-bg: #E8EDF3;
+    --story-text: #1E3A5F;
     --gray-50: #F8F9FA;
     --gray-100: #F1F3F5;
     --gray-200: #E9ECEF;
@@ -259,12 +263,12 @@
   .chip.active[data-filter="eval"] { background: var(--eval); color: white; border-color: var(--eval); }
   .chip.active[data-filter="cts"] { background: var(--cts); color: white; border-color: var(--cts); }
   .chip.active[data-filter="story"] { background: var(--story); color: white; border-color: var(--story); }
-  .chip.active[data-filter="crea"] { background: #E83C8D; color: white; border-color: #E83C8D; }
-  .chip.active[data-filter="tec"] { background: #7C3AED; color: white; border-color: #7C3AED; }
-  .chip.active[data-filter="ml"] { background: #F59E0B; color: white; border-color: #F59E0B; }
-  .chip.active[data-filter="flip"] { background: #EF4444; color: white; border-color: #EF4444; }
-  .chip.active[data-filter="abv"] { background: #6366F1; color: white; border-color: #6366F1; }
-  .chip.active[data-filter="micro"] { background: #F97316; color: white; border-color: #F97316; }
+  .chip.active[data-filter="crea"] { background: #1E4976; color: white; border-color: #1E4976; }
+  .chip.active[data-filter="tec"] { background: #1E4976; color: white; border-color: #1E4976; }
+  .chip.active[data-filter="ml"] { background: #1E4976; color: white; border-color: #1E4976; }
+  .chip.active[data-filter="flip"] { background: #1E4976; color: white; border-color: #1E4976; }
+  .chip.active[data-filter="abv"] { background: #1E4976; color: white; border-color: #1E4976; }
+  .chip.active[data-filter="micro"] { background: #1E4976; color: white; border-color: #1E4976; }
 
   .chip-dot {
     width: 8px;
@@ -410,26 +414,26 @@
   .tag-eval { background: var(--eval-bg); color: var(--eval-text); }
   .tag-cts { background: var(--cts-bg); color: var(--cts-text); }
   .tag-story { background: var(--story-bg); color: var(--story-text); }
-  .tag-crea { background: #FCE7F3; color: #BE185D; }
-  .tag-tec { background: #EDE9FE; color: #6D28D9; }
-  .tag-ml { background: #FEF3C7; color: #B45309; }
-  .tag-flip { background: #FEE2E2; color: #B91C1C; }
-  .tag-abv { background: #E0E7FF; color: #4338CA; }
-  .tag-micro { background: #FFEDD5; color: #C2410C; }
-  .tag-iaf { background: #D1FAE5; color: #065F46; }
-  .tag-iat { background: #FFEDD5; color: #9A3412; }
-  .tag-iah { background: #EDE9FE; color: #5B21B6; }
-  .tag-iai { background: #CFFAFE; color: #0E7490; }
-  .tag-iac { background: #FCE7F3; color: #9D174D; }
-  .tag-mjc { background: #CFFAFE; color: #155E75; }
-  .tag-sel { background: #FCE7F3; color: #BE185D; }
-  .tag-com { background: #EDE9FE; color: #5B21B6; }
-  .tag-dis { background: #FFEDD5; color: #9A3412; }
-  .tag-bie { background: #DCFCE7; color: #166534; }
-.tag-ei { background: #EDE9FE; color: #4C1D95; }
-.tag-tea { background: #E0E7FF; color: #3730A3; }
-.tag-ddt { background: #FEF3C7; color: #92400E; }
-.tag-lsg { background: #E0F2FE; color: #075985; }
+  .tag-crea { background: #E8EDF3; color: #1E3A5F; }
+  .tag-tec { background: #E8EDF3; color: #1E3A5F; }
+  .tag-ml { background: #E8EDF3; color: #1E3A5F; }
+  .tag-flip { background: #E8EDF3; color: #1E3A5F; }
+  .tag-abv { background: #E8EDF3; color: #1E3A5F; }
+  .tag-micro { background: #E8EDF3; color: #1E3A5F; }
+  .tag-iaf { background: #E8EDF3; color: #1E3A5F; }
+  .tag-iat { background: #E8EDF3; color: #1E3A5F; }
+  .tag-iah { background: #E8EDF3; color: #1E3A5F; }
+  .tag-iai { background: #E8EDF3; color: #1E3A5F; }
+  .tag-iac { background: #E8EDF3; color: #1E3A5F; }
+  .tag-mjc { background: #E8EDF3; color: #1E3A5F; }
+  .tag-sel { background: #E8EDF3; color: #1E3A5F; }
+  .tag-com { background: #E8EDF3; color: #1E3A5F; }
+  .tag-dis { background: #E8EDF3; color: #1E3A5F; }
+  .tag-bie { background: #E8EDF3; color: #1E3A5F; }
+.tag-ei { background: #E8EDF3; color: #1E3A5F; }
+.tag-tea { background: #E8EDF3; color: #1E3A5F; }
+.tag-ddt { background: #E8EDF3; color: #1E3A5F; }
+.tag-lsg { background: #E8EDF3; color: #1E3A5F; }
 
   .term-definition {
     color: var(--gray-700);
@@ -557,82 +561,82 @@
       Todos
     </button>
     <button class="chip" data-filter="steam">
-      <span class="chip-dot" style="background:#07B0E4"></span>STEAM
+      <span class="chip-dot" style="background:#1E4976"></span>STEAM
     </button>
     <button class="chip" data-filter="abp">
-      <span class="chip-dot" style="background:#2BA848"></span>ABP
+      <span class="chip-dot" style="background:#1E4976"></span>ABP
     </button>
     <button class="chip" data-filter="dt">
-      <span class="chip-dot" style="background:#E83C8D"></span>Design Thinking
+      <span class="chip-dot" style="background:#1E4976"></span>Design Thinking
     </button>
     <button class="chip" data-filter="eval">
-      <span class="chip-dot" style="background:#E9A037"></span>Evaluación
+      <span class="chip-dot" style="background:#1E4976"></span>Evaluación
     </button>
     <button class="chip" data-filter="cts">
-      <span class="chip-dot" style="background:#7C3AED"></span>Conoce a tus Estudiantes
+      <span class="chip-dot" style="background:#1E4976"></span>Conoce a tus Estudiantes
     </button>
     <button class="chip" data-filter="story">
-      <span class="chip-dot" style="background:#F59E0B"></span>Storytelling
+      <span class="chip-dot" style="background:#1E4976"></span>Storytelling
     </button>
     <button class="chip" data-filter="crea">
-      <span class="chip-dot" style="background:#E83C8D"></span>Creatividad
+      <span class="chip-dot" style="background:#1E4976"></span>Creatividad
     </button>
     <button class="chip" data-filter="tec">
-      <span class="chip-dot" style="background:#7C3AED"></span>Herramientas Tec.
+      <span class="chip-dot" style="background:#1E4976"></span>Herramientas Tec.
     </button>
     <button class="chip" data-filter="ml">
-      <span class="chip-dot" style="background:#F59E0B"></span>Mobile Learning
+      <span class="chip-dot" style="background:#1E4976"></span>Mobile Learning
     </button>
     <button class="chip" data-filter="flip">
-      <span class="chip-dot" style="background:#EF4444"></span>Aula Invertida
+      <span class="chip-dot" style="background:#1E4976"></span>Aula Invertida
     </button>
     <button class="chip" data-filter="abv">
-      <span class="chip-dot" style="background:#6366F1"></span>Videos (ABV)
+      <span class="chip-dot" style="background:#1E4976"></span>Videos (ABV)
     </button>
     <button class="chip" data-filter="micro">
-      <span class="chip-dot" style="background:#F97316"></span>Micro-learning
+      <span class="chip-dot" style="background:#1E4976"></span>Micro-learning
     </button>
     <button class="chip" data-filter="iaf">
-      <span class="chip-dot" style="background:#10B981"></span>Docente y la IA
+      <span class="chip-dot" style="background:#1E4976"></span>Docente y la IA
     </button>
     <button class="chip" data-filter="iat">
-      <span class="chip-dot" style="background:#F97316"></span>IA: Ahorro de Tiempo
+      <span class="chip-dot" style="background:#1E4976"></span>IA: Ahorro de Tiempo
     </button>
     <button class="chip" data-filter="iah">
-      <span class="chip-dot" style="background:#8B5CF6"></span>Herramientas de IA
+      <span class="chip-dot" style="background:#1E4976"></span>Herramientas de IA
     </button>
     <button class="chip" data-filter="iai">
-      <span class="chip-dot" style="background:#06B6D4"></span>IA e Inclusión
+      <span class="chip-dot" style="background:#1E4976"></span>IA e Inclusión
     </button>
     <button class="chip" data-filter="iac">
-      <span class="chip-dot" style="background:#EC4899"></span>Ciudadanía Digital IA
+      <span class="chip-dot" style="background:#1E4976"></span>Ciudadanía Digital IA
     </button>
     <button class="chip" data-filter="mjc">
-      <span class="chip-dot" style="background:#0891B2"></span>Conductas Desafiantes
+      <span class="chip-dot" style="background:#1E4976"></span>Conductas Desafiantes
     </button>
     <button class="chip" data-filter="sel">
-      <span class="chip-dot" style="background:#DB2777"></span>SEL Docentes
+      <span class="chip-dot" style="background:#1E4976"></span>SEL Docentes
     </button>
     <button class="chip" data-filter="com">
-      <span class="chip-dot" style="background:#7C3AED"></span>Comunicación Asertiva
+      <span class="chip-dot" style="background:#1E4976"></span>Comunicación Asertiva
     </button>
     <button class="chip" data-filter="dis">
-      <span class="chip-dot" style="background:#EA580C"></span>Disciplina Positiva
+      <span class="chip-dot" style="background:#1E4976"></span>Disciplina Positiva
     </button>
     <button class="chip" data-filter="bie">
-      <span class="chip-dot" style="background:#16A34A"></span>Bienestar Docente
+      <span class="chip-dot" style="background:#1E4976"></span>Bienestar Docente
     </button>
     <button class="chip" data-filter="ei">
-      <span class="chip-dot" style="background:#8B5CF6"></span>Educación Inclusiva
+      <span class="chip-dot" style="background:#1E4976"></span>Educación Inclusiva
     </button>
     <button class="chip" data-filter="tea">
-      <span class="chip-dot" style="background:#6366F1"></span>TEA
+      <span class="chip-dot" style="background:#1E4976"></span>TEA
     </button>
     <button class="chip" data-filter="ddt">
-      <span class="chip-dot" style="background:#F59E0B"></span>Down y TDAH
+      <span class="chip-dot" style="background:#1E4976"></span>Down y TDAH
     </button>
     <button class="chip" data-filter="lsg">
-      <span class="chip-dot" style="background:#0EA5E9"></span>Lengua de Señas
+      <span class="chip-dot" style="background:#1E4976"></span>Lengua de Señas
     </button>
   </div>
 
