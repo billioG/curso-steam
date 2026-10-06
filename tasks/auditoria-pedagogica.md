@@ -57,3 +57,13 @@ Leyenda de evaluación: **D** examen dedicado · **R** examen reciclado de los q
 4. Añadir "actividad" y "consejo" a los cursos de la plantilla corta, y una guía de facilitación de taller por ruta.
 5. Alinear la gamificación con la aplicación real: insignias por evidencia ("Lo apliqué en mi aula"), metas cooperativas y menos énfasis en el ranking competitivo.
 6. Crear recursos para los cinco cursos sin ellos.
+
+## Estado de implementación (octubre de 2026)
+| # | Prioridad | Estado | Qué se hizo / qué falta |
+|---|---|---|---|
+| 1 | Mezclar opciones y revisar longitud | Hecho (parcial en longitud) | Los exámenes (`startExam`, `retryExam`, examen maestro) mezclan las opciones al presentarlas; en las preguntas nuevas la posición correcta queda repartida (≈26 %/21 %/25 %/27 % en A/B/C/D). La respuesta correcta sigue siendo la más larga en ≈50 % de las preguntas nuevas (azar: 25 %); las preguntas antiguas no se reescribieron. |
+| 2 | Ampliar exámenes a ≥ 15 preguntas con ≥ 40 % de caso | Hecho | 22 cursos tienen `examExtra` (165 preguntas de caso en total); `getCourseExam` las suma a las tarjetas quiz. Ahora todos los cursos con examen reciclado tienen 15 o más preguntas. Creatividad y Herramientas Tecnológicas quedan en 32–33 % de casos porque ya tenían 15–16 preguntas de recuerdo. |
+| 3 | Horas honestas | Hecho | `durationHours` recalculado con el método de la auditoría más 1 min por pregunta de examen (0,5 h de granularidad): de 1 a 2 h por curso. El certificado muestra «Horas de estudio» (tiempo de estudio en la plataforma, no incluye la práctica en el aula). |
+| 4 | «Actividad» y «consejo» en los cursos de plantilla corta, guía de facilitación por ruta | Pendiente | Requiere redacción de contenido nuevo para ≈21 cursos. |
+| 5 | Gamificación alineada con la aplicación | Parcial | «Lo apliqué en clase» ya existía: ahora otorga 40 XP (antes 15), hay nueva insignia a las 15 aplicaciones y el ranking se presenta como opcional. Pendiente: meta cooperativa (requiere un agregado en el servidor) y revisión de «Campeón semanal». |
+| 6 | Recursos para los cinco cursos sin ellos | Pendiente | Plantilla de plan DUA, horario visual e historia social, fichas de adaptación, plantillas de comprensión lectora. |

@@ -117,6 +117,17 @@ function getCourseExam(course) {
             }
         });
     });
+    (course?.examExtra || []).forEach(q => {
+        if (q && Array.isArray(q.options) && typeof q.correct === 'number') {
+            questions.push({
+                id: questions.length + 1,
+                text: q.text,
+                options: q.options,
+                correct: q.correct,
+                explanation: q.explanation || ''
+            });
+        }
+    });
     return { title: '📝 Examen Final', passingScore: 70, questions };
 }
 
@@ -174,6 +185,7 @@ const BADGE_SVG = {
     earlyBird:    `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fefce8"/><path d="M20 14a6 6 0 100 12 6 6 0 000-12z" fill="#facc15"/><path d="M20 11v-2M20 31v-2M11 20H9M31 20h-2M13.9 13.9l-1.4-1.4M27.5 27.5l-1.4-1.4M13.9 26.1l-1.4 1.4M27.5 12.5l-1.4 1.4" stroke="#eab308" stroke-width="1.5" stroke-linecap="round"/></svg>`,
     noteWriter:   `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#f0f9ff"/><rect x="13" y="12" width="14" height="18" rx="2" fill="#0ea5e9"/><rect x="16" y="17" width="8" height="1.5" rx=".75" fill="white"/><rect x="16" y="20.5" width="8" height="1.5" rx=".75" fill="white"/><rect x="16" y="24" width="5" height="1.5" rx=".75" fill="white"/><path d="M24 12l3 3-2 2-3-3z" fill="#fbbf24"/><path d="M22 16l3-2" stroke="#fbbf24" stroke-width="1" fill="none"/></svg>`,
     applied5:     `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#f0fdf4"/><path d="M14 20a6 6 0 1112 0 6 6 0 01-12 0z" fill="#22c55e"/><path d="M17 20l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M20 12v-2M20 30v-2M28 20h2M12 20h-2" stroke="#86efac" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    applied15:    `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#f0fdf4"/><path d="M14 20a6 6 0 1112 0 6 6 0 01-12 0z" fill="#22c55e"/><path d="M17 20l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M20 12v-2M20 30v-2M28 20h2M12 20h-2" stroke="#86efac" stroke-width="1.5" stroke-linecap="round"/></svg>`,
     weeklyChamp:  `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fffbeb"/><path d="M14 14h12v8a6 6 0 01-12 0v-8z" fill="#f59e0b"/><path d="M14 17H11a3 3 0 003 3M26 17h3a3 3 0 01-3 3" stroke="#d97706" stroke-width="1.5" fill="none"/><rect x="16" y="28" width="8" height="2" rx="1" fill="#d97706"/><rect x="14" y="30" width="12" height="2" rx="1" fill="#d97706"/></svg>`,
     masterDocente:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fdf4ff"/><path d="M20 12l2.8 5.6 6.2.9-4.5 4.4 1.1 6.1L20 25l-5.6 3 1.1-6.1-4.5-4.4 6.2-.9z" fill="#a855f7" stroke="#9333ea" stroke-width=".5"/><circle cx="20" cy="20" r="2.5" fill="#fff"/></svg>`,
 };
@@ -197,6 +209,7 @@ const badges = {
     earlyBird:     { id: "earlyBird",     name: "Madrugadora STEAM",    desc: "Completaste 5 tarjetas antes de las 8am",     icon: "🌅", xpReward: 80  },
     noteWriter:    { id: "noteWriter",    name: "Apuntes de oro",       desc: "Escribiste notas en 10 tarjetas",             icon: "📝", xpReward: 60  },
     applied5:      { id: "applied5",      name: "Docente en acción",    desc: "Marcaste 5 tarjetas como aplicadas en clase", icon: "🍎", xpReward: 100 },
+    applied15:     { id: "applied15",     name: "Aula en transformación", desc: "Marcaste 15 tarjetas como aplicadas en clase", icon: "🌳", xpReward: 250 },
     weeklyChamp:   { id: "weeklyChamp",   name: "Campeón semanal",      desc: "Terminaste en el top 3 del ranking semanal",  icon: "🥇", xpReward: 200 },
     level5:        { id: "level5",        name: "Nivel 5",              desc: "Alcanzaste el Nivel 5",                       icon: "🌟", xpReward: 100 },
     level10:       { id: "level10",       name: "Nivel 10",             desc: "Alcanzaste el Nivel 10",                      icon: "💫", xpReward: 300 },
@@ -1257,6 +1270,7 @@ function checkBadges() {
     // Lo apliqué en clase
     const appliedCount = (progress.dailyMissions?.appliedCards || []).length;
     if (appliedCount >= 5 && !progress.badges.includes("applied5")) unlockBadge("applied5");
+    if (appliedCount >= 15 && !progress.badges.includes("applied15")) unlockBadge("applied15");
 
     // Madrugadora: tarjetas antes de las 8am
     if ((progress.dailyMissions?.earlyBirdCards || 0) >= 5 && !progress.badges.includes("earlyBird")) unlockBadge("earlyBird");
@@ -3905,9 +3919,9 @@ function toggleApplied(cardKey) {
     if (idx === -1) {
         arr.push(cardKey);
         if (btn) { btn.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:16px;border:1px solid #86efac;background:#dcfce7;color:#15803d;font-size:12px;font-weight:600;cursor:pointer'; btn.innerHTML = '🍎 ¡Ya lo apliqué!'; }
-        addXP(15, 'Concepto aplicado en clase');
+        addXP(40, 'Concepto aplicado en clase');
         updateMissionProgress('applied', 1);
-        showToast('🍎 +15 XP ¡Genial! Aplicar es el mejor aprendizaje', 'success');
+        showToast('🍎 +40 XP ¡Genial! Aplicar en tu aula es lo que más cuenta', 'success');
         // Misión semanal w_applied
         const wm = progress.dailyMissions?.weeklyMissions || [];
         wm.forEach(m => { if (!m.completed && m.type === 'w_applied') { m.current++; if (m.current >= m.target) { m.completed = true; showToast(`🏆 ¡Misión semanal: ${m.name}!`, 'success'); } } });
@@ -3973,6 +3987,25 @@ let examCurrentQ = 0;
 let examAnswers = [];
 let examQuestions = []; // subconjunto aleatorio para este intento
 
+// Mezcla las opciones de una pregunta de examen (y reasigna `correct`) para que la
+// posición de la respuesta correcta no sea predecible. Las opciones tipo
+// "Todas/Ninguna de las anteriores" se mantienen al final para conservar su sentido.
+function _fmtHours(h) {
+    const n = Number(h) || 0;
+    const txt = String(n).replace('.', ',');
+    return `${txt} ${n === 1 ? 'hora' : 'horas'}`;
+}
+
+function _shuffleQuestionOptions(q) {
+    if (!q || !Array.isArray(q.options) || typeof q.correct !== 'number') return q;
+    const anchored = o => /^(todas|ninguna|ambas)\b.*(anteriores|las dos)/i.test(String(o).trim());
+    const items = q.options.map((opt, i) => ({ opt, orig: i }));
+    const free = _shuffleArray(items.filter(x => !anchored(x.opt)));
+    const fixed = items.filter(x => anchored(x.opt));
+    const all = [...free, ...fixed];
+    return { ...q, options: all.map(x => x.opt), correct: all.findIndex(x => x.orig === q.correct) };
+}
+
 function _shuffleArray(arr) {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
@@ -4024,7 +4057,7 @@ function startExam() {
     stopCardTracking();
     examActive = true;
     examCurrentQ = 0;
-    examQuestions = allQ.slice(0, 20);
+    examQuestions = allQ.slice(0, 20).map(_shuffleQuestionOptions);
     examAnswers = new Array(examQuestions.length).fill(null);
     switchTab('home');
     _hideNavBtns(true);
@@ -4255,7 +4288,7 @@ function retryExam() {
     examCurrentQ = 0;
     // Reintento: nuevo subconjunto aleatorio de 20 preguntas del curso ACTIVO
     const allQ = _shuffleArray(getCourseExam(getActiveCourseData()).questions);
-    examQuestions = allQ.slice(0, 20);
+    examQuestions = allQ.slice(0, 20).map(_shuffleQuestionOptions);
     examAnswers = new Array(examQuestions.length).fill(null);
     renderExamCard();
     animateCard('next');
@@ -4655,7 +4688,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
     const _issueMonth = _issueDate.getMonth() + 1;
     const _course = (typeof allCourses !== 'undefined' && allCourses.find(c => c.id === _cid2)) || allCourses[0];
     const courseTitle = _course.title || 'Metodología STEAM 2.0';
-    const courseDuration = _course.durationHours ? `${_course.durationHours} horas` : '10 horas';
+    const courseDuration = _course.durationHours ? _fmtHours(_course.durationHours) : _fmtHours(1);
     const courseColor = _course.color || '#0097A7';
     const courseGradient = _course.color || '#1A6B68';
     const courseIcon = _course.icon || '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15 L20 8 L36 15 L20 22 Z" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><path d="M11 18 V27 Q11 31 20 31 Q29 31 29 27 V18" stroke-width="1.8"/><line x1="36" y1="15" x2="36" y2="25" stroke-width="1.8"/></svg>';
@@ -4741,7 +4774,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
     </p>
     <div class="cert-meta">
       <div class="meta-pill"><div class="label">Puntaje</div><div class="value">${Math.round(percentage)}%</div></div>
-      <div class="meta-pill"><div class="label">Duración</div><div class="value">${courseDuration}</div></div>
+      <div class="meta-pill"><div class="label">Horas de estudio</div><div class="value">${courseDuration}</div></div>
       <div class="meta-pill"><div class="label">Emisión</div><div class="value">${fecha}</div></div>
     </div>
     <div class="cert-footer">
@@ -5225,7 +5258,7 @@ function startMasterExam() {
     _masterExamActive    = true;
     _masterExamCurrentQ  = 0;
     const shuffled       = _shuffleArray([...MASTER_EXAM.questions]);
-    _masterExamQuestions = shuffled.slice(0, 30);
+    _masterExamQuestions = shuffled.slice(0, 30).map(_shuffleQuestionOptions);
     _masterExamAnswers   = new Array(_masterExamQuestions.length).fill(null);
 
     switchTab('home');
@@ -5515,7 +5548,7 @@ async function generateMasterCertificate() {
     <div class="cert-meta">
       <div class="meta-pill hi"><div class="label">Examen Final</div><div class="value">${masterScore}%</div></div>
       <div class="meta-pill"><div class="label">Promedio cursos</div><div class="value">${avgIndividual}%</div></div>
-      <div class="meta-pill"><div class="label">Horas acreditadas</div><div class="value">${totalHours} horas</div></div>
+      <div class="meta-pill"><div class="label">Horas de estudio</div><div class="value">${_fmtHours(totalHours)}</div></div>
       <div class="meta-pill"><div class="label">Cursos aprobados</div><div class="value">${availableCourses.length} / ${availableCourses.length}</div></div>
       <div class="meta-pill"><div class="label">Fecha de emisión</div><div class="value">${fecha}</div></div>
     </div>
