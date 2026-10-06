@@ -117,6 +117,17 @@ function getCourseExam(course) {
             }
         });
     });
+    (course?.examExtra || []).forEach(q => {
+        if (q && Array.isArray(q.options) && typeof q.correct === 'number') {
+            questions.push({
+                id: questions.length + 1,
+                text: q.text,
+                options: q.options,
+                correct: q.correct,
+                explanation: q.explanation || ''
+            });
+        }
+    });
     return { title: '📝 Examen Final', passingScore: 70, questions };
 }
 
@@ -174,6 +185,7 @@ const BADGE_SVG = {
     earlyBird:    `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fefce8"/><path d="M20 14a6 6 0 100 12 6 6 0 000-12z" fill="#facc15"/><path d="M20 11v-2M20 31v-2M11 20H9M31 20h-2M13.9 13.9l-1.4-1.4M27.5 27.5l-1.4-1.4M13.9 26.1l-1.4 1.4M27.5 12.5l-1.4 1.4" stroke="#eab308" stroke-width="1.5" stroke-linecap="round"/></svg>`,
     noteWriter:   `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#f0f9ff"/><rect x="13" y="12" width="14" height="18" rx="2" fill="#0ea5e9"/><rect x="16" y="17" width="8" height="1.5" rx=".75" fill="white"/><rect x="16" y="20.5" width="8" height="1.5" rx=".75" fill="white"/><rect x="16" y="24" width="5" height="1.5" rx=".75" fill="white"/><path d="M24 12l3 3-2 2-3-3z" fill="#fbbf24"/><path d="M22 16l3-2" stroke="#fbbf24" stroke-width="1" fill="none"/></svg>`,
     applied5:     `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#f0fdf4"/><path d="M14 20a6 6 0 1112 0 6 6 0 01-12 0z" fill="#22c55e"/><path d="M17 20l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M20 12v-2M20 30v-2M28 20h2M12 20h-2" stroke="#86efac" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    applied15:    `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#f0fdf4"/><path d="M14 20a6 6 0 1112 0 6 6 0 01-12 0z" fill="#22c55e"/><path d="M17 20l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M20 12v-2M20 30v-2M28 20h2M12 20h-2" stroke="#86efac" stroke-width="1.5" stroke-linecap="round"/></svg>`,
     weeklyChamp:  `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fffbeb"/><path d="M14 14h12v8a6 6 0 01-12 0v-8z" fill="#f59e0b"/><path d="M14 17H11a3 3 0 003 3M26 17h3a3 3 0 01-3 3" stroke="#d97706" stroke-width="1.5" fill="none"/><rect x="16" y="28" width="8" height="2" rx="1" fill="#d97706"/><rect x="14" y="30" width="12" height="2" rx="1" fill="#d97706"/></svg>`,
     masterDocente:`<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#fdf4ff"/><path d="M20 12l2.8 5.6 6.2.9-4.5 4.4 1.1 6.1L20 25l-5.6 3 1.1-6.1-4.5-4.4 6.2-.9z" fill="#a855f7" stroke="#9333ea" stroke-width=".5"/><circle cx="20" cy="20" r="2.5" fill="#fff"/></svg>`,
 };
@@ -197,6 +209,7 @@ const badges = {
     earlyBird:     { id: "earlyBird",     name: "Madrugadora STEAM",    desc: "Completaste 5 tarjetas antes de las 8am",     icon: "🌅", xpReward: 80  },
     noteWriter:    { id: "noteWriter",    name: "Apuntes de oro",       desc: "Escribiste notas en 10 tarjetas",             icon: "📝", xpReward: 60  },
     applied5:      { id: "applied5",      name: "Docente en acción",    desc: "Marcaste 5 tarjetas como aplicadas en clase", icon: "🍎", xpReward: 100 },
+    applied15:     { id: "applied15",     name: "Aula en transformación", desc: "Marcaste 15 tarjetas como aplicadas en clase", icon: "🌳", xpReward: 250 },
     weeklyChamp:   { id: "weeklyChamp",   name: "Campeón semanal",      desc: "Terminaste en el top 3 del ranking semanal",  icon: "🥇", xpReward: 200 },
     level5:        { id: "level5",        name: "Nivel 5",              desc: "Alcanzaste el Nivel 5",                       icon: "🌟", xpReward: 100 },
     level10:       { id: "level10",       name: "Nivel 10",             desc: "Alcanzaste el Nivel 10",                      icon: "💫", xpReward: 300 },
@@ -1257,6 +1270,7 @@ function checkBadges() {
     // Lo apliqué en clase
     const appliedCount = (progress.dailyMissions?.appliedCards || []).length;
     if (appliedCount >= 5 && !progress.badges.includes("applied5")) unlockBadge("applied5");
+    if (appliedCount >= 15 && !progress.badges.includes("applied15")) unlockBadge("applied15");
 
     // Madrugadora: tarjetas antes de las 8am
     if ((progress.dailyMissions?.earlyBirdCards || 0) >= 5 && !progress.badges.includes("earlyBird")) unlockBadge("earlyBird");
@@ -1666,6 +1680,8 @@ function renderCard() {
             ? (card.extra.tip || '')
             : (card.extra || '');
         const cardExtra = _mdToHtml(_rawExtra.replace(/Profe Billy/g, profeName));
+        const _rawActivity = (typeof card.extra === 'object' && card.extra !== null) ? (card.extra.activity || '') : '';
+        const cardActivity = _mdToHtml(_rawActivity.replace(/Profe Billy/g, profeName));
 
         container.innerHTML = `
         ${_cardGhosts}
@@ -1678,7 +1694,7 @@ function renderCard() {
             <div class="card-body">
                 <h2>${card.title}</h2>
                 ${(() => {
-                    const words = ((card.content||'') + ' ' + (card.extra||'')).split(/\s+/).length;
+                    const words = ((card.content||'') + ' ' + _extraText(card)).split(/\s+/).length;
                     const mins = Math.max(1, Math.round(words / 200));
                     return `<div style="font-size:10px;color:#94a3b8;margin-bottom:6px">⏱ ~${mins} min de lectura</div>`;
                 })()}
@@ -1687,6 +1703,11 @@ function renderCard() {
                 <div class="card-key-insight" style="background:${theme.soft};border-color:${theme.primary};color:#1e293b">
                     <span style="font-weight:800;color:#0f172a">💡 Dato clave:</span>
                     <div class="card-md card-md-extra">${cardExtra}</div>
+                </div>` : ''}
+                ${cardActivity ? `
+                <div class="card-key-insight" style="background:#fffbeb;border-color:#f59e0b;color:#1e293b;margin-top:10px">
+                    <span style="font-weight:800;color:#0f172a">🛠️ Actividad para tu aula:</span>
+                    <div class="card-md card-md-extra">${cardActivity}</div>
                 </div>` : ''}
             </div>
             ${card.project ? `
@@ -2914,7 +2935,7 @@ function _buildGlobalSearchIndex() {
             (course.modules || []).forEach((mod, mi) => {
                 (mod.cards || []).forEach(card => {
                     if (card.type && card.type !== 'content') return; // solo tarjetas de contenido, no quizzes
-                    const text = _stripHtml((card.content || '') + ' ' + (card.extra || ''));
+                    const text = _stripHtml((card.content || '') + ' ' + _extraText(card));
                     cards.push({ courseId: course.id, courseTitle: course.title, moduleIndex: mi + 1, cardId: card.id, title: card.title || '', text });
                 });
             });
@@ -3125,7 +3146,15 @@ function _renderTotalRanking(data) {
         const lvl=user.level||1;const league=getLeague(lvl);
         listHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;margin-bottom:8px;background:${isMe?'#E8EDF3':'#f8fafc'};border:${isMe?'2px solid #1E4976':'1.5px solid #e2e8f0'}"><span style="font-size:12px;font-weight:900;color:${isMe?'#1E4976':'#94a3b8'};width:20px;text-align:center;flex-shrink:0">${rank}</span>${_avatar(user,38)}<div style="flex:1;min-width:0"><p style="font-weight:700;font-size:13px;color:${isMe?'#1E3A5F':'#1e293b'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}${isMe?' <span style="color:#1E4976">(Tú)</span>':''}</p><span style="font-size:10px;font-weight:600;color:${league.color};display:inline-flex;align-items:center;gap:3px">${_leagueIconSvg(league.name.replace('Liga ',''),11)}${league.name}</span></div><div style="text-align:right;flex-shrink:0"><p style="font-weight:800;font-size:13px;color:#1E4976;display:flex;align-items:center;gap:3px;justify-content:flex-end"><span style="display:inline-flex;width:12px;height:12px">${ICONS.bolt}</span>${(user.xp||0).toLocaleString()}</p><p style="font-size:10px;color:#94a3b8">Nv. ${lvl}</p></div></div>`;
     });
-    listEl.innerHTML = listHtml;
+    const _commXp = data.reduce((t, u) => t + (u.xp || 0), 0);
+    const _commGoal = [5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000].find(g => g > _commXp) || (Math.ceil((_commXp + 1) / 1000000) * 1000000);
+    const _commPct = Math.min(100, Math.round(_commXp / _commGoal * 100));
+    const _commHtml = `<div style="background:#ecfdf5;border:1.5px solid #86efac;border-radius:16px;padding:12px 14px;margin-bottom:12px">
+        <p style="margin:0;font-size:12px;font-weight:800;color:#166534">🤝 Meta de la comunidad</p>
+        <p style="margin:2px 0 8px;font-size:11px;color:#475569">Entre ${data.length} docentes sumamos ${_commXp.toLocaleString('es')} XP. Próxima meta: ${_commGoal.toLocaleString('es')} XP.</p>
+        <div style="height:8px;background:#d1fae5;border-radius:99px;overflow:hidden"><div style="height:100%;width:${_commPct}%;background:#16a34a"></div></div>
+    </div>`;
+    listEl.innerHTML = _commHtml + listHtml;
 }
 
 async function _renderWeeklyRanking() {
@@ -3905,9 +3934,9 @@ function toggleApplied(cardKey) {
     if (idx === -1) {
         arr.push(cardKey);
         if (btn) { btn.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:16px;border:1px solid #86efac;background:#dcfce7;color:#15803d;font-size:12px;font-weight:600;cursor:pointer'; btn.innerHTML = '🍎 ¡Ya lo apliqué!'; }
-        addXP(15, 'Concepto aplicado en clase');
+        addXP(40, 'Concepto aplicado en clase');
         updateMissionProgress('applied', 1);
-        showToast('🍎 +15 XP ¡Genial! Aplicar es el mejor aprendizaje', 'success');
+        showToast('🍎 +40 XP ¡Genial! Aplicar en tu aula es lo que más cuenta', 'success');
         // Misión semanal w_applied
         const wm = progress.dailyMissions?.weeklyMissions || [];
         wm.forEach(m => { if (!m.completed && m.type === 'w_applied') { m.current++; if (m.current >= m.target) { m.completed = true; showToast(`🏆 ¡Misión semanal: ${m.name}!`, 'success'); } } });
@@ -3973,6 +4002,32 @@ let examCurrentQ = 0;
 let examAnswers = [];
 let examQuestions = []; // subconjunto aleatorio para este intento
 
+// Mezcla las opciones de una pregunta de examen (y reasigna `correct`) para que la
+// posición de la respuesta correcta no sea predecible. Las opciones tipo
+// "Todas/Ninguna de las anteriores" se mantienen al final para conservar su sentido.
+function _extraText(card) {
+    const e = card && card.extra;
+    if (!e) return '';
+    if (typeof e === 'object') return [e.tip, e.activity].filter(Boolean).join(' ');
+    return String(e);
+}
+
+function _fmtHours(h) {
+    const n = Number(h) || 0;
+    const txt = String(n).replace('.', ',');
+    return `${txt} ${n === 1 ? 'hora' : 'horas'}`;
+}
+
+function _shuffleQuestionOptions(q) {
+    if (!q || !Array.isArray(q.options) || typeof q.correct !== 'number') return q;
+    const anchored = o => /^(todas|ninguna|ambas)\b.*(anteriores|las dos)/i.test(String(o).trim());
+    const items = q.options.map((opt, i) => ({ opt, orig: i }));
+    const free = _shuffleArray(items.filter(x => !anchored(x.opt)));
+    const fixed = items.filter(x => anchored(x.opt));
+    const all = [...free, ...fixed];
+    return { ...q, options: all.map(x => x.opt), correct: all.findIndex(x => x.orig === q.correct) };
+}
+
 function _shuffleArray(arr) {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
@@ -4024,7 +4079,7 @@ function startExam() {
     stopCardTracking();
     examActive = true;
     examCurrentQ = 0;
-    examQuestions = allQ.slice(0, 20);
+    examQuestions = allQ.slice(0, 20).map(_shuffleQuestionOptions);
     examAnswers = new Array(examQuestions.length).fill(null);
     switchTab('home');
     _hideNavBtns(true);
@@ -4255,7 +4310,7 @@ function retryExam() {
     examCurrentQ = 0;
     // Reintento: nuevo subconjunto aleatorio de 20 preguntas del curso ACTIVO
     const allQ = _shuffleArray(getCourseExam(getActiveCourseData()).questions);
-    examQuestions = allQ.slice(0, 20);
+    examQuestions = allQ.slice(0, 20).map(_shuffleQuestionOptions);
     examAnswers = new Array(examQuestions.length).fill(null);
     renderExamCard();
     animateCard('next');
@@ -4655,7 +4710,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
     const _issueMonth = _issueDate.getMonth() + 1;
     const _course = (typeof allCourses !== 'undefined' && allCourses.find(c => c.id === _cid2)) || allCourses[0];
     const courseTitle = _course.title || 'Metodología STEAM 2.0';
-    const courseDuration = _course.durationHours ? `${_course.durationHours} horas` : '10 horas';
+    const courseDuration = _course.durationHours ? _fmtHours(_course.durationHours) : _fmtHours(1);
     const courseColor = _course.color || '#0097A7';
     const courseGradient = _course.color || '#1A6B68';
     const courseIcon = _course.icon || '<svg width="32" height="32" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15 L20 8 L36 15 L20 22 Z" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><path d="M11 18 V27 Q11 31 20 31 Q29 31 29 27 V18" stroke-width="1.8"/><line x1="36" y1="15" x2="36" y2="25" stroke-width="1.8"/></svg>';
@@ -4741,7 +4796,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
     </p>
     <div class="cert-meta">
       <div class="meta-pill"><div class="label">Puntaje</div><div class="value">${Math.round(percentage)}%</div></div>
-      <div class="meta-pill"><div class="label">Duración</div><div class="value">${courseDuration}</div></div>
+      <div class="meta-pill"><div class="label">Horas de estudio</div><div class="value">${courseDuration}</div></div>
       <div class="meta-pill"><div class="label">Emisión</div><div class="value">${fecha}</div></div>
     </div>
     <div class="cert-footer">
@@ -4783,6 +4838,7 @@ const COURSE_RESOURCES = {
         { name: 'Rúbricas de Evaluación STEAM',    desc: 'Instrumentos de evaluación por competencias',           icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>', url: 'recursos/steam-rubricas.html' },
         { name: 'Banco de 30 Actividades STEAM',   desc: 'Actividades listas para aplicar en el aula',            icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>', url: 'recursos/steam-banco-actividades.html' },
         { name: 'Infografía Pienso-Creo-Mejoro',   desc: 'Resumen visual del ciclo de diseño',                    icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>', url: 'recursos/steam-infografia-pcm.html' },
+        { name: 'Guía de facilitación de taller: Ruta Docente STEAM 2.0', desc: 'Agenda de 90 minutos, materiales y evidencia de aplicación para trabajar la ruta con colegas', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/fac-steam20.html' },
     ],
     'abp': [
         { name: 'Guía ABP Paso a Paso',            desc: 'Metodología completa con ejemplos para adaptar a tu contexto',       icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/abp-guia.html' },
@@ -4813,6 +4869,7 @@ const COURSE_RESOURCES = {
         { name: 'Guía para Despertar la Creatividad en el Aula', desc: 'Fundamentos y estrategias paso a paso para una cultura creativa en el aula', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/cr-guia.html' },
         { name: 'Banco de 20 Retos Creativos de Aula', desc: 'Retos cortos y largos, con materiales de bajo costo, listos para usar', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>', url: 'recursos/cr-retos.html' },
         { name: '10 Casos de Creatividad Aplicada en el Aula', desc: '10 situaciones de aula, adaptables a distintos contextos', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>', url: 'recursos/cr-casos.html' },
+        { name: 'Guía de facilitación de taller: Ruta Docente Creativo', desc: 'Agenda de 90 minutos, materiales y evidencia de aplicación para trabajar la ruta con colegas', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/fac-creativo.html' },
     ],
     'herramientas-tec': [
         { name: 'Guía de Herramientas Digitales Gratuitas para el Aula', desc: 'Catálogo de herramientas gratuitas organizadas por función pedagógica', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/ht-guia.html' },
@@ -4823,6 +4880,7 @@ const COURSE_RESOURCES = {
         { name: 'Guía de Mobile Learning: el Celular como Aliado, no Enemigo', desc: 'Estrategia completa para convertir el celular en herramienta pedagógica', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/ml-guia.html' },
         { name: 'Plantilla: Contrato de Uso del Celular en el Aula', desc: 'Contrato imprimible para establecer reglas claras desde el día 1', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>', url: 'recursos/ml-contrato.html' },
         { name: 'Banco de 10 Micro-actividades con Celular (5-10 minutos)', desc: '10 actividades cortas listas para aplicar entre temas o al inicio de clase', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>', url: 'recursos/ml-microactividades.html' },
+        { name: 'Guía de facilitación de taller: Ruta Metodologías Activas', desc: 'Agenda de 90 minutos, materiales y evidencia de aplicación para trabajar la ruta con colegas', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/fac-metodologias.html' },
     ],
     'flipped-classroom': [
         { name: 'Guía de Aula Invertida (Flipped Classroom)', desc: 'Fundamentos y pasos para invertir tu clase tradicional', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/fc-guia.html' },
@@ -4843,6 +4901,7 @@ const COURSE_RESOURCES = {
         { name: 'Guía de Fundamentos de IA para Docentes', desc: 'Conceptos base de IA explicados para uso pedagógico real', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/iaf-guia.html' },
         { name: 'Plantilla: Mis Primeras 10 Instrucciones (Prompts) Útiles', desc: '10 instrucciones de IA probadas, listas para copiar y personalizar', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>', url: 'recursos/iaf-prompts.html' },
         { name: '8 Casos de Uso de IA en el Aula', desc: 'Casos concretos de uso responsable de IA en el contexto educativo', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>', url: 'recursos/iaf-casos.html' },
+        { name: 'Guía de facilitación de taller: Ruta Docente y la IA', desc: 'Agenda de 90 minutos, materiales y evidencia de aplicación para trabajar la ruta con colegas', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/fac-ia.html' },
     ],
     'ia-tiempo': [
         { name: 'Guía: Recupera Horas de tu Semana con IA', desc: 'Estrategias concretas para reducir carga de trabajo administrativo docente', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/iat-guia.html' },
@@ -4868,6 +4927,7 @@ const COURSE_RESOURCES = {
         { name: 'Guía de Manejo de Conductas Desafiantes', desc: 'Estrategias prácticas para responder a conductas desafiantes con calma y firmeza', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/mc-guia.html' },
         { name: 'Plantilla: Plan de Respuesta ante Conductas Recurrentes', desc: 'Planificador individual para anticipar y responder a conductas específicas', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>', url: 'recursos/mc-plan.html' },
         { name: '8 Casos de Manejo de Conductas en el Aula', desc: 'Casos concretos de manejo efectivo de conductas desafiantes', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>', url: 'recursos/mc-casos.html' },
+        { name: 'Guía de facilitación de taller: Ruta Clima y Convivencia Escolar', desc: 'Agenda de 90 minutos, materiales y evidencia de aplicación para trabajar la ruta con colegas', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/fac-convivencia.html' },
     ],
     'sel-docentes': [
         { name: 'Guía de Aprendizaje Socioemocional (SEL) para Docentes', desc: 'Marco de competencias SEL aplicado a la práctica docente diaria', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/sel-guia.html' },
@@ -4888,6 +4948,33 @@ const COURSE_RESOURCES = {
         { name: 'Guía de Bienestar Docente y Prevención del Desgaste (Burnout)', desc: 'Guía para identificar y prevenir el desgaste profesional docente', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/bd-guia.html' },
         { name: 'Plantilla: Mi Chequeo Semanal de Bienestar', desc: 'Herramienta de auto-monitoreo semanal de bienestar docente', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>', url: 'recursos/bd-chequeo.html' },
         { name: 'Banco de 8 Micro-prácticas de Autocuidado para el Día Escolar', desc: '8 micro-prácticas realistas de bienestar para docentes con poco tiempo', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>', url: 'recursos/bd-micropracticas.html' },
+    ],
+    'educacion-inclusiva': [
+        { name: 'Plantilla: Plan de Clase con DUA', desc: 'Formato para planificar con múltiples formas de representación, acción y motivación', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/ei-plan-dua.html' },
+        { name: 'Ficha de Observación de Barreras para el Aprendizaje', desc: 'Registro para identificar barreras del entorno antes de pensar en un diagnóstico', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/ei-ficha-barreras.html' },
+        { name: 'Guía para Conversar con una Familia sobre Apoyos', desc: 'Guion de conversación con enfoque en fortalezas y acuerdos', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/ei-comunicar-familia.html' },
+        { name: 'Guía de facilitación de taller: Ruta Educación Inclusiva', desc: 'Agenda de 90 minutos, materiales y evidencia de aplicación para trabajar la ruta con colegas', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/fac-inclusion.html' },
+    ],
+    'tea-profundidad': [
+        { name: 'Plantilla: Horario Visual y Tira de Tareas', desc: 'Apoyos visuales para anticipar el día y dividir tareas en pasos', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/tea-horario-visual.html' },
+        { name: 'Plantilla: Historia Social', desc: 'Relato breve para preparar ante una situación nueva o difícil', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/tea-historia-social.html' },
+        { name: 'Plantilla: Plan de Apoyo ante una Crisis', desc: 'Documento de una página para acordar con la familia y el equipo', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/tea-plan-crisis.html' },
+    ],
+    'discapacidad-down-tdah': [
+        { name: 'Fichas de Adaptación: Síndrome de Down y TDAH', desc: 'Ajustes por área para probar, observar y revisar', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/dh-fichas-adaptacion.html' },
+        { name: 'Plantilla: Organizador Semanal Visual (TDAH)', desc: 'Agenda con pasos, casillas y reconocimiento de avances', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/dh-organizador-semanal.html' },
+        { name: 'Guía: Refuerzo Positivo Coordinado entre Casa y Escuela', desc: 'Cómo acordar una conducta, un reconocimiento y un seguimiento', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/dh-sistema-refuerzo.html' },
+    ],
+    'lengua-senas-docentes': [
+        { name: 'Ficha: Vocabulario de Señas de Aula y Plan de Práctica', desc: 'Conceptos para aprender con personas sordas o recursos de tu comunidad', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/ls-vocabulario-aula.html' },
+        { name: 'Lista de Verificación: Aula Visualmente Accesible', desc: 'Iluminación, ubicación, comunicación y materiales', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/ls-aula-visual.html' },
+        { name: 'Guía: Trabajo Conjunto con un Intérprete de Lengua de Señas', desc: 'Roles, acuerdos y buenas prácticas en el aula', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/ls-guia-interprete.html' },
+    ],
+    'fundamentos-pisa': [
+        { name: 'Plantilla: Secuencia de Comprensión Lectora en 10 Minutos', desc: 'Antes, durante y después de leer, con preguntas que miden comprensión', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/pisa-comprension-lectora.html' },
+        { name: 'Plantilla: Resolver un Problema Cotidiano de Matemática', desc: 'Comprender, estimar, resolver y comprobar', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/pisa-estimacion-problemas.html' },
+        { name: 'Guía: Seguimiento de la Asistencia y la Motivación', desc: 'Pasos para detectar ausencias recurrentes y acordar apoyos', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/pisa-plan-asistencia.html' },
+        { name: 'Guía de facilitación de taller: Ruta Fundamentos PISA', desc: 'Agenda de 90 minutos, materiales y evidencia de aplicación', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', url: 'recursos/fac-pisa.html' },
     ],
 };
 
@@ -5225,7 +5312,7 @@ function startMasterExam() {
     _masterExamActive    = true;
     _masterExamCurrentQ  = 0;
     const shuffled       = _shuffleArray([...MASTER_EXAM.questions]);
-    _masterExamQuestions = shuffled.slice(0, 30);
+    _masterExamQuestions = shuffled.slice(0, 30).map(_shuffleQuestionOptions);
     _masterExamAnswers   = new Array(_masterExamQuestions.length).fill(null);
 
     switchTab('home');
@@ -5515,7 +5602,7 @@ async function generateMasterCertificate() {
     <div class="cert-meta">
       <div class="meta-pill hi"><div class="label">Examen Final</div><div class="value">${masterScore}%</div></div>
       <div class="meta-pill"><div class="label">Promedio cursos</div><div class="value">${avgIndividual}%</div></div>
-      <div class="meta-pill"><div class="label">Horas acreditadas</div><div class="value">${totalHours} horas</div></div>
+      <div class="meta-pill"><div class="label">Horas de estudio</div><div class="value">${_fmtHours(totalHours)}</div></div>
       <div class="meta-pill"><div class="label">Cursos aprobados</div><div class="value">${availableCourses.length} / ${availableCourses.length}</div></div>
       <div class="meta-pill"><div class="label">Fecha de emisión</div><div class="value">${fecha}</div></div>
     </div>
@@ -5629,7 +5716,7 @@ function exportModuleToVideo(moduleId) {
     if (!module) return;
     let script = `# GUION PARA VIDEO - MÓDULO ${module.id}: ${module.title}\n\n## 🎬 INTRO (30 segundos)\n"Hola, soy el Profe Billy. En este video vamos a aprender sobre ${module.title}. Al final tendrás un reto práctico."\n\n## 📚 CONTENIDO PRINCIPAL (5-7 minutos)\n`;
     const contentCards = module.cards.filter(c => c.type === "content");
-    contentCards.forEach((card, idx) => { script += `### ${idx + 1}. ${card.title}\n${card.content}\n${card.extra ? `💡 Dato extra: ${card.extra}\n` : ''}\n---\n\n`; });
+    contentCards.forEach((card, idx) => { script += `### ${idx + 1}. ${card.title}\n${card.content}\n${card.extra ? `💡 Dato extra: ${_extraText(card)}\n` : ''}\n---\n\n`; });
     script += `## 🎯 RETO PARA EL DOCENTE QUE MIRA EL VIDEO\n"Identifica un problema de tu salón y escribe cómo lo resolverías con STEAM."\n\n## 📹 RECOMENDACIONES TÉCNICAS\n- Graba en horizontal (apaisado).\n- Usa buena luz natural frente a ti.\n- Duración ideal: 5-8 minutos.`;
     const blob = new Blob([script], { type: "text/plain" });
     const link = document.createElement("a"); link.download = `guion_video_modulo_${module.id}.txt`; link.href = URL.createObjectURL(blob); link.click();
