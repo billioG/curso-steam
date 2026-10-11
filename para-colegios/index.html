@@ -214,7 +214,7 @@ footer { padding-block: 24px 32px; border-top: 1px solid var(--line); margin-top
 <script>
 /* WhatsApp de Yo Aprendo: código de país + número, solo dígitos (ej. 50255551234).
    Mientras esté vacío, los botones envían un correo a contacto@yoaprendo.online. */
-var WHATSAPP = "";
+var WHATSAPP = "50245674610";
 if (/^\d{8,15}$/.test(WHATSAPP)) {
   var msg = encodeURIComponent("Hola, vi la información de Yo Aprendo y quiero saber más para mi colegio.");
   document.querySelectorAll(".wa").forEach(function (a) { a.href = "https://wa.me/" + WHATSAPP + "?text=" + msg; a.target = "_blank"; a.rel = "noopener"; });
