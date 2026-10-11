@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yo Aprendo para Colegios</title>
+<meta name="description" content="Formación docente, talleres y Quetzal LMS para colegios de Guatemala. Ciclo escolar 2027.">
+<meta name="theme-color" content="#1E4976">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Yo Aprendo para Colegios">
+<meta property="og:description" content="Formación docente, talleres, contenido interactivo y Quetzal LMS para tu colegio. Ciclo escolar 2027.">
+<meta property="og:locale" content="es_GT">
+<meta property="og:site_name" content="Yo Aprendo">
+<meta property="og:url" content="https://yoaprendo.online/para-colegios/">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://yoaprendo.online/para-colegios/">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #FAFAFA;
+  --surface: #FFFFFF;
+  --ink: #202124;
+  --muted: #5F6368;
+  --line: #E7E5E2;
+  --accent: #1E4976;
+  --accent-soft: #E7F3FA;
+  --on-accent: #FFFFFF;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; }
+h1, h2, h3 { text-wrap: balance; line-height: 1.15; margin: 0; letter-spacing: -0.02em; }
+p { margin: 0; }
+
+/* Nav */
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); }
+.nav { display: flex; align-items: center; justify-content: space-between; padding-block: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+.brand svg { width: 34px; height: 34px; color: var(--ink); }
+.btn {
+  display: inline-block; text-decoration: none; font-weight: 700; font-size: 15px;
+  padding: 12px 22px; border-radius: 12px; border: 1.5px solid transparent;
+  background: var(--accent); color: var(--on-accent); transition: transform .15s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.small { padding: 9px 16px; font-size: 14px; }
+
+/* Hero */
+.hero { padding-block: clamp(28px, 5vw, 48px) clamp(24px, 4vw, 36px); }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 18px; }
+.hero h1 em { font-style: normal; color: #06A0CF; }
+.hero h1 { font-size: clamp(34px, 6vw, 60px); font-weight: 800; max-width: 16ch; }
+.hero p.lead { margin-top: 22px; font-size: clamp(17px, 2.2vw, 20px); color: var(--muted); max-width: 52ch; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+
+/* Sections */
+section { padding-block: clamp(24px, 4vw, 40px); }
+.section-head { margin-bottom: 20px; }
+.section-head h2 { font-size: clamp(26px, 4vw, 38px); font-weight: 800; max-width: 22ch; }
+.section-head p { margin-top: 12px; color: var(--muted); max-width: 56ch; }
+
+/* Rutas */
+.rutas { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+.ruta {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px;
+}
+.ruta i { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 13px; display: block; }
+.ruta h3 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.ruta span { font-size: 13px; color: var(--muted); }
+
+/* Pasos */
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; counter-reset: s; }
+.step { border-top: 2px solid var(--ink); padding-top: 18px; }
+.step::before { counter-increment: s; content: "0" counter(s); font-weight: 800; font-size: 14px; color: var(--accent); letter-spacing: .08em; }
+.step h3 { font-size: 20px; font-weight: 700; margin-top: 8px; }
+.step p { margin-top: 8px; color: var(--muted); }
+
+/* Features */
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.feature { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+.feature h3 { font-size: 17px; font-weight: 700; }
+.feature p { margin-top: 8px; font-size: 15px; color: var(--muted); }
+
+/* CTA */
+.cta { background: var(--accent-soft); border-radius: 24px; padding: clamp(32px, 6vw, 56px); display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: space-between; }
+.cta h2 { font-size: clamp(24px, 3.6vw, 34px); font-weight: 800; max-width: 20ch; }
+.cta p { margin-top: 8px; color: var(--muted); }
+
+/* Footer */
+footer { padding-block: 24px 32px; border-top: 1px solid var(--line); margin-top: clamp(16px, 3vw, 28px); font-size: 14px; color: var(--muted); }
+.foot { display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: space-between; align-items: center; }
+.foot nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.foot a { text-decoration: none; }
+.foot a:hover { color: var(--ink); text-decoration: underline; }
+.areas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 14px; }
+.area { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 26px; }
+.area i { display:block; width:44px; height:44px; border-radius:13px; margin-bottom:18px; }
+.area h3 { font-size: 20px; font-weight: 700; }
+.area p { margin-top: 10px; color: var(--muted); }
+.area ul { margin: 14px 0 0; padding-left: 18px; color: var(--muted); font-size: 15px; }
+.mail { font-weight:700; margin-top:14px; word-break:break-all; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap nav">
+  <a class="brand" href="#" aria-label="Yo Aprendo">
+    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><polygon points="50,15 82,32 82,68 50,85 18,68 18,32"/><path d="M50,50 L18,32 M50,50 L82,32 M50,50 L50,85"/></svg>
+    Yo Aprendo
+  </a>
+  <a class="btn small wa" href="mailto:contacto@yoaprendo.online?subject=Quiero%20informaci%C3%B3n%20de%20Yo%20Aprendo%20para%20mi%20colegio">Escribir por WhatsApp</a>
+</div></header>
+<main>
+  <div class="wrap hero">
+    <p class="eyebrow">Para colegios · Ciclo escolar 2027</p>
+    <h1>Aprende. <em>Aplica.</em> Transforma.</h1>
+    <p class="lead">Formación docente, talleres para estudiantes, creación de contenido interactivo y la plataforma Quetzal LMS. Cuatro áreas que se complementan y se adaptan al tamaño de tu colegio.</p>
+    <div class="actions">
+      <a class="btn wa" href="mailto:contacto@yoaprendo.online?subject=Quiero%20informaci%C3%B3n%20de%20Yo%20Aprendo%20para%20mi%20colegio">Quiero información</a>
+    </div>
+  </div>
+<section id="areas">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Cuatro áreas, un mismo acompañamiento</h2>
+        <p>Puedes empezar por una y sumar las otras cuando tu colegio lo necesite.</p>
+      </div>
+      <div class="areas">
+        <div class="area"><i style="background:#07B0E4"></i><h3>Formación docente</h3><p>Cursos cortos para que tu equipo docente incorpore metodologías activas, creatividad e inteligencia artificial en el aula.</p><ul><li>Rutas de formación por tema</li><li>Certificado verificable para cada docente</li></ul></div>
+        <div class="area"><i style="background:#F59E0B"></i><h3>Talleres</h3><p>Experiencias de aprendizaje para estudiantes, con enfoque STEAM: actividades para hacer, probar y descubrir.</p><ul><li>Por grado o por nivel</li><li>Calendario acordado con tu colegio</li></ul></div>
+        <div class="area"><i style="background:#E83C8D"></i><h3>Creación de contenido interactivo</h3><p>Tú nos compartes tus temas y nosotros los convertimos en experiencias digitales para aprender: videos cortos de introducción, contenido por tarjetas, quizzes e infografías.</p><ul><li>Un video de introducción por tema</li><li>Quizzes e infografías para reforzar lo aprendido</li><li>Compatible con Quetzal LMS y con otras plataformas que soporten SCORM o HTML5</li></ul></div>
+        <div class="area"><i style="background:#8B5CF6"></i><h3>Quetzal LMS</h3><p>Plataforma para organizar cursos, tareas y seguimiento del aprendizaje de estudiantes y docentes.</p><ul><li>Progreso que se guarda en la nube</li><li>Seguimiento por estudiante y por docente</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Rutas de formación para tus docentes</h2>
+        <p>Cada ruta agrupa cursos que se complementan. Tus docentes avanzan a su ritmo y aprueban un examen por curso.</p>
+      </div>
+      <div class="rutas">
+        <div class="ruta"><i style="background:#07B0E4"></i><div><h3>Docente STEAM 2.0</h3><span>Ruta de formación</span></div></div>
+        <div class="ruta"><i style="background:#E83C8D"></i><div><h3>Docente Creativo</h3><span>Ruta de formación</span></div></div>
+        <div class="ruta"><i style="background:#F59E0B"></i><div><h3>Metodologías Activas</h3><span>Ruta de formación</span></div></div>
+        <div class="ruta"><i style="background:#10B981"></i><div><h3>Docente y la IA</h3><span>Ruta de formación</span></div></div>
+        <div class="ruta"><i style="background:#0891B2"></i><div><h3>Clima y Convivencia Escolar</h3><span>Ruta de formación</span></div></div>
+        <div class="ruta"><i style="background:#8B5CF6"></i><div><h3>Educación Inclusiva</h3><span>Ruta de formación</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head"><h2>¿Cómo empezamos?</h2></div>
+      <div class="steps">
+        <div class="step"><h3>Cuéntanos tu necesidad</h3><p>Por WhatsApp o correo, en pocas líneas. Queremos saber qué quiere lograr tu colegio.</p></div>
+        <div class="step"><h3>Recibe una propuesta</h3><p>La preparamos según el tamaño de tu colegio, sus docentes y sus metas para el ciclo.</p></div>
+        <div class="step"><h3>Planificamos el 2027</h3><p>Definimos fechas, grupos y acompañamiento antes de que inicien las clases.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head"><h2>Hecho para el día a día del colegio</h2></div>
+      <div class="features">
+        <div class="feature"><h3>Funciona sin conexión</h3><p>Se instala como aplicación y sigue funcionando aunque falle el internet.</p></div>
+        <div class="feature"><h3>Progreso que se guarda</h3><p>El avance se sincroniza en la nube y se retoma desde cualquier dispositivo.</p></div>
+        <div class="feature"><h3>Motivación real</h3><p>Puntos, insignias y ranking para mantener el hábito de aprender.</p></div>
+        <div class="feature"><h3>Certificados verificables</h3><p>Cada diploma tiene un código único que valida la formación.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-block-start:0">
+    <div class="wrap">
+      <div class="cta">
+        <div>
+          <h2>¿Hablamos esta semana?</h2>
+          <p>Escríbenos y te responderemos con información para tu colegio. Te atenderá Alexandra Rivas.</p>
+          <p class="mail">contacto@yoaprendo.online</p>
+        </div>
+        <a class="btn wa" href="mailto:contacto@yoaprendo.online?subject=Quiero%20informaci%C3%B3n%20de%20Yo%20Aprendo%20para%20mi%20colegio">Escribir por WhatsApp</a>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>
+  <div class="wrap foot">
+    <span>© Yo Aprendo · Guatemala</span>
+    <nav>
+      <a href="https://yoaprendo.online">yoaprendo.online</a>
+      <a href="mailto:contacto@yoaprendo.online?subject=Quiero%20informaci%C3%B3n%20de%20Yo%20Aprendo">Escribir por correo</a>
+    </nav>
+  </div>
+</footer>
+<script>
+/* WhatsApp de Yo Aprendo: código de país + número, solo dígitos (ej. 50255551234).
+   Mientras esté vacío, los botones envían un correo a contacto@yoaprendo.online. */
+var WHATSAPP = "";
+if (/^\d{8,15}$/.test(WHATSAPP)) {
+  var msg = encodeURIComponent("Hola, vi la información de Yo Aprendo y quiero saber más para mi colegio.");
+  document.querySelectorAll(".wa").forEach(function (a) { a.href = "https://wa.me/" + WHATSAPP + "?text=" + msg; a.target = "_blank"; a.rel = "noopener"; });
+} else {
+  document.querySelectorAll(".wa").forEach(function (a) { if (/WhatsApp/.test(a.textContent)) a.textContent = a.textContent.replace("por WhatsApp", "por correo"); });
+}
+</script>
+</body>
+</html>
