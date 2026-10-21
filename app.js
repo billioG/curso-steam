@@ -292,7 +292,9 @@ async function syncWithSupabase() {
                 email: _user.email,
                 current_module: currentModule,
                 current_card: currentCardIndex,
-                completed_cards: _prog.completedCards || [],
+                // Siempre strings: el trigger guard_progress_values rechaza
+                // cualquier id no-string y con eso fallaba TODO el guardado.
+                completed_cards: [...new Set((_prog.completedCards || []).map(String))],
                 xp: _prog.xp || 0,
                 level: _prog.level || 1,
                 badges: _prog.badges || [],
@@ -2124,7 +2126,7 @@ function handleSimulation(direction) {
         feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#16a34a">${ICONS?.checkCircle||'✓'}</span> ¡Decisión acertada! (${swipeLabel})</div>${_mdToHtml(outcome)}${_continueBtn}`;
         const _modC = modulesData[currentModule - 1];
         const _cardC = _modC?.cards[currentCardIndex];
-        const _cidC = _cardC?.id || `${currentModule}-${currentCardIndex}`;
+        const _cidC = String(_cardC?.id ?? `${currentModule}-${currentCardIndex}`);
         if (!progress.completedCards.includes(_cidC)) {
             progress.completedCards.push(_cidC);
             addXP(15, 'Simulación completada');
@@ -2136,7 +2138,7 @@ function handleSimulation(direction) {
         feedback.innerHTML = `<div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:18px;height:18px;color:#d97706">${ICONS?.lightbulb||'💡'}</span> Reflexiona... (${swipeLabel})</div>${_mdToHtml(outcome)}${_continueBtn}`;
         const _modW = modulesData[currentModule - 1];
         const _cardW = _modW?.cards[currentCardIndex];
-        const _cidW = _cardW?.id || `${currentModule}-${currentCardIndex}`;
+        const _cidW = String(_cardW?.id ?? `${currentModule}-${currentCardIndex}`);
         if (!progress.completedCards.includes(_cidW)) {
             progress.completedCards.push(_cidW);
             updateMissionProgress("cards", 1);
@@ -4242,14 +4244,19 @@ function showExamResults() {
     const passed = pct >= exam.passingScore;
 
     if (passed && !progress.badges.includes("examPass")) unlockBadge("examPass");
-    if (passed) addXP(100, "Examen aprobado");
     if (passed) {
         if (!progress.dailyMissions) progress.dailyMissions = {};
         // Guardar puntaje por courseId para soportar múltiples cursos
         const _cid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
         if (!progress.dailyMissions.examScores) progress.dailyMissions.examScores = {};
-        progress.dailyMissions.examScores[_cid] = pct;
-        if (_cid === 'steam') progress.dailyMissions.examScore = pct; // backward compat solo para STEAM
+        // Los 100 XP solo la primera vez que se aprueba ESTE curso — antes se
+        // daban en cada reintento aprobado y el examen servía para farmear XP.
+        const _prevScore = progress.dailyMissions.examScores[_cid];
+        if (typeof _prevScore !== 'number') addXP(100, "Examen aprobado");
+        // Conservar la mejor nota: un reintento con menos puntaje no debe
+        // bajar la nota que aparece en el diploma.
+        progress.dailyMissions.examScores[_cid] = Math.max(pct, typeof _prevScore === 'number' ? _prevScore : 0);
+        if (_cid === 'steam') progress.dailyMissions.examScore = progress.dailyMissions.examScores[_cid]; // backward compat solo para STEAM
         // Fecha por courseId (no solo la global examDate) — el certificado
         // debe mostrar cuándo se aprobó ESE curso, no la última vez que se
         // aprobó CUALQUIER examen (que es lo que examDate por sí sola dice).
@@ -5305,14 +5312,34 @@ let _masterExamQuestions = [];
 let _masterExamAnswers  = [];
 let _masterExamCurrentQ = 0;
 
+// Banco del Examen Maestro según la ruta. MASTER_EXAM está escrito para la
+// ruta STEAM 2.0; antes se usaba para TODAS las rutas y un docente de la ruta
+// de IA o de Convivencia terminaba respondiendo preguntas de STEAM y ABP.
+// Para las demás rutas se arma con los exámenes de sus propios cursos,
+// alternando curso por curso para que todos queden representados.
+function _buildMasterExamPool(path) {
+    if (!path || path.id === 'steam20' || typeof allCourses === 'undefined') {
+        return _shuffleArray([...MASTER_EXAM.questions]);
+    }
+    const perCourse = (path.courses || []).map(cid => {
+        const course = allCourses.find(c => c.id === cid);
+        const qs = course ? getCourseExam(course).questions : [];
+        return _shuffleArray(qs.map(q => ({ ...q, course: cid })));
+    }).filter(list => list.length);
+    const pool = [];
+    for (let i = 0; perCourse.some(list => i < list.length); i++) {
+        perCourse.forEach(list => { if (i < list.length) pool.push(list[i]); });
+    }
+    return pool.length ? pool : _shuffleArray([...MASTER_EXAM.questions]);
+}
+
 function startMasterExam() {
     if (typeof MASTER_EXAM === 'undefined') {
         showToast('Error: banco de preguntas no disponible.', 'error'); return;
     }
     _masterExamActive    = true;
     _masterExamCurrentQ  = 0;
-    const shuffled       = _shuffleArray([...MASTER_EXAM.questions]);
-    _masterExamQuestions = shuffled.slice(0, 30).map(_shuffleQuestionOptions);
+    _masterExamQuestions = _buildMasterExamPool(_selectedMasterPath || _activeMasterPath).slice(0, 30).map(_shuffleQuestionOptions);
     _masterExamAnswers   = new Array(_masterExamQuestions.length).fill(null);
 
     switchTab('home');
@@ -5329,8 +5356,9 @@ function _renderMasterExamCard() {
 
     const courseLabels = { steam:'STEAM', abp:'ABP', 'design-thinking':'Design Thinking', evaluacion:'Evaluación', 'tipos-estudiantes':'Tipos de Estudiantes', maestro:'Síntesis' };
     const courseColors = { steam:'#07B0E4', abp:'#2563EB', 'design-thinking':'#E83C8D', evaluacion:'#E9A037', 'tipos-estudiantes':'#7C3AED', maestro:'#1A6B68' };
-    const courseTag    = courseLabels[q.course] || 'General';
-    const courseColor  = courseColors[q.course] || '#1A6B68';
+    const _qCourse     = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === q.course) : null;
+    const courseTag    = courseLabels[q.course] || _qCourse?.title || 'General';
+    const courseColor  = courseColors[q.course] || _qCourse?.color || '#1A6B68';
     const selected     = _masterExamAnswers[_masterExamCurrentQ];
 
     const optionsHtml = q.options.map((opt, i) => {
@@ -5414,13 +5442,18 @@ function _showMasterExamResults() {
     progress.dailyMissions.masterExamDate  = localDateStr();
     if (!progress.dailyMissions.masterExamScores) progress.dailyMissions.masterExamScores = {};
     const _pid = _selectedMasterPath?.id || _activeMasterPath?.id;
-    if (_pid) progress.dailyMissions.masterExamScores[_pid] = pct;
+    // Conservar la mejor nota por ruta: antes un reintento reprobado pisaba
+    // una nota aprobada y el docente perdía el acceso a su certificado.
+    const _prevMaster = _pid ? progress.dailyMissions.masterExamScores[_pid] : undefined;
+    const _wasPassed = typeof _prevMaster === 'number' && _prevMaster >= MASTER_EXAM.passingScore;
+    const _isBest = typeof _prevMaster !== 'number' || pct >= _prevMaster;
+    if (_pid && _isBest) progress.dailyMissions.masterExamScores[_pid] = pct;
     // Fecha por ruta — igual que masterExamScores, masterExamDate por sí
     // sola es global y se pisa si se aprueba más de una ruta.
     if (!progress.dailyMissions.masterExamDates) progress.dailyMissions.masterExamDates = {};
-    if (_pid) progress.dailyMissions.masterExamDates[_pid] = localDateStr();
+    if (_pid && _isBest) progress.dailyMissions.masterExamDates[_pid] = localDateStr();
     window._lastMasterExamScore = pct;
-    if (passed) {
+    if (passed && !_wasPassed) {
         addXP(100, 'Parte 1 del Examen Maestro completada');
     }
     saveProgress();
@@ -5492,10 +5525,12 @@ async function generateMasterCertificate() {
     const nombre      = getDisplayName();
     const scores      = progress?.dailyMissions?.examScores || {};
     const steamScore  = scores['steam'] ?? progress?.dailyMissions?.examScore ?? 0;
-    const masterScore = progress?.dailyMissions?.masterExamScore ?? window._lastMasterExamScore ?? 0;
 
     // Solo los cursos de la RUTA activa (no todo el catálogo)
     const _path = _activeMasterPath || LEARNING_PATHS[0];
+    // Nota de ESTA ruta — la global masterExamScore es la del último intento
+    // de cualquier ruta y podía imprimir la nota de otra ruta en el certificado.
+    const masterScore = _getMasterExamScore(_path?.id) ?? window._lastMasterExamScore ?? 0;
     const _pathLabel = _path?.label || 'Programa de Yo Aprendo';
 
     // Fecha de EMISIÓN = cuándo se aprobó el examen maestro de ESTA ruta,
