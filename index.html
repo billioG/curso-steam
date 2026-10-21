@@ -1285,7 +1285,33 @@
             animation: slideInLeft .28s cubic-bezier(.22, .68, 0, 1.2) forwards;
         }
 
-        /* ── Swipe estilo Tinder ── */
+        /* ── Swipe estilo Tinder (ver attachDeckSwipe en app.js) ── */
+        #activeCard { transform-origin: 50% 110%; }
+        .swipe-stamp {
+            position: absolute; top: 22px; z-index: 30;
+            padding: 4px 12px; border: 3px solid; border-radius: 10px;
+            font-weight: 900; font-size: 18px; letter-spacing: .06em; text-transform: uppercase;
+            background: rgba(255, 255, 255, .9); opacity: 0; pointer-events: none;
+        }
+        .swipe-stamp:empty { display: none; }
+        /* Se arrastra a la izquierda → el sello aparece arriba a la derecha, y viceversa */
+        .swipe-stamp-left { right: 18px; transform: rotate(14deg); }
+        .swipe-stamp-right { left: 18px; transform: rotate(-14deg); }
+        @keyframes deckIn {
+            from { transform: translateY(14px) scale(.95); opacity: .85; }
+            to { transform: none; opacity: 1; }
+        }
+        .deck-in { animation: deckIn .3s cubic-bezier(.2, .8, .3, 1.1); }
+        @keyframes deckShake {
+            0%, 100% { transform: none; }
+            25% { transform: translateX(-10px) rotate(-1.5deg); }
+            75% { transform: translateX(10px) rotate(1.5deg); }
+        }
+        .deck-shake { animation: deckShake .32s ease; }
+        @media (prefers-reduced-motion: reduce) {
+            .deck-in, .deck-shake { animation: none; }
+        }
+
         #activeCard {
             touch-action: pan-y;
             /* permite scroll vertical, captura horizontal */
