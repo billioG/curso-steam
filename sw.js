@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v180';
+const CACHE_VERSION  = 'steam-v181';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -50,6 +50,21 @@ const SECONDARY_ASSETS = [
     './default-logo.svg',
 ];
 
+// Librerías externas de las que depende index.html. Antes NO se guardaban
+// (todo lo de otro origen iba directo a la red): sin conexión, si el
+// navegador ya había descartado su propia caché HTTP, supabase-js no cargaba
+// y la app no arrancaba. Se precachean y se sirven desde caché.
+const EXTERNAL_ASSETS = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+    'https://cdn.jsdelivr.net/npm/idb@8.0.0/build/umd.js',
+    'https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js',
+    'https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js',
+    'https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js',
+    'https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css',
+    'https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Montserrat:wght@500;600;700;800&display=swap',
+];
+const CACHEABLE_ORIGINS = new Set(['https://cdn.jsdelivr.net', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com']);
+
 // ──────────────────────────────────────────────────────────
 // INSTALL — precachear todo lo crítico
 // ──────────────────────────────────────────────────────────
@@ -61,6 +76,11 @@ self.addEventListener('install', event => {
             await Promise.allSettled(
                 CRITICAL_ASSETS.map(url =>
                     cache.add(url).catch(err => console.warn('[SW] No se pudo cachear (crítico):', url, err))
+                )
+            );
+            await Promise.allSettled(
+                EXTERNAL_ASSETS.map(url =>
+                    cache.add(new Request(url, { mode: 'cors' })).catch(err => console.warn('[SW] No se pudo cachear (externo):', url, err))
                 )
             );
             // Secundarios: ignorar errores individuales
@@ -103,9 +123,24 @@ const KNOWN_ROOT_FILES = new Set(
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
 
-    // 1. Peticiones a Supabase / CDN externos → solo red, sin cachear
+    // 1. Otros orígenes. Supabase (datos, auth, funciones) → siempre red.
+    //    Librerías del CDN y fuentes → caché primero y se actualiza en segundo
+    //    plano (sus URLs llevan versión, así que casi nunca cambian).
     if (url.origin !== self.location.origin) {
-        // Para Supabase auth y realtime: dejar pasar siempre
+        if (event.request.method === 'GET' && CACHEABLE_ORIGINS.has(url.origin)) {
+            event.respondWith(
+                caches.match(event.request).then(cached => {
+                    const network = fetch(event.request).then(res => {
+                        if (res && (res.ok || res.type === 'opaque')) {
+                            const clone = res.clone();
+                            caches.open(CACHE_STATIC).then(c => c.put(event.request, clone));
+                        }
+                        return res;
+                    }).catch(() => cached);
+                    return cached || network;
+                })
+            );
+        }
         return;
     }
 
@@ -136,7 +171,9 @@ self.addEventListener('fetch', event => {
                     caches.open(CACHE_STATIC).then(c => c.put(event.request, clone));
                     return res;
                 })
-                .catch(() => caches.match('./index.html'))
+                // Sin conexión: la página pedida si ya se visitó (un recurso,
+                // el glosario…); antes devolvía siempre index.html.
+                .catch(() => caches.match(event.request).then(r => r || caches.match('./index.html')))
         );
         return;
     }
@@ -208,6 +245,16 @@ self.addEventListener('message', event => {
     }
     if (event.data?.type === 'CLEAR_CACHE') {
         caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+    }
+    // La app envía la lista de recursos descargables de los cursos para
+    // tenerlos disponibles sin conexión (así esta lista no hay que
+    // mantenerla a mano aquí). Solo se descargan los que faltan.
+    if (event.data?.type === 'PRECACHE' && Array.isArray(event.data.urls)) {
+        event.waitUntil(caches.open(CACHE_STATIC).then(cache => Promise.allSettled(
+            event.data.urls
+                .filter(u => typeof u === 'string' && new URL(u, self.location.href).origin === self.location.origin)
+                .map(u => cache.match(u).then(hit => hit || cache.add(u)))
+        )));
     }
     if (event.data?.type === 'GET_VERSION') {
         event.ports[0]?.postMessage({ version: CACHE_VERSION });
