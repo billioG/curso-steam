@@ -1931,64 +1931,19 @@ function renderCard() {
         container.dataset.simPrimary = simTheme.primary;
         container.dataset.simSoft = simTheme.soft;
 
-        // Swipe gesture for simulation
-        let _simTouchX = 0;
-        let _simTouchY = 0;
-        let _simDragging = false;
+        // Mismo gesto estilo Tinder que el resto de las tarjetas: aquí el lado
+        // decide (→ de acuerdo, ← en desacuerdo); una vez respondida, la
+        // tarjeta vuelve a navegar como cualquier otra.
         const _simCard = document.getElementById('activeCard');
-        if (_simCard) {
-            _simCard.addEventListener('touchstart', e => {
-                _simTouchX = e.touches[0].clientX;
-                _simTouchY = e.touches[0].clientY;
-                _simDragging = true;
-                _simCard.style.transition = 'none';
-                _setDeckGhostsTransition('none');
-            }, { passive: true });
-            _simCard.addEventListener('touchmove', e => {
-                if (!_simDragging) return;
-                const diffX = e.touches[0].clientX - _simTouchX;
-                const diffY = e.touches[0].clientY - _simTouchY;
-                if (Math.abs(diffX) > Math.abs(diffY)) {
-                    const rotation = diffX / 12;
-                    _simCard.style.transform = `translateX(${diffX}px) rotate(${rotation}deg)`;
-                    _setDeckGhostsProgress(diffX);
-                }
-            }, { passive: true });
-            _simCard.addEventListener('touchend', e => {
-                if (!_simDragging) return;
-                _simDragging = false;
-                const diffX = e.changedTouches[0].clientX - _simTouchX;
-                _simCard.style.transition = 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease';
-                if (diffX > 80) {
-                    _simCard.style.transform = 'translateX(120%) rotate(10deg)';
-                    _simCard.style.opacity = '0';
-                    setTimeout(() => {
-                        handleSimulation('right');
-                        _simCard.style.transition = 'none';
-                        _simCard.style.transform = 'translateX(0) rotate(0deg)';
-                        _simCard.style.opacity = '1';
-                        void _simCard.offsetWidth; // trigger reflow
-                        _simCard.style.transition = 'transform 0.25s ease, opacity 0.2s ease';
-                        _resetDeckGhosts();
-                    }, 250);
-                } else if (diffX < -80) {
-                    _simCard.style.transform = 'translateX(-120%) rotate(-10deg)';
-                    _simCard.style.opacity = '0';
-                    setTimeout(() => {
-                        handleSimulation('left');
-                        _simCard.style.transition = 'none';
-                        _simCard.style.transform = 'translateX(0) rotate(0deg)';
-                        _simCard.style.opacity = '1';
-                        void _simCard.offsetWidth; // trigger reflow
-                        _simCard.style.transition = 'transform 0.25s ease, opacity 0.2s ease';
-                        _resetDeckGhosts();
-                    }, 250);
-                } else {
-                    _simCard.style.transform = 'translateX(0) rotate(0deg)';
-                    _resetDeckGhosts();
-                }
-            });
-        }
+        const _simAnswered = () => document.getElementById('simActions')?.style.display === 'none';
+        attachDeckSwipe(_simCard, {
+            leftLabel: () => _simAnswered() ? 'Siguiente' : 'En desacuerdo',
+            rightLabel: () => _simAnswered() ? 'Anterior' : 'De acuerdo',
+            leftColor: () => _simAnswered() ? '#475569' : '#DC2626',
+            rightColor: () => _simAnswered() ? '#475569' : '#16A34A',
+            onLeft: () => { if (_simAnswered()) goToNextCard(false); else { handleSimulation('left'); _deckReturn(_simCard); } },
+            onRight: () => { if (_simAnswered()) goToPrevCard(false); else { handleSimulation('right'); _deckReturn(_simCard); } },
+        });
     } else if (card.type === 'project') {
         // Tarjeta de proyecto (caso de estudio / actividad práctica)
         const cardId = card.id ? String(card.id) : `${currentModule}-${currentCardIndex}`;
@@ -2170,11 +2125,13 @@ function stopCardTracking() {
 }
 
 function animateCard(direction) {
+    // La tarjeta nueva "sube" desde el mazo (como en Tinder), en vez de
+    // entrar deslizándose desde un costado.
     const card = document.getElementById('activeCard');
     if (!card) return;
-    card.classList.remove('slide-in-left', 'slide-in-right');
+    card.classList.remove('slide-in-left', 'slide-in-right', 'deck-in');
     void card.offsetWidth; // reflow
-    card.classList.add(direction === 'next' ? 'slide-in-right' : 'slide-in-left');
+    card.classList.add('deck-in');
 }
 
 function showComingSoon() {
@@ -2203,9 +2160,7 @@ function goToNextCard(animateExit = true) {
         if (animateExit) {
             const card = document.getElementById('activeCard');
             if (card) {
-                card.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
-                card.style.transform = 'translateX(-120%) rotate(-10deg)';
-                card.style.opacity = '0';
+                _flingCard(card, 'left');
             }
             setTimeout(action, 200);
         } else {
@@ -2235,9 +2190,7 @@ function goToPrevCard(animateExit = true) {
         if (animateExit) {
             const card = document.getElementById('activeCard');
             if (card) {
-                card.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
-                card.style.transform = 'translateX(120%) rotate(10deg)';
-                card.style.opacity = '0';
+                _flingCard(card, 'right');
             }
             setTimeout(update, 200);
         } else {
@@ -2253,9 +2206,7 @@ function goToPrevCard(animateExit = true) {
         if (animateExit) {
             const card = document.getElementById('activeCard');
             if (card) {
-                card.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
-                card.style.transform = 'translateX(120%) rotate(10deg)';
-                card.style.opacity = '0';
+                _flingCard(card, 'right');
             }
             setTimeout(update, 200);
         } else {
@@ -2688,10 +2639,6 @@ function continueToNextModule() {
     animateCard('next');
 }
 
-let _swipeStartX = 0;
-let _swipeStartY = 0;
-let _swipeActive = false;
-
 // Mientras se arrastra cualquier tarjeta (navegación o simulación), las
 // cartas del mazo detrás "suben" un paso cada una — da la sensación física
 // de que la siguiente tarjeta viene detrás, en vez de que la tarjeta activa
@@ -2725,85 +2672,152 @@ function _resetDeckGhosts() {
     if (ghost2) { ghost2.style.transition = ''; ghost2.style.transform = ''; ghost2.style.opacity = ''; }
 }
 
+// ── Gesto de tarjeta estilo Tinder ─────────────────────────────────────────
+// Un solo gesto para TODAS las tarjetas que se pasan (contenido, quiz,
+// simulación, proyecto, compromiso, examen y Examen Maestro), en táctil y con
+// mouse: la tarjeta sigue al dedo y gira desde abajo, aparece un sello con lo
+// que va a pasar al soltar, la del mazo de atrás sube, y se puede lanzar con
+// un movimiento rápido aunque sea corto. Si la acción no está permitida
+// (quiz sin responder), la tarjeta rebota y avisa por qué.
+const _CARD_GHOSTS_HTML = '<div class="card-stack-ghost card-stack-ghost-2"></div><div class="card-stack-ghost card-stack-ghost-1"></div>';
+const _DECK_FLICK_SPEED = 0.5; // px/ms — lanzamiento rápido
+
+function _deckVal(v) { return typeof v === 'function' ? v() : v; }
+
+// Lanza la tarjeta fuera de pantalla hacia `dir` ('left' | 'right').
+function _flingCard(card, dir, dy = 0) {
+    if (!card) return;
+    const sign = dir === 'left' ? -1 : 1;
+    card.style.transition = 'transform .3s cubic-bezier(.2,.7,.3,1)';
+    card.style.transform = `translate(${sign * Math.max(window.innerWidth, 500) * 1.3}px, ${dy * 0.3 + 30}px) rotate(${sign * 24}deg)`;
+}
+
+// Devuelve al centro una tarjeta que se lanzó pero sigue en pantalla
+// (simulación: se lanza para decidir y vuelve mostrando el resultado).
+function _deckReturn(card) {
+    if (!card) return;
+    card.style.transition = 'none';
+    card.style.transform = '';
+    card.querySelectorAll('.swipe-stamp').forEach(st => { st.style.opacity = '0'; });
+    _resetDeckGhosts();
+    card.classList.remove('deck-in');
+    void card.offsetWidth;
+    card.classList.add('deck-in');
+}
+
+function attachDeckSwipe(card, opts) {
+    if (!card || card.dataset.deckSwipe) return;
+    card.dataset.deckSwipe = '1';
+    const o = Object.assign({ canLeft: () => true, canRight: () => true, leftColor: '#475569', rightColor: '#475569' }, opts);
+
+    // Sellos: al arrastrar hacia la izquierda aparece arriba a la derecha (y
+    // viceversa), como el "NOPE"/"LIKE" de Tinder.
+    const mkStamp = side => {
+        const st = document.createElement('div');
+        st.className = 'swipe-stamp swipe-stamp-' + side;
+        card.appendChild(st);
+        return st;
+    };
+    const stampLeft = mkStamp('left');   // se ve al arrastrar a la izquierda
+    const stampRight = mkStamp('right'); // se ve al arrastrar a la derecha
+    const paint = (st, label, color, allowed) => {
+        st.textContent = allowed ? (label || '') : '';
+        st.style.color = color; st.style.borderColor = color;
+    };
+
+    let x0 = 0, y0 = 0, dx = 0, dy = 0, lastX = 0, lastT = 0, vx = 0;
+    let down = false, horizontal = null, moved = false;
+
+    const start = (x, y, target) => {
+        if (target && target.closest && target.closest('input, textarea, select')) return;
+        down = true; horizontal = null; moved = false;
+        x0 = lastX = x; y0 = y; dx = dy = 0; vx = 0; lastT = performance.now();
+        card.style.transition = 'none';
+        _setDeckGhostsTransition('none');
+        paint(stampLeft, _deckVal(o.leftLabel), _deckVal(o.leftColor), _deckVal(o.canLeft) && !!o.onLeft);
+        paint(stampRight, _deckVal(o.rightLabel), _deckVal(o.rightColor), _deckVal(o.canRight) && !!o.onRight);
+    };
+    const move = (x, y) => {
+        if (!down) return;
+        dx = x - x0; dy = y - y0;
+        if (horizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) horizontal = Math.abs(dx) > Math.abs(dy);
+        if (!horizontal) return; // gesto vertical: dejar que la página haga scroll
+        moved = true;
+        const now = performance.now();
+        if (now > lastT) { vx = (x - lastX) / (now - lastT); lastX = x; lastT = now; }
+        card.style.transform = `translate(${dx}px, ${dy * 0.15}px) rotate(${dx / 18}deg)`;
+        const p = Math.min(1, Math.abs(dx) / _DECK_SWIPE_THRESHOLD);
+        stampLeft.style.opacity = dx < 0 ? String(p) : '0';
+        stampRight.style.opacity = dx > 0 ? String(p) : '0';
+        _setDeckGhostsProgress(dx);
+    };
+    const snapBack = (shake) => {
+        card.style.transition = 'transform .35s cubic-bezier(.175,.885,.32,1.275)';
+        card.style.transform = '';
+        stampLeft.style.opacity = stampRight.style.opacity = '0';
+        _resetDeckGhosts();
+        if (shake) {
+            card.classList.remove('deck-shake'); void card.offsetWidth; card.classList.add('deck-shake');
+            if (navigator.vibrate) try { navigator.vibrate(30); } catch (e) {}
+        }
+    };
+    const end = () => {
+        if (!down) return;
+        down = false;
+        if (!moved) { snapBack(false); return; }
+        let dir = null;
+        if (dx < -_DECK_SWIPE_THRESHOLD || (vx < -_DECK_FLICK_SPEED && dx < -30)) dir = 'left';
+        else if (dx > _DECK_SWIPE_THRESHOLD || (vx > _DECK_FLICK_SPEED && dx > 30)) dir = 'right';
+        if (!dir) { snapBack(false); return; }
+        const allowed = dir === 'left' ? (_deckVal(o.canLeft) && o.onLeft) : (_deckVal(o.canRight) && o.onRight);
+        if (!allowed) {
+            snapBack(true);
+            const msg = _deckVal(dir === 'left' ? o.blockedLeftMsg : o.blockedRightMsg);
+            if (msg) showToast(msg, 'error');
+            return;
+        }
+        _flingCard(card, dir, dy);
+        setTimeout(() => (dir === 'left' ? o.onLeft : o.onRight)(), 240);
+    };
+
+    card.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY, e.target), { passive: true });
+    card.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    card.addEventListener('touchend', () => end());
+    card.addEventListener('touchcancel', () => { if (down) { down = false; snapBack(false); } });
+
+    const mm = e => move(e.clientX, e.clientY);
+    const mu = () => { end(); document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); };
+    card.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        start(e.clientX, e.clientY, e.target);
+        if (!down) return;
+        document.addEventListener('mousemove', mm);
+        document.addEventListener('mouseup', mu);
+    });
+    // Un arrastre no debe "hacer clic" en la opción de quiz donde empezó.
+    card.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+    card.addEventListener('dragstart', e => e.preventDefault());
+    card.style.cursor = 'grab';
+}
+
+// Navegación del curso: ← siguiente, → anterior (igual que antes).
 function initSwipe() {
     const card = document.getElementById('activeCard');
     if (!card) return;
-    const THRESHOLD = _DECK_SWIPE_THRESHOLD;
-
-    // ── Helpers compartidos touch + mouse ──────────────────
-    function onStart(clientX, clientY) {
-        _swipeStartX = clientX;
-        _swipeStartY = clientY;
-        _swipeActive = true;
-        card.style.transition = 'none';
-        card.style.cursor = 'grabbing';
-        _setDeckGhostsTransition('none');
-    }
-
-    function onMove(clientX, clientY) {
-        if (!_swipeActive) return;
-        const diffX = clientX - _swipeStartX;
-        const diffY = clientY - _swipeStartY;
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-            const rotation = diffX / 14;
-            card.style.transform = `translateX(${diffX}px) rotate(${rotation}deg)`;
-            // Indicador visual de dirección
-            card.style.opacity = String(Math.max(0.6, 1 - Math.abs(diffX) / 400));
-            _setDeckGhostsProgress(diffX);
-        }
-    }
-
-    function onEnd(clientX) {
-        if (!_swipeActive) return;
-        _swipeActive = false;
-        card.style.cursor = '';
-        const diffX = clientX - _swipeStartX;
-        card.style.transition = 'transform 0.28s cubic-bezier(0.175,0.885,0.32,1.275), opacity 0.22s ease';
-
-        if (diffX > THRESHOLD) {
-            // Swipe derecha → tarjeta anterior
-            card.style.transform = 'translateX(130%) rotate(12deg)';
-            card.style.opacity = '0';
-            setTimeout(() => goToPrevCard(false), 260);
-        } else if (diffX < -THRESHOLD) {
-            // Swipe izquierda → siguiente tarjeta
-            const nextBtn = document.getElementById('nextBtn');
-            if (nextBtn && nextBtn.disabled) {
-                card.style.transform = 'translateX(0) rotate(0deg)';
-                card.style.opacity = '1';
-                showToast('Responde el quiz antes de continuar', 'error');
-                _resetDeckGhosts();
-            } else {
-                card.style.transform = 'translateX(-130%) rotate(-12deg)';
-                card.style.opacity = '0';
-                setTimeout(() => goToNextCard(false), 260);
-            }
-        } else {
-            // Vuelve al centro con spring — el mazo vuelve a su reposo con ella
-            card.style.transform = 'translateX(0) rotate(0deg)';
-            card.style.opacity = '1';
-            _resetDeckGhosts();
-        }
-    }
-
-    // ── Touch (móvil) ───────────────────────────────────────
-    card.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
-    card.addEventListener('touchmove',  e => onMove(e.touches[0].clientX, e.touches[0].clientY),  { passive: true });
-    card.addEventListener('touchend',   e => onEnd(e.changedTouches[0].clientX));
-
-    // ── Mouse (desktop) ─────────────────────────────────────
-    card.addEventListener('mousedown', e => { if (e.button === 0) onStart(e.clientX, e.clientY); });
-    // mousemove y mouseup en document para capturar cuando el cursor sale de la tarjeta
-    const onMouseMove = e => onMove(e.clientX, e.clientY);
-    const onMouseUp   = e => { onEnd(e.clientX); document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
-    card.addEventListener('mousedown', () => {
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup',   onMouseUp);
+    const nextLocked = () => { const nb = document.getElementById('nextBtn'); return !!(nb && nb.disabled); };
+    const canGoBack = () => currentCardIndex > 0 || currentModule > 1;
+    attachDeckSwipe(card, {
+        leftLabel: 'Siguiente', rightLabel: 'Anterior',
+        canLeft: () => !nextLocked(),
+        canRight: canGoBack,
+        onLeft: () => goToNextCard(false),
+        onRight: () => goToPrevCard(false),
+        blockedLeftMsg: () => {
+            const t = modulesData[currentModule - 1]?.cards[currentCardIndex]?.type;
+            return t === 'takeaway' ? 'Elige tu compromiso antes de continuar' : 'Responde el quiz antes de continuar';
+        },
+        blockedRightMsg: 'Es la primera tarjeta del curso',
     });
-
-    // Evitar que el drag arrastre texto/imágenes del navegador
-    card.addEventListener('dragstart', e => e.preventDefault());
-    card.style.cursor = 'grab';
 }
 
 // ==================== MODALES ====================
@@ -4195,16 +4209,16 @@ function renderExamCard() {
         </div>
     </div>`;
 
-    document.getElementById('cardContainer').innerHTML = cardHtml;
-    // Swipe to advance (not back — exam is forward-only)
-    let _tx = 0;
-    const card = document.getElementById('activeCard');
-    if (card) {
-        card.addEventListener('touchstart', e => { _tx = e.changedTouches[0].screenX; }, { passive: true });
-        card.addEventListener('touchend', e => {
-            if (e.changedTouches[0].screenX - _tx < -50) goToNextExamCard();
-        }, { passive: true });
-    }
+    document.getElementById('cardContainer').innerHTML = _CARD_GHOSTS_HTML + cardHtml;
+    // Mismo gesto que las tarjetas del curso. El examen avanza solo hacia
+    // adelante (← siguiente) y solo con una respuesta elegida.
+    attachDeckSwipe(document.getElementById('activeCard'), {
+        leftLabel: () => examCurrentQ >= examQuestions.length - 1 ? 'Ver resultados' : 'Siguiente',
+        canLeft: () => examAnswers[examCurrentQ] !== null,
+        onLeft: () => goToNextExamCard(),
+        blockedLeftMsg: 'Elige una respuesta para continuar',
+        blockedRightMsg: 'En el examen solo se avanza',
+    });
 }
 
 function selectExamAnswer(optIdx) {
@@ -5416,7 +5430,7 @@ function _renderMasterExamCard() {
         </button>`;
     }).join('');
 
-    document.getElementById('cardContainer').innerHTML = `
+    document.getElementById('cardContainer').innerHTML = _CARD_GHOSTS_HTML + `
     <div id="activeCard" class="content-card">
         <div style="padding:20px 20px 0">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -5446,6 +5460,15 @@ function _renderMasterExamCard() {
             </button>
         </div>
     </div>`;
+    attachDeckSwipe(document.getElementById('activeCard'), {
+        leftLabel: () => _masterExamCurrentQ >= _masterExamQuestions.length - 1 ? 'Ver resultados' : 'Siguiente',
+        rightLabel: 'Anterior',
+        canLeft: () => _masterExamAnswers[_masterExamCurrentQ] !== null,
+        canRight: () => _masterExamCurrentQ > 0,
+        onLeft: () => _masterExamNext(),
+        onRight: () => _masterExamPrev(),
+        blockedLeftMsg: 'Elige una respuesta para continuar',
+    });
 }
 
 function _selectMasterAnswer(idx) {
@@ -5454,7 +5477,7 @@ function _selectMasterAnswer(idx) {
 }
 
 function _masterExamPrev() {
-    if (_masterExamCurrentQ > 0) { _masterExamCurrentQ--; _renderMasterExamCard(); }
+    if (_masterExamCurrentQ > 0) { _masterExamCurrentQ--; _renderMasterExamCard(); animateCard('prev'); }
 }
 
 function _masterExamNext() {
@@ -5466,6 +5489,7 @@ function _masterExamNext() {
         _showMasterExamResults();
     } else {
         _renderMasterExamCard();
+        animateCard('next');
     }
 }
 
@@ -5992,6 +6016,21 @@ if ('serviceWorker' in navigator) {
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') reg.update().catch(() => {});
         });
+    });
+
+    // Pedirle al Service Worker que guarde los recursos descargables de los
+    // cursos (guías, rúbricas, bancos de actividades) para usarlos sin
+    // conexión. Se hace unos segundos después de cargar para no competir con
+    // el arranque; el SW solo descarga los que todavía no tiene.
+    navigator.serviceWorker.ready.then(reg => {
+        setTimeout(() => {
+            try {
+                const urls = new Set(['recursos/_shared.css']);
+                Object.values(typeof COURSE_RESOURCES !== 'undefined' ? COURSE_RESOURCES : {}).forEach(list =>
+                    (list || []).forEach(r => { if (r?.url && /^recursos\//.test(r.url)) urls.add(r.url); }));
+                reg.active?.postMessage({ type: 'PRECACHE', urls: [...urls] });
+            } catch (_) {}
+        }, 8000);
     });
 
     // Aviso del admin: mismo ritmo que el chequeo de versión — cada 30 min y al volver a la pestaña
