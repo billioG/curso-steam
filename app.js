@@ -4039,6 +4039,27 @@ function _shuffleArray(arr) {
     return a;
 }
 
+// Arma el examen del curso: ~60% del banco (entre 10 y 20 preguntas),
+// priorizando las que NO salieron en el intento anterior. Antes se tomaban
+// 20 al azar de bancos de 15-20 preguntas, así que cada reintento era
+// prácticamente el mismo examen y se aprobaba de memoria.
+function _drawExamQuestions(course, cid) {
+    const bank = getCourseExam(course).questions.map((q, i) => ({ ...q, _bankIdx: i }));
+    const size = Math.min(bank.length, Math.max(10, Math.min(20, Math.round(bank.length * 0.6))));
+    const seen = new Set(progress?.dailyMissions?.examSeen?.[cid] || []);
+    const fresh = _shuffleArray(bank.filter(q => !seen.has(q._bankIdx)));
+    const repeat = _shuffleArray(bank.filter(q => seen.has(q._bankIdx)));
+    const drawn = [...fresh, ...repeat].slice(0, size);
+    // Se registra al iniciar (no al terminar): salir a mitad y volver a
+    // entrar tampoco debe repetir el mismo examen.
+    if (progress) {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        if (!progress.dailyMissions.examSeen) progress.dailyMissions.examSeen = {};
+        progress.dailyMissions.examSeen[cid] = drawn.map(q => q._bankIdx);
+    }
+    return drawn.map(_shuffleQuestionOptions);
+}
+
 function startExam() {
     // Verificar progreso usando los IDs reales de las tarjetas del curso activo
     const totalCards = modulesData.reduce((acc, m) => acc + m.cards.length, 0);
@@ -4073,15 +4094,16 @@ function startExam() {
         return;
     }
     // Mezclar y tomar 20 preguntas del banco del curso ACTIVO (no siempre STEAM)
-    const allQ = _shuffleArray(getCourseExam(getActiveCourseData()).questions);
-    if (!allQ.length) {
+    const _examCid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+    if (!getCourseExam(getActiveCourseData()).questions.length) {
         showToast('Este curso aún no tiene examen final disponible', 'warning');
         return;
     }
     stopCardTracking();
     examActive = true;
     examCurrentQ = 0;
-    examQuestions = allQ.slice(0, 20).map(_shuffleQuestionOptions);
+    examQuestions = _drawExamQuestions(getActiveCourseData(), _examCid);
+    saveProgress();
     examAnswers = new Array(examQuestions.length).fill(null);
     switchTab('home');
     _hideNavBtns(true);
@@ -4186,41 +4208,17 @@ function renderExamCard() {
 }
 
 function selectExamAnswer(optIdx) {
-    const q = examQuestions[examCurrentQ];
-    const isCorrect = optIdx === q.correct;
+    // Sin revelar la correcta durante el examen: antes cada pregunta mostraba
+    // de inmediato la respuesta y su explicación, y como el banco es finito,
+    // el reintento se aprobaba de memoria. La retroalimentación llega al final
+    // (ver showExamResults), y mientras tanto se puede cambiar la elección.
     examAnswers[examCurrentQ] = optIdx;
-
     document.querySelectorAll('.exam-opt').forEach((btn, i) => {
         const circle = btn.querySelector('span');
-        btn.disabled = true; // lock options after selecting
-        if (i === q.correct) {
-            // siempre resalta la correcta en verde
-            btn.style.cssText = 'border-color:#16A34A;background:#F0FDF4;color:#14532D';
-            circle.style.cssText = 'background:#16A34A;border-color:#16A34A;color:white';
-        } else if (i === optIdx && !isCorrect) {
-            // la elegida incorrecta en rojo
-            btn.style.cssText = 'border-color:#DC2626;background:#FEF2F2;color:#7F1D1D';
-            circle.style.cssText = 'background:#DC2626;border-color:#DC2626;color:white';
-        } else {
-            btn.style.cssText = 'border-color:#E2E8F0;background:white;color:#94A3B8';
-            circle.style.cssText = 'border-color:#CBD5E1;color:#94A3B8';
-        }
+        const sel = i === optIdx;
+        btn.style.cssText = sel ? 'border-color:#7C3AED;background:#EDE9FE;color:#4C1D95' : 'border-color:#E2E8F0;background:white;color:#374151';
+        if (circle) circle.style.cssText = sel ? 'background:#7C3AED;border-color:#7C3AED;color:white' : 'border-color:#CBD5E1;color:#64748B';
     });
-
-    // Mostrar retroalimentación inline debajo de las opciones
-    const opts = document.getElementById('examOptions');
-    if (opts) {
-        const fb = document.createElement('div');
-        const optLetters = ['A', 'B', 'C', 'D'];
-        fb.style.cssText = `margin-top:12px;padding:10px 14px;border-radius:14px;font-size:.82rem;line-height:1.5;
-            background:${isCorrect ? '#F0FDF4' : '#FEF2F2'};
-            border:1.5px solid ${isCorrect ? '#86EFAC' : '#FECACA'};
-            color:${isCorrect ? '#14532D' : '#7F1D1D'}`;
-        fb.innerHTML = `<strong>${isCorrect ? '✅ ¡Correcto!' : `❌ Incorrecto · La correcta era ${optLetters[q.correct]}`}</strong>` +
-            (q.explanation ? `<br><span style="opacity:.85">${q.explanation}</span>` : '');
-        opts.appendChild(fb);
-    }
-
     const nb = document.getElementById('examNextBtn');
     if (nb) { nb.disabled = false; nb.style.background = '#5C35C5'; }
 }
@@ -4302,6 +4300,19 @@ function showExamResults() {
                     <p style="font-size:.75rem;color:#64748B;margin-top:2px">Incorrectas ❌</p>
                 </div>
             </div>
+            ${(() => {
+                // Repaso de las falladas: pregunta + explicación, sin marcar la
+                // letra correcta (el reintento trae en su mayoría preguntas nuevas).
+                const missed = examQuestions.filter((q, i) => examAnswers[i] !== q.correct);
+                if (!missed.length) return '';
+                return `<div style="text-align:left;margin-bottom:16px">
+                    <p style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#64748B;margin-bottom:8px">Para repasar (${missed.length})</p>
+                    ${missed.map(q => `<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:10px 12px;margin-bottom:8px">
+                        <p style="font-size:.82rem;font-weight:700;color:#1E293B;line-height:1.4">${q.text}</p>
+                        ${q.explanation ? `<p style="font-size:.78rem;color:#475569;line-height:1.5;margin-top:4px">${q.explanation}</p>` : ''}
+                    </div>`).join('')}
+                </div>`;
+            })()}
             ${passed ? `<button onclick="requestCertificate('diploma', null, ${pct})" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">📜 Obtener mi diploma de participación · Q10</button>` : ''}
             <button onclick="retryExam()" class="w-full py-3 rounded-xl font-bold text-sm" style="border:2px solid #E2E8F0;color:#475569;background:white;margin-bottom:4px">
                 🔄 Reintentar examen
@@ -4315,9 +4326,10 @@ function showExamResults() {
 
 function retryExam() {
     examCurrentQ = 0;
-    // Reintento: nuevo subconjunto aleatorio de 20 preguntas del curso ACTIVO
-    const allQ = _shuffleArray(getCourseExam(getActiveCourseData()).questions);
-    examQuestions = allQ.slice(0, 20).map(_shuffleQuestionOptions);
+    // Reintento: prioriza las preguntas que no salieron en el intento anterior
+    const _cid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+    examQuestions = _drawExamQuestions(getActiveCourseData(), _cid);
+    saveProgress();
     examAnswers = new Array(examQuestions.length).fill(null);
     renderExamCard();
     animateCard('next');
@@ -5312,25 +5324,42 @@ let _masterExamQuestions = [];
 let _masterExamAnswers  = [];
 let _masterExamCurrentQ = 0;
 
-// Banco del Examen Maestro según la ruta. MASTER_EXAM está escrito para la
-// ruta STEAM 2.0; antes se usaba para TODAS las rutas y un docente de la ruta
-// de IA o de Convivencia terminaba respondiendo preguntas de STEAM y ABP.
-// Para las demás rutas se arma con los exámenes de sus propios cursos,
-// alternando curso por curso para que todos queden representados.
+// Clave corta y estable de una pregunta (para recordar cuáles ya salieron).
+function _qKey(q) {
+    const str = (q.course || '') + '|' + (q.text || '');
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+}
+
+// Ordena una lista poniendo primero (al azar) las preguntas que no salieron
+// en el intento anterior y después las ya vistas.
+function _unseenFirst(list, seen) {
+    return [..._shuffleArray(list.filter(q => !seen.has(_qKey(q)))), ..._shuffleArray(list.filter(q => seen.has(_qKey(q))))];
+}
+
+// Banco del Examen Maestro según la ruta. Se arma con los exámenes de los
+// cursos de la ruta, alternando curso por curso para que todos queden
+// representados (antes TODAS las rutas usaban las preguntas de STEAM). La
+// ruta STEAM 2.0 suma además las preguntas de síntesis de MASTER_EXAM, que
+// van primero. En cada lista van primero las preguntas que no salieron en
+// el intento anterior, para que un reintento no repita el mismo examen.
 function _buildMasterExamPool(path) {
-    if (!path || path.id === 'steam20' || typeof allCourses === 'undefined') {
-        return _shuffleArray([...MASTER_EXAM.questions]);
-    }
+    const seen = new Set(progress?.dailyMissions?.masterExamSeen?.[path?.id] || []);
+    const synthesis = (!path || path.id === 'steam20') ? _unseenFirst(MASTER_EXAM.questions, seen) : [];
+    if (!path || typeof allCourses === 'undefined') return synthesis;
     const perCourse = (path.courses || []).map(cid => {
         const course = allCourses.find(c => c.id === cid);
         const qs = course ? getCourseExam(course).questions : [];
-        return _shuffleArray(qs.map(q => ({ ...q, course: cid })));
+        return _unseenFirst(qs.map(q => ({ ...q, course: cid })), seen);
     }).filter(list => list.length);
-    const pool = [];
+    const rr = [];
     for (let i = 0; perCourse.some(list => i < list.length); i++) {
-        perCourse.forEach(list => { if (i < list.length) pool.push(list[i]); });
+        perCourse.forEach(list => { if (i < list.length) rr.push(list[i]); });
     }
-    return pool.length ? pool : _shuffleArray([...MASTER_EXAM.questions]);
+    if (!synthesis.length) return rr.length ? rr : _unseenFirst(MASTER_EXAM.questions, seen);
+    // STEAM 2.0: mitad síntesis, mitad cursos (y lo que sobre de cada uno al final)
+    return [...synthesis.slice(0, 15), ...rr.slice(0, 15), ...synthesis.slice(15), ...rr.slice(15)];
 }
 
 function startMasterExam() {
@@ -5339,7 +5368,18 @@ function startMasterExam() {
     }
     _masterExamActive    = true;
     _masterExamCurrentQ  = 0;
-    _masterExamQuestions = _buildMasterExamPool(_selectedMasterPath || _activeMasterPath).slice(0, 30).map(_shuffleQuestionOptions);
+    const _mPath = _selectedMasterPath || _activeMasterPath;
+    const _mPool = _buildMasterExamPool(_mPath);
+    // 30 preguntas, o ~60% del banco si es chico (ruta de un solo curso), para
+    // que el reintento no sea el mismo examen.
+    const _mSize = Math.min(30, _mPool.length, Math.max(10, Math.round(_mPool.length * 0.6)));
+    _masterExamQuestions = _shuffleArray(_mPool.slice(0, _mSize)).map(_shuffleQuestionOptions);
+    if (_mPath?.id) {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        if (!progress.dailyMissions.masterExamSeen) progress.dailyMissions.masterExamSeen = {};
+        progress.dailyMissions.masterExamSeen[_mPath.id] = _masterExamQuestions.map(_qKey);
+        saveProgress();
+    }
     _masterExamAnswers   = new Array(_masterExamQuestions.length).fill(null);
 
     switchTab('home');
