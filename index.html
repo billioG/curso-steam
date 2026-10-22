@@ -534,6 +534,11 @@
         }
         .card-stack-ghost-1 { transform: translateY(10px) scale(0.96); opacity: .95; z-index: 1; }
         .card-stack-ghost-2 { transform: translateY(20px) scale(0.92); opacity: .7; z-index: 0; }
+        /* La carta de detrás muestra la tarjeta siguiente: mismo ancho que la activa
+           (al terminar el arrastre queda en escala 1, justo donde aparecerá) y sin
+           desbordar su contenido. */
+        .card-peek { left: 0; right: 0; overflow: hidden; display: flex; flex-direction: column; }
+        .card-peek .card-body p { display: -webkit-box; -webkit-line-clamp: 8; -webkit-box-orient: vertical; overflow: hidden; }
 
         /* ── Banner ilustrado (parte superior de la tarjeta) ── */
         .card-banner {
