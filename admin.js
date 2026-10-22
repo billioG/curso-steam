@@ -1322,19 +1322,24 @@ function openUserPanel(userId) {
         }).join('');
     }
 
-    // Evidencias de aplicación en el aula (las pide la app antes del diploma)
+    // Evidencias de aplicación en el aula: la del diploma (por curso) y las de
+    // "Lo apliqué en clase" (por tarjeta). Ambas las revisa la IA en la app.
     const evEl = document.getElementById('panelEvidence');
     if (evEl) {
-        const ev = p?.daily_missions?.applicationEvidence || {};
-        const entries = Object.entries(ev);
-        evEl.innerHTML = entries.length
-            ? entries.map(([cid, e]) => {
-                const c = courses.find(x => x.id === cid);
-                return `<div class="bg-slate-50 rounded-xl p-3">
-                    <p class="text-xs font-bold text-slate-700">${esc(c?.title || cid)} <span class="font-normal text-slate-400">· ${esc(e?.date || '')}</span></p>
+        const dm = p?.daily_missions || {};
+        const aiTag = e => e?.ai?.approved
+            ? `<span class="font-normal" style="color:#15803d">· ✓ IA ${esc(String(e.ai.score ?? ''))}/10</span>`
+            : '<span class="font-normal text-slate-400">· sin revisión IA</span>';
+        const item = (title, e) => `<div class="bg-slate-50 rounded-xl p-3">
+                    <p class="text-xs font-bold text-slate-700">${esc(title)} <span class="font-normal text-slate-400">· ${esc(e?.date || '')}</span> ${aiTag(e)}</p>
                     <p class="text-xs text-slate-600 mt-1" style="white-space:pre-wrap">${esc(e?.text || '')}</p>
                 </div>`;
-            }).join('')
+        const diplomas = Object.entries(dm.applicationEvidence || {}).map(([cid, e]) =>
+            item('Diploma · ' + (courses.find(x => x.id === cid)?.title || cid), e));
+        const cards = Object.entries(dm.appliedEvidence || {}).map(([key, e]) =>
+            item('Tarjeta ' + key + (e?.courseId ? ' · ' + (courses.find(x => x.id === e.courseId)?.title || e.courseId) : ''), e));
+        const all = [...diplomas, ...cards];
+        evEl.innerHTML = all.length ? all.join('')
             : '<span class="text-slate-400 text-xs">Aún no registra aplicaciones en el aula</span>';
     }
 
