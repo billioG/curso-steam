@@ -5787,7 +5787,9 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
         'tipos-estudiantes': `Por haber completado satisfactoriamente el curso <strong>Conoce a Quien Enseñas</strong>, demostrando competencias en identificación de perfiles de aprendizaje, estrategias diferenciadas y atención a la diversidad del aula`,
         'storytelling': `Por haber completado satisfactoriamente el curso <strong>Storytelling para Docentes</strong>, demostrando dominio del arte de narrar para enseñar, estructura narrativa pedagógica y el uso de historias como herramienta de impacto en el aula`
     };
-    const courseDesc = courseDescs[_course.id] || courseDescs['steam'];
+    // Los cursos sin texto propio usan uno genérico con su título real (antes
+    // caían en el de STEAM y el diploma decía «Curso STEAM 2.0»).
+    const courseDesc = courseDescs[_course.id] || `Por haber completado satisfactoriamente el curso <strong>${esc(courseTitle)}</strong>`;
 
     // Intentar cargar imágenes reales; si no existen, usar fallback SVG
     const [firmaSrc, certSigs] = await Promise.all([
