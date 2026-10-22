@@ -538,6 +538,7 @@
            (al terminar el arrastre queda en escala 1, justo donde aparecerá) y sin
            desbordar su contenido. */
         .card-peek { left: 0; right: 0; overflow: hidden; display: flex; flex-direction: column; }
+        .card-peek-prev { visibility: hidden; } /* solo se ve al arrastrar hacia la derecha (regresar) */
         .card-peek .card-body p { display: -webkit-box; -webkit-line-clamp: 8; -webkit-box-orient: vertical; overflow: hidden; }
 
         /* ── Banner ilustrado (parte superior de la tarjeta) ── */
@@ -1631,19 +1632,16 @@
         .hub-row:last-child { border-bottom: none; padding-bottom: 0; }
 
 
-        /* ── Login: ilustraciones laterales (solo pantallas anchas) ── */
+        /* ── Login: ilustraciones laterales como marca de agua (solo pantallas anchas) ──
+           En escala de grises y muy tenues, para dar textura sin competir con el
+           formulario. Sin animación. */
         .login-art { display: none; pointer-events: none; }
         @media (min-width: 1000px) {
             #loginScreen .login-card { position: relative; z-index: 1; }
             .login-art { display: block; position: fixed; inset: 0; overflow: hidden; z-index: 0; }
-            .login-art svg { position: absolute; top: 50%; transform: translateY(-50%); width: clamp(230px, 24vw, 420px); height: auto; }
-            .login-art .art-l { right: calc(50% + 244px); }
-            .login-art .art-r { left: calc(50% + 244px); }
-        }
-        @media (prefers-reduced-motion: no-preference) {
-            .art-float { animation: artFloat 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-            .art-float-2 { animation-duration: 7.5s; animation-delay: -2s; }
-            @keyframes artFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+            .login-art svg { position: absolute; top: 50%; transform: translateY(-50%); width: clamp(260px, 28vw, 480px); height: auto; filter: grayscale(1); opacity: .2; }
+            .login-art .art-l { right: calc(50% + 240px); }
+            .login-art .art-r { left: calc(50% + 240px); }
         }
 
         .modal-drag {
@@ -1911,8 +1909,8 @@
             <rect x="125" y="362" width="150" height="10" rx="5" fill="#E2E8F0"/>
             <rect x="125" y="362" width="98" height="10" rx="5" fill="#5C35C5"/>
           </g>
-          <g class="art-float"><polygon points="60,150 66,166 83,167 70,177 75,194 60,184 45,194 50,177 37,167 54,166" fill="#F59E0B"/></g>
-          <g class="art-float art-float-2"><circle cx="338" cy="430" r="24" fill="#10B981"/><path d="M327 430 l8 8 l15 -17" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+          <g><polygon points="60,150 66,166 83,167 70,177 75,194 60,184 45,194 50,177 37,167 54,166" fill="#F59E0B"/></g>
+          <g><circle cx="338" cy="430" r="24" fill="#10B981"/><path d="M327 430 l8 8 l15 -17" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
           <g stroke="#5C35C5" stroke-width="5" stroke-linecap="round"><line x1="338" y1="236" x2="338" y2="256"/><line x1="328" y1="246" x2="348" y2="246"/></g>
           <circle cx="40" cy="300" r="6" fill="#07B0E4"/><circle cx="364" cy="330" r="5" fill="#F472B6"/>
         </svg>
@@ -1941,8 +1939,8 @@
             <circle cx="296" cy="288" r="9" fill="#F59E0B"/>
           </g>
           <g transform="translate(-4 -160) rotate(-30 120 296)"><rect x="60" y="288" width="128" height="16" rx="3" fill="#FBBF24"/><polygon points="60,288 36,296 60,304" fill="#FCD9B6"/><polygon points="44,293 36,296 44,299" fill="#1E293B"/><rect x="184" y="288" width="14" height="16" rx="3" fill="#F472B6"/></g>
-          <g class="art-float"><path d="M338 232 c-8 -12 -26 -4 -20 10 c4 10 20 18 20 18 c0 0 16 -8 20 -18 c6 -14 -12 -22 -20 -10z" fill="#F472B6"/></g>
-          <g class="art-float art-float-2"><polygon points="60,420 65,434 80,435 69,444 73,458 60,450 47,458 51,444 40,435 55,434" fill="#F59E0B"/></g>
+          <g><path d="M338 232 c-8 -12 -26 -4 -20 10 c4 10 20 18 20 18 c0 0 16 -8 20 -18 c6 -14 -12 -22 -20 -10z" fill="#F472B6"/></g>
+          <g><polygon points="60,420 65,434 80,435 69,444 73,458 60,450 47,458 51,444 40,435 55,434" fill="#F59E0B"/></g>
           <circle cx="368" cy="200" r="6" fill="#10B981"/><circle cx="38" cy="250" r="5" fill="#5C35C5"/>
         </svg>
       </div>
