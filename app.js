@@ -638,6 +638,7 @@ async function logout() {
     _sessionId = null;
     _sessionStart = null;
     await supabase.auth.signOut();
+    hideMascot({ remember: false, animate: false });
     currentUser = null;
     progress = null;
     document.getElementById("loginScreen").classList.remove("hidden");
@@ -710,7 +711,7 @@ async function checkExistingSession() {
         _refreshPaidCertRefs();
         await loadAppConfig();
         _updatePushToggleUI();
-        _checkOnboardingRequirements(() => _landOnAppropriateScreen());
+        _checkOnboardingRequirements(() => { _landOnAppropriateScreen(); _restoreMascot(); applyUiPrefs(); });
         return true;
     }
     return false;
@@ -851,7 +852,42 @@ function _haptic(pattern) {
     try { navigator.vibrate?.(pattern); } catch (_) {}
 }
 
+// ==================== PREFERENCIAS DE LECTURA ====================
+// "Modo sobrio": sin animaciones de logros, confeti ni avisos de XP/rachas
+// (los logros y el XP se siguen guardando y se ven en Progreso). "Letra
+// grande": agranda toda la interfaz. Se guardan en el dispositivo y en el
+// progreso del docente, para que lo sigan en otro teléfono.
+function _uiPrefs() {
+    try { return Object.assign({}, progress?.dailyMissions?.uiPrefs || {}, JSON.parse(localStorage.getItem('uiPrefs') || '{}')); }
+    catch (_) { return {}; }
+}
+function isSoberMode() { return !!_uiPrefs().sober; }
+function applyUiPrefs() {
+    const p = _uiPrefs();
+    document.documentElement.classList.toggle('big-text', !!p.bigText);
+    document.documentElement.classList.toggle('sober-mode', !!p.sober);
+    const t1 = document.getElementById('prefSober'); if (t1) t1.checked = !!p.sober;
+    const t2 = document.getElementById('prefBigText'); if (t2) t2.checked = !!p.bigText;
+}
+function setUiPref(key, value) {
+    const p = _uiPrefs();
+    p[key] = !!value;
+    try { localStorage.setItem('uiPrefs', JSON.stringify(p)); } catch (_) {}
+    if (progress) {
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        progress.dailyMissions.uiPrefs = p;
+        saveProgress();
+    }
+    applyUiPrefs();
+}
+applyUiPrefs();
+
+// Avisos de gamificación que el modo sobrio silencia (los errores y avisos
+// necesarios —"Responde el quiz…", "Sin conexión"— se muestran siempre).
+const _GAMIFY_TOAST = /XP|Misión|Logro|Racha|racha|Insignia|🏆|🎉|✨|🔥/;
+
 function showToast(message, type) {
+    if (type !== 'error' && isSoberMode() && _GAMIFY_TOAST.test(String(message))) return;
     const toast = document.createElement('div');
     toast.className = 'toast-notification';
     // textContent: ningún caller pasa HTML y evita XSS si el mensaje incluye datos de usuario
@@ -1107,6 +1143,7 @@ function showBadgeDetail(badgeId) {
 }
 
 function showBadgeUnlockAnimation(badge) {
+    if (isSoberMode()) return; // el logro queda guardado; se ve en Progreso
     setTimeout(() => _showBadgeUnlockOverlay(badge, true), 600);
 }
 
@@ -1635,6 +1672,31 @@ function _moduleCheckpointDots() {
 }
 
 // ==================== FUNCIONES BASE DEL CURSO ====================
+// ── Tiempo mínimo de lectura ───────────────────────────────────────────────
+// Una tarjeta de contenido cuenta como leída después de ~1/3 del tiempo que
+// toma leerla a 200 palabras por minuto (entre 3 y 12 segundos). No hace
+// falta esperar mirando un contador: si el docente la lee, ya pasó ese tiempo.
+let _readTimer = null;
+function _minReadMs(card) {
+    const words = ((card.content || '') + ' ' + _extraText(card)).split(/\s+/).filter(Boolean).length;
+    return Math.max(3000, Math.min(12000, Math.round(words / 200 * 60000 / 3)));
+}
+function _markReadAfter(cardId, ms, onMarked) {
+    clearTimeout(_readTimer);
+    if (!progress || progress.completedCards.includes(cardId)) return;
+    const startCourse = currentCourseId;
+    _readTimer = setTimeout(() => {
+        // Seguir en la misma tarjeta (no se pasó a otra ni se cambió de curso)
+        const here = modulesData[currentModule - 1]?.cards[currentCardIndex];
+        const hereId = here?.id != null ? String(here.id) : `${currentModule}-${currentCardIndex}`;
+        if (!progress || currentCourseId !== startCourse || hereId !== cardId || examActive || _masterExamActive) return;
+        if (progress.completedCards.includes(cardId)) return;
+        progress.completedCards.push(cardId);
+        if (onMarked) onMarked();
+        saveProgress();
+    }, ms);
+}
+
 function renderCard() {
     const module = modulesData[currentModule - 1];
     if (!module) return;
@@ -1660,15 +1722,16 @@ function renderCard() {
         if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = "1"; }
 
         const cardId = card.id ? String(card.id) : `${currentModule}-${currentCardIndex}`;
-        if (!progress.completedCards.includes(cardId)) {
-            progress.completedCards.push(cardId);
+        // Solo cuenta como leída si estuvo un mínimo de tiempo en pantalla
+        // (ver _markReadAfter). Antes contaba al aparecer: se podía "completar"
+        // un curso entero deslizando todo en un minuto.
+        _markReadAfter(cardId, _minReadMs(card), () => {
             updateMissionProgress("cards", 1);
             // Madrugadora STEAM
             const _h = new Date().getHours();
             if (_h < 8) { if (!progress.dailyMissions) progress.dailyMissions = {}; progress.dailyMissions.earlyBirdCards = (progress.dailyMissions.earlyBirdCards || 0) + 1; }
-            saveProgress();
             checkBadges();
-        }
+        });
 
         const _courseTheme = (typeof getCourseThemeAndIllus !== 'undefined')
             ? getCourseThemeAndIllus(currentCourseId || 'steam', currentModule)
@@ -1855,7 +1918,7 @@ function renderCard() {
                             // premio chico e inmediato en vez de esperar al final del
                             // módulo. Solo se muestra desde la 2da racha para que no
                             // aparezca en el primer quiz del módulo (sin impacto aún).
-                            if (progress.dailyMissions.quizStreak >= 2) {
+                            if (progress.dailyMissions.quizStreak >= 2 && !isSoberMode()) {
                                 feedbackDiv.innerHTML += `<div style="margin-top:8px;display:flex;align-items:center;gap:6px;background:#fef9c3;border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;color:#a16207">
                                     <span style="display:inline-flex;width:14px;height:14px">${ICONS?.bolt || '⚡'}</span>
                                     Racha de ${progress.dailyMissions.quizStreak} bloques seguidos
@@ -1947,11 +2010,7 @@ function renderCard() {
     } else if (card.type === 'project') {
         // Tarjeta de proyecto (caso de estudio / actividad práctica)
         const cardId = card.id ? String(card.id) : `${currentModule}-${currentCardIndex}`;
-        if (!progress.completedCards.includes(cardId)) {
-            progress.completedCards.push(cardId);
-            updateMissionProgress('cards', 1);
-            saveProgress();
-        }
+        _markReadAfter(cardId, 8000, () => updateMissionProgress('cards', 1));
         if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = '1'; }
 
         const _ct = (typeof getCourseThemeAndIllus !== 'undefined')
@@ -2218,7 +2277,11 @@ function goToPrevCard(animateExit = true) {
 function askModuleFeedback(moduleId) {
     const _feedbackKey = `${currentCourseId || 'steam'}-${moduleId}`;
     if (progress.moduleFeedback?.[_feedbackKey]) { continueToNextModule(); return; }
-    const moduleName = modulesData[moduleId - 1]?.title || `Módulo ${moduleId}`;
+    // Una sola encuesta por curso (al terminar el último módulo): antes se
+    // pedía al final de cada módulo, 5 veces por curso.
+    if (moduleId < modulesData.length) { continueToNextModule(); return; }
+    const _courseTitle = (typeof allCourses !== 'undefined' ? allCourses.find(c => c.id === currentCourseId)?.title : null) || 'este curso';
+    const moduleName = `«${_courseTitle}»`;
     const feedbackHtml = `<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6"><h2 class="text-xl font-bold text-indigo-800 mb-2">📝 ¿Cómo te fue en ${moduleName}?</h2><div class="mb-4"><label class="block font-medium mb-2">Satisfacción (1-5)</label><div class="flex gap-2 justify-between" id="ratingStars">${[1, 2, 3, 4, 5].map(n => `<button data-rating="${n}" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>`).join('')}</div><input type="hidden" id="selectedRating" value="0"></div><div class="mb-4"><label class="block font-medium mb-2">NPS (0-10): ¿Recomendarías este curso a otro docente?</label><div class="grid grid-cols-6 gap-1">${[0,1,2,3,4,5,6,7,8,9,10].map(n => `<button data-nps="${n}" class="nps-btn w-9 h-9 rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition text-sm">${n}</button>`).join('')}</div><input type="hidden" id="selectedNPS" value="-1"></div><div id="lowScorePrompt" style="display:none;background:#fef3c7;border:1px solid #fde68a;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:13px;color:#92400e">💬 <strong>¿Qué podríamos mejorar?</strong> Tu opinión nos ayuda a hacer el curso mejor.</div><div class="mb-4"><textarea id="feedbackComment" rows="3" class="w-full border border-gray-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Comentario o sugerencia (opcional)"></textarea></div><div class="flex gap-2"><button id="submitFeedbackBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full flex-1 transition">Enviar</button><button id="skipFeedbackBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition">Omitir</button></div></div></div>`;
     document.body.insertAdjacentHTML('beforeend', feedbackHtml);
 
@@ -4099,7 +4162,7 @@ function startExam() {
                 <h3 class="text-lg font-bold text-slate-800">⚠️ Tarjetas pendientes</h3>
                 <button onclick="this.closest('.modal-sheet').remove()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 text-xl flex items-center justify-center">&times;</button>
             </div>
-            <p class="text-sm text-slate-500 mb-4">Necesitas completar al menos el 80% del curso para rendir el examen (faltan ${faltante} tarjetas):</p>
+            <p class="text-sm text-slate-500 mb-4">Necesitas completar al menos el 80% del curso para rendir el examen (faltan ${faltante} tarjetas). Una tarjeta cuenta como leída cuando pasas unos segundos en ella:</p>
             <div class="space-y-3 text-sm">
                 ${unseen.map(block => `<div class="bg-red-50 border border-red-100 rounded-2xl p-3 text-red-700 whitespace-pre-line">${block.trim()}</div>`).join('')}
             </div>
@@ -4575,6 +4638,48 @@ function _offerCertificateDownload(blobUrl, filename, label) {
 // usuario ya pagó (lee certificate_payments, solo puede LEER su propia
 // fila por RLS); si no, crea un checkout y redirige de página completa —
 // Recurrente confirma el pago vía webhook server-side, nunca el cliente.
+// ── Evidencia de aplicación en el aula (requisito del diploma) ──────────────
+const _EVIDENCE_MIN_CHARS = 120;
+function _getApplicationEvidence(cid) {
+    return progress?.dailyMissions?.applicationEvidence?.[cid] || null;
+}
+function _askApplicationEvidence(cid, onDone) {
+    const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === cid) : null;
+    const commitment = (progress?.dailyMissions?.pinnedCards || []).filter(p => p.courseId === cid && p.commitment).map(p => p.commitment)[0];
+    const m = document.createElement('div');
+    m.className = 'modal-sheet';
+    m.style.zIndex = '9999';
+    m.innerHTML = `<div class="modal-inner" style="max-height:88vh;overflow-y:auto">
+        <div class="modal-drag"></div>
+        <h3 class="text-lg font-bold text-slate-800 mb-1">Antes de tu diploma: ¿cómo lo aplicaste?</h3>
+        <p class="text-sm text-slate-500 mb-3">El diploma de «${esc(course?.title || 'este curso')}» certifica que llevaste algo del curso a tu aula. Cuéntalo en pocas líneas: qué hiciste, con qué grupo y qué observaste en tus estudiantes.</p>
+        ${commitment ? `<p class="text-xs mb-3" style="background:#FEF9C3;color:#854D0E;border-radius:10px;padding:8px 10px">Tu compromiso en el curso fue: <strong>${esc(commitment)}</strong></p>` : ''}
+        <textarea id="_evText" rows="6" class="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="Ej.: Con mi grupo de 4.º hice la actividad de... Primero..., después... Noté que..."></textarea>
+        <p id="_evCount" class="text-xs text-slate-500 mt-1">0 / ${_EVIDENCE_MIN_CHARS} caracteres mínimos</p>
+        <button id="_evSave" disabled class="w-full mt-3 py-3 rounded-xl font-bold text-white text-sm" style="background:#94A3B8">Guardar y continuar</button>
+        <button id="_evLater" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Todavía no lo aplico — lo haré y vuelvo</button>
+    </div>`;
+    document.body.appendChild(m);
+    const ta = m.querySelector('#_evText'), btn = m.querySelector('#_evSave'), cnt = m.querySelector('#_evCount');
+    ta.addEventListener('input', () => {
+        const n = ta.value.trim().length, ok = n >= _EVIDENCE_MIN_CHARS;
+        cnt.textContent = ok ? '✓ Listo' : `${n} / ${_EVIDENCE_MIN_CHARS} caracteres mínimos`;
+        btn.disabled = !ok; btn.style.background = ok ? '#5C35C5' : '#94A3B8';
+    });
+    m.querySelector('#_evLater').addEventListener('click', () => m.remove());
+    btn.addEventListener('click', () => {
+        const text = ta.value.trim();
+        if (text.length < _EVIDENCE_MIN_CHARS) return;
+        if (!progress.dailyMissions) progress.dailyMissions = {};
+        if (!progress.dailyMissions.applicationEvidence) progress.dailyMissions.applicationEvidence = {};
+        progress.dailyMissions.applicationEvidence[cid] = { text: text.slice(0, 2000), date: localDateStr() };
+        saveProgress();
+        m.remove();
+        if (onDone) onDone();
+    });
+    setTimeout(() => ta.focus(), 200);
+}
+
 async function requestCertificate(certType, courseId, score) {
     if (!currentUser) { showToast('Inicia sesión para continuar.', 'error'); return; }
 
@@ -4617,6 +4722,14 @@ async function requestCertificate(certType, courseId, score) {
         }
     } catch (e) {
         console.error('Error verificando pago de certificado:', e);
+    }
+
+    // Antes de comprar un diploma nuevo: evidencia de aplicación en el aula.
+    // Aprobar el examen muestra que se entendió el curso; el diploma certifica
+    // además que se llevó al aula. (No aplica a diplomas ya pagados.)
+    if (certType === 'diploma' && !_getApplicationEvidence(cid)) {
+        _askApplicationEvidence(cid, () => requestCertificate(certType, courseId, score));
+        return;
     }
 
     try {
@@ -5847,7 +5960,7 @@ document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
     if (success) {
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
-        _checkOnboardingRequirements(() => _landOnAppropriateScreen());
+        _checkOnboardingRequirements(() => { _landOnAppropriateScreen(); _restoreMascot(); applyUiPrefs(); });
     }
 });
 document.getElementById("doRegister")?.addEventListener("click", async () => {
@@ -5859,7 +5972,7 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
         await checkReferralBonus();
-        _checkOnboardingRequirements(() => _landOnAppropriateScreen());
+        _checkOnboardingRequirements(() => { _landOnAppropriateScreen(); _restoreMascot(); applyUiPrefs(); });
     }
 });
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
@@ -6005,6 +6118,7 @@ checkExistingSession();
 // ==================== AUTO-ACTUALIZACIÓN (sin borrar caché manualmente) ====================
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then(reg => {
+        if (!reg) return; // SW deshabilitado por el navegador
         // Revisa de inmediato al cargar — antes esto NO pasaba: una sesión
         // que nunca se pone en segundo plano ni pasan 30 min podía quedarse
         // corriendo código viejo toda la sesión sin ningún chequeo.
@@ -6157,6 +6271,7 @@ function closeModuleComplete() {
 }
 
 function startConfetti() {
+    if (isSoberMode()) return;
     const canvas = document.getElementById('confettiCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -6396,10 +6511,9 @@ function _finishAppTour() {
         progress.dailyMissions.onboardingDone = '1';
         if (typeof saveProgress === 'function') saveProgress();
     }
-    const diagDone = localStorage.getItem('diagDone') || progress?.dailyMissions?.diagDone;
-    if (!diagDone && typeof startDiagnostic === 'function') {
-        setTimeout(startDiagnostic, 350);
-    }
+    // Antes, al terminar el tour se abría la prueba diagnóstica sola, aunque el
+    // aviso de bienvenida dice que se hace "cuando quieras desde tu perfil".
+    // Ahora queda solo en el Perfil, a elección del docente.
 }
 
 // ==================== INSTALACIÓN PWA ====================
@@ -6465,7 +6579,11 @@ function _checkOnboardingRequirements(onComplete) {
     const dm = progress?.dailyMissions || {};
     const _blank = v => !v || v.trim().toLowerCase() === 'individual';
     const profileMissing = _blank(dm.department) || _blank(dm.school);
-    const diagMissing    = !dm.diagDone && !localStorage.getItem('diagDone');
+    // El aviso de la prueba diagnóstica se muestra UNA vez: antes reaparecía en
+    // cada sesión hasta que el docente hiciera la prueba (aunque decía "Solo
+    // se hace una vez").
+    const diagMissing    = !dm.diagDone && !localStorage.getItem('diagDone')
+        && !dm.diagNoticeSeen && !localStorage.getItem('diagNoticeSeen');
 
     if (!profileMissing && !diagMissing) { onComplete(); return; }
 
@@ -6605,13 +6723,13 @@ function _checkOnboardingRequirements(onComplete) {
             <div style="text-align:center;margin-bottom:20px">
                 <div style="font-size:36px;margin-bottom:8px">🧭</div>
                 <h2 style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 6px">Prueba diagnóstica disponible</h2>
-                <p style="font-size:13px;color:#64748b;margin:0">Puedes hacer la prueba diagnóstica cuando quieras desde tu perfil. Toma <strong>5 minutos</strong> y nos ayuda a personalizar tu recorrido.</p>
+                <p style="font-size:13px;color:#64748b;margin:0">Puedes hacer la prueba diagnóstica cuando quieras desde tu perfil. Son ${typeof DIAG_QUESTIONS !== 'undefined' ? DIAG_QUESTIONS.length : 29} preguntas (unos 10 minutos) y nos ayudan a personalizar tu recorrido.</p>
             </div>
             <div style="background:#f0f9ff;border-radius:14px;padding:14px;margin-bottom:20px">
                 <p style="font-size:12px;color:#0369a1;margin:0;line-height:1.6">
                     ✅ No tiene nota aprobatoria — es solo para conocerte mejor.<br>
                     ✅ Sus resultados guían las recomendaciones del curso.<br>
-                    ✅ Solo se hace una vez.
+                    ✅ Es opcional: este aviso no vuelve a aparecer.
                 </p>
             </div>
             <button id="_ob_diagSkip" style="width:100%;padding:14px;background:#5C35C5;color:#fff;font-weight:700;font-size:14px;border:none;border-radius:14px;cursor:pointer">
@@ -6620,6 +6738,12 @@ function _checkOnboardingRequirements(onComplete) {
         </div>`;
 
         document.getElementById('_ob_diagSkip').onclick = () => {
+            try { localStorage.setItem('diagNoticeSeen', '1'); } catch (_) {}
+            if (progress) {
+                if (!progress.dailyMissions) progress.dailyMissions = {};
+                progress.dailyMissions.diagNoticeSeen = true;
+                saveProgress();
+            }
             document.body.removeChild(overlay);
             onComplete();
         };
@@ -6783,7 +6907,10 @@ function _renderCourseSelector() {
             ${pathCourses.map((c, idx) => {
                 const isOpen    = c.status === 'available';
                 const prereqMet = isCoursePrereqMet(c);
-                const clickable = isOpen && prereqMet;
+                // Los prerrequisitos ahora son una recomendación, no un candado:
+                // un docente que viene por STEAM no tiene que aprobar antes
+                // Design Thinking y ABP (~185 tarjetas) para poder empezar.
+                const clickable = isOpen;
                 const passed    = (_getScore2(c.id) || 0) >= 70;
                 // % de tarjetas completadas del curso (no solo aprobado/no
                 // aprobado) — se muestra igual que "% clases vistas" en
@@ -6795,16 +6922,16 @@ function _renderCourseSelector() {
                 let statusBadge;
                 const _lockSvg = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#64748b" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="12" height="8" rx="2" stroke-width="1.8"/><path d="M6.5 9V6.5a3.5 3.5 0 0 1 7 0V9" stroke-width="1.8"/></svg>';
                 if (!isOpen)       statusBadge = '○ Próximamente';
-                else if (!prereqMet) statusBadge = `${_lockSvg.replace('width="20" height="20"','width="11" height="11" style="vertical-align:-1.5px;margin-right:2px"')} Requiere: ${prereqNames}`;
+                else if (!prereqMet) statusBadge = `Sugerido antes: ${prereqNames}`;
                 else               statusBadge = '● Disponible';
                 return `
-                <div onclick="${clickable ? `selectCourse('${c.id}')` : (isOpen && !prereqMet ? `showToast('Primero completa: ${prereqNames}','info')` : '')}"
+                <div onclick="${clickable ? `selectCourse('${c.id}')` : ''}"
                      class="border rounded-2xl p-4 mb-3 ${clickable ? 'cursor-pointer active:scale-95' : 'opacity-70'} transition-all"
                      style="background:${clickable ? c.color+'14' : '#f8fafc'};border-color:${clickable ? c.color+'40' : '#e2e8f0'}">
                     <div class="flex items-center gap-3">
                         <div style="position:relative;flex-shrink:0">
                             <div style="width:44px;height:44px;background:${clickable ? c.color : '#eef2f6'};border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden">
-                                ${(!isOpen || !prereqMet)
+                                ${(!isOpen)
                                     ? _lockSvg
                                     : (() => { try { const t = getCourseThemeAndIllus(c.id, 1); return `<div style="width:34px;height:34px">${t.illus}</div>`; } catch(_){ return `<span style="font-size:22px">${c.icon||'📚'}</span>`; } })()
                                 }
@@ -6862,12 +6989,43 @@ function isCoursePrereqMet(course) {
     return course.prerequisite.some(id => courseExamPassed(id));
 }
 
-function selectCourse(courseId) {
+function _confirmSkipPrereq(course) {
+    const pre = (course.prerequisite || []).map(id => allCourses.find(x => x.id === id)).filter(Boolean);
+    const names = pre.map(c => `«${esc(c.title)}»`).join(' o ');
+    const m = document.createElement('div');
+    m.className = 'modal-sheet';
+    m.style.zIndex = '9999';
+    m.innerHTML = `<div class="modal-inner">
+        <div class="modal-drag"></div>
+        <h3 class="text-lg font-bold text-slate-800 mb-2">Te recomendamos empezar por ${names}</h3>
+        <p class="text-sm text-slate-500 mb-4">Da la base para «${esc(course.title)}». Si ya conoces el tema, puedes empezar este curso directamente.</p>
+        <div class="flex flex-col gap-2">
+            ${pre[0] ? `<button id="_preGo" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#1E4976">Ir a «${esc(pre[0].title)}»</button>` : ''}
+            <button id="_preSkip" class="w-full py-3 rounded-xl font-bold text-sm" style="border:2px solid #E2E8F0;color:#334155;background:white">Empezar «${esc(course.title)}» igual</button>
+        </div>
+    </div>`;
+    document.body.appendChild(m);
+    m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+    m.querySelector('#_preGo')?.addEventListener('click', () => { m.remove(); selectCourse(pre[0].id); });
+    m.querySelector('#_preSkip').addEventListener('click', () => {
+        m.remove();
+        if (progress) {
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            if (!progress.dailyMissions.prereqSkipped) progress.dailyMissions.prereqSkipped = {};
+            progress.dailyMissions.prereqSkipped[course.id] = true;
+        }
+        selectCourse(course.id, { ignorePrereq: true });
+    });
+}
+
+function selectCourse(courseId, opts) {
     const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === courseId) : null;
     if (!course || course.status !== 'available') return;
-    if (!isCoursePrereqMet(course)) {
-        const prereqNames = (course.prerequisite || []).map(id => allCourses.find(x => x.id === id)?.title || id).join(' o ');
-        showToast(`Primero completa: ${prereqNames}`, 'info');
+    // Prerrequisito sin aprobar: se recomienda (una sola vez por curso), pero
+    // se puede empezar igual.
+    const _skipped = progress?.dailyMissions?.prereqSkipped?.[courseId];
+    if (!isCoursePrereqMet(course) && !_skipped && !(opts && opts.ignorePrereq)) {
+        _confirmSkipPrereq(course);
         return;
     }
 
@@ -7648,6 +7806,54 @@ const _CHAT_BLOCKED = [
 ];
 
 let _chatHistory = [];
+
+// ==================== MASCOTA (asistente Quetzal) ====================
+// Solo aparece cuando el docente la pide desde el menú, nunca en la pantalla
+// de login, y se puede cerrar con la ✕. Si la deja abierta, se recuerda para
+// su próxima sesión (por usuario).
+function _mascotKey() { return currentUser?.id ? `mascotOn_${currentUser.id}` : null; }
+
+function _updateMascotMenuLabels(on) {
+    const l1 = document.getElementById('mascotMenuLabel');
+    if (l1) l1.textContent = on ? 'Ocultar asistente Quetzal' : 'Mostrar asistente Quetzal';
+    const l2 = document.getElementById('mascotSidebarLabel');
+    if (l2) l2.textContent = on ? 'Ocultar asistente' : 'Asistente';
+}
+
+function showMascot({ remember = true } = {}) {
+    const wrap = document.getElementById('mascotWrap');
+    if (!wrap || !currentUser) return; // sin sesión, nunca
+    wrap.classList.remove('hidden', 'mascot-out');
+    void wrap.offsetWidth;
+    wrap.classList.add('mascot-in');
+    if (remember && _mascotKey()) try { localStorage.setItem(_mascotKey(), '1'); } catch (_) {}
+    _updateMascotMenuLabels(true);
+}
+
+function hideMascot({ remember = true, animate = true } = {}) {
+    const wrap = document.getElementById('mascotWrap');
+    if (!wrap) return;
+    document.getElementById('chatDrawer')?.classList.add('hidden');
+    if (remember && _mascotKey()) try { localStorage.removeItem(_mascotKey()); } catch (_) {}
+    _updateMascotMenuLabels(false);
+    if (!animate || wrap.classList.contains('hidden')) { wrap.classList.add('hidden'); wrap.classList.remove('mascot-in', 'mascot-out'); return; }
+    wrap.classList.remove('mascot-in');
+    wrap.classList.add('mascot-out');
+    setTimeout(() => { wrap.classList.add('hidden'); wrap.classList.remove('mascot-out'); }, 300);
+}
+
+function toggleMascotFromMenu() {
+    const wrap = document.getElementById('mascotWrap');
+    if (wrap && !wrap.classList.contains('hidden')) hideMascot();
+    else showMascot();
+}
+
+// Al entrar a la app: mostrarla solo si el docente la dejó abierta la última vez.
+function _restoreMascot() {
+    let on = false;
+    try { on = !!(_mascotKey() && localStorage.getItem(_mascotKey())); } catch (_) {}
+    if (on) showMascot({ remember: false }); else hideMascot({ remember: false, animate: false });
+}
 
 function toggleChat() {
     const drawer = document.getElementById('chatDrawer');
