@@ -2438,6 +2438,46 @@ function dismissModuleChallenge() {
     renderModuleChallenge();
 }
 
+// Vista previa (solo visual) de la tarjeta que sigue, para la carta de detrás
+// del mazo. Si es la última del módulo, muestra la primera del siguiente.
+// Los exámenes no la usan: ahí la siguiente pregunta no se adelanta.
+function _peekText(card) {
+    const raw = card.type === 'quiz' ? card.question
+        : card.type === 'simulation' ? (card.scenario || card.statement)
+        : card.type === 'project' ? (card.description || card.objective)
+        : card.type === 'takeaway' ? card.prompt
+        : card.content;
+    return String(raw || '').replace(/<[^>]+>/g, ' ').replace(/[*_#>`]/g, '').replace(/\s+/g, ' ').trim().slice(0, 320);
+}
+function _nextCardPeekHtml() {
+    const blank = '<div class="card-stack-ghost card-stack-ghost-1"></div>';
+    let modIdx = currentModule, idx = currentCardIndex + 1;
+    let module = modulesData?.[modIdx - 1];
+    if (!module) return blank;
+    if (idx >= (module.cards || []).length) {
+        modIdx = currentModule + 1; idx = 0;
+        module = modulesData?.[modIdx - 1];
+        if (!module || !(module.cards || []).length) return blank;
+    }
+    const next = module.cards[idx];
+    const t = (typeof getCourseThemeAndIllus !== 'undefined')
+        ? getCourseThemeAndIllus(currentCourseId || 'steam', modIdx)
+        : { theme: { primary: '#0097A7' }, illus: '' };
+    const label = next.type === 'quiz' ? 'Quiz' : next.type === 'simulation' ? 'Simulación' : next.type === 'takeaway' ? 'Próximos pasos' : next.type === 'project' ? 'Proyecto' : '';
+    const title = next.type === 'quiz' ? (next.title || '¿Qué aprendiste?') : (next.title || label || '');
+    return `<div class="card-stack-ghost card-stack-ghost-1 card-peek" aria-hidden="true">
+        <div class="card-banner" style="background:${t.theme?.primary || '#0097A7'}">
+            <div class="card-banner-svg">${t.illus || ''}</div>
+            <p class="card-banner-sub">${esc(String(module.title || ''))} &nbsp;·&nbsp; ${idx + 1} de ${module.cards.length}</p>
+        </div>
+        <div class="card-body">
+            ${label ? `<p style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin:0 0 6px">${esc(label)}</p>` : ''}
+            <h2>${esc(String(title))}</h2>
+            <p>${esc(_peekText(next))}</p>
+        </div>
+    </div>`;
+}
+
 function renderCard() {
     _layoutLessonRail();
     renderModuleChallenge();
@@ -2450,9 +2490,10 @@ function renderCard() {
     const container = document.getElementById("cardContainer");
     if (!container) return;
 
-    // Cartas fantasma del mazo — puramente visuales, initSwipe() las anima
-    // en vivo durante el arrastre (ver estilos en index.html).
-    const _cardGhosts = '<div class="card-stack-ghost card-stack-ghost-2"></div><div class="card-stack-ghost card-stack-ghost-1"></div>';
+    // Cartas del mazo: la de justo detrás muestra la tarjeta que sigue (así, al
+    // arrastrar, asoma la siguiente en vez de una tarjeta en blanco); la del
+    // fondo sigue siendo decorativa. initSwipe() las anima durante el arrastre.
+    const _cardGhosts = '<div class="card-stack-ghost card-stack-ghost-2"></div>' + _nextCardPeekHtml();
 
     // Iniciar tracking de tiempo
     if (currentCardId) stopCardTracking();
