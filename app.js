@@ -711,7 +711,7 @@ async function checkExistingSession() {
         _refreshPaidCertRefs();
         await loadAppConfig();
         _updatePushToggleUI();
-        _checkOnboardingRequirements(() => { _landOnAppropriateScreen(); _restoreMascot(); applyUiPrefs(); });
+        _checkOnboardingRequirements(() => { _landOnAppropriateScreen(); _restoreMascot(); applyUiPrefs(); _maybeAskExperience(); });
         return true;
     }
     return false;
@@ -791,7 +791,8 @@ function _showFollowupModal(followup) {
             <button id="followupYes" style="flex:1;padding:12px 0;border-radius:14px;background:#0f4c5c;color:#fff;font-weight:700;border:none;cursor:pointer">Sí, lo apliqué</button>
             <button id="followupNo" style="flex:1;padding:12px 0;border-radius:14px;background:#f1f5f9;color:#475569;font-weight:700;border:none;cursor:pointer">Aún no</button>
         </div>
-        <textarea id="followupNote" placeholder="Opcional: cuéntanos qué pasó…" rows="2" style="width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;font-size:.85rem;resize:none"></textarea>
+        <textarea id="followupNote" placeholder="Opcional: cuéntanos qué pasó…" rows="3" style="width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;font-size:.85rem;resize:none"></textarea>
+        <div id="followupFeedback" class="hidden text-sm rounded-xl mt-2" style="padding:10px 12px"></div>
         <button id="followupSubmit" style="width:100%;margin-top:10px;padding:10px 0;border-radius:14px;background:#e2e8f0;color:#94a3b8;font-weight:700;border:none;cursor:not-allowed" disabled>Elige una opción arriba</button>
         <button id="followupLater" style="width:100%;margin-top:6px;padding:8px 0;border:none;background:none;color:#94a3b8;font-size:.8rem;font-weight:600;cursor:pointer">Recordarme después</button>
     </div>`;
@@ -801,8 +802,12 @@ function _showFollowupModal(followup) {
     const yesBtn = el.querySelector('#followupYes');
     const noBtn = el.querySelector('#followupNo');
     const submitBtn = el.querySelector('#followupSubmit');
+    const noteEl = el.querySelector('#followupNote');
     const select = (applied, btn) => {
         chosen = applied;
+        noteEl.placeholder = applied
+            ? 'Cuéntanos qué hiciste, con qué grupo y qué notaste en tus estudiantes (mínimo 40 caracteres)'
+            : 'Opcional: ¿qué te lo impidió? Nos ayuda a mejorar los cursos.';
         [yesBtn, noBtn].forEach(b => b.style.outline = 'none');
         btn.style.outline = '3px solid #0f4c5c55';
         submitBtn.disabled = false;
@@ -830,6 +835,19 @@ function _showFollowupModal(followup) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Enviando…';
         const note = el.querySelector('#followupNote').value.trim();
+        // «Sí, lo apliqué» pide contar qué pasó, y la IA lo revisa igual que
+        // «Lo apliqué en clase»; lo aprobado alimenta «Mi aula».
+        let ai = null;
+        if (chosen === true) {
+            const fb = el.querySelector('#followupFeedback');
+            const showFb = (t, good) => { fb.classList.remove('hidden'); fb.style.background = good ? '#DCFCE7' : '#FEF3C7'; fb.style.color = good ? '#166534' : '#92400E'; fb.textContent = t; };
+            if (note.length < 40) { showFb('Cuéntanos con un poco más de detalle qué hiciste y qué notaste (mínimo 40 caracteres).', false); submitBtn.disabled = false; submitBtn.textContent = 'Enviar respuesta'; return; }
+            try {
+                const course = allCourses.find(c => c.id === followup.course_id);
+                ai = await _evaluateEvidence({ kind: 'card', courseTitle: course?.title || '', cardTitle: cardTitle, cardContent: prompt || '', commitment: commitment || '', text: note });
+                if (!ai.approved) { showFb(ai.feedback || 'Agrega qué hiciste y qué notaste en tus estudiantes.', false); submitBtn.disabled = false; submitBtn.textContent = 'Revisé mi texto, enviar de nuevo'; return; }
+            } catch (_) { ai = null; /* sin conexión o servicio caído: la respuesta se guarda sin la revisión */ }
+        }
         const { error } = await supabase.from('application_followups').update({
             applied: chosen,
             outcome_note: note || null,
@@ -841,7 +859,13 @@ function _showFollowupModal(followup) {
             showToast('No se pudo enviar. Revisa tu conexión e intenta de nuevo.', 'error');
             return;
         }
-        showToast('¡Gracias por contarnos!', 'success');
+        if (ai?.approved) {
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            if (!progress.dailyMissions.appliedEvidence) progress.dailyMissions.appliedEvidence = {};
+            progress.dailyMissions.appliedEvidence['fu-' + followup.id] = { text: note.slice(0, 1000), date: localDateStr(), courseId: followup.course_id, cardTitle: cardTitle, ai: { approved: true, score: ai.score } };
+            saveProgress();
+        }
+        showToast(ai?.approved ? '¡Gracias! Quedó guardado en «Mi aula».' : '¡Gracias por contarnos!', 'success');
         close();
     });
 }
@@ -861,12 +885,14 @@ function _uiPrefs() {
     try { return Object.assign({}, progress?.dailyMissions?.uiPrefs || {}, JSON.parse(localStorage.getItem('uiPrefs') || '{}')); }
     catch (_) { return {}; }
 }
-function isSoberMode() { return !!_uiPrefs().sober; }
+// Tono por defecto: sobrio. El docente elige "con logros" en el aviso inicial o
+// en Perfil; mientras no haya elegido nada, no se muestran confeti ni avisos de XP.
+function isSoberMode() { const v = _uiPrefs().sober; return v === undefined ? true : !!v; }
 function applyUiPrefs() {
     const p = _uiPrefs();
     document.documentElement.classList.toggle('big-text', !!p.bigText);
-    document.documentElement.classList.toggle('sober-mode', !!p.sober);
-    const t1 = document.getElementById('prefSober'); if (t1) t1.checked = !!p.sober;
+    document.documentElement.classList.toggle('sober-mode', isSoberMode());
+    const t1 = document.getElementById('prefSober'); if (t1) t1.checked = isSoberMode();
     const t2 = document.getElementById('prefBigText'); if (t2) t2.checked = !!p.bigText;
 }
 function setUiPref(key, value) {
@@ -942,6 +968,7 @@ function updateUI() {
     if (_homePct) _homePct.textContent = `${coursePercent}%`;
     const _homeBar = document.getElementById('homeDashBar');
     if (_homeBar) _homeBar.style.width = `${coursePercent}%`;
+    renderTodaySession();
 
     // Banner "Ir a examen" cuando el curso está al 100% pero sin examen aprobado
     const _examBannerId = 'courseExamReadyBanner';
@@ -1438,12 +1465,267 @@ function loadDailyMissions() {
     if (resetSpan) resetSpan.innerText = `Reinicia en ${hoursLeft}h`;
 }
 
+// ==================== PERSONALIZAR LA EXPERIENCIA ====================
+// Una sola pregunta inicial (se puede cambiar en Perfil): tono sobrio o con
+// logros, grado que enseña y qué quiere mejorar. El "foco" ordena la sesión
+// de 10 minutos; el grado se muestra en la constancia de práctica.
+const _EXP_FOCUS = [
+    { id: 'convivencia', label: 'Manejar la conducta y el clima del aula' },
+    { id: 'metodologias', label: 'Probar metodologías activas' },
+    { id: 'steam20', label: 'Enseñar con proyectos (STEAM) y evaluar mejor' },
+    { id: 'ia', label: 'Usar la IA para ahorrar tiempo' },
+    { id: 'inclusion', label: 'Atender la diversidad y la inclusión' },
+    { id: 'creativo', label: 'Ser más creativo y usar tecnología' },
+    { id: 'fundamentos', label: 'Mejorar lectura y matemática de mis estudiantes' },
+];
+const _EXP_GRADES = [
+    { id: 'prim-baja', label: 'Primaria baja (1.º a 3.º)' },
+    { id: 'prim-alta', label: 'Primaria alta (4.º a 6.º)' },
+    { id: 'sec-baja', label: 'Secundaria baja' },
+    { id: 'sec-alta', label: 'Secundaria alta' },
+    { id: 'multi', label: 'Multigrado' },
+    { id: 'otro', label: 'Otro nivel' },
+];
+function _profilePrefs() { return progress?.dailyMissions?.profilePrefs || {}; }
+function _maybeAskExperience() {
+    if (!progress || currentUser?.role === 'admin') return;
+    if (_profilePrefs().askedAt) return;
+    _openExperienceSheet(false);
+}
+function _openExperienceSheet(isEdit) {
+    if (document.getElementById('_expSheet')) return;
+    const cur = _profilePrefs();
+    const soberChosen = _uiPrefs().sober; // undefined = aún no elige
+    const state = { tone: soberChosen === undefined ? 'sober' : (soberChosen ? 'sober' : 'games'), grade: cur.grade || null, focus: cur.focus || null };
+    const chip = (group, id, label, on) => `<button type="button" data-g="${group}" data-v="${id}" class="text-left text-sm rounded-xl px-3 py-2.5 w-full" style="border:2px solid ${on ? '#5C35C5' : '#E2E8F0'};background:${on ? '#EEF2FF' : '#fff'};color:#334155;font-weight:${on ? 700 : 500}">${esc(label)}</button>`;
+    const m = document.createElement('div');
+    m.id = '_expSheet'; m.className = 'modal-sheet'; m.style.zIndex = '9998';
+    const draw = () => {
+        m.innerHTML = `<div class="modal-inner" style="max-height:90vh;overflow-y:auto">
+            <div class="modal-drag"></div>
+            <h3 class="text-lg font-bold text-slate-800 mb-1">${isEdit ? 'Tu experiencia' : 'Hagamos esto a tu medida'}</h3>
+            <p class="text-sm text-slate-500 mb-4">Son tres preguntas y puedes cambiarlas cuando quieras en tu perfil.</p>
+            <p class="text-xs font-bold text-slate-600 mb-1">¿Cómo prefieres la plataforma?</p>
+            <div class="space-y-2 mb-4">
+                ${chip('tone', 'sober', 'Sobria: sin confeti ni avisos de puntos', state.tone === 'sober')}
+                ${chip('tone', 'games', 'Con logros: puntos, rachas e insignias a la vista', state.tone === 'games')}
+            </div>
+            <p class="text-xs font-bold text-slate-600 mb-1">¿Qué grado enseñas? <span class="font-normal text-slate-400">(opcional)</span></p>
+            <div class="space-y-2 mb-4">${_EXP_GRADES.map(g => chip('grade', g.id, g.label, state.grade === g.id)).join('')}</div>
+            <p class="text-xs font-bold text-slate-600 mb-1">¿Qué te gustaría mejorar primero? <span class="font-normal text-slate-400">(opcional)</span></p>
+            <div class="space-y-2 mb-4">${_EXP_FOCUS.map(f => chip('focus', f.id, f.label, state.focus === f.id)).join('')}</div>
+            <button id="_expSave" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5">Guardar</button>
+            ${isEdit ? '<button id="_expClose" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Cancelar</button>' : '<button id="_expSkip" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Ahora no (usaré la versión sobria)</button>'}
+        </div>`;
+        m.querySelectorAll('[data-g]').forEach(b => b.addEventListener('click', () => {
+            const g = b.dataset.g, v = b.dataset.v;
+            state[g] = (g !== 'tone' && state[g] === v) ? null : v; // grado y foco se pueden quitar
+            draw();
+        }));
+        const finish = save => {
+            if (save) {
+                setUiPref('sober', state.tone === 'sober');
+                if (!progress.dailyMissions) progress.dailyMissions = {};
+                progress.dailyMissions.profilePrefs = { grade: state.grade, focus: state.focus, askedAt: localDateStr() };
+                delete progress.dailyMissions.todaySession; // la sesión se recalcula con el nuevo foco
+                saveProgress();
+            } else if (!isEdit) {
+                if (!progress.dailyMissions) progress.dailyMissions = {};
+                progress.dailyMissions.profilePrefs = { ..._profilePrefs(), askedAt: localDateStr() };
+                saveProgress();
+            }
+            m.remove();
+            renderTodaySession();
+        };
+        m.querySelector('#_expSave').addEventListener('click', () => finish(true));
+        m.querySelector('#_expSkip')?.addEventListener('click', () => finish(false));
+        m.querySelector('#_expClose')?.addEventListener('click', () => m.remove());
+    };
+    document.body.appendChild(m);
+    draw();
+}
+
+// ==================== SESIÓN DE 10 MINUTOS ====================
+// Una sesión corta con las próximas tarjetas del curso que más le sirve al
+// docente según lo que quiere mejorar, para quien no tiene tiempo de elegir
+// entre 27 cursos. El avance se mide con las tarjetas completadas desde que
+// empezó la sesión del día.
+const _SESSION_MINUTES = 10;
+function _cardMinutes(card) {
+    if (card.type === 'quiz') return 0.75;
+    if (card.type === 'simulation') return 1.5;
+    if (card.type === 'project') return 5;
+    if (card.type === 'takeaway') return 0.5;
+    const words = String(card.content || card.description || '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+    return Math.max(0.5, words / 180);
+}
+function _isCardDone(card) {
+    const id = String(card.id);
+    return (progress.completedCards || []).some(c => String(c) === id);
+}
+function _unreadCards(course) {
+    return (course.modules || []).flatMap(mod => mod.cards || []).filter(c => !_isCardDone(c));
+}
+function _sessionCourse() {
+    const courses = (typeof allCourses !== 'undefined' ? allCourses : []).filter(c => c.status === 'available');
+    const focus = _profilePrefs().focus;
+    const path = focus ? LEARNING_PATHS.find(p => p.id === focus) : null;
+    const ordered = [
+        ...(path ? path.courses.map(id => courses.find(c => c.id === id)).filter(Boolean) : []),
+        ...courses.filter(c => c.id === progress?.currentCourseId),
+        ...courses,
+    ];
+    return ordered.find(c => _unreadCards(c).length > 0) || null;
+}
+function _todaySession() {
+    const dm = progress.dailyMissions || (progress.dailyMissions = {});
+    const today = localDateStr();
+    let ses = dm.todaySession;
+    if (ses && ses.date === today && allCourses.some(c => c.id === ses.cid)) return ses;
+    const course = _sessionCourse();
+    if (!course) return null;
+    let mins = 0, n = 0;
+    for (const card of _unreadCards(course)) {
+        mins += _cardMinutes(card); n++;
+        if (mins >= _SESSION_MINUTES || n >= 14) break;
+    }
+    ses = { date: today, cid: course.id, startCount: (progress.completedCards || []).length, target: Math.max(3, n), started: false };
+    dm.todaySession = ses;
+    return ses;
+}
+function startTodaySession() {
+    const ses = _todaySession();
+    if (!ses) return;
+    ses.started = true;
+    ses.startCount = (progress.completedCards || []).length;
+    saveProgress();
+    selectCourse(ses.cid, { ignorePrereq: true });
+}
+function renderTodaySession() {
+    const box = document.getElementById('homeSessionBox');
+    if (!box || !progress) return;
+    const ses = _todaySession();
+    if (!ses) { box.innerHTML = ''; return; }
+    const course = allCourses.find(c => c.id === ses.cid);
+    const done = Math.max(0, Math.min(ses.target, (progress.completedCards || []).length - ses.startCount));
+    const finished = ses.started && done >= ses.target;
+    const pct = ses.started ? Math.round(done / ses.target * 100) : 0;
+    if (finished) {
+        box.innerHTML = `<div class="rounded-2xl p-3 flex items-center gap-3" style="background:#ECFDF5;border:1px solid #A7F3D0"><span style="font-size:20px">✓</span><div><p class="text-sm font-bold" style="color:#065F46">Sesión de hoy completa</p><p class="text-xs" style="color:#047857">Hoy avanzaste ${done} tarjetas. Si te queda tiempo, puedes seguir; si no, hasta mañana.</p></div></div>`;
+        return;
+    }
+    box.innerHTML = `<div class="rounded-2xl p-3" style="background:#FFF;border:1.5px solid #E0E7FF">
+        <div class="flex items-center justify-between gap-3">
+            <div style="min-width:0">
+                <p class="text-[11px] font-bold uppercase tracking-wide" style="color:#4338CA">⏱ Tu sesión de hoy · unos ${_SESSION_MINUTES} min</p>
+                <p class="text-sm font-bold text-slate-700 truncate">${esc(course?.title || '')}</p>
+                <p class="text-xs text-slate-400">${ses.started ? `${done} de ${ses.target} tarjetas` : `${ses.target} tarjetas${_profilePrefs().focus ? ' · elegida según lo que quieres mejorar' : ''}`}</p>
+            </div>
+            <button onclick="startTodaySession()" class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold text-white" style="background:#5C35C5">${ses.started ? 'Continuar' : 'Empezar'}</button>
+        </div>
+        ${ses.started ? `<div class="h-1.5 rounded-full mt-2" style="background:#EEF2FF"><div class="h-full rounded-full" style="width:${pct}%;background:#5C35C5"></div></div>` : ''}
+    </div>`;
+}
+
+// ==================== MI AULA: lo que aplicaste, mes a mes ====================
+// Devuelve al docente su propio progreso real: las evidencias de "Lo apliqué
+// en clase" (revisadas por IA), los compromisos que hizo y sus notas, agrupados
+// por mes. Todo sale de datos que ya guarda `progress`; no hay nada nuevo en el servidor.
+let _miAulaMonth = null; // 'YYYY-MM'
+function _findCardInCourse(courseId, cardKey) {
+    const course = (typeof allCourses !== 'undefined' ? allCourses : []).find(c => c.id === courseId);
+    for (const mod of course?.modules || []) {
+        const card = (mod.cards || []).find(c => String(c.id) === String(cardKey));
+        if (card) return { card, course };
+    }
+    return { card: null, course: course || null };
+}
+function _miAulaData(month) {
+    const dm = progress?.dailyMissions || {};
+    const inMonth = d => String(d || '').slice(0, 7) === month;
+    const applied = Object.entries(dm.appliedEvidence || {})
+        .filter(([, e]) => inMonth(e?.date) && e?.ai?.approved)
+        .map(([key, e]) => {
+            const { card, course } = _findCardInCourse(e.courseId, key);
+            return { key, date: e.date, text: e.text || '', cardTitle: card?.title || e.cardTitle || 'Tarjeta', courseTitle: course?.title || '' };
+        })
+        .sort((a, b) => b.date.localeCompare(a.date));
+    const diplomas = Object.entries(dm.applicationEvidence || {})
+        .filter(([, e]) => inMonth(e?.date) && e?.ai?.approved)
+        .map(([cid, e]) => ({ date: e.date, text: e.text || '', courseTitle: (allCourses.find(c => c.id === cid)?.title) || cid }));
+    const commitments = (dm.pinnedCards || [])
+        .filter(p => p.commitment && inMonth(String(p.date || '').slice(0, 10)))
+        .map(p => ({ date: String(p.date).slice(0, 10), commitment: p.commitment, courseTitle: (allCourses.find(c => c.id === p.courseId)?.title) || '' }));
+    const notes = Object.keys(dm.cardNotes || {}).length;
+    return { applied, diplomas, commitments, notes };
+}
+function _miAulaMonthLabel(month) {
+    const [y, m] = month.split('-').map(Number);
+    const label = new Date(y, m - 1, 1).toLocaleDateString('es', { month: 'long', year: 'numeric' }).replace(' de ', ' ');
+    return label.charAt(0).toUpperCase() + label.slice(1);
+}
+function _miAulaShiftMonth(delta) {
+    const [y, m] = (_miAulaMonth || localDateStr().slice(0, 7)).split('-').map(Number);
+    const d = new Date(y, m - 1 + delta, 1);
+    const next = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    if (next > localDateStr().slice(0, 7)) return; // no hay futuro
+    _miAulaMonth = next;
+    renderMiAula();
+}
+function _miAulaSummaryText(month) {
+    const d = _miAulaData(month);
+    const lines = [`Mi aula · ${_miAulaMonthLabel(month)} (Yo Aprendo)`, ''];
+    if (d.commitments.length) { lines.push('Me comprometí a:'); d.commitments.forEach(c => lines.push(`• ${c.commitment}`)); lines.push(''); }
+    if (d.applied.length) { lines.push(`Lo que apliqué en clase (${d.applied.length}):`); d.applied.forEach(a => lines.push(`• ${a.cardTitle}: ${a.text}`)); }
+    else lines.push('Aún no registré aplicaciones este mes.');
+    return lines.join('\n');
+}
+async function copyMiAulaSummary() {
+    const text = _miAulaSummaryText(_miAulaMonth || localDateStr().slice(0, 7));
+    try {
+        if (navigator.share) { await navigator.share({ title: 'Mi aula', text }); return; }
+        await navigator.clipboard.writeText(text);
+        showToast('Resumen copiado. Puedes pegarlo en un correo o un documento.', 'success');
+    } catch (e) { if (e?.name !== 'AbortError') showToast('No se pudo copiar el resumen.', 'error'); }
+}
+function renderMiAula() {
+    const box = document.getElementById('miAulaBox');
+    if (!box || !progress) return;
+    const now = localDateStr().slice(0, 7);
+    if (!_miAulaMonth) _miAulaMonth = now;
+    const d = _miAulaData(_miAulaMonth);
+    const total = d.applied.length + d.diplomas.length;
+    const isNow = _miAulaMonth === now;
+    const headline = total
+        ? `${total === 1 ? 'Llevaste' : 'Llevaste'} ${total} ${total === 1 ? 'idea' : 'ideas'} del curso a tu aula ${isNow ? 'este mes' : 'ese mes'}.`
+        : (isNow ? 'Aquí verás lo que lleves a tu aula.' : 'Ese mes no registraste aplicaciones.');
+    const item = (title, sub, text, date) => `<div class="rounded-xl p-3" style="background:#F8FAFC">
+            <p class="text-xs font-bold text-slate-700">${esc(title)}</p>
+            ${sub ? `<p class="text-[11px] text-slate-400">${esc(sub)}${date ? ' · ' + esc(date) : ''}</p>` : ''}
+            <p class="text-xs text-slate-600 mt-1" style="white-space:pre-wrap">${esc(text)}</p>
+        </div>`;
+    box.innerHTML = `
+        <div class="flex items-center justify-between mb-2">
+            <button onclick="_miAulaShiftMonth(-1)" aria-label="Mes anterior" class="w-8 h-8 rounded-full text-slate-500" style="background:#F1F5F9">‹</button>
+            <p class="text-sm font-bold text-slate-700">${esc(_miAulaMonthLabel(_miAulaMonth))}</p>
+            <button onclick="_miAulaShiftMonth(1)" aria-label="Mes siguiente" ${isNow ? 'disabled' : ''} class="w-8 h-8 rounded-full text-slate-500" style="background:#F1F5F9;opacity:${isNow ? .35 : 1}">›</button>
+        </div>
+        <p class="text-sm text-slate-600 mb-3">${esc(headline)}</p>
+        ${d.commitments.length ? `<p class="text-[11px] font-bold text-slate-500 mb-1">Te comprometiste a</p>
+            <div class="space-y-1 mb-3">${d.commitments.map(c => `<p class="text-xs rounded-lg px-3 py-2" style="background:#FEF9C3;color:#854D0E">${esc(c.commitment)}</p>`).join('')}</div>` : ''}
+        ${total ? `<p class="text-[11px] font-bold text-slate-500 mb-1">Lo que aplicaste</p>
+            <div class="space-y-2">${d.applied.map(a => item(a.cardTitle, a.courseTitle, a.text, a.date)).join('')}${d.diplomas.map(a => item('Diploma · ' + a.courseTitle, '', a.text, a.date)).join('')}</div>
+            <button onclick="copyMiAulaSummary()" class="w-full mt-3 py-2.5 rounded-xl text-xs font-bold" style="background:#EEF2FF;color:#4338CA">Compartir o copiar este resumen</button>`
+          : `<p class="text-xs text-slate-400">${isNow ? 'Cuando marques «Lo apliqué en clase» en una tarjeta y cuentes qué pasó, aparecerá aquí junto con tus compromisos.' : ''}</p>`}`;
+}
+
 function renderProgresoTab() {
     // El widget de referidos vivía en Perfil — ahora vive en Progreso
     // (sección "Misiones y retos"), junto con las demás formas de ganar XP.
     if (typeof displayReferralLink === 'function') displayReferralLink();
     if (typeof checkReferrerReward === 'function') checkReferrerReward();
 
+    renderMiAula();
     const xpEl = document.getElementById('progresoXP');
     const levelEl = document.getElementById('progresoLevel');
     const streakEl = document.getElementById('progresoStreak');
@@ -1697,7 +1979,35 @@ function _markReadAfter(cardId, ms, onMarked) {
     }, ms);
 }
 
+// Reto del módulo: al empezar cada módulo se muestran las ideas para aplicar en
+// clase con las que cerrará (la tarjeta «Próximos pasos»), para leer con un
+// propósito en vez de descubrirlas al final. Se descarta una vez por módulo.
+function _moduleChallengeKey() { return `${currentCourseId || 'steam'}:${currentModule}`; }
+function renderModuleChallenge() {
+    const box = document.getElementById('moduleChallengeBox');
+    if (!box) return;
+    const module = modulesData?.[currentModule - 1];
+    const take = module?.cards?.find(c => c.type === 'takeaway');
+    const seen = progress?.dailyMissions?.moduleChallengeSeen || {};
+    const chosen = take && progress?.dailyMissions?.takeawayChoices?.[String(take.id)] !== undefined;
+    if (!take || chosen || seen[_moduleChallengeKey()] || currentCardIndex !== 0 || !(take.options || []).length) { box.innerHTML = ''; return; }
+    box.innerHTML = `<div class="rounded-2xl p-4" style="background:#FFFBEB;border:1.5px solid #FDE68A">
+        <p class="text-[11px] font-bold uppercase tracking-wide mb-1" style="color:#B45309">🎯 Para tu clase de mañana</p>
+        <p class="text-sm text-slate-700 mb-2">Al terminar este módulo elegirás <strong>una</strong> de estas ideas para probar en tu aula. Ve pensando cuál te sirve mientras lees:</p>
+        <ul class="text-xs text-slate-600 mb-3" style="list-style:disc;padding-left:18px">${take.options.map(o => `<li class="mb-1">${esc(o)}</li>`).join('')}</ul>
+        <button onclick="dismissModuleChallenge()" class="w-full py-2 rounded-xl text-xs font-bold" style="background:#FDE68A;color:#78350F">Entendido, empiezo</button>
+    </div>`;
+}
+function dismissModuleChallenge() {
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    if (!progress.dailyMissions.moduleChallengeSeen) progress.dailyMissions.moduleChallengeSeen = {};
+    progress.dailyMissions.moduleChallengeSeen[_moduleChallengeKey()] = localDateStr();
+    saveProgress();
+    renderModuleChallenge();
+}
+
 function renderCard() {
+    renderModuleChallenge();
     const module = modulesData[currentModule - 1];
     if (!module) return;
     const card = module.cards[currentCardIndex];
@@ -6067,7 +6377,7 @@ document.getElementById("doEmailLogin")?.addEventListener("click", async () => {
     if (success) {
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
-        _checkOnboardingRequirements(() => { _landOnAppropriateScreen(); _restoreMascot(); applyUiPrefs(); });
+        _checkOnboardingRequirements(() => { _landOnAppropriateScreen(); _restoreMascot(); applyUiPrefs(); _maybeAskExperience(); });
     }
 });
 document.getElementById("doRegister")?.addEventListener("click", async () => {
@@ -6079,7 +6389,7 @@ document.getElementById("doRegister")?.addEventListener("click", async () => {
         document.getElementById("loginScreen").classList.add("hidden");
         loadSavedProgress(true);
         await checkReferralBonus();
-        _checkOnboardingRequirements(() => { _landOnAppropriateScreen(); _restoreMascot(); applyUiPrefs(); });
+        _checkOnboardingRequirements(() => { _landOnAppropriateScreen(); _restoreMascot(); applyUiPrefs(); _maybeAskExperience(); });
     }
 });
 document.getElementById("logoutBtn")?.addEventListener("click", logout);

@@ -26,6 +26,20 @@ function todayGuatemala(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Guatemala' });
 }
 
+// Último compromiso de aplicación (tarjeta «Próximos pasos») de los últimos 21
+// días sin evidencia posterior de «Lo apliqué» en ese curso (igual que en
+// daily-reminders): el aviso habla de algo que el docente ya eligió.
+function openCommitment(pins: any, evidence: any): string | null {
+  const list = (Array.isArray(pins) ? pins : []).filter((x: any) => x?.commitment && x?.date);
+  if (!list.length) return null;
+  list.sort((a: any, b: any) => String(b.date).localeCompare(String(a.date)));
+  const pin = list[0];
+  const day = String(pin.date).slice(0, 10);
+  if ((Date.now() - new Date(day).getTime()) / 86400000 > 21) return null;
+  const evidenced = Object.values(evidence || {}).some((e: any) => e?.courseId === pin.courseId && String(e?.date || '') >= day);
+  return evidenced ? null : String(pin.commitment).slice(0, 90);
+}
+
 Deno.serve(async (_req) => {
   try {
     const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
@@ -57,20 +71,22 @@ Deno.serve(async (_req) => {
       const batch = userIds.slice(i, i + PAGE_SIZE);
       const { data, error: progErr } = await sb
         .from('progress')
-        .select('user_id, last_activity_date')
+        .select('user_id, last_activity_date, pins:daily_missions->pinnedCards, evidence:daily_missions->appliedEvidence')
         .in('user_id', batch);
       if (progErr) throw progErr;
       progressRows.push(...(data || []));
     }
 
     const lastActivityByUser = new Map(progressRows.map((p) => [p.user_id, p.last_activity_date]));
+    const commitmentByUser = new Map(progressRows.map((p) => [p.user_id, openCommitment(p.pins, p.evidence)]));
     const inactiveToday = subs.filter((s) => lastActivityByUser.get(s.user_id) !== today);
 
-    const payload = JSON.stringify({
-      title: '¿Ya entraste hoy? 👋',
-      body: 'Dedica unos minutos a tu curso antes de que termine el día — no pierdas tu racha.',
-      url: './index.html',
-    });
+    const payloadFor = (userId: string) => {
+      const c = commitmentByUser.get(userId);
+      return JSON.stringify(c
+        ? { title: 'Tu compromiso para la clase', body: `Te propusiste: «${c}». ¿Pudiste probarlo? Cuéntalo en dos minutos.`, url: './index.html' }
+        : { title: 'Tu sesión de 10 minutos', body: 'Tu sesión de hoy está lista: unas pocas tarjetas, sin prisa.', url: './index.html' });
+    };
 
     let sent = 0;
     const expiredIds: string[] = [];
@@ -79,7 +95,7 @@ Deno.serve(async (_req) => {
         try {
           await webpush.sendNotification(
             { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-            payload
+            payloadFor(s.user_id)
           );
           sent++;
         } catch (e: any) {
