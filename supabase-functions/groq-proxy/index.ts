@@ -7,12 +7,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const GROQ_API_KEY  = Deno.env.get('GROQ_API_KEY')!;
-const GROQ_MODEL    = 'llama-3.3-70b-versatile';
+const GROQ_MODEL    = 'openai/gpt-oss-120b';
 const SUPABASE_URL  = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
 
 // Límites server-side — el cliente no puede inflar el costo
 const MAX_TOKENS_CAP   = 800;
+// gpt-oss razona antes de responder y esos tokens cuentan en max_tokens: se suma margen
+// para el razonamiento (reasoning_effort bajo) sin subir el tope de la respuesta visible.
+const REASONING_HEADROOM = 1200;
 const MAX_MESSAGES     = 30;
 const MAX_MSG_CHARS    = 4000;
 
@@ -80,7 +83,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: GROQ_MODEL,
         messages: safeMessages,
-        max_tokens: Math.min(Number(max_tokens) || 600, MAX_TOKENS_CAP),
+        max_tokens: Math.min(Number(max_tokens) || 600, MAX_TOKENS_CAP) + REASONING_HEADROOM,
+        reasoning_effort: 'low',
         temperature: Math.min(Math.max(Number(temperature) || 0.7, 0), 1.5),
       }),
     });
