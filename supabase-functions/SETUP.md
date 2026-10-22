@@ -406,3 +406,38 @@ Pega el código actualizado de ambas y Deploy.
 4. Como super admin en `colegios.html`, confirma que el formulario de
    crear/editar colegio YA NO tiene campos de salario ni áreas — solo
    nombre/slug/programa/colores/logo.
+
+---
+
+# Evidencia de aplicación revisada por IA (`evaluate-evidence`)
+
+"Lo apliqué en clase" (por tarjeta) y el requisito de evidencia antes del
+diploma ahora mandan el texto del docente a esta función, que lo califica con
+una rúbrica (relación con el curso 0-3, qué hizo y con quién 0-4, qué observó
+en sus estudiantes 0-3). Aprueba con 5/10 en tarjetas y 6/10 en el diploma, y
+siempre exige relación con el curso.
+
+## Paso 1 — Crear la Edge Function
+
+Ve a: https://supabase.com/dashboard/project/grkjhzkgcmackbafqudu/functions
+
+| Nombre de la función | Archivo                                        |
+|----------------------|------------------------------------------------|
+| `evaluate-evidence`  | supabase-functions/evaluate-evidence/index.ts  |
+
+No requiere secrets nuevos: usa `GROQ_API_KEY`, `SUPABASE_URL` y
+`SUPABASE_ANON_KEY`, que ya existen.
+
+**Importante:** despliégala antes (o al mismo tiempo) que el frontend. Si la
+función no existe, la app muestra "No pudimos revisar tu evidencia" y nadie
+puede marcar "Lo apliqué" ni pedir un diploma nuevo.
+
+## Paso 2 — Probar
+
+1. En una tarjeta, toca "Lo apliqué en clase" y escribe algo vago ("lo
+   apliqué y les gustó mucho a todos mis estudiantes"): debe rechazarlo y
+   decir qué falta.
+2. Escribe qué hiciste, con qué grado y qué notaste: debe aprobarlo, marcar
+   la tarjeta y dar +40 XP.
+3. En admin, abre el panel del usuario: en "Aplicación en el aula" aparece la
+   evidencia con "✓ IA x/10".

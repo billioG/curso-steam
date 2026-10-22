@@ -4004,27 +4004,68 @@ function saveCardNote(cardKey, text) {
 }
 
 // ── Lo apliqué en clase ──
-function toggleApplied(cardKey) {
-    if (!progress.dailyMissions) progress.dailyMissions = {};
-    if (!progress.dailyMissions.appliedCards) progress.dailyMissions.appliedCards = [];
+// Marcarlo pide unas líneas de evidencia que revisa la IA; solo al aprobarse
+// se marca y se dan los XP (una única vez por tarjeta, aunque se desmarque y
+// se vuelva a marcar).
+const _APPLIED_ON_STYLE  = 'flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:16px;border:1px solid #86efac;background:#dcfce7;color:#15803d;font-size:12px;font-weight:600;cursor:pointer';
+const _APPLIED_OFF_STYLE = 'flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:16px;border:1px solid #e2e8f0;background:white;color:#64748b;font-size:12px;font-weight:600;cursor:pointer';
+function _findCardByKey(cardKey) {
+    for (const mod of (typeof modulesData !== 'undefined' ? modulesData : []) || []) {
+        const c = (mod.cards || []).find(k => String(k.id) === String(cardKey));
+        if (c) return c;
+    }
+    return null;
+}
+function _markApplied(cardKey, grantXP) {
     const arr = progress.dailyMissions.appliedCards;
-    const idx = arr.indexOf(cardKey);
+    if (!arr.includes(cardKey)) arr.push(cardKey);
     const btn = document.getElementById(`appliedBtn_${cardKey}`);
-    if (idx === -1) {
-        arr.push(cardKey);
-        if (btn) { btn.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:16px;border:1px solid #86efac;background:#dcfce7;color:#15803d;font-size:12px;font-weight:600;cursor:pointer'; btn.innerHTML = '🍎 ¡Ya lo apliqué!'; }
+    if (btn) { btn.style.cssText = _APPLIED_ON_STYLE; btn.innerHTML = '🍎 ¡Ya lo apliqué!'; }
+    if (grantXP) {
         addXP(40, 'Concepto aplicado en clase');
         updateMissionProgress('applied', 1);
         showToast('🍎 +40 XP ¡Genial! Aplicar en tu aula es lo que más cuenta', 'success');
-        // Misión semanal w_applied
         const wm = progress.dailyMissions?.weeklyMissions || [];
         wm.forEach(m => { if (!m.completed && m.type === 'w_applied') { m.current++; if (m.current >= m.target) { m.completed = true; showToast(`🏆 ¡Misión semanal: ${m.name}!`, 'success'); } } });
-    } else {
-        arr.splice(idx, 1);
-        if (btn) { btn.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:16px;border:1px solid #e2e8f0;background:white;color:#64748b;font-size:12px;font-weight:600;cursor:pointer'; btn.innerHTML = '🍎 Lo apliqué en clase'; }
     }
     saveProgress();
     checkBadges();
+}
+function toggleApplied(cardKey) {
+    if (!progress.dailyMissions) progress.dailyMissions = {};
+    if (!progress.dailyMissions.appliedCards) progress.dailyMissions.appliedCards = [];
+    if (!progress.dailyMissions.appliedEvidence) progress.dailyMissions.appliedEvidence = {};
+    const arr = progress.dailyMissions.appliedCards;
+    const idx = arr.indexOf(cardKey);
+    if (idx !== -1) {
+        if (!confirm('¿Quieres desmarcar «Lo apliqué en clase» en esta tarjeta?')) return;
+        arr.splice(idx, 1);
+        const btn = document.getElementById(`appliedBtn_${cardKey}`);
+        if (btn) { btn.style.cssText = _APPLIED_OFF_STYLE; btn.innerHTML = '🍎 Lo apliqué en clase'; }
+        saveProgress();
+        checkBadges();
+        return;
+    }
+    const prev = progress.dailyMissions.appliedEvidence[cardKey];
+    // Ya tenía una evidencia aprobada (la desmarcó antes): se vuelve a marcar sin XP
+    if (prev?.ai?.approved) { _markApplied(cardKey, false); return; }
+    const card = _findCardByKey(cardKey);
+    const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === (currentCourseId || 'steam')) : null;
+    const cardText = [card?.content, card?.description, card?.objective, card?.scenario, card?.question, card?.prompt].filter(x => typeof x === 'string').join(' ').replace(/<[^>]+>/g, ' ').slice(0, 900);
+    _openEvidenceModal({
+        title: '🍎 ¿Cómo lo aplicaste?',
+        intro: `Cuéntalo en 2 o 3 líneas: qué hiciste en tu clase${card?.title ? ` con «${esc(card.title)}»` : ''}, con qué grupo y qué notaste en tus estudiantes.`,
+        placeholder: 'Ej.: Con mi grupo de 2.º de secundaria probé... Al principio..., y noté que...',
+        minChars: _CARD_EVIDENCE_MIN_CHARS,
+        initialText: prev?.text || '',
+        laterLabel: 'Todavía no lo aplico',
+        payload: { kind: 'card', courseTitle: course?.title || '', cardTitle: card?.title || '', cardContent: cardText },
+        onApproved: (text, r) => {
+            const firstTime = !prev;
+            progress.dailyMissions.appliedEvidence[cardKey] = { text: text.slice(0, 1000), date: localDateStr(), courseId: currentCourseId || 'steam', ai: { approved: true, score: r.score } };
+            _markApplied(cardKey, firstTime);
+        },
+    });
 }
 
 // ── Tablero de apuntes guardados (estilo "pin" de Google Primer): guarda
@@ -4638,46 +4679,112 @@ function _offerCertificateDownload(blobUrl, filename, label) {
 // usuario ya pagó (lee certificate_payments, solo puede LEER su propia
 // fila por RLS); si no, crea un checkout y redirige de página completa —
 // Recurrente confirma el pago vía webhook server-side, nunca el cliente.
-// ── Evidencia de aplicación en el aula (requisito del diploma) ──────────────
-const _EVIDENCE_MIN_CHARS = 120;
+// ── Evidencia de aplicación en el aula, revisada por IA ─────────────────────
+// La usan "Lo apliqué en clase" (por tarjeta) y el requisito del diploma (por
+// curso). La Edge Function evaluate-evidence aplica una rúbrica (relación con
+// el curso, qué hizo y con quién, qué observó) y decide si aprueba; así no
+// basta con escribir cualquier cosa para cumplir.
+const EVALUATE_EVIDENCE_URL = `${SUPABASE_URL}/functions/v1/evaluate-evidence`;
+const _EVIDENCE_MIN_CHARS = 120;      // diploma
+const _CARD_EVIDENCE_MIN_CHARS = 60;  // "Lo apliqué en clase"
 function _getApplicationEvidence(cid) {
-    return progress?.dailyMissions?.applicationEvidence?.[cid] || null;
+    const ev = progress?.dailyMissions?.applicationEvidence?.[cid] || null;
+    // Las evidencias guardadas antes de la revisión con IA no tienen `ai`:
+    // se piden de nuevo para que pasen por la misma revisión.
+    return ev && ev.ai?.approved ? ev : null;
 }
-function _askApplicationEvidence(cid, onDone) {
-    const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === cid) : null;
-    const commitment = (progress?.dailyMissions?.pinnedCards || []).filter(p => p.courseId === cid && p.commitment).map(p => p.commitment)[0];
+async function _evaluateEvidence(payload) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(EVALUATE_EVIDENCE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}` },
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('evaluate-evidence ' + res.status);
+    const r = await res.json();
+    if (typeof r.approved !== 'boolean') throw new Error('respuesta inválida');
+    return r;
+}
+// Modal genérico: el docente escribe, la IA revisa y, si no aprueba, explica
+// qué falta para que lo complete y lo reenvíe sin perder lo escrito.
+function _openEvidenceModal({ title, intro, extraHtml = '', placeholder, minChars, initialText = '', laterLabel, payload, onApproved }) {
     const m = document.createElement('div');
     m.className = 'modal-sheet';
     m.style.zIndex = '9999';
     m.innerHTML = `<div class="modal-inner" style="max-height:88vh;overflow-y:auto">
         <div class="modal-drag"></div>
-        <h3 class="text-lg font-bold text-slate-800 mb-1">Antes de tu diploma: ¿cómo lo aplicaste?</h3>
-        <p class="text-sm text-slate-500 mb-3">El diploma de «${esc(course?.title || 'este curso')}» certifica que llevaste algo del curso a tu aula. Cuéntalo en pocas líneas: qué hiciste, con qué grupo y qué observaste en tus estudiantes.</p>
-        ${commitment ? `<p class="text-xs mb-3" style="background:#FEF9C3;color:#854D0E;border-radius:10px;padding:8px 10px">Tu compromiso en el curso fue: <strong>${esc(commitment)}</strong></p>` : ''}
-        <textarea id="_evText" rows="6" class="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="Ej.: Con mi grupo de 4.º hice la actividad de... Primero..., después... Noté que..."></textarea>
-        <p id="_evCount" class="text-xs text-slate-500 mt-1">0 / ${_EVIDENCE_MIN_CHARS} caracteres mínimos</p>
-        <button id="_evSave" disabled class="w-full mt-3 py-3 rounded-xl font-bold text-white text-sm" style="background:#94A3B8">Guardar y continuar</button>
-        <button id="_evLater" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Todavía no lo aplico — lo haré y vuelvo</button>
+        <h3 class="text-lg font-bold text-slate-800 mb-1">${esc(title)}</h3>
+        <p class="text-sm text-slate-500 mb-3">${intro}</p>
+        ${extraHtml}
+        <textarea id="_evText" rows="6" class="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="${esc(placeholder)}">${esc(initialText)}</textarea>
+        <p id="_evCount" class="text-xs text-slate-500 mt-1"></p>
+        <div id="_evFeedback" class="hidden text-sm rounded-xl mt-2" style="padding:10px 12px"></div>
+        <button id="_evSave" disabled class="w-full mt-3 py-3 rounded-xl font-bold text-white text-sm" style="background:#94A3B8">Enviar para revisión</button>
+        <button id="_evLater" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">${esc(laterLabel)}</button>
+        <p class="text-[11px] text-slate-400 text-center mt-1">Una IA revisa que cuentes qué hiciste, con qué grupo y qué observaste. No hace falta un texto largo ni perfecto.</p>
     </div>`;
     document.body.appendChild(m);
-    const ta = m.querySelector('#_evText'), btn = m.querySelector('#_evSave'), cnt = m.querySelector('#_evCount');
-    ta.addEventListener('input', () => {
-        const n = ta.value.trim().length, ok = n >= _EVIDENCE_MIN_CHARS;
-        cnt.textContent = ok ? '✓ Listo' : `${n} / ${_EVIDENCE_MIN_CHARS} caracteres mínimos`;
+    const ta = m.querySelector('#_evText'), btn = m.querySelector('#_evSave'), cnt = m.querySelector('#_evCount'), fb = m.querySelector('#_evFeedback');
+    let busy = false;
+    const refresh = () => {
+        const n = ta.value.trim().length, ok = n >= minChars && !busy;
+        cnt.textContent = n >= minChars ? '✓ Largo suficiente' : `${n} / ${minChars} caracteres mínimos`;
         btn.disabled = !ok; btn.style.background = ok ? '#5C35C5' : '#94A3B8';
-    });
+    };
+    const showFeedback = (text, good) => {
+        fb.classList.remove('hidden');
+        fb.style.background = good ? '#DCFCE7' : '#FEF3C7';
+        fb.style.color = good ? '#166534' : '#92400E';
+        fb.textContent = text;
+    };
+    ta.addEventListener('input', refresh);
+    refresh();
     m.querySelector('#_evLater').addEventListener('click', () => m.remove());
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
         const text = ta.value.trim();
-        if (text.length < _EVIDENCE_MIN_CHARS) return;
-        if (!progress.dailyMissions) progress.dailyMissions = {};
-        if (!progress.dailyMissions.applicationEvidence) progress.dailyMissions.applicationEvidence = {};
-        progress.dailyMissions.applicationEvidence[cid] = { text: text.slice(0, 2000), date: localDateStr() };
-        saveProgress();
-        m.remove();
-        if (onDone) onDone();
+        if (text.length < minChars || busy) return;
+        if (!navigator.onLine) { showFeedback('Necesitas conexión para que se revise tu evidencia. Tu texto sigue aquí: envíalo cuando vuelvas a tener internet.', false); return; }
+        busy = true; refresh(); btn.textContent = 'Revisando…';
+        try {
+            const r = await _evaluateEvidence({ ...payload, text });
+            if (r.approved) {
+                showFeedback('✓ ' + (r.feedback || '¡Aprobada!'), true);
+                btn.textContent = '¡Aprobada!';
+                setTimeout(() => { m.remove(); onApproved(text, r); }, 1400);
+                return;
+            }
+            showFeedback(r.feedback || 'Agrega qué hiciste concretamente, con qué grupo y qué notaste en tus estudiantes.', false);
+            btn.textContent = 'Revisé mi texto, enviar de nuevo';
+        } catch (e) {
+            console.error('Error evaluando evidencia:', e);
+            showFeedback('No pudimos revisar tu evidencia en este momento. Tu texto sigue aquí: inténtalo de nuevo en unos minutos.', false);
+            btn.textContent = 'Enviar para revisión';
+        }
+        busy = false; refresh();
     });
     setTimeout(() => ta.focus(), 200);
+}
+function _askApplicationEvidence(cid, onDone) {
+    const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === cid) : null;
+    const commitment = (progress?.dailyMissions?.pinnedCards || []).filter(p => p.courseId === cid && p.commitment).map(p => p.commitment)[0];
+    const prev = progress?.dailyMissions?.applicationEvidence?.[cid];
+    _openEvidenceModal({
+        title: 'Antes de tu diploma: ¿cómo lo aplicaste?',
+        intro: `El diploma de «${esc(course?.title || 'este curso')}» certifica que llevaste algo del curso a tu aula. Cuéntalo en pocas líneas: qué hiciste, con qué grupo y qué observaste en tus estudiantes.`,
+        extraHtml: commitment ? `<p class="text-xs mb-3" style="background:#FEF9C3;color:#854D0E;border-radius:10px;padding:8px 10px">Tu compromiso en el curso fue: <strong>${esc(commitment)}</strong></p>` : '',
+        placeholder: 'Ej.: Con mi grupo de 4.º hice la actividad de... Primero..., después... Noté que...',
+        minChars: _EVIDENCE_MIN_CHARS,
+        initialText: prev?.text || '',
+        laterLabel: 'Todavía no lo aplico — lo haré y vuelvo',
+        payload: { kind: 'diploma', courseTitle: course?.title || cid, commitment: commitment || '' },
+        onApproved: (text, r) => {
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            if (!progress.dailyMissions.applicationEvidence) progress.dailyMissions.applicationEvidence = {};
+            progress.dailyMissions.applicationEvidence[cid] = { text: text.slice(0, 2000), date: localDateStr(), ai: { approved: true, score: r.score, feedback: (r.feedback || '').slice(0, 400) } };
+            saveProgress();
+            if (onDone) onDone();
+        },
+    });
 }
 
 async function requestCertificate(certType, courseId, score) {
