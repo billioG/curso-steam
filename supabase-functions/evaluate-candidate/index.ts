@@ -23,7 +23,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const GROQ_API_KEY         = Deno.env.get('GROQ_API_KEY')!;
-const GROQ_MODEL           = 'llama-3.3-70b-versatile';
+const GROQ_MODEL           = 'openai/gpt-oss-120b';
 const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -182,7 +182,8 @@ Responde con este objeto JSON. Los puntajes son enteros de 0 a 100 que reflejan 
           { role: 'system', content: systemPrompt },
           { role: 'user',   content: userPrompt   },
         ],
-        max_tokens: 700,
+        max_tokens: 2500,
+        reasoning_effort: 'low',
         temperature: 0.3,
         response_format: { type: 'json_object' },
       }),
