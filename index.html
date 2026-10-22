@@ -1285,6 +1285,36 @@
             animation: slideInLeft .28s cubic-bezier(.22, .68, 0, 1.2) forwards;
         }
 
+        /* ── Preferencias de lectura (ver applyUiPrefs en app.js) ── */
+        html.big-text body { zoom: 1.15; }
+        html.big-text .card-body { line-height: 1.65; }
+        html.sober-mode .xp-pop, html.sober-mode .streak-flame { animation: none !important; }
+        .pref-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+        .pref-row + .pref-row { border-top: 1px solid #F1F5F9; }
+        .pref-switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+        .pref-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .pref-switch span { position: absolute; inset: 0; background: #CBD5E1; border-radius: 26px; transition: background .2s; cursor: pointer; }
+        .pref-switch span::before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+        .pref-switch input:checked + span { background: #1E4976; }
+        .pref-switch input:checked + span::before { transform: translateX(18px); }
+        .pref-switch input:focus-visible + span { outline: 2px solid #07B0E4; outline-offset: 2px; }
+
+        /* ── Mascota: aparece y se va con animación ── */
+        @keyframes mascotIn {
+            0% { transform: translateY(40px) scale(.3) rotate(-20deg); opacity: 0; }
+            60% { transform: translateY(-8px) scale(1.12) rotate(6deg); opacity: 1; }
+            80% { transform: translateY(2px) scale(.96) rotate(-2deg); }
+            100% { transform: none; }
+        }
+        @keyframes mascotOut {
+            to { transform: translateY(40px) scale(.3) rotate(15deg); opacity: 0; }
+        }
+        #mascotWrap.mascot-in { animation: mascotIn .6s cubic-bezier(.2,.8,.3,1.2) both; }
+        #mascotWrap.mascot-out { animation: mascotOut .3s ease-in both; }
+        @media (prefers-reduced-motion: reduce) {
+            #mascotWrap.mascot-in, #mascotWrap.mascot-out { animation-duration: .01s; }
+        }
+
         /* ── Swipe estilo Tinder (ver attachDeckSwipe en app.js) ── */
         #activeCard { transform-origin: 50% 110%; }
         .swipe-stamp {
@@ -2019,6 +2049,38 @@
                         <div class="text-xs text-slate-400">Conoce tu nivel de partida</div>
                     </div>
                     <span id="diagProfileBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style="background:#F5F3FF;color:#7C3AED"></span>
+                </button>
+            </div>
+
+            <!-- ── Asistente y preferencias de lectura (siempre visibles) ── -->
+            <div class="flex flex-col gap-2 mb-4">
+                <div class="bg-white border border-slate-200 rounded-2xl py-2 px-4 shadow-sm">
+                    <p class="text-[11px] font-black uppercase tracking-widest text-slate-400 pt-2">Preferencias de lectura</p>
+                    <label class="pref-row">
+                        <div class="flex-1">
+                            <div class="font-semibold text-slate-700 text-sm">Letra más grande</div>
+                            <div class="text-xs text-slate-500">Agranda todo el texto de la app</div>
+                        </div>
+                        <span class="pref-switch"><input type="checkbox" id="prefBigText" onchange="setUiPref('bigText', this.checked)"><span></span></span>
+                    </label>
+                    <label class="pref-row">
+                        <div class="flex-1">
+                            <div class="font-semibold text-slate-700 text-sm">Modo sobrio</div>
+                            <div class="text-xs text-slate-500">Sin animaciones de logros, confeti ni avisos de puntos</div>
+                        </div>
+                        <span class="pref-switch"><input type="checkbox" id="prefSober" onchange="setUiPref('sober', this.checked)"><span></span></span>
+                    </label>
+                </div>
+                <button id="mascotMenuBtn" onclick="toggleMascotFromMenu()"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-emerald-300 hover:bg-emerald-50 transition shadow-sm">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#DCFCE7">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm" id="mascotMenuLabel">Mostrar asistente Quetzal</div>
+                        <div class="text-xs text-slate-400">Pregúntale dudas sobre los cursos</div>
+                    </div>
+                    <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
                 </button>
             </div>
 
@@ -2799,6 +2861,10 @@
                     <span data-icon="arrowLeft" style="display:inline-flex;width:15px;height:15px;flex-shrink:0"></span>
                     <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Cambiar curso</span>
                 </button>
+                <button onclick="toggleMascotFromMenu()" class="sidebar-action-btn sidebar-action-glosario" id="mascotSidebarBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span id="mascotSidebarLabel">Asistente</span>
+                </button>
                 <button onclick="localStorage.removeItem('onboardingDone'); startAppTour();" class="sidebar-action-btn sidebar-action-tutorial">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10" />
@@ -2973,9 +3039,14 @@
 
     <!-- ==================== GEMINI CHATBOT ==================== -->
     <!-- Botón flotante -->
-    <button id="chatToggleBtn" onclick="toggleChat()"
-        class="fixed z-40 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 overflow-hidden bg-white border-2 border-[#07B0E4]"
-        style="bottom:5.5rem;right:1rem;">
+    <!-- La mascota solo aparece cuando el docente la pide desde el menú
+         (Perfil → "Asistente Quetzal" o la barra lateral) y nunca antes de
+         iniciar sesión. Se cierra con la ✕ (ver showMascot/hideMascot). -->
+    <div id="mascotWrap" class="hidden" style="position:fixed;bottom:5.5rem;right:1rem;z-index:40">
+    <button id="mascotCloseBtn" onclick="hideMascot()" aria-label="Ocultar asistente"
+        style="position:absolute;top:-6px;left:-6px;z-index:1;width:24px;height:24px;border-radius:50%;border:none;background:#1E293B;color:#fff;font-size:14px;line-height:24px;text-align:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25)">&times;</button>
+    <button id="chatToggleBtn" onclick="toggleChat()" aria-label="Abrir asistente"
+        class="w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 overflow-hidden bg-white border-2 border-[#07B0E4]">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" class="w-14 h-14" role="img" aria-label="Asistente">
             <path d="M 185 300 C 160 380 90 410 80 480 C 105 480 180 400 195 300 Z" fill="#009624" />
             <path d="M 215 300 C 240 380 310 410 320 480 C 295 480 220 400 205 300 Z" fill="#00C853" />
@@ -3000,6 +3071,7 @@
             <path d="M 188 170 Q 200 166 212 170 C 210 185 200 202 200 202 C 200 202 190 185 188 170 Z" fill="#FFA000" opacity="0.5" />
         </svg>
     </button>
+    </div>
 
     <!-- Drawer del chat -->
     <div id="chatDrawer" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end justify-center">

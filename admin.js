@@ -1322,6 +1322,22 @@ function openUserPanel(userId) {
         }).join('');
     }
 
+    // Evidencias de aplicación en el aula (las pide la app antes del diploma)
+    const evEl = document.getElementById('panelEvidence');
+    if (evEl) {
+        const ev = p?.daily_missions?.applicationEvidence || {};
+        const entries = Object.entries(ev);
+        evEl.innerHTML = entries.length
+            ? entries.map(([cid, e]) => {
+                const c = courses.find(x => x.id === cid);
+                return `<div class="bg-slate-50 rounded-xl p-3">
+                    <p class="text-xs font-bold text-slate-700">${esc(c?.title || cid)} <span class="font-normal text-slate-400">· ${esc(e?.date || '')}</span></p>
+                    <p class="text-xs text-slate-600 mt-1" style="white-space:pre-wrap">${esc(e?.text || '')}</p>
+                </div>`;
+            }).join('')
+            : '<span class="text-slate-400 text-xs">Aún no registra aplicaciones en el aula</span>';
+    }
+
     // Mostrar panel
     document.getElementById('userPanelOverlay')?.classList.remove('hidden');
     const panel = document.getElementById('userPanel');
