@@ -3,7 +3,9 @@
 // el docente, para que "Lo apliqué en clase" y el requisito del diploma no se
 // cumplan escribiendo cualquier cosa.
 // Recibe: { kind: 'card' | 'diploma', courseTitle, cardTitle?, cardContent?, commitment?, text }
-// Devuelve: { approved, score (0-10), feedback, missing: string[] }
+// Devuelve: { approved, score (0-10), feedback, missing: string[], pii: boolean }
+// `pii` avisa si el texto trae datos personales (nombres completos, teléfonos, correos…);
+// el cliente no comparte con otros docentes un relato con pii=true.
 // El puntaje se suma aquí con la rúbrica; el umbral y los mínimos de palabras
 // también se aplican aquí, no en el modelo.
 
@@ -88,6 +90,7 @@ Responde con este objeto JSON:
   "concrecion": <entero 0-4>,
   "observacion": <entero 0-3>,
   "faltantes": [<de "relacion", "que_hiciste", "grupo", "observacion" — solo lo que falte>],
+  "datos_personales": <true si el texto incluye nombres y apellidos de personas reales (estudiantes, familias o colegas), teléfonos, correos, direcciones o números de documento; false si solo habla de «mis estudiantes», grados o el nombre de pila genérico>,
   "feedback": "1-2 oraciones dirigidas al docente: si está bien, reconoce algo específico de lo que contó; si falta algo, dile exactamente qué agregar."
 }`;
 
@@ -119,9 +122,14 @@ Responde con este objeto JSON:
     const approved = pertinencia > 0 && score >= rule.pass;
     const allowed = ['relacion', 'que_hiciste', 'grupo', 'observacion'];
 
+    // Respaldo en código por si el modelo pasa por alto un dato evidente
+    const piiRegex = /[\w.+-]+@[\w-]+\.[\w.]+|(?:\+?\d[\s-]?){8,}/;
+    const pii = ev.datos_personales === true || piiRegex.test(text);
+
     return json({
       approved,
       score,
+      pii,
       feedback: String(ev.feedback || '').slice(0, 400),
       missing: Array.isArray(ev.faltantes) ? ev.faltantes.filter((f: string) => allowed.includes(f)) : [],
     });

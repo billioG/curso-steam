@@ -1627,6 +1627,75 @@ function renderTodaySession() {
     </div>`;
 }
 
+// ==================== COMUNIDAD DE COLEGAS ====================
+// Relatos anónimos de «Lo apliqué en clase» que otros docentes decidieron
+// compartir. El servidor solo expone texto, grado y fecha (vista sin user_id);
+// con dos reportes un relato se oculta solo. Si las tablas todavía no existen,
+// todo esto falla en silencio y simplemente no se muestra nada.
+const _peerCache = {}; // courseId -> relatos
+async function _loadPeerStories(courseId) {
+    if (_peerCache[courseId]) return _peerCache[courseId];
+    try {
+        const { data, error } = await supabase.from('shared_applications_public')
+            .select('id, card_id, text, grade, created_at').eq('course_id', courseId)
+            .order('created_at', { ascending: false }).limit(300);
+        _peerCache[courseId] = error ? [] : (data || []);
+    } catch (_) { _peerCache[courseId] = []; }
+    return _peerCache[courseId];
+}
+async function _shareApplication(courseId, cardKey, text) {
+    try {
+        const { error } = await supabase.from('shared_applications').upsert(
+            { user_id: currentUser.id, course_id: courseId, card_id: String(cardKey), text: text.slice(0, 1000), grade: _profilePrefs().grade || null },
+            { onConflict: 'user_id,course_id,card_id' });
+        if (error) throw error;
+        delete _peerCache[courseId];
+        showToast('Tu experiencia se compartió de forma anónima. ¡Gracias!', 'success');
+    } catch (e) { console.error('Error compartiendo relato:', e); showToast('No se pudo compartir tu experiencia, pero quedó guardada en tu aula.', 'error'); }
+}
+async function _unshareApplication(courseId, cardKey) {
+    try {
+        await supabase.from('shared_applications').delete().eq('user_id', currentUser.id).eq('course_id', courseId).eq('card_id', String(cardKey));
+        delete _peerCache[courseId];
+    } catch (_) {}
+}
+let _peerOpen = false;
+async function renderPeerStories() {
+    const box = document.getElementById('peerStoriesBox');
+    if (!box) return;
+    const module = modulesData?.[currentModule - 1];
+    const card = module?.cards?.[currentCardIndex];
+    if (!card || !currentUser || ['quiz', 'simulation', 'takeaway'].includes(card.type)) { box.innerHTML = ''; return; }
+    const cid = currentCourseId || 'steam', key = String(card.id);
+    const stories = (await _loadPeerStories(cid)).filter(x => x.card_id === key);
+    // La tarjeta pudo cambiar mientras se cargaba
+    const nowCard = modulesData?.[currentModule - 1]?.cards?.[currentCardIndex];
+    if (!nowCard || String(nowCard.id) !== key) return;
+    if (!stories.length) { box.innerHTML = ''; return; }
+    const gradeLabel = id => (_EXP_GRADES.find(g => g.id === id)?.label || '').replace(/ \(.*\)/, '');
+    box.innerHTML = `<div class="rounded-2xl p-3" style="background:#F0FDF4;border:1px solid #BBF7D0">
+        <button onclick="_peerOpen=!_peerOpen;renderPeerStories()" class="w-full flex items-center justify-between text-left" style="background:none;border:none">
+            <span class="text-xs font-bold" style="color:#166534">👥 ${stories.length} ${stories.length === 1 ? 'colega lo aplicó' : 'colegas lo aplicaron'}</span>
+            <span class="text-xs" style="color:#166534">${_peerOpen ? 'Ocultar' : 'Ver cómo les fue'}</span>
+        </button>
+        ${_peerOpen ? `<div class="space-y-2 mt-2">${stories.slice(0, 5).map(x => `<div class="rounded-xl p-3" style="background:#fff">
+            <p class="text-xs text-slate-600" style="white-space:pre-wrap">${esc(x.text)}</p>
+            <p class="text-[10px] text-slate-400 mt-1">Docente${gradeLabel(x.grade) ? ' de ' + esc(gradeLabel(x.grade).toLowerCase()) : ''} · ${esc(String(x.created_at).slice(0, 10))}
+                · <button onclick="reportPeerStory('${esc(x.id)}')" style="background:none;border:none;color:#94A3B8;text-decoration:underline;font-size:10px">Reportar</button></p>
+        </div>`).join('')}</div>` : ''}
+    </div>`;
+}
+async function reportPeerStory(id) {
+    if (!confirm('¿Quieres reportar este relato porque incluye datos personales o algo inapropiado?')) return;
+    try {
+        const { error } = await supabase.from('shared_application_reports').insert({ application_id: id });
+        if (error && error.code !== '23505') throw error;
+        for (const k of Object.keys(_peerCache)) _peerCache[k] = _peerCache[k].filter(x => x.id !== id);
+        showToast('Gracias por avisar. Lo revisaremos.', 'success');
+        renderPeerStories();
+    } catch (_) { showToast('No se pudo enviar el reporte. Inténtalo de nuevo.', 'error'); }
+}
+
 // ==================== MI AULA: lo que aplicaste, mes a mes ====================
 // Devuelve al docente su propio progreso real: las evidencias de "Lo apliqué
 // en clase" (revisadas por IA), los compromisos que hizo y sus notas, agrupados
@@ -1716,7 +1785,146 @@ function renderMiAula() {
         ${total ? `<p class="text-[11px] font-bold text-slate-500 mb-1">Lo que aplicaste</p>
             <div class="space-y-2">${d.applied.map(a => item(a.cardTitle, a.courseTitle, a.text, a.date)).join('')}${d.diplomas.map(a => item('Diploma · ' + a.courseTitle, '', a.text, a.date)).join('')}</div>
             <button onclick="copyMiAulaSummary()" class="w-full mt-3 py-2.5 rounded-xl text-xs font-bold" style="background:#EEF2FF;color:#4338CA">Compartir o copiar este resumen</button>`
-          : `<p class="text-xs text-slate-400">${isNow ? 'Cuando marques «Lo apliqué en clase» en una tarjeta y cuentes qué pasó, aparecerá aquí junto con tus compromisos.' : ''}</p>`}`;
+          : `<p class="text-xs text-slate-400">${isNow ? 'Cuando marques «Lo apliqué en clase» en una tarjeta y cuentes qué pasó, aparecerá aquí junto con tus compromisos.' : ''}</p>`}
+        <div class="grid grid-cols-2 gap-2 mt-3">
+            <button onclick="openPracticeConstancia()" class="py-2.5 rounded-xl text-xs font-bold" style="background:#F1F5F9;color:#475569">Constancia de práctica</button>
+            <button onclick="openPublicProfileSheet()" class="py-2.5 rounded-xl text-xs font-bold" style="background:#F1F5F9;color:#475569">Mi perfil público</button>
+        </div>`;
+}
+
+// ==================== CONSTANCIA DE PRÁCTICA Y PERFIL PÚBLICO ====================
+// Reconocimiento que sirve fuera de la plataforma. Es autodeclarado: cada relato
+// pasó por la revisión de la IA (concreto y relacionado con el curso), pero la
+// plataforma no observa el aula. Lo único verificado por el servidor son los
+// diplomas pagados, y solo en el perfil público.
+function _allApprovedApplications() {
+    const dm = progress?.dailyMissions || {};
+    const out = [];
+    Object.entries(dm.appliedEvidence || {}).forEach(([key, e]) => {
+        if (!e?.ai?.approved) return;
+        const { card, course } = _findCardInCourse(e.courseId, key);
+        out.push({ date: e.date || '', text: e.text || '', cardTitle: card?.title || e.cardTitle || 'Tarjeta', courseTitle: course?.title || '' });
+    });
+    Object.entries(dm.applicationEvidence || {}).forEach(([cid, e]) => {
+        if (!e?.ai?.approved) return;
+        out.push({ date: e.date || '', text: e.text || '', cardTitle: 'Aplicación del curso', courseTitle: allCourses.find(c => c.id === cid)?.title || cid });
+    });
+    return out.sort((a, b) => a.date.localeCompare(b.date));
+}
+function _passedCourses() {
+    const scores = progress?.dailyMissions?.examScores || {};
+    return allCourses.filter(c => {
+        const sc = c.id === 'steam' ? (scores.steam ?? progress?.dailyMissions?.examScore) : scores[c.id];
+        return typeof sc === 'number' && sc >= 70;
+    });
+}
+function _gradeLabel(id) { return (_EXP_GRADES.find(g => g.id === id)?.label || '').replace(/ \(.*\)/, ''); }
+function openPracticeConstancia() {
+    const apps = _allApprovedApplications();
+    if (!apps.length) { showToast('Aún no tienes aplicaciones aprobadas. Marca «Lo apliqué en clase» en una tarjeta y cuenta qué pasó.', 'info'); return; }
+    const nombre = getDisplayName();
+    const passed = _passedCourses();
+    const grade = _gradeLabel(_profilePrefs().grade);
+    const fmt = d => { try { return _parseLocalDateStr(d).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (_) { return d; } };
+    const period = apps.length > 1 && apps[0].date !== apps[apps.length - 1].date ? `${fmt(apps[0].date)} al ${fmt(apps[apps.length - 1].date)}` : fmt(apps[0].date);
+    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Constancia de práctica — ${esc(nombre)}</title>
+<style>
+ body{font-family:Georgia,'Times New Roman',serif;color:#1e293b;max-width:760px;margin:0 auto;padding:40px 32px}
+ h1{font-size:26px;margin:0 0 4px;color:#1E4976} .sub{color:#64748b;font-size:14px;margin-bottom:28px}
+ h2{font-size:15px;color:#1E4976;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin:26px 0 10px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:.05em}
+ .item{margin-bottom:14px;page-break-inside:avoid} .item b{font-family:Arial,sans-serif;font-size:13px} .meta{font-family:Arial,sans-serif;font-size:11px;color:#64748b}
+ .item p{margin:3px 0 0;font-size:13px;line-height:1.5;white-space:pre-wrap} .note{font-family:Arial,sans-serif;font-size:11px;color:#64748b;line-height:1.6;margin-top:30px;border-top:1px solid #e2e8f0;padding-top:12px}
+ .btn{font-family:Arial,sans-serif;background:#5C35C5;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:20px}
+ @media print{.btn{display:none}body{padding:0}}
+</style></head><body>
+<button class="btn" onclick="window.print()">⬇ Guardar como PDF</button>
+<h1>Constancia de práctica docente</h1>
+<p class="sub">${esc(nombre)}${grade ? ' · Docente de ' + esc(grade.toLowerCase()) : ''}<br>Plataforma Yo Aprendo · ${esc(period)}</p>
+<h2>Resumen</h2>
+<p style="font-size:14px;line-height:1.6">Durante este período, ${esc(nombre)} registró <strong>${apps.length}</strong> ${apps.length === 1 ? 'aplicación' : 'aplicaciones'} de lo aprendido en su aula${passed.length ? ` y aprobó ${passed.length} ${passed.length === 1 ? 'curso' : 'cursos'} de la plataforma` : ''}.</p>
+${passed.length ? `<h2>Cursos aprobados</h2><ul style="font-size:13px;line-height:1.7">${passed.map(c => `<li>${esc(c.title)}${c.durationHours ? ' · ' + esc(_fmtHours(c.durationHours)) + ' de estudio' : ''}</li>`).join('')}</ul>` : ''}
+<h2>Lo que aplicó en su aula</h2>
+${apps.map(a => `<div class="item"><b>${esc(a.cardTitle)}</b> <span class="meta">${esc(a.courseTitle)} · ${esc(fmt(a.date))}</span><p>${esc(a.text)}</p></div>`).join('')}
+<p class="note">Esta constancia resume lo que la persona declaró haber aplicado en su aula. Cada relato fue revisado por una herramienta de inteligencia artificial que comprueba que sea concreto y se relacione con el curso; la plataforma no observa directamente el aula. Los diplomas de pago se verifican en la página de verificación de Yo Aprendo.</p>
+</body></html>`;
+    try {
+        const blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+        const win = window.open(blobUrl, '_blank');
+        if (!win) { _offerCertificateDownload(blobUrl, `Constancia_practica_${nombre.replace(/\s+/g, '_')}.html`, 'documento'); }
+        else setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch (_) { showToast('No se pudo generar la constancia.', 'error'); }
+}
+
+// Perfil público: lo activa el docente a propósito. Se publica su nombre tal como
+// lo escriba, su grado, los cursos aprobados y cuántas aplicaciones registró.
+// Nunca el correo, la escuela ni el texto de sus relatos.
+const PUBLIC_PROFILE_BASE = `${location.origin}${location.pathname.replace(/[^/]*$/, '')}p.html?u=`;
+function _randomSlug() {
+    const abc = 'abcdefghjkmnpqrstuvwxyz23456789', a = new Uint8Array(10);
+    crypto.getRandomValues(a);
+    return Array.from(a, n => abc[n % abc.length]).join('');
+}
+function _publicProfileStats() {
+    const apps = _allApprovedApplications();
+    return {
+        applied: apps.length,
+        since: apps[0]?.date || null,
+        courses: _passedCourses().map(c => ({ id: c.id, title: c.title })),
+        cards: (progress.completedCards || []).length,
+    };
+}
+async function openPublicProfileSheet() {
+    if (!currentUser) return;
+    let row = null;
+    try { const { data } = await supabase.from('public_profiles').select('slug, display_name, enabled').eq('user_id', currentUser.id).maybeSingle(); row = data; }
+    catch (_) { showToast('El perfil público aún no está disponible.', 'info'); return; }
+    const m = document.createElement('div');
+    m.className = 'modal-sheet'; m.style.zIndex = '9998';
+    const close = () => m.remove();
+    const draw = () => {
+        const on = row?.enabled;
+        const link = on ? PUBLIC_PROFILE_BASE + row.slug : '';
+        m.innerHTML = `<div class="modal-inner" style="max-height:90vh;overflow-y:auto">
+            <div class="modal-drag"></div>
+            <h3 class="text-lg font-bold text-slate-800 mb-1">Mi perfil público</h3>
+            <p class="text-sm text-slate-500 mb-3">Una página que puedes compartir con tu director o en tu currículo. Es opcional y puedes desactivarla cuando quieras.</p>
+            <div class="text-xs rounded-xl mb-3" style="background:#F1F5F9;padding:10px 12px;color:#475569;line-height:1.6">
+                <strong>Se muestra:</strong> el nombre que escribas abajo, tu grado, los cursos que aprobaste, cuántas aplicaciones registraste y tus diplomas pagados (verificados).<br>
+                <strong>Nunca se muestra:</strong> tu correo, tu escuela ni el texto de tus relatos.
+            </div>
+            ${on ? `<p class="text-xs font-bold text-slate-600 mb-1">Tu enlace</p>
+                <div class="text-xs rounded-xl mb-3" style="background:#EEF2FF;color:#4338CA;padding:10px 12px;word-break:break-all">${esc(link)}</div>
+                <button id="_ppCopy" class="w-full py-2.5 rounded-xl text-xs font-bold mb-2" style="background:#EEF2FF;color:#4338CA">Copiar enlace</button>
+                <button id="_ppRefresh" class="w-full py-2.5 rounded-xl text-xs font-bold mb-2" style="background:#F1F5F9;color:#475569">Actualizar mis datos</button>
+                <button id="_ppOff" class="w-full py-2 text-xs" style="background:none;border:none;color:#B91C1C">Desactivar y borrar mi perfil público</button>`
+              : `<p class="text-xs font-bold text-slate-600 mb-1">Nombre que se mostrará</p>
+                <input id="_ppName" maxlength="80" class="w-full border border-slate-300 rounded-xl p-3 text-sm mb-3" value="${esc(getDisplayName())}">
+                <button id="_ppOn" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5">Activar mi perfil público</button>`}
+            <button id="_ppClose" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Cerrar</button>
+        </div>`;
+        m.querySelector('#_ppClose').onclick = close;
+        const save = async name => {
+            const payload = { user_id: currentUser.id, slug: row?.slug || _randomSlug(), display_name: name, grade: _profilePrefs().grade || null, stats: _publicProfileStats(), enabled: true, updated_at: new Date().toISOString() };
+            const { error } = await supabase.from('public_profiles').upsert(payload, { onConflict: 'user_id' });
+            if (error) { showToast('No se pudo guardar tu perfil público.', 'error'); return false; }
+            row = { slug: payload.slug, display_name: name, enabled: true }; return true;
+        };
+        m.querySelector('#_ppOn')?.addEventListener('click', async () => {
+            const name = m.querySelector('#_ppName').value.trim();
+            if (name.length < 2) { showToast('Escribe el nombre que quieres mostrar.', 'error'); return; }
+            if (await save(name)) { showToast('Tu perfil público está activo.', 'success'); draw(); }
+        });
+        m.querySelector('#_ppRefresh')?.addEventListener('click', async () => { if (await save(row.display_name)) showToast('Datos actualizados.', 'success'); });
+        m.querySelector('#_ppCopy')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(link); showToast('Enlace copiado.', 'success'); } catch (_) { showToast('Copia el enlace manualmente.', 'info'); } });
+        m.querySelector('#_ppOff')?.addEventListener('click', async () => {
+            if (!confirm('¿Borrar tu perfil público? El enlace dejará de funcionar.')) return;
+            const { error } = await supabase.from('public_profiles').delete().eq('user_id', currentUser.id);
+            if (error) { showToast('No se pudo borrar. Inténtalo de nuevo.', 'error'); return; }
+            row = null; draw();
+        });
+    };
+    document.body.appendChild(m);
+    draw();
 }
 
 function renderProgresoTab() {
@@ -2008,6 +2216,7 @@ function dismissModuleChallenge() {
 
 function renderCard() {
     renderModuleChallenge();
+    renderPeerStories();
     const module = modulesData[currentModule - 1];
     if (!module) return;
     const card = module.cards[currentCardIndex];
@@ -4352,6 +4561,7 @@ function toggleApplied(cardKey) {
         arr.splice(idx, 1);
         const btn = document.getElementById(`appliedBtn_${cardKey}`);
         if (btn) { btn.style.cssText = _APPLIED_OFF_STYLE; btn.innerHTML = '🍎 Lo apliqué en clase'; }
+        _unshareApplication(currentCourseId || 'steam', cardKey); // si lo había compartido, deja de verse
         saveProgress();
         checkBadges();
         return;
@@ -4370,10 +4580,12 @@ function toggleApplied(cardKey) {
         initialText: prev?.text || '',
         laterLabel: 'Todavía no lo aplico',
         payload: { kind: 'card', courseTitle: course?.title || '', cardTitle: card?.title || '', cardContent: cardText },
-        onApproved: (text, r) => {
+        canShare: true,
+        onApproved: (text, r, opts) => {
             const firstTime = !prev;
             progress.dailyMissions.appliedEvidence[cardKey] = { text: text.slice(0, 1000), date: localDateStr(), courseId: currentCourseId || 'steam', ai: { approved: true, score: r.score } };
             _markApplied(cardKey, firstTime);
+            if (opts?.share) _shareApplication(currentCourseId || 'steam', cardKey, text);
         },
     });
 }
@@ -5017,7 +5229,7 @@ async function _evaluateEvidence(payload) {
 }
 // Modal genérico: el docente escribe, la IA revisa y, si no aprueba, explica
 // qué falta para que lo complete y lo reenvíe sin perder lo escrito.
-function _openEvidenceModal({ title, intro, extraHtml = '', placeholder, minChars, initialText = '', laterLabel, payload, onApproved }) {
+function _openEvidenceModal({ title, intro, extraHtml = '', placeholder, minChars, initialText = '', laterLabel, payload, onApproved, canShare = false }) {
     const m = document.createElement('div');
     m.className = 'modal-sheet';
     m.style.zIndex = '9999';
@@ -5028,6 +5240,7 @@ function _openEvidenceModal({ title, intro, extraHtml = '', placeholder, minChar
         ${extraHtml}
         <textarea id="_evText" rows="6" class="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="${esc(placeholder)}">${esc(initialText)}</textarea>
         <p id="_evCount" class="text-xs text-slate-500 mt-1"></p>
+        ${canShare ? `<label class="flex items-start gap-2 mt-2 text-xs text-slate-600" style="cursor:pointer"><input type="checkbox" id="_evShare" class="mt-0.5"><span>Compartir mi experiencia de forma <strong>anónima</strong> con otros docentes (sin tu nombre ni tu escuela). Así otros colegas ven cómo lo aplicaron. No incluyas nombres de estudiantes.</span></label>` : ''}
         <div id="_evFeedback" class="hidden text-sm rounded-xl mt-2" style="padding:10px 12px"></div>
         <button id="_evSave" disabled class="w-full mt-3 py-3 rounded-xl font-bold text-white text-sm" style="background:#94A3B8">Enviar para revisión</button>
         <button id="_evLater" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">${esc(laterLabel)}</button>
@@ -5057,10 +5270,17 @@ function _openEvidenceModal({ title, intro, extraHtml = '', placeholder, minChar
         busy = true; refresh(); btn.textContent = 'Revisando…';
         try {
             const r = await _evaluateEvidence({ ...payload, text });
+            const share = !!m.querySelector('#_evShare')?.checked;
+            if (r.approved && share && r.pii) {
+                showFeedback('Tu relato parece incluir datos personales (nombres, teléfonos o correos). Quítalos para compartirlo, o desmarca «Compartir» y vuelve a enviar.', false);
+                btn.textContent = 'Enviar de nuevo';
+                busy = false; refresh();
+                return;
+            }
             if (r.approved) {
                 showFeedback('✓ ' + (r.feedback || '¡Aprobada!'), true);
                 btn.textContent = '¡Aprobada!';
-                setTimeout(() => { m.remove(); onApproved(text, r); }, 1400);
+                setTimeout(() => { m.remove(); onApproved(text, r, { share }); }, 1400);
                 return;
             }
             showFeedback(r.feedback || 'Agrega qué hiciste concretamente, con qué grupo y qué notaste en tus estudiantes.', false);
