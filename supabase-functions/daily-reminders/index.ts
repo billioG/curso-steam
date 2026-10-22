@@ -32,19 +32,35 @@ function localDate(offsetDays = 0): string {
   return d.toLocaleDateString('en-CA'); // YYYY-MM-DD local
 }
 
+// Último compromiso de aplicación (tarjeta «Próximos pasos») de los últimos 21
+// días que aún no tiene una evidencia de «Lo apliqué» posterior en ese curso.
+// Se usa para que el recordatorio hable de algo que el docente ya eligió.
+function openCommitment(dm: any): string | null {
+  const pins = (dm?.pinnedCards || []).filter((x: any) => x?.commitment && x?.date);
+  if (!pins.length) return null;
+  pins.sort((a: any, b: any) => String(b.date).localeCompare(String(a.date)));
+  const pin = pins[0];
+  const day = String(pin.date).slice(0, 10);
+  if ((Date.now() - new Date(day).getTime()) / 86400000 > 21) return null;
+  const evidenced = Object.values(dm?.appliedEvidence || {}).some((e: any) => e?.courseId === pin.courseId && String(e?.date || '') >= day);
+  return evidenced ? null : String(pin.commitment).slice(0, 140);
+}
+const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
 // ── Email: usuario inactivo ────────────────────────────────────
 function buildInactiveEmail(p: any, daysMissed: number, unsubUrl: string): string {
   const name = p.daily_missions?.fullName || p.daily_missions?.displayName || p.email?.split('@')[0] || 'Docente';
-  const streak = p.streak || 0;
-  const xp = p.xp || 0;
+  const commitment = openCommitment(p.daily_missions);
   const msg = daysMissed === 1
-    ? 'Hace 1 día que no nos visitas. ¡Tu racha te está esperando!'
-    : `Han pasado <strong>${daysMissed} días</strong> desde tu última visita. ¡No pierdas tu progreso!`;
-  const streakWarning = streak > 0
-    ? `<div style="background:#fff7ed;border:2px solid #fed7aa;border-radius:12px;padding:14px 16px;margin:16px 0;text-align:center">
-        <p style="margin:0;font-size:14px;color:#c2410c">🔥 Tu racha de <strong>${streak} días</strong> está en riesgo</p>
-       </div>`
-    : '';
+    ? 'Hace un día que no entras a la plataforma.'
+    : `Han pasado ${daysMissed} días desde tu última visita.`;
+  const mainBlock = commitment
+    ? `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px 18px;margin:0 0 16px">
+        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.05em">Tu compromiso para la clase</p>
+        <p style="margin:0;font-size:15px;color:#78350f">«${escHtml(commitment)}»</p>
+       </div>
+       <p style="margin:0;font-size:14px;color:#374151">¿Pudiste probarlo? Cuéntalo en dos minutos —qué hiciste y qué notaste en tus estudiantes— y quedará guardado en tu resumen «Mi aula».</p>`
+    : `<p style="margin:0;font-size:14px;color:#374151">Tu sesión de hoy está lista: unos <strong>10 minutos</strong>, con las próximas tarjetas de tu curso y sin prisa. Si hoy no se puede, mañana también estará.</p>`;
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -55,45 +71,20 @@ function buildInactiveEmail(p: any, daysMissed: number, unsubUrl: string): strin
       <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%">
 
         <!-- Header -->
-        <tr><td style="background:linear-gradient(135deg,#f97316 0%,#ef4444 100%);border-radius:20px 20px 0 0;padding:32px;text-align:center">
-          <div style="font-size:56px;margin-bottom:8px">😢</div>
-          <h1 style="color:white;margin:0;font-size:22px;font-weight:900">¡Te extrañamos, ${name}!</h1>
+        <tr><td style="background:#1E4976;border-radius:20px 20px 0 0;padding:32px;text-align:center">
+          <h1 style="color:white;margin:0;font-size:22px;font-weight:800">${escHtml(name)}, tu aula te espera</h1>
           <p style="color:rgba(255,255,255,.85);margin:8px 0 0;font-size:14px">${msg}</p>
         </td></tr>
 
         <!-- Body -->
         <tr><td style="background:white;padding:28px 32px">
-          ${streakWarning}
-          <p style="margin:0;font-size:14px;color:#374151">Tus compañeros docentes siguen avanzando. Cada tarjeta que completas cuenta como <strong>3 minutos de formación</strong> que impacta directamente en tus estudiantes.</p>
-
-          <!-- Stats actuales -->
-          <div style="background:#f8fafc;border-radius:16px;padding:20px;margin:20px 0">
-            <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Tu progreso actual</p>
-            <table width="100%" cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="text-align:center;padding:0 8px">
-                  <div style="font-size:24px;font-weight:900;color:#f97316">🔥 ${streak}</div>
-                  <div style="font-size:11px;color:#6b7280;margin-top:2px">Días racha</div>
-                </td>
-                <td style="text-align:center;padding:0 8px">
-                  <div style="font-size:24px;font-weight:900;color:#f59e0b">⭐ ${xp}</div>
-                  <div style="font-size:11px;color:#6b7280;margin-top:2px">XP</div>
-                </td>
-                <td style="text-align:center;padding:0 8px">
-                  <div style="font-size:24px;font-weight:900;color:#6366f1">📚 ${(p.completed_cards || []).length}</div>
-                  <div style="font-size:11px;color:#6b7280;margin-top:2px">Tarjetas</div>
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <p style="margin:0;font-size:13px;color:#6b7280;text-align:center">Solo necesitas <strong>5 minutos hoy</strong> para mantener tu racha activa.</p>
+          ${mainBlock}
         </td></tr>
 
         <!-- CTA -->
         <tr><td style="background:white;padding:0 32px 32px;text-align:center">
-          <a href="${APP_URL}" style="display:inline-block;background:#f97316;color:white;font-size:15px;font-weight:700;padding:14px 40px;border-radius:100px;text-decoration:none">
-            Retomar mi aprendizaje
+          <a href="${APP_URL}" style="display:inline-block;background:#5C35C5;color:white;font-size:15px;font-weight:700;padding:14px 40px;border-radius:100px;text-decoration:none">
+            ${commitment ? 'Contar cómo me fue' : 'Empezar mi sesión de hoy'}
           </a>
         </td></tr>
 
@@ -212,9 +203,9 @@ Deno.serve(async (req) => {
         const unsubUrl = unsubscribeUrl(user.user_id, user.email);
         const html = buildInactiveEmail(user, daysMissed, unsubUrl);
         const name = user.daily_missions?.fullName || user.email.split('@')[0];
-        const subject = daysMissed === 1
-          ? `${name}, hace 1 día que no aprendes`
-          : `${name}, tu racha lleva ${daysMissed} días en pausa`;
+        const subject = openCommitment(user.daily_missions)
+          ? `${name}, ¿cómo te fue con lo que te propusiste?`
+          : `${name}, tu sesión de 10 minutos te espera`;
 
         const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
