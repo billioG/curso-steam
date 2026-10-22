@@ -2187,6 +2187,134 @@ function _markReadAfter(cardId, ms, onMarked) {
     }, ms);
 }
 
+// ==================== INICIO EN ESCRITORIO: PANEL ====================
+function _greeting() { const hr = new Date().getHours(); return hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches'; }
+function _courseCards(c) { return (c.modules || []).flatMap(m => m.cards || []); }
+// Último compromiso («Próximos pasos») de los últimos 21 días sin una evidencia posterior en ese curso.
+function _openCommitmentClient() {
+    const dm = progress?.dailyMissions || {};
+    const pins = (dm.pinnedCards || []).filter(x => x.commitment && x.date).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const pin = pins[0];
+    if (!pin) return null;
+    const day = String(pin.date).slice(0, 10);
+    if ((Date.now() - new Date(day).getTime()) / 86400000 > 21) return null;
+    const evidenced = Object.values(dm.appliedEvidence || {}).some(e => e?.courseId === pin.courseId && String(e?.date || '') >= day);
+    return evidenced ? null : pin;
+}
+function answerCommitment() {
+    const pin = _openCommitmentClient();
+    if (!pin) return;
+    const course = allCourses.find(c => c.id === pin.courseId);
+    _openEvidenceModal({
+        title: '¿Cómo te fue con tu compromiso?',
+        intro: `Te propusiste: <strong>${esc(pin.commitment)}</strong>. Cuéntalo en 2 o 3 líneas: qué hiciste, con qué grupo y qué notaste en tus estudiantes.`,
+        placeholder: 'Ej.: Con mi grupo de 4.º hice... Noté que...',
+        minChars: _CARD_EVIDENCE_MIN_CHARS,
+        laterLabel: 'Todavía no lo aplico',
+        payload: { kind: 'card', courseTitle: course?.title || '', cardTitle: pin.commitment, cardContent: '', commitment: pin.commitment },
+        onApproved: (text, r) => {
+            if (!progress.dailyMissions.appliedEvidence) progress.dailyMissions.appliedEvidence = {};
+            progress.dailyMissions.appliedEvidence['cm-' + pin.cardId] = { text: text.slice(0, 1000), date: localDateStr(), courseId: pin.courseId, cardTitle: pin.commitment, ai: { approved: true, score: r.score } };
+            saveProgress();
+            renderHub();
+        },
+    });
+}
+function openCourseFromHub(cid) { selectCourse(cid, { ignorePrereq: true }); }
+function renderHub() {
+    const box = document.getElementById('hubBox');
+    if (!box || !progress || typeof allCourses === 'undefined') return;
+    const first = (typeof getDisplayName === 'function' ? getDisplayName().split(' ')[0] : '') || 'docente';
+    const dateLabel = new Date().toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' });
+    const dateText = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
+
+    // Sesión de hoy
+    const ses = _todaySession();
+    let sessionHtml = '';
+    if (ses) {
+        const course = allCourses.find(c => c.id === ses.cid);
+        const done = Math.max(0, Math.min(ses.target, (progress.completedCards || []).length - ses.startCount));
+        const finished = ses.started && done >= ses.target;
+        const pct = ses.started ? Math.round(done / ses.target * 100) : 0;
+        const focus = _profilePrefs().focus && _EXP_FOCUS.find(f => f.id === _profilePrefs().focus);
+        sessionHtml = finished
+            ? `<div class="hub-card" style="background:#ECFDF5;box-shadow:none;border:1px solid #A7F3D0"><p class="hub-lbl" style="color:#065F46">Sesión de hoy completa</p><p style="font-size:20px;font-weight:800;color:#064E3B;margin:6px 0 2px">Hoy avanzaste ${done} tarjetas</p><p style="font-size:14px;color:#047857">Si te queda tiempo, puedes seguir; si no, hasta mañana.</p></div>`
+            : `<div class="hub-card" style="background:#1E4976;color:#fff;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+                <div style="flex:1 1 280px;min-width:0">
+                    <p class="hub-lbl" style="color:#BFD3EA">Tu sesión de hoy · unos ${_SESSION_MINUTES} minutos</p>
+                    <p style="font-size:24px;font-weight:800;margin:6px 0 4px">${esc(course?.title || '')}</p>
+                    <p style="font-size:14px;color:#D6E4F5;margin:0 0 14px">${ses.started ? `${done} de ${ses.target} tarjetas` : `${ses.target} tarjetas${focus ? ', elegidas según lo que quieres mejorar: ' + esc(focus.label.toLowerCase()) : ''}`}.</p>
+                    <div class="hub-bar" style="background:rgba(255,255,255,.2);max-width:320px"><i style="width:${pct}%;background:#fff"></i></div>
+                </div>
+                <button class="hub-btn" style="background:#fff;color:#1E4976" onclick="startTodaySession()">${ses.started ? 'Continuar sesión' : 'Empezar sesión'}</button>
+            </div>`;
+    }
+
+    // Compromiso pendiente
+    const pin = _openCommitmentClient();
+    const pinDays = pin ? Math.max(0, Math.floor((Date.now() - new Date(String(pin.date).slice(0, 10)).getTime()) / 86400000)) : 0;
+    const commitHtml = pin ? `<div class="hub-card" style="background:#FFFBEB;border:1px solid #FDE68A;box-shadow:none;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <div style="flex:1 1 260px;min-width:0"><p class="hub-lbl" style="color:#92400E">Tu compromiso para la clase</p>
+        <p style="font-size:18px;font-weight:700;color:#78350F;margin:6px 0 2px">«${esc(pin.commitment)}»</p>
+        <p style="font-size:13px;color:#92400E;margin:0">${pinDays === 0 ? 'Lo elegiste hoy.' : `Lo elegiste hace ${pinDays} ${pinDays === 1 ? 'día' : 'días'}.`} Cuéntalo en dos minutos: qué hiciste y qué notaste.</p></div>
+        <button class="hub-btn" style="background:#78350F;color:#fff" onclick="answerCommitment()">Contar cómo me fue</button></div>` : '';
+
+    // Cursos en curso
+    const scores = progress.dailyMissions?.examScores || {};
+    const inProgress = allCourses.filter(c => c.status === 'available').map(c => {
+        const cards = _courseCards(c), done = cards.filter(_isCardDone).length;
+        return { c, total: cards.length, done, pct: cards.length ? Math.round(done / cards.length * 100) : 0 };
+    }).filter(x => x.done > 0).sort((a, b) => (b.c.id === progress.currentCourseId) - (a.c.id === progress.currentCourseId) || b.pct - a.pct).slice(0, 4);
+    const coursesHtml = `<div class="hub-card"><div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-size:17px;font-weight:800">Continúa donde ibas</h2><button class="hub-link" onclick="switchTab('biblioteca')">Ver todas las rutas</button></div>
+        ${inProgress.length ? inProgress.map(x => {
+            const sc = x.c.id === 'steam' ? (scores.steam ?? progress.dailyMissions?.examScore) : scores[x.c.id];
+            const passed = typeof sc === 'number' && sc >= 70;
+            const action = x.pct >= 100 && !passed ? `<button class="hub-link" onclick="openCourseFromHub('${esc(x.c.id)}');_showExamPrompt()">Ir al examen</button>` : `<button class="hub-link" onclick="openCourseFromHub('${esc(x.c.id)}')">${x.pct >= 100 ? 'Repasar' : 'Continuar'}</button>`;
+            return `<div class="hub-row"><div style="flex:1;min-width:0"><p style="font-weight:700;font-size:15px;margin:0">${esc(x.c.title)}</p><p style="font-size:12px;color:#475569;margin:2px 0 8px">${x.done} de ${x.total} tarjetas${passed ? ' · examen aprobado' : ''}</p><div class="hub-bar"><i style="width:${x.pct}%;${passed ? 'background:#16A34A' : ''}"></i></div></div>${action}</div>`;
+        }).join('') : '<p style="font-size:14px;color:#475569;margin:12px 0 0">Aún no empiezas ningún curso. Elige uno en «Ver todas las rutas» o empieza tu sesión de hoy.</p>'}
+    </div>`;
+
+    // Columna lateral: Mi aula, ruta, colegas
+    const nowMonth = localDateStr().slice(0, 7);
+    const aula = _miAulaData(nowMonth);
+    const nApplied = aula.applied.length + aula.diplomas.length;
+    const latest = aula.applied[0];
+    const aulaHtml = `<div class="hub-card"><div style="display:flex;justify-content:space-between;align-items:baseline"><p class="hub-lbl">Mi aula · ${esc(_miAulaMonthLabel(nowMonth).split(' ')[0].toLowerCase())}</p><button class="hub-link" style="font-size:12px" onclick="switchTab('progreso')">Abrir</button></div>
+        <div style="display:flex;gap:12px;margin:14px 0"><div style="flex:1;background:#EEF2FF;border-radius:12px;padding:12px"><div style="font-size:26px;font-weight:800;color:#4338CA">${nApplied}</div><div style="font-size:12px;color:#475569">${nApplied === 1 ? 'idea llevada' : 'ideas llevadas'} al aula</div></div>
+        <div style="flex:1;background:#F1F5F9;border-radius:12px;padding:12px"><div style="font-size:26px;font-weight:800;color:#1E4976">${aula.commitments.length}</div><div style="font-size:12px;color:#475569">${aula.commitments.length === 1 ? 'compromiso hecho' : 'compromisos hechos'}</div></div></div>
+        ${latest ? `<div style="font-size:13px;line-height:1.5;color:#334155;border-left:3px solid #C7D2FE;padding-left:12px">«${esc(latest.text.length > 160 ? latest.text.slice(0, 157) + '…' : latest.text)}»</div>` : '<p style="font-size:13px;color:#475569;margin:0">Cuando marques «Lo apliqué en clase» y cuentes qué pasó, aparecerá aquí.</p>'}</div>`;
+    const focusId = _profilePrefs().focus;
+    const path = LEARNING_PATHS.find(p => p.id === focusId) || LEARNING_PATHS.find(p => p.courses.includes(ses?.cid || progress.currentCourseId));
+    let pathHtml = '';
+    if (path) {
+        const pc = path.courses.map(id => allCourses.find(c => c.id === id)).filter(Boolean);
+        const okN = pc.filter(c => { const sc = c.id === 'steam' ? (scores.steam ?? progress.dailyMissions?.examScore) : scores[c.id]; return typeof sc === 'number' && sc >= 70; }).length;
+        pathHtml = `<div class="hub-card"><p class="hub-lbl">Tu ruta · ${esc(path.label)}</p>
+            <div style="display:flex;gap:6px;margin:14px 0 10px">${pc.map((c, i) => `<div style="flex:1;height:8px;border-radius:99px;background:${i < okN ? '#5C35C5' : '#E2E8F0'}"></div>`).join('')}</div>
+            <p style="font-size:13px;color:#334155;margin:0">${okN} de ${pc.length} ${pc.length === 1 ? 'curso aprobado' : 'cursos aprobados'}${pc.length > 1 ? '. El Examen Maestro se habilita al aprobarlos todos.' : '.'}</p></div>`;
+    }
+    box.innerHTML = `<div class="hub-head"><p class="hub-date">${esc(dateText)}</p><h1 class="hub-title">${esc(_greeting())}, ${esc(first)}</h1></div>
+        <div class="hub-grid"><div class="hub-main">${sessionHtml}${commitHtml}${coursesHtml}</div>
+        <div class="hub-side">${aulaHtml}${pathHtml}<div id="hubPeers"></div></div></div>`;
+    _hubPeers(path);
+}
+// Cuántos relatos compartieron colegas esta semana en la ruta (si la comunidad aún no está activada, no muestra nada).
+async function _hubPeers(path) {
+    const el = document.getElementById('hubPeers');
+    if (!el || !path || !currentUser) return;
+    try {
+        const since = new Date(Date.now() - 7 * 86400000).toISOString();
+        const { data, error } = await supabase.from('shared_applications_public').select('id, course_id').gte('created_at', since).limit(1000);
+        if (error || !data) return;
+        const n = data.filter(x => path.courses.includes(x.course_id)).length;
+        const live = document.getElementById('hubPeers');
+        if (!live || !n) return;
+        live.innerHTML = `<div class="hub-card" style="background:#F0FDF4;box-shadow:none;border:1px solid #BBF7D0"><p class="hub-lbl" style="color:#166534">Colegas</p>
+            <p style="font-size:15px;font-weight:700;color:#14532D;margin:8px 0 4px">${n} ${n === 1 ? 'relato compartido' : 'relatos compartidos'} esta semana en tu ruta</p>
+            <p style="font-size:13px;color:#166534;margin:0">Los verás, de forma anónima, en cada tarjeta.</p></div>`;
+    } catch (_) { /* sin la migración de comunidad no hay nada que mostrar */ }
+}
+
 // ==================== LECCIÓN EN ESCRITORIO ====================
 // En pantallas anchas (≥1100 px) la lección se reparte en tres columnas: índice
 // del módulo a la izquierda, lectura al centro y un panel a la derecha con la
@@ -2260,7 +2388,12 @@ function jumpToCard(i) {
     renderCard();
     animateCard('next');
 }
-_lessonMQ.addEventListener?.('change', () => { _layoutLessonRail(); renderLessonOutline(); });
+_lessonMQ.addEventListener?.('change', () => {
+    _layoutLessonRail(); renderLessonOutline();
+    // El panel de inicio es solo de escritorio: si se achica la ventana, pasa a la lección.
+    if (!_lessonDesktop() && !document.getElementById('tabHub')?.classList.contains('hidden')) switchTab('home');
+    else if (_lessonDesktop() && !document.getElementById('tabHub')?.classList.contains('hidden')) renderHub();
+});
 // Teclado: ← y → pasan de tarjeta (solo en la vista de lección, sin cuadros abiertos ni escribiendo).
 document.addEventListener('keydown', e => {
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
@@ -7534,6 +7667,7 @@ function _landOnAppropriateScreen() {
         && allCourses.some(c => c.id === savedCourseId && c.status === 'available');
     if (courseExists) {
         selectCourse(savedCourseId); // ya deja todo listo: posición restaurada, tab Inicio activa
+        if (_lessonDesktop()) switchTab('hub'); // en escritorio se entra por el panel de inicio
     } else {
         showCourseSelector(); // primera vez, o el curso guardado ya no existe/está disponible
     }

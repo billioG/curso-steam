@@ -1577,6 +1577,55 @@
             .lesson-dot.now { background: #4338ca; border-color: #4338ca; }
         }
 
+        /* ── Progreso y Perfil en escritorio: dos columnas ──
+           Solo ≥1100 px. Las tarjetas fluyen en dos columnas sin partirse; el
+           encabezado ocupa todo el ancho. En pantallas angostas no cambia nada. */
+        @media (min-width: 1100px) {
+            #tabProgreso {
+                max-width: 1180px !important;
+                column-count: 2;
+                column-gap: 28px;
+                padding-left: 32px; padding-right: 32px;
+            }
+            #tabProgreso > * { break-inside: avoid; }
+            #tabProgreso > :first-child { column-span: all; }
+            #tabPerfil .perfil-grid {
+                max-width: 1180px !important;
+                column-count: 2;
+                column-gap: 28px;
+            }
+            #tabPerfil .perfil-grid > * { break-inside: avoid; }
+            #tabPerfil .perfil-grid { padding-top: 28px !important; }
+            #tabPerfil .perfil-items-grid { grid-template-columns: 1fr !important; }
+        }
+
+        /* ── Inicio en escritorio (panel) ── */
+        .bnav-hub { display: none !important; }
+        .lbl-d { display: none; }
+        .bnav-btn .lbl-m, .bnav-btn .lbl-d { font-size: inherit !important; color: inherit !important; font-weight: inherit !important; }
+        @media (min-width: 1100px) {
+            .bnav-hub { display: flex !important; }
+            .lbl-m { display: none; }
+            .lbl-d { display: inline; }
+            #tabHub { max-width: 1180px !important; padding-left: 32px; padding-right: 32px; }
+        }
+        #hubBox { display: flex; flex-direction: column; gap: 20px; }
+        .hub-head { margin-top: 16px; }
+        .hub-date { font-size: 13px; font-weight: 600; color: #475569; }
+        .hub-title { font-size: 28px; font-weight: 800; color: #0f172a; margin: 2px 0 0; }
+        .hub-grid { display: flex; flex-direction: column; gap: 24px; }
+        .hub-main, .hub-side { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+        @media (min-width: 1100px) { .hub-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; align-items: start; } }
+        .hub-card { background: #fff; border-radius: 18px; padding: 22px; box-shadow: 0 1px 2px rgba(15, 23, 42, .06); }
+        .hub-lbl { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #475569; margin: 0; }
+        .hub-bar { height: 6px; border-radius: 99px; background: #e2e8f0; overflow: hidden; }
+        .hub-bar > i { display: block; height: 100%; border-radius: 99px; background: #5c35c5; }
+        .hub-btn { border: none; border-radius: 12px; padding: 12px 20px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+        .hub-link { background: none; border: none; font-size: 13px; font-weight: 700; color: #4338ca; cursor: pointer; padding: 0; }
+        .hub-row { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
+        .hub-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+
         .modal-drag {
             width: 40px;
             height: 4px;
@@ -1998,6 +2047,9 @@
         <!-- ══════════════════════════════════════════ -->
         <!-- TAB: INICIO (estilo Tinder)               -->
         <!-- ══════════════════════════════════════════ -->
+        <!-- Inicio en escritorio: panel con la sesión de hoy, el compromiso y los cursos en curso -->
+        <div id="tabHub" class="tab-panel hidden pt-16 px-4 pb-28"><div id="hubBox"></div></div>
+
         <div id="tabHome" class="tab-panel pt-16 px-4 pb-28">
 
             <!-- Escritorio: migas de la lección, índice del módulo y panel derecho -->
@@ -2927,9 +2979,13 @@
                 </div>
             </div>
             <div class="flex items-center px-3">
+                <button id="bnavHub" class="bnav-btn bnav-hub" onclick="switchTab('hub')">
+                    <span class="bnav-icon" id="bnavHubIcon"></span>
+                    <span class="bnav-label">Inicio</span>
+                </button>
                 <button id="bnavHome" class="bnav-btn active" onclick="switchTab('home')">
                     <span class="bnav-icon" id="bnavHomeIcon"></span>
-                    <span class="bnav-label">Inicio</span>
+                    <span class="bnav-label"><span class="lbl-m">Inicio</span><span class="lbl-d">Lección</span></span>
                 </button>
                 <button id="bnavBiblioteca" class="bnav-btn" onclick="switchTab('biblioteca')">
                     <span class="bnav-icon" id="bnavBibliotecaIcon"></span>
@@ -2993,12 +3049,14 @@
             // Inyectar SVG icons en bottom nav al cargar
             document.addEventListener('DOMContentLoaded', function () {
                 if (typeof ICONS === 'undefined') return;
+                const nh = document.getElementById('bnavHubIcon');
                 const ni = document.getElementById('bnavHomeIcon');
                 const nb = document.getElementById('bnavBibliotecaIcon');
                 const npg = document.getElementById('bnavProgresoIcon');
                 const nm = document.getElementById('bnavModulosIcon');
                 const np = document.getElementById('bnavPerfilIcon');
-                if (ni) ni.innerHTML = ICONS.home;
+                if (nh) nh.innerHTML = ICONS.home;
+                if (ni) ni.innerHTML = (typeof ICONS.target !== 'undefined' ? ICONS.target : ICONS.home);
                 if (nb) nb.innerHTML = ICONS.library;
                 if (npg) npg.innerHTML = ICONS.progress;
                 if (nm) nm.innerHTML = ICONS.modules;
@@ -3008,8 +3066,8 @@
 
         <script>
             function switchTab(tab) {
-                const tabs = ['tabHome', 'tabBiblioteca', 'tabProgreso', 'tabModulos', 'tabPerfil'];
-                const btns = ['bnavHome', 'bnavBiblioteca', 'bnavProgreso', 'bnavModulos', 'bnavPerfil'];
+                const tabs = ['tabHub', 'tabHome', 'tabBiblioteca', 'tabProgreso', 'tabModulos', 'tabPerfil'];
+                const btns = ['bnavHub', 'bnavHome', 'bnavBiblioteca', 'bnavProgreso', 'bnavModulos', 'bnavPerfil'];
                 // El nombre/módulo/progreso del curso activo solo tiene sentido en
                 // Inicio — en las demás tabs (sobre todo Biblioteca, donde se puede
                 // estar viendo OTRA ruta) confundía, pareciendo que la app "se
@@ -3027,7 +3085,7 @@
                     if (el) el.classList.remove('active');
                 });
                 // Micro-animación: entrada suave de la pestaña activa
-                const _tabMap = { home: 'tabHome', biblioteca: 'tabBiblioteca', progreso: 'tabProgreso', modulos: 'tabModulos', perfil: 'tabPerfil' };
+                const _tabMap = { hub: 'tabHub', home: 'tabHome', biblioteca: 'tabBiblioteca', progreso: 'tabProgreso', modulos: 'tabModulos', perfil: 'tabPerfil' };
                 const _activeTab = document.getElementById(_tabMap[tab]);
                 if (_activeTab) {
                     _activeTab.classList.remove('tab-content-enter');
@@ -3036,7 +3094,11 @@
                     setTimeout(() => _activeTab.classList.remove('tab-content-enter'), 300);
                 }
 
-                if (tab === 'home') {
+                if (tab === 'hub') {
+                    document.getElementById('tabHub').classList.remove('hidden');
+                    document.getElementById('bnavHub').classList.add('active');
+                    if (typeof renderHub === 'function') renderHub();
+                } else if (tab === 'home') {
                     document.getElementById('tabHome').classList.remove('hidden');
                     document.getElementById('bnavHome').classList.add('active');
                 } else if (tab === 'biblioteca') {
