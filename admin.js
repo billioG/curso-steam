@@ -18,7 +18,7 @@ async function loadAdminUserIds() {
 // Rutas de aprendizaje disponibles
 const LEARNING_PATHS = [
     { id:'steam20',       label:'Docente STEAM 2.0',    color:'#07B0E4', gradient:'#07B0E4',  courses:['steam','abp','design-thinking','evaluacion','tipos-estudiantes'] },
-    { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp'] },
+    { id:'creativo',      label:'Docente Creativo',      color:'#E83C8D', gradient:'linear-gradient(135deg,#7C3AED,#E83C8D)',  courses:['creatividad','herramientas-tec','abp','storytelling'] },
     { id:'metodologias',  label:'Metodologías Activas',  color:'#F59E0B', gradient:'linear-gradient(135deg,#b45309,#F59E0B)',  courses:['abp','m-learning','flipped-classroom','abv','micro-learning'] },
     { id:'ia',            label:'Docente y la IA',        color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)',  courses:['ia-fundamentos','ia-tiempo','ia-herramientas','ia-inclusion','ia-ciudadania'] },
     { id:'convivencia',   label:'Clima y Convivencia Escolar', color:'#0891B2', gradient:'linear-gradient(135deg,#155E75,#0891B2)',  courses:['manejo-conductas','sel-docentes','comunicacion-asertiva','disciplina-positiva','bienestar-docente'] },
@@ -32,7 +32,7 @@ const STATIC_COURSES = [
     { id:'design-thinking',  title:'Design Thinking para Docentes',        durationHours:1.5,  totalCards:80, modules:4, ruta:'steam20',  masterCert:true  },
     { id:'evaluacion',       title:'Evaluación Formativa',                 durationHours:1.5,  totalCards:73, modules:4, ruta:'steam20',  masterCert:true  },
     { id:'tipos-estudiantes',title:'Conoce a Quien Enseñas',               durationHours:1,  totalCards:65, modules:5, ruta:'steam20',  masterCert:true  },
-    { id:'storytelling',     title:'Storytelling para Docentes',           durationHours:1.5,  totalCards:64, modules:5, ruta:'steam20',      masterCert:false },
+    { id:'storytelling',     title:'Storytelling para Docentes',           durationHours:1.5,  totalCards:64, modules:5, ruta:'creativo',     masterCert:false },
     { id:'creatividad',       title:'Despertando la Creatividad',              durationHours:1.5,  totalCards:65, modules:5, ruta:'creativo',     masterCert:true  },
     { id:'herramientas-tec',  title:'Herramientas Tecnológicas para Docentes', durationHours:1.5,  totalCards:57, modules:4, ruta:'creativo',     masterCert:true  },
     { id:'m-learning',        title:'Mobile Learning · Aprender con el Celular',durationHours:1.5, totalCards:52, modules:4, ruta:'metodologias', masterCert:true  },
@@ -83,7 +83,16 @@ if (typeof allCourses !== 'undefined') {
         ids.forEach(id => ALL_VALID_CARD_IDS.add(id));
         // Sincronizar totales reales en STATIC_COURSES (los hardcodeados divergen de data.js)
         const sc = STATIC_COURSES.find(s => s.id === course.id);
-        if (sc) { sc.totalCards = ids.size; sc.modules = mods.length; }
+        if (sc) {
+            sc.totalCards = ids.size; sc.modules = mods.length;
+            // data.js es la fuente única: título y horas declaradas también se toman de ahí
+            if (course.title) sc.title = course.title;
+            if (typeof course.durationHours === 'number') sc.durationHours = course.durationHours;
+        } else if (course.status === 'available') {
+            // Curso nuevo en data.js que aún no está en esta lista: se agrega solo
+            const ruta = (LEARNING_PATHS.find(r => r.courses.includes(course.id)) || {}).id || '';
+            STATIC_COURSES.push({ id: course.id, title: course.title || course.id, durationHours: course.durationHours || 1, totalCards: ids.size, modules: mods.length, ruta, masterCert: false });
+        }
     });
 }
 
@@ -121,11 +130,14 @@ let _rvCardsCache = [];  // último resultado de get_card_time_aggregates(), par
 // ────────────────────────────────────────────────────────────
 // HELPERS
 // ────────────────────────────────────────────────────────────
+// `ok` acepta true/false o 'success' | 'info' | 'error' (varias llamadas usan el
+// texto: antes 'error' se tomaba como verdadero y el error se mostraba en verde).
 function toast(msg, ok=true) {
     const el = document.getElementById('adminToast');
     if (!el) return;
+    const isError = ok === false || ok === 'error';
     el.textContent = msg;
-    el.className = `toast ${ok ? '' : 'bg-red-600'}`;
+    el.className = `toast ${isError ? 'bg-red-600' : ''}`;
     el.classList.remove('hidden');
     setTimeout(() => el.classList.add('hidden'), 3000);
 }
@@ -375,9 +387,10 @@ async function loadDashboard() {
     document.getElementById('dashPeriod').textContent =
         `Actualizado ${now.toLocaleDateString('es-GT',{day:'2-digit',month:'long',year:'numeric'})}`;
     document.getElementById('impactDocentes').textContent = fmt(active30);
-    document.getElementById('impactHoras').textContent = fmt(horasFormacion)+'h';
+    // Mismo criterio que los informes: tiempo real medido si hay datos; si no, el estimado.
+    document.getElementById('impactHoras').textContent = fmt(horasRealesCalc !== null ? horasRealesCalc : horasFormacion)+'h';
     const horasRealEl = document.getElementById('impactHorasReal');
-    if (horasRealEl) horasRealEl.textContent = metodoLabel;
+    if (horasRealEl) horasRealEl.textContent = horasRealesCalc !== null ? 'tiempo real medido' : 'estimado (3 min por tarjeta)';
     document.getElementById('impactCertificados').textContent = fmt(totalCertificados);
 
     // Portafolios — docentes certificados que tienen portafolio enviado
@@ -517,7 +530,7 @@ function renderCourseSummary(progress) {
         const avgPct = enrolled.length
             ? Math.round(enrolled.reduce((a,p)=>a+getProgressPct(p,c.id),0)/enrolled.length) : 0;
         return `<tr>
-            <td><p class="font-semibold text-slate-700 text-sm">${c.title}</p></td>
+            <td><p class="font-semibold text-slate-700 text-sm">${esc(c.title)}</p></td>
             <td><span class="badge tag-blue">${enrolled.length} docentes</span></td>
             <td>
                 <div class="flex items-center gap-2">
@@ -856,7 +869,7 @@ async function loadAnalytics() {
     const certified     = progress.filter(hasCertificate).length;
     buildChart('analyticsDonut', document.getElementById('analyticsDonut')?.getContext('2d'), {
         type:'doughnut',
-        data:{ labels:['Tarjetas completadas','Quizzes correctos','Logros desbloqueados','Certificados emitidos'],
+        data:{ labels:['Tarjetas completadas','Quizzes correctos','Logros desbloqueados','Docentes con curso aprobado'],
             datasets:[{data:[totalCardsAll,totalQuizzes,totalBadges,certified],
                 backgroundColor:['#818cf8','#34d399','#fbbf24','#4f46e5'],borderWidth:2,borderColor:'#fff'}]},
         options:{ plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12}}},cutout:'60%' }
@@ -870,13 +883,15 @@ async function loadAnalytics() {
     const _coursePalette = ['#07B0E4','#2563EB','#E83C8D','#E9A037','#7C3AED','#F59E0B','#EC4899','#8B5CF6','#10B981','#06B6D4','#6366F1','#F97316'];
     buildChart('analyticsCourseBar', document.getElementById('analyticsCourseBar')?.getContext('2d'), {
         type:'bar',
-        data:{ labels: STATIC_COURSES.map(c=>c.title.substring(0,20)),
+        data:{ labels: STATIC_COURSES.map(c=>c.title.length > 30 ? c.title.substring(0,29)+'…' : c.title),
             datasets:[{label:'Progreso promedio %',data:courseAvg,
                 backgroundColor: STATIC_COURSES.map((_,i)=>_coursePalette[i % _coursePalette.length]),
                 borderRadius:8,borderSkipped:false}]},
-        options:{ indexAxis:'y', plugins:{legend:{display:false}},
+        // Alto fijo y sin saltar etiquetas: con 27 cursos, Chart.js mostraba solo
+        // una etiqueta de cada dos y las barras no se podían identificar.
+        options:{ indexAxis:'y', maintainAspectRatio:false, plugins:{legend:{display:false}},
             scales:{ x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%',font:{size:10}}},
-                     y:{grid:{display:false},ticks:{font:{size:10}}} } }
+                     y:{grid:{display:false},ticks:{font:{size:10},autoSkip:false}} } }
     });
 
     // Diagnóstico — leer desde daily_missions.diagLevel si existe
@@ -1229,6 +1244,11 @@ function openUserPanel(userId) {
     setText('panelStreak', (p.streak||0)+'d');
     setText('panelCards', fmt(p.completed_cards?.length||0));
     setText('panelDept', getDept(p) || 'No especificado');
+    // Grado y foco elegidos en el aviso inicial de la app («Hagamos esto a tu medida»)
+    const _pp = p?.daily_missions?.profilePrefs || {};
+    const _GRADES = { 'prim-baja': 'Primaria baja', 'prim-alta': 'Primaria alta', 'sec-baja': 'Secundaria baja', 'sec-alta': 'Secundaria alta', multi: 'Multigrado', otro: 'Otro nivel' };
+    const _FOCUS = { convivencia: 'Conducta y clima del aula', metodologias: 'Metodologías activas', steam20: 'Proyectos (STEAM) y evaluación', ia: 'IA para ahorrar tiempo', inclusion: 'Diversidad e inclusión', creativo: 'Creatividad y tecnología', fundamentos: 'Lectura y matemática' };
+    setText('panelPrefs', [_GRADES[_pp.grade], _FOCUS[_pp.focus]].filter(Boolean).join(' · ') || 'No indicado');
     setText('panelLastAccess', fmtDateTime(p.updated_at));
 
     // Badges de estado
@@ -1761,7 +1781,7 @@ async function loadCMS() {
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap mb-1">
-                        <h3 class="font-bold text-slate-800">${c.title}</h3>
+                        <h3 class="font-bold text-slate-800">${esc(c.title)}</h3>
                         ${statusBadge}
                         ${isStatic ? '<span class="badge tag-blue">Programa base</span>' : '<span class="badge tag-violet">Personalizado</span>'}
                     </div>
@@ -2220,7 +2240,7 @@ async function generateExecutiveReport() {
                 ['Docentes alcanzados', fmt(total),       'fas fa-chalkboard-teacher', '#4f46e5'],
                 ['Activos (7 días)',   fmt(active30),    'fas fa-user-check',         '#0891b2'],
                 ['Horas de formación', horasReales+'h',  'fas fa-clock',              '#d97706'],
-                ['Certificados emitidos', fmt(certified), 'fas fa-award',             '#16a34a'],
+                ['Docentes con curso aprobado', fmt(certified), 'fas fa-award',             '#16a34a'],
             ].map(([l,v,icon,color])=>`
             <div style="background:#f8fafc;padding:20px;border-radius:12px;text-align:center">
                 <div style="width:44px;height:44px;border-radius:50%;background:${color}1a;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">
@@ -2239,7 +2259,7 @@ async function generateExecutiveReport() {
             <tbody>
                 ${[['Docentes inscritos',fmt(total),'—'],
                    ['Tasa de finalización',tasaFin+'%','70%'],
-                   ['Tasa de certificación',total?Math.round(certified/total*100)+'%':'—','50%'],
+                   ['Tasa de aprobación (≥1 curso)',total?Math.round(certified/total*100)+'%':'—','50%'],
                    ['NPS de satisfacción',npsScore,'≥ 30'],
                    ['Horas de formación (tiempo real medido)',horasReales+'h','—'],
                    ['Tarjetas de contenido completadas',fmt(totalCards),'—']].map(([l,v,m])=>`
@@ -2254,7 +2274,7 @@ async function generateExecutiveReport() {
             <h3 style="font-size:15px;font-weight:700;margin:0 0 12px;color:#1e293b">Cursos del programa</h3>
             ${STATIC_COURSES.map(c=>`
             <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:13px">
-                <span style="color:#1e293b">${c.title}</span>
+                <span style="color:#1e293b">${esc(c.title)}</span>
                 <span style="color:#64748b">${c.durationHours}h · ${c.totalCards} tarjetas</span>
             </div>`).join('')}
         </div>
@@ -2303,7 +2323,7 @@ async function generateMineduc() {
     });
 
     // Impacto agregado por ruta de aprendizaje (suma de inscritos/aprobados de sus cursos)
-    const routeCertRates = LEARNING_PATHS.map(route => {
+    const routeCertRates = (await _savedLearningPaths()).map(route => {
         const cursos = courseCertRates.filter(c => route.courses.includes(c.id));
         const enrolledCount = cursos.reduce((a,c)=>a+c.enrolledCount,0);
         const passedCount   = cursos.reduce((a,c)=>a+c.passedCount,0);
@@ -2328,7 +2348,7 @@ async function generateMineduc() {
                    ['Docentes activos (últimos 7 días)',fmt(active)],
                    ['Tasa de retención activa',total?Math.round(active/total*100)+'%':'—'],
                    ['Docentes que completaron al menos un curso',completedFull+' ('+( total?Math.round(completedFull/total*100):0 )+'%)'],
-                   ['Certificados emitidos',fmt(certified)],
+                   ['Docentes con al menos un curso aprobado',fmt(certified)],
                    ['Horas de formación (tiempo real medido)',horasReales+' horas'],
                    ['Interacciones de aprendizaje (tarjetas)',fmt(totalCards)],
                    ['Satisfacción docente (NPS)',npsScore+' / 100'],
@@ -2338,16 +2358,16 @@ async function generateMineduc() {
         </table>
 
         <h3 style="background:#1A6B68;color:white;padding:10px 16px;border-radius:6px;font-size:13px">2. IMPACTO POR RUTA DE APRENDIZAJE</h3>
-        <p>El programa se organiza en rutas temáticas. La <strong>tasa de certificación</strong> mide el porcentaje de docentes inscritos en los cursos de esa ruta que aprobaron el examen final (≥70%) — base del Certificado Maestro de cada ruta.</p>
+        <p>El programa se organiza en rutas temáticas. La <strong>tasa de aprobación</strong> mide el porcentaje de docentes inscritos en los cursos de esa ruta que aprobaron el examen final (≥70%) — base del Certificado Maestro de cada ruta.</p>
         <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px">
             <thead><tr style="background:#f0f4f8">
                 <th style="text-align:left;padding:8px;border:1px solid #ddd">Ruta</th>
                 <th style="text-align:center;padding:8px;border:1px solid #ddd">Cursos</th>
-                <th style="text-align:center;padding:8px;border:1px solid #ddd">Tasa de certificación</th>
+                <th style="text-align:center;padding:8px;border:1px solid #ddd">Tasa de aprobación</th>
             </tr></thead>
             <tbody>
                 ${routeCertRates.map((r,i)=>`<tr ${i%2===0?'style="background:#fafafa"':''}>
-                    <td style="padding:8px;border:1px solid #ddd">${r.label}</td>
+                    <td style="padding:8px;border:1px solid #ddd">${esc(r.label)}</td>
                     <td style="padding:8px;border:1px solid #ddd;text-align:center">${r.courseCount}</td>
                     <td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:bold;color:${r.rate>=60?'#1A6B68':r.rate>=30?'#d97706':'#dc2626'}">${r.rate}%</td>
                 </tr>`).join('')}
@@ -2643,7 +2663,21 @@ const LP_COLORS = [
     { color:'#10B981', gradient:'linear-gradient(135deg,#065F46,#10B981)' },
     { color:'#6366F1', gradient:'linear-gradient(135deg,#3730A3,#6366F1)' },
     { color:'#EF4444', gradient:'linear-gradient(135deg,#991B1B,#EF4444)' },
+    { color:'#0891B2', gradient:'linear-gradient(135deg,#155E75,#0891B2)' },
+    { color:'#8B5CF6', gradient:'linear-gradient(135deg,#5B21B6,#8B5CF6)' },
+    { color:'#DC2626', gradient:'linear-gradient(135deg,#991B1B,#DC2626)' },
 ];
+const LP_COLOR_NAMES = ['Azul','Rosa','Ámbar','Verde','Índigo','Rojo','Turquesa','Violeta','Rojo intenso'];
+
+// Rutas tal como las ven los docentes: las guardadas en app_config, más las rutas
+// nuevas del código que aún no se guardaron (misma regla que app.js).
+async function _savedLearningPaths() {
+    const { data } = await sb.from('app_config').select('key,value').eq('key','learning_paths');
+    const saved = Array.isArray(data?.[0]?.value) && data[0].value.length ? data[0].value : [];
+    const merged = saved.length ? JSON.parse(JSON.stringify(saved)) : JSON.parse(JSON.stringify(LEARNING_PATHS));
+    LEARNING_PATHS.forEach(d => { if (!merged.some(p => p.id === d.id)) merged.push(JSON.parse(JSON.stringify(d))); });
+    return merged;
+}
 
 async function loadLearningPaths() {
     const container = document.getElementById('learningPathsPanel');
@@ -2687,12 +2721,13 @@ function _renderPathCard(path, pi) {
     <div style="margin-bottom:16px;border:1.5px solid #e2e8f0;border-radius:14px;overflow:hidden">
         <div style="background:${color};padding:14px 16px;display:flex;align-items:center;gap:10px">
             <div style="flex:1">
-                <input id="lp_label_${pi}" value="${path.label}" placeholder="Nombre de la ruta"
+                <input id="lp_label_${pi}" value="${esc(path.label)}" placeholder="Nombre de la ruta"
                     style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:white;font-size:15px;font-weight:700;padding:6px 10px;border-radius:8px;width:100%;outline:none"
                     oninput="_lpState[${pi}].label=this.value">
             </div>
             <select onchange="_lp_setColor(${pi},this.value)" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:white;padding:6px 8px;border-radius:8px;font-size:12px;outline:none;cursor:pointer">
-                ${LP_COLORS.map((c,ci) => `<option value="${ci}" ${(path.color===c.color)?'selected':''} style="background:#1e293b">${['Azul','Rosa','Ámbar','Verde','Índigo','Rojo'][ci]}</option>`).join('')}
+                ${LP_COLORS.some(c => c.color === path.color) ? '' : `<option value="" selected style="background:#1e293b">Personalizado</option>`}
+                ${LP_COLORS.map((c,ci) => `<option value="${ci}" ${(path.color===c.color)?'selected':''} style="background:#1e293b">${LP_COLOR_NAMES[ci]}</option>`).join('')}
             </select>
             <button onclick="_lp_deletePath(${pi})" title="Eliminar ruta" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:white;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:13px">
                 <i class="fas fa-trash"></i>
@@ -2711,7 +2746,7 @@ function _renderPathCard(path, pi) {
                         </div>
                         <div style="width:32px;height:32px;border-radius:8px;background:${c.color||'#07B0E4'};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">${c.icon || '<svg width="20" height="20" viewBox="0 0 40 40" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15 L20 8 L36 15 L20 22 Z" stroke-width="1.8" fill="rgba(255,255,255,0.15)"/><path d="M11 18 V27 Q11 31 20 31 Q29 31 29 27 V18" stroke-width="1.8"/></svg>'}</div>
                         <div style="flex:1;min-width:0">
-                            <p style="font-size:13px;font-weight:600;color:#1e293b;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
+                            <p style="font-size:13px;font-weight:600;color:#1e293b;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.title)}</p>
                             <p style="font-size:11px;color:#64748b;margin:0">${c.durationHours||0}h · ${c.totalCards||0} tarjetas</p>
                         </div>
                         <span style="font-size:10px;font-weight:700;color:#64748b;background:#f1f5f9;padding:2px 6px;border-radius:6px">#${ci+1}</span>
@@ -2722,7 +2757,7 @@ function _renderPathCard(path, pi) {
             <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
                 <select id="lp_add_${pi}" style="flex:1;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;color:#1e293b;background:#fff;outline:none">
                     <option value="">— Agregar curso —</option>
-                    ${available.map(c => `<option value="${c.id}">${c.title} (${c.durationHours||0}h)</option>`).join('')}
+                    ${available.map(c => `<option value="${esc(c.id)}">${esc(c.title)} (${c.durationHours||0}h)</option>`).join('')}
                 </select>
                 <button onclick="_lp_addCourse(${pi})" style="padding:8px 14px;background:#0f172a;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">
                     <i class="fas fa-plus"></i>
@@ -2756,6 +2791,7 @@ function _lp_addCourse(pi) {
 
 function _lp_setColor(pi, colorIdx) {
     const c = LP_COLORS[parseInt(colorIdx)];
+    if (!c) return;
     _lpState[pi].color = c.color;
     _lpState[pi].gradient = c.gradient;
     _renderLearningPaths();
@@ -2798,6 +2834,12 @@ let _schools    = [];
 async function loadSignatures() {
     const { data } = await sb.from('cert_signatures').select('*').order('slot');
     _signatures = data || [];
+    // Siempre se muestran los 3 firmantes: si la tabla aún no tiene filas (instalación
+    // nueva), la sección quedaba vacía y no había dónde cargar ninguna firma.
+    for (const slot of [1, 2, 3]) {
+        if (!_signatures.some(s => s.slot === slot)) _signatures.push({ slot, signer_name: '', signer_role: '', signature_url: null, active: slot === 1 });
+    }
+    _signatures.sort((a, b) => a.slot - b.slot);
     renderSignatures();
 }
 
