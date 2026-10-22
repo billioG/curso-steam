@@ -279,7 +279,7 @@
                     <div class="impact-divider w-px bg-white/20 self-stretch"></div>
                     <div><p class="text-3xl font-black" id="impactHoras">—</p><p class="text-xs opacity-70 mt-0.5">Horas de formación</p><p class="text-xs opacity-50 mt-0.5" id="impactHorasReal"></p></div>
                     <div class="impact-divider w-px bg-white/20 self-stretch"></div>
-                    <div><p class="text-3xl font-black" id="impactCertificados">—</p><p class="text-xs opacity-70 mt-0.5">Certificados emitidos</p></div>
+                    <div><p class="text-3xl font-black" id="impactCertificados">—</p><p class="text-xs opacity-70 mt-0.5">Cursos aprobados</p></div>
                 </div>
             </div>
 
@@ -601,7 +601,7 @@
                 <div class="card">
                     <p class="font-bold text-slate-800 mb-0.5">Cursos más avanzados</p>
                     <p class="text-xs text-slate-400 mb-4">Promedio de tarjetas completadas por curso</p>
-                    <canvas id="analyticsCourseBar" height="200"></canvas>
+                    <div style="position:relative;height:640px"><canvas id="analyticsCourseBar"></canvas></div>
                 </div>
                 <div class="card">
                     <p class="font-bold text-slate-800 mb-0.5">Estadísticas de diagnóstico</p>
@@ -639,7 +639,7 @@
             <div class="users-kpi-grid grid grid-cols-3 gap-4 mb-5">
                 <div class="card text-center"><p class="kpi-label">Total</p><p class="kpi-val" id="uTotal">—</p></div>
                 <div class="card text-center"><p class="kpi-label">Activos 7d</p><p class="kpi-val" id="uActive">—</p></div>
-                <div class="card text-center"><p class="kpi-label">Con certificado</p><p class="kpi-val" id="uCert">—</p></div>
+                <div class="card text-center"><p class="kpi-label">Con curso aprobado</p><p class="kpi-val" id="uCert">—</p></div>
             </div>
             <!-- Controles de orden y agrupación -->
             <div class="flex items-center gap-3 mb-3 flex-wrap">
@@ -704,6 +704,10 @@
                     <select id="panelSchoolSelect" onchange="changePanelSchool(this.value)" class="input-field text-sm">
                         <option value="">— Sin centro —</option>
                     </select>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Grado y lo que quiere mejorar</p>
+                    <p id="panelPrefs" class="text-sm text-slate-600">—</p>
                 </div>
                 <div id="panelDeptWrap">
                     <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Departamento</p>
