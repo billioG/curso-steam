@@ -7088,10 +7088,11 @@ if ('serviceWorker' in navigator) {
     });
 
     function showAppVersion() {
-        const badge = document.getElementById('appVersionBadge');
-        if (!badge) return;
+        // Se pinta en Perfil y en la pantalla de inicio de sesión.
+        const badges = ['appVersionBadge', 'loginVersionBadge'].map(id => document.getElementById(id)).filter(Boolean);
+        if (!badges.length) return;
         // El SW responde 'steam-v167'; en pantalla basta 'v167'.
-        const paint = v => { if (v) badge.textContent = String(v).replace(/^steam-/, ''); };
+        const paint = v => { if (v) badges.forEach(b => { b.textContent = String(v).replace(/^steam-/, ''); }); };
         // Fallback: sin controller (recarga forzada con Ctrl+Shift+R, primera visita)
         // o con un SW viejo que no responde — leer la versión directo de sw.js.
         const fromFile = () => fetch('./sw.js', { cache: 'no-store' })
@@ -7107,8 +7108,20 @@ if ('serviceWorker' in navigator) {
         setTimeout(() => { if (!answered) fromFile(); }, 1500);
     }
     showAppVersion();
+    window.addEventListener('DOMContentLoaded', showAppVersion);
     navigator.serviceWorker.ready.then(showAppVersion).catch(() => {});
     navigator.serviceWorker.addEventListener('controllerchange', showAppVersion);
+
+    // «Actualizar ahora»: borra las copias guardadas y recarga desde el servidor.
+    // El progreso no se pierde (vive en la cuenta y en la base de datos local).
+    window.forceAppUpdate = async function () {
+        try {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(r => r.unregister()));
+            if (window.caches) { const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k))); }
+        } catch (_) { /* aun así se recarga */ }
+        window.location.reload();
+    };
 
     window.showUpdateBanner = function () {
         if (document.getElementById('updateReadyToast')) return;
