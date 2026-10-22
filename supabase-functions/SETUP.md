@@ -441,3 +441,19 @@ puede marcar "Lo apliqué" ni pedir un diploma nuevo.
    la tarjeta y dar +40 XP.
 3. En admin, abre el panel del usuario: en "Aplicación en el aula" aparece la
    evidencia con "✓ IA x/10".
+
+---
+
+# Modelo de Groq (actualizado)
+
+Groq retiró `llama-3.3-70b-versatile` el 16 de agosto de 2026 (el chat y las
+evaluaciones empezaron a responder "The model … does not exist"). Las 5
+funciones que usan Groq (`groq-proxy`, `evaluate-portfolio`,
+`evaluate-candidate`, `generate-cases`, `evaluate-evidence`) pasaron a
+`openai/gpt-oss-120b`, el reemplazo que recomienda Groq. Es un modelo que
+razona antes de responder, por eso se usa `reasoning_effort: 'low'` y se
+subió `max_tokens` (los tokens de razonamiento cuentan en ese límite).
+
+**Hay que volver a desplegar las 5 funciones** (pegar el código nuevo de cada
+`index.ts` en Supabase → Edge Functions → la función → Deploy). Si Groq
+vuelve a retirar el modelo, basta cambiar la constante `GROQ_MODEL` en cada una.
