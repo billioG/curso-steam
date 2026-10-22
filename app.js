@@ -2187,6 +2187,97 @@ function _markReadAfter(cardId, ms, onMarked) {
     }, ms);
 }
 
+// ==================== LECCIÓN EN ESCRITORIO ====================
+// En pantallas anchas (≥1100 px) la lección se reparte en tres columnas: índice
+// del módulo a la izquierda, lectura al centro y un panel a la derecha con la
+// sesión de hoy, el reto del módulo y los relatos de colegas. En el celular nada
+// de esto se ve: las cajas del panel vuelven a su lugar original entre las tarjetas.
+const _lessonMQ = window.matchMedia('(min-width: 1100px)');
+function _lessonDesktop() { return _lessonMQ.matches; }
+function _layoutLessonRail() {
+    const rail = document.getElementById('lessonRail');
+    const session = document.getElementById('homeSessionBox');
+    const challenge = document.getElementById('moduleChallengeBox');
+    const peers = document.getElementById('peerStoriesBox');
+    const card = document.getElementById('cardContainer');
+    const nav = document.getElementById('cardNavBar');
+    if (!rail || !session || !challenge || !peers || !card || !nav) return;
+    const inRail = session.parentNode === rail;
+    if (_lessonDesktop() && !inRail) {
+        rail.append(session, challenge, peers);
+    } else if (!_lessonDesktop() && inRail) {
+        card.before(session, challenge);
+        nav.before(peers);
+    }
+}
+function _outlineTitle(c) {
+    if (c.type === 'takeaway') return 'Próximos pasos: tu compromiso';
+    if (c.type === 'quiz') return 'Quiz: ' + String(c.question || c.title || '').replace(/\s+/g, ' ').slice(0, 48);
+    return String(c.title || c.question || 'Tarjeta').replace(/\s+/g, ' ');
+}
+function renderLessonCrumb() {
+    const box = document.getElementById('lessonCrumb');
+    if (!box) return;
+    const course = (typeof allCourses !== 'undefined' ? allCourses : []).find(c => c.id === currentCourseId);
+    box.textContent = course ? `${course.title}  ·  Módulo ${currentModule} de ${modulesData.length}` : '';
+}
+function renderLessonOutline() {
+    const box = document.getElementById('lessonOutline');
+    if (!box || !_lessonDesktop()) return;
+    renderLessonCrumb();
+    const module = modulesData?.[currentModule - 1];
+    if (!module) { box.innerHTML = ''; return; }
+    const cards = module.cards || [];
+    const firstOpen = cards.findIndex(c => !_isCardDone(c));
+    const maxOpen = Math.max(currentCardIndex, firstOpen === -1 ? cards.length - 1 : firstOpen);
+    const doneCount = cards.filter(_isCardDone).length;
+    const pct = cards.length ? Math.round(doneCount / cards.length * 100) : 0;
+    const left = cards.slice(currentCardIndex).reduce((a, c) => a + _cardMinutes(c), 0);
+    box.innerHTML = `<p class="lesson-outline-label">Índice del módulo</p>
+        <p class="lesson-outline-title">${esc(String(module.title || 'Módulo ' + currentModule).replace(/\s+/g, ' '))}</p>
+        <p class="lesson-outline-sub">Tarjeta ${currentCardIndex + 1} de ${cards.length} · unos ${Math.max(1, Math.round(left))} min restantes</p>
+        <div class="lesson-outline-bar"><i style="width:${pct}%"></i></div>
+        <ol class="lesson-outline-list">${cards.map((c, i) => {
+            const cur = i === currentCardIndex, done = _isCardDone(c), open = i <= maxOpen;
+            return `<li><button type="button" ${open ? '' : 'disabled'} ${cur ? 'aria-current="step"' : ''} onclick="jumpToCard(${i})"
+                class="lesson-step${cur ? ' cur' : ''}${c.type === 'takeaway' ? ' take' : ''}">
+                <span class="lesson-dot${done ? ' done' : cur ? ' now' : ''}"></span><span class="lesson-step-text">${esc(_outlineTitle(c))}</span></button></li>`;
+        }).join('')}</ol>`;
+    box.querySelector('.cur')?.scrollIntoView({ block: 'nearest' });
+}
+// Salta a otra tarjeta del módulo desde el índice. Solo hasta la primera tarjeta
+// sin completar: así no se salta un quiz ni el compromiso.
+function jumpToCard(i) {
+    const module = modulesData?.[currentModule - 1];
+    if (!module || i === currentCardIndex) return;
+    const firstOpen = module.cards.findIndex(c => !_isCardDone(c));
+    const maxOpen = Math.max(currentCardIndex, firstOpen === -1 ? module.cards.length - 1 : firstOpen);
+    if (i < 0 || i > maxOpen) return;
+    stopCardTracking?.();
+    currentCardIndex = i;
+    _saveCoursePosition();
+    saveProgress();
+    renderCard();
+    animateCard('next');
+}
+_lessonMQ.addEventListener?.('change', () => { _layoutLessonRail(); renderLessonOutline(); });
+// Teclado: ← y → pasan de tarjeta (solo en la vista de lección, sin cuadros abiertos ni escribiendo).
+document.addEventListener('keydown', e => {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    if (!_lessonDesktop()) return;
+    const t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    const home = document.getElementById('tabHome');
+    if (!home || home.classList.contains('hidden') || document.getElementById('mainApp')?.classList.contains('hidden')) return;
+    if (document.querySelector('.modal-sheet:not(.hidden), #commentsModal:not(.hidden), #chatDrawer:not(.hidden), #portfolioModal:not(.hidden), #onboardingOverlay, #projectModal, #dailyChallengeModal, #followupModal')) return;
+    const btn = document.getElementById(e.key === 'ArrowRight' ? 'nextBtn' : 'prevBtn');
+    const nav = document.getElementById('cardNavBar');
+    if (!btn || btn.disabled || !nav || nav.offsetParent === null) return;
+    e.preventDefault();
+    btn.click();
+});
+
 // Reto del módulo: al empezar cada módulo se muestran las ideas para aplicar en
 // clase con las que cerrará (la tarjeta «Próximos pasos»), para leer con un
 // propósito en vez de descubrirlas al final. Se descarta una vez por módulo.
@@ -2215,8 +2306,10 @@ function dismissModuleChallenge() {
 }
 
 function renderCard() {
+    _layoutLessonRail();
     renderModuleChallenge();
     renderPeerStories();
+    renderLessonOutline();
     const module = modulesData[currentModule - 1];
     if (!module) return;
     const card = module.cards[currentCardIndex];
