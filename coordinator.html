@@ -155,7 +155,7 @@
         <p class="text-2xl font-black text-amber-500" id="kpiRetention">—</p>
       </div>
       <div class="kpi-card">
-        <p class="text-xs text-slate-400 mb-1">Certificados emitidos</p>
+        <p class="text-xs text-slate-400 mb-1">Cursos aprobados</p>
         <p class="text-2xl font-black text-violet-600" id="kpiCerts">—</p>
       </div>
     </div>
@@ -285,7 +285,7 @@
               <th rowspan="2">XP</th>
               <th rowspan="2">Tarjetas</th>
               <th rowspan="2">Racha</th>
-              <th rowspan="2">Certificados</th>
+              <th rowspan="2">Aprobados</th>
               <!-- th de grupo por ruta inyectados por JS -->
               <th rowspan="2">Último acceso</th>
             </tr>
@@ -341,6 +341,15 @@ const COURSES_META = [
   { id:'lengua-senas-docentes', title:'Lengua de Señas', prefix:'lengua-senas-docentes-' },
   { id:'fundamentos-pisa', title:'Fundamentos PISA', prefix:'fundamentos-pisa-' },
 ];
+// Un curso nuevo en data.js que nadie agregó a la lista de arriba igual se
+// reporta, con su título completo y el prefijo normalizado `<id>-`.
+if (typeof allCourses !== 'undefined') {
+    allCourses.forEach(c => {
+        if (c.available !== false && !COURSES_META.some(m => m.id === c.id)) {
+            COURSES_META.push({ id: c.id, title: c.title, prefix: `${c.id}-` });
+        }
+    });
+}
 
 // Deriva { modules, totalCards, moduleCardIds } desde allCourses (data.js) —
 // misma normalización de IDs que admin.js:68-86 (los IDs numéricos de cursos
@@ -369,8 +378,16 @@ const ROUTE_GROUPS = [
     { id: 'metodologias', label: 'Metodologías Activas',        courses: ['m-learning', 'flipped-classroom', 'abv', 'micro-learning'] },
     { id: 'ia',           label: 'Docente y la IA',             courses: ['ia-fundamentos', 'ia-tiempo', 'ia-herramientas', 'ia-inclusion', 'ia-ciudadania'] },
     { id: 'convivencia',  label: 'Clima y Convivencia Escolar', courses: ['manejo-conductas', 'sel-docentes', 'comunicacion-asertiva', 'disciplina-positiva', 'bienestar-docente'] },
+    { id: 'inclusion',    label: 'Educación Inclusiva',         courses: ['educacion-inclusiva', 'tea-profundidad', 'discapacidad-down-tdah', 'lengua-senas-docentes'] },
     { id: 'fundamentos',  label: 'Fundamentos PISA',            courses: ['fundamentos-pisa'] },
 ];
+// Un curso que no esté en ninguna ruta va a un grupo "Otros cursos": sin
+// grupo, su columna quedaría siempre visible y desalinearía los encabezados.
+(() => {
+    const grouped = new Set(ROUTE_GROUPS.flatMap(g => g.courses));
+    const rest = COURSES.map(c => c.id).filter(id => !grouped.has(id));
+    if (rest.length) ROUTE_GROUPS.push({ id: 'otros', label: 'Otros cursos', courses: rest });
+})();
 
 // Empiezan todas colapsadas — el coordinador expande solo la ruta que le interesa.
 const _collapsedGroups = new Set(ROUTE_GROUPS.map(g => g.id));
@@ -432,6 +449,10 @@ const COURSE_TO_GROUP = (() => {
         courseRow.appendChild(th);
     });
 
+    // Regla de colapso por ruta, generada para que ninguna ruta quede sin ella.
+    const style = document.createElement('style');
+    style.textContent = ROUTE_GROUPS.map(g => `table.collapsed-${g.id} .grp-${g.id}`).join(',') + '{display:none}';
+    document.head.appendChild(style);
     document.getElementById('teachersTable')?.classList.add(...[...ROUTE_GROUPS.map(g => `collapsed-${g.id}`)]);
 })();
 
@@ -664,7 +685,7 @@ function renderSchoolComparison() {
 
     const maxTotal = Math.max(1, ...rows.map(r => r.total));
     document.getElementById('schoolCompareTable').innerHTML = `<table>
-        <thead><tr><th>Centro</th><th>Docentes</th><th>Activos (30d)</th><th>Retención</th><th>Certificados</th><th>XP prom.</th><th>Tarjetas prom.</th></tr></thead>
+        <thead><tr><th>Centro</th><th>Docentes</th><th>Activos (30d)</th><th>Retención</th><th>Cursos aprobados</th><th>XP prom.</th><th>Tarjetas prom.</th></tr></thead>
         <tbody>${rows.map(r => `
             <tr>
                 <td class="font-semibold text-slate-700">${esc(r.name)}</td>
@@ -767,13 +788,13 @@ function renderCourseDistChart() {
     buildChart('courseDistChart', {
         type: 'bar',
         data: { labels, datasets: [
-            { label:'Con certificado', data: certified, backgroundColor:'#4ade80', borderRadius:6, borderSkipped:false },
+            { label:'Aprobado', data: certified, backgroundColor:'#4ade80', borderRadius:6, borderSkipped:false },
             { label:'En progreso',     data: started.map((s,i) => Math.max(0, s - certified[i])),
               backgroundColor:'#818cf8', borderRadius:6, borderSkipped:false },
         ]},
         options: { plugins:{ legend:{ display:true, labels:{ font:{size:10}, boxWidth:12 } } },
-            scales:{ x:{ stacked:true, grid:{display:false}, ticks:{font:{size:10}} },
-                     y:{ stacked:true, beginAtZero:true, ticks:{font:{size:10}},
+            scales:{ x:{ stacked:true, grid:{display:false}, ticks:{font:{size:10}, autoSkip:false, maxRotation:60, minRotation:45} },
+                     y:{ stacked:true, beginAtZero:true, ticks:{font:{size:10}, precision:0},
                          grid:{color:'#f8fafc'} } } }
     });
 }
@@ -859,7 +880,7 @@ function renderTeachers(list) {
             <td class="font-bold text-amber-600 text-xs">${p.xp||0}</td>
             <td class="text-xs">${p.completed_cards?.length||0}</td>
             <td class="text-xs">${p.streak||0}d</td>
-            <td>${certs > 0 ? `<span class="badge badge-green" style="font-size:9px">${certs} cert.</span>` : '<span class="badge badge-gray" style="font-size:9px">—</span>'}</td>
+            <td>${certs > 0 ? `<span class="badge badge-green" style="font-size:9px">${certs} aprob.</span>` : '<span class="badge badge-gray" style="font-size:9px">—</span>'}</td>
             ${courseCells}
             <td class="text-xs text-slate-400 whitespace-nowrap">${fmtDate(p.updated_at)}</td>
         </tr>`;
@@ -888,7 +909,7 @@ function exportTeachersCSV() {
     const list = _visibleTeachers();
     if (!list.length) { alert('No hay docentes para exportar.'); return; }
 
-    const headers = ['Docente', 'Centro educativo', 'XP', 'Tarjetas', 'Racha (días)', 'Certificados',
+    const headers = ['Docente', 'Centro educativo', 'XP', 'Tarjetas', 'Racha (días)', 'Cursos aprobados',
         ...COURSES_GROUPED.map(c => c.title), 'Último acceso'];
 
     const rows = list.map(p => {
