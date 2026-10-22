@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v191';
+const CACHE_VERSION  = 'steam-v192';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
@@ -68,6 +68,13 @@ const CACHEABLE_ORIGINS = new Set(['https://cdn.jsdelivr.net', 'https://fonts.go
 // ──────────────────────────────────────────────────────────
 // INSTALL — precachear todo lo crítico
 // ──────────────────────────────────────────────────────────
+// Los archivos propios se piden con cache:'reload' para saltarse la caché HTTP del
+// navegador. GitHub Pages los sirve con max-age de 10 minutos: sin esto, un
+// Service Worker nuevo podía guardar en su caché una copia VIEJA de app.js o
+// index.html (recién descargada de la caché HTTP) y la app se quedaba en la
+// versión anterior aunque la etiqueta ya dijera la nueva.
+const fresh = url => new Request(url, { cache: 'reload' });
+
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_STATIC).then(async cache => {
@@ -75,7 +82,7 @@ self.addEventListener('install', event => {
             // no debe tumbar la instalación completa del Service Worker.
             await Promise.allSettled(
                 CRITICAL_ASSETS.map(url =>
-                    cache.add(url).catch(err => console.warn('[SW] No se pudo cachear (crítico):', url, err))
+                    cache.add(fresh(url)).catch(err => console.warn('[SW] No se pudo cachear (crítico):', url, err))
                 )
             );
             await Promise.allSettled(
@@ -86,7 +93,7 @@ self.addEventListener('install', event => {
             // Secundarios: ignorar errores individuales
             await Promise.allSettled(
                 SECONDARY_ASSETS.map(url =>
-                    cache.add(url).catch(() => { /* ok si no existe */ })
+                    cache.add(fresh(url)).catch(() => { /* ok si no existe */ })
                 )
             );
         }).then(() => self.skipWaiting())
