@@ -1537,6 +1537,41 @@
             border-radius: 9999px;
             margin: 12px auto 18px;
         }
+
+        /* ── Márgenes de los cuadros emergentes ──
+           En el celular quedan pegados al borde inferior (sin que la barra del sistema
+           los tape: se respeta el área segura). En pantallas anchas se centran con
+           margen, para que nada quede pegado ni cortado por la barra de tareas. */
+        .modal-sheet > .modal-inner { padding-bottom: max(28px, env(safe-area-inset-bottom, 0px)); }
+        #commentsModal > div, #chatDrawer > div, #portfolioModal > div { padding-bottom: env(safe-area-inset-bottom, 0px); }
+        @supports (height: 100dvh) {
+            .modal-sheet > .modal-inner { max-height: 88dvh; }
+            #commentsModal > div { max-height: 82dvh !important; }
+            #chatDrawer > div { height: 80dvh !important; }
+            #portfolioModal > div { max-height: 90dvh !important; }
+        }
+        @media (min-width: 640px) {
+            .modal-sheet, #commentsModal, #chatDrawer, #portfolioModal, #dailyChallengeModal {
+                align-items: center !important;
+                padding: 24px !important;
+                box-sizing: border-box;
+            }
+            .modal-sheet > .modal-inner,
+            #commentsModal > div, #chatDrawer > div, #portfolioModal > div, #dailyChallengeModal > div {
+                border-radius: 28px !important;
+                max-height: calc(100vh - 48px) !important;
+            }
+            #chatDrawer > div { height: min(680px, calc(100vh - 48px)) !important; }
+            .modal-sheet > .modal-inner { max-height: min(88vh, calc(100vh - 48px)) !important; }
+            .modal-sheet > .modal-inner { padding-bottom: 28px; }
+        }
+        @media (min-width: 640px) and (min-height: 1px) {
+            @supports (height: 100dvh) {
+                .modal-sheet > .modal-inner { max-height: min(88dvh, calc(100dvh - 48px)) !important; }
+                #commentsModal > div, #portfolioModal > div, #dailyChallengeModal > div { max-height: calc(100dvh - 48px) !important; }
+                #chatDrawer > div { height: min(680px, calc(100dvh - 48px)) !important; }
+            }
+        }
     </style>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1E4976">
