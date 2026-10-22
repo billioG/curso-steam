@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self';">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="noindex, nofollow">
+<title>Perfil docente — Yo Aprendo</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI', Arial, sans-serif; background:#F1F5F9; min-height:100vh; padding:1.5rem; display:flex; justify-content:center; }
+  .card { background:white; border-radius:20px; max-width:480px; width:100%; padding:32px 28px; box-shadow:0 10px 30px rgba(15,23,42,.1); align-self:flex-start; }
+  h1 { font-size:22px; color:#0F172A; }
+  .sub { font-size:13px; color:#64748B; margin:4px 0 22px; }
+  .stats { display:flex; gap:10px; margin-bottom:22px; }
+  .stat { flex:1; background:#F8FAFC; border-radius:14px; padding:14px 8px; text-align:center; }
+  .stat b { display:block; font-size:24px; color:#1E4976; }
+  .stat span { font-size:11px; color:#64748B; }
+  h2 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:#64748B; margin:18px 0 8px; }
+  ul { list-style:none; }
+  li { font-size:14px; color:#0F172A; padding:8px 0; border-bottom:1px solid #F1F5F9; display:flex; justify-content:space-between; gap:10px; }
+  li:last-child { border-bottom:none; }
+  .ok { color:#166534; font-weight:700; font-size:12px; white-space:nowrap; }
+  .note { font-size:11.5px; color:#94A3B8; line-height:1.6; margin-top:22px; border-top:1px solid #F1F5F9; padding-top:12px; }
+  .loader, .empty { text-align:center; color:#94A3B8; font-size:14px; padding:30px 0; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./data.js"></script>
+</head>
+<body>
+<div class="card" id="card"><p class="loader">Cargando perfil…</p></div>
+<script>
+const SUPABASE_URL = "https://grkjhzkgcmackbafqudu.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdya2poemtnY21hY2tiYWZxdWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjg5MzQsImV4cCI6MjA5NjcwNDkzNH0.2nVTRlhey6HkGs_KZxtCaEp8L2QrvD0NUwY8ZFwZVHY";
+const GRADES = { 'prim-baja': 'primaria baja', 'prim-alta': 'primaria alta', 'sec-baja': 'secundaria baja', 'sec-alta': 'secundaria alta', 'multi': 'multigrado' };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const card = document.getElementById('card');
+
+(async () => {
+  const slug = (new URLSearchParams(location.search).get('u') || '').toLowerCase();
+  if (!/^[a-z0-9]{8,16}$/.test(slug)) { card.innerHTML = '<p class="empty">Este perfil no está disponible.</p>'; return; }
+  try {
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { data, error } = await sb.from('public_profiles_public').select('*').eq('slug', slug).maybeSingle();
+    if (error || !data) { card.innerHTML = '<p class="empty">Este perfil no está disponible o fue desactivado por la persona.</p>'; return; }
+    const st = data.stats || {};
+    const title = id => (typeof allCourses !== 'undefined' && allCourses.find(c => c.id === id)?.title) || id;
+    const verified = new Set(Array.isArray(data.verified_diplomas) ? data.verified_diplomas : []);
+    const courses = Array.isArray(st.courses) ? st.courses.slice(0, 40) : [];
+    const grade = GRADES[data.grade];
+    document.title = `${data.display_name} — Yo Aprendo`;
+    card.innerHTML = `
+      <h1>${esc(data.display_name)}</h1>
+      <p class="sub">Docente${grade ? ' de ' + esc(grade) : ''} · Yo Aprendo${st.since ? ' · desde ' + esc(String(st.since).slice(0, 7)) : ''}</p>
+      <div class="stats">
+        <div class="stat"><b>${Number(st.applied) || 0}</b><span>aplicaciones en el aula</span></div>
+        <div class="stat"><b>${courses.length}</b><span>cursos aprobados</span></div>
+        <div class="stat"><b>${verified.size}</b><span>diplomas verificados</span></div>
+      </div>
+      ${courses.length ? `<h2>Cursos aprobados</h2><ul>${courses.map(c => `<li><span>${esc(title(c.id))}</span>${verified.has(c.id) ? '<span class="ok">✓ Diploma verificado</span>' : ''}</li>`).join('')}</ul>` : ''}
+      <p class="note">Los cursos aprobados y las aplicaciones en el aula los declara la propia persona desde la plataforma; cada relato de aplicación lo revisa una IA que comprueba que sea concreto y se relacione con el curso, pero la plataforma no observa el aula. «Diploma verificado» significa que el pago del diploma fue confirmado por el servidor.</p>`;
+  } catch (e) {
+    card.innerHTML = '<p class="empty">No se pudo cargar el perfil. Inténtalo de nuevo más tarde.</p>';
+  }
+})();
+</script>
+</body>
+</html>

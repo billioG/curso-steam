@@ -457,3 +457,41 @@ subió `max_tokens` (los tokens de razonamiento cuentan en ese límite).
 **Hay que volver a desplegar las 5 funciones** (pegar el código nuevo de cada
 `index.ts` en Supabase → Edge Functions → la función → Deploy). Si Groq
 vuelve a retirar el modelo, basta cambiar la constante `GROQ_MODEL` en cada una.
+
+---
+
+# Comunidad de colegas y perfil público
+
+Tres cosas nuevas que el docente decide activar: compartir sus relatos de
+«Lo apliqué en clase» de forma anónima, reportar relatos ajenos y publicar un
+perfil público (`p.html?u=<código>`) con sus cursos aprobados y diplomas
+pagados (verificados por el servidor).
+
+## Paso 1 — Ejecutar la migración SQL
+
+Ejecuta `migrations/community-and-public-profiles.sql` en el SQL Editor.
+Crea `shared_applications`, `shared_application_reports` y `public_profiles`
+con RLS, y dos vistas: `shared_applications_public` (sin `user_id`, solo
+para docentes con sesión) y `public_profiles_public` (lectura pública, con los
+diplomas pagados). Requiere `is_admin()` y `certificate_payments`, que ya
+existen. Es seguro de re-ejecutar.
+
+## Paso 2 — Re-desplegar `evaluate-evidence`
+
+Pega el `index.ts` actualizado: ahora también devuelve `pii` (avisa si el texto
+trae nombres completos, teléfonos o correos) y la app no deja compartir un
+relato con `pii = true`.
+
+## Paso 3 — Probar
+
+1. En una tarjeta toca «Lo apliqué en clase», marca «Compartir de forma
+   anónima» y envía un relato concreto: debe aprobarse y aparecer una fila
+   en `shared_applications`. Con un nombre completo en el texto debe avisar
+   y no compartir.
+2. Con otra cuenta, abre esa misma tarjeta: debe verse «1 colega lo aplicó».
+3. En Progreso → «Mi aula» → «Mi perfil público», actívalo y abre el enlace
+   desde una ventana privada: debe verse sin iniciar sesión.
+
+**Moderación:** un relato con 2 reportes distintos se oculta solo
+(`hidden = true`). Los admins ven y pueden ocultar o borrar cualquier relato
+desde el SQL Editor (`UPDATE shared_applications SET hidden = true WHERE id = …`).
