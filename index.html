@@ -1530,6 +1530,53 @@
             padding: 0 20px 28px;
         }
 
+        /* ── Lección en escritorio: índice · lectura · panel ──
+           Solo ≥1100 px. En pantallas más angostas estos elementos no se ven y la
+           lección es la misma de siempre, de una columna. */
+        .lesson-crumb, .lesson-outline, .lesson-rail, .lesson-keys { display: none; }
+        @media (min-width: 1100px) {
+            #tabHome {
+                display: grid !important;
+                max-width: 1400px !important;
+                grid-template-columns: 240px minmax(0, 760px) 280px;
+                grid-template-areas: "crumb crumb crumb" "outline main rail" "outline nav rail" "outline keys rail";
+                grid-template-rows: auto auto auto 1fr;
+                column-gap: 28px;
+                justify-content: center;
+                align-content: start;
+                padding-left: 32px; padding-right: 32px;
+            }
+            #tabHome.hidden { display: none !important; }
+            #homeDash { display: none; }
+            .lesson-crumb { display: block; grid-area: crumb; margin: 14px 0 6px; font-size: 13px; font-weight: 600; color: #475569; }
+            .lesson-outline { display: block; grid-area: outline; position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 100px); overflow-y: auto; padding: 4px 4px 16px 0; }
+            .lesson-rail { display: flex; flex-direction: column; gap: 14px; grid-area: rail; align-self: start; position: sticky; top: 76px; max-height: calc(100vh - 100px); overflow-y: auto; }
+            .lesson-rail > div:empty { display: none; }
+            #tabHome > #cardContainer { grid-area: main; margin-top: 8px; }
+            #tabHome > #cardNavBar { grid-area: nav; }
+            .lesson-keys { display: block; grid-area: keys; text-align: center; font-size: 12px; color: #475569; margin-top: 10px; }
+            .lesson-keys kbd { font: inherit; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 7px; background: #fff; }
+            #tabHome .card-body { padding: 30px 40px 26px; }
+            #tabHome .card-body h2 { font-size: 1.7rem; margin-bottom: 14px; }
+            #tabHome .card-body p { font-size: 1.15rem; line-height: 1.7; }
+            #tabHome .card-swipe-hint { display: none; }
+            .lesson-outline-label { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #475569; margin: 0; }
+            .lesson-outline-title { font-size: 16px; font-weight: 800; color: #0f172a; margin: 6px 0 4px; line-height: 1.3; }
+            .lesson-outline-sub { font-size: 12px; color: #475569; margin: 0 0 10px; }
+            .lesson-outline-bar { height: 6px; border-radius: 99px; background: #e2e8f0; overflow: hidden; margin-bottom: 14px; }
+            .lesson-outline-bar > i { display: block; height: 100%; background: #4338ca; border-radius: 99px; }
+            .lesson-outline-list { list-style: none; margin: 0; padding: 0; }
+            .lesson-step { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 8px 10px; border-radius: 10px; border: none; background: none; font-size: 13px; color: #334155; cursor: pointer; }
+            .lesson-step:hover:not(:disabled) { background: #f1f5f9; }
+            .lesson-step:disabled { cursor: default; opacity: .55; }
+            .lesson-step.cur { background: #eef2ff; color: #3730a3; font-weight: 700; }
+            .lesson-step.take { color: #78350f; }
+            .lesson-step-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+            .lesson-dot { width: 18px; height: 18px; border-radius: 50%; flex: none; box-sizing: border-box; border: 2px solid #cbd5e1; }
+            .lesson-dot.done { background: #16a34a; border-color: #16a34a; }
+            .lesson-dot.now { background: #4338ca; border-color: #4338ca; }
+        }
+
         .modal-drag {
             width: 40px;
             height: 4px;
@@ -1953,8 +2000,13 @@
         <!-- ══════════════════════════════════════════ -->
         <div id="tabHome" class="tab-panel pt-16 px-4 pb-28">
 
+            <!-- Escritorio: migas de la lección, índice del módulo y panel derecho -->
+            <div id="lessonCrumb" class="lesson-crumb"></div>
+            <aside id="lessonOutline" class="lesson-outline" aria-label="Índice del módulo"></aside>
+            <aside id="lessonRail" class="lesson-rail"></aside>
+
             <!-- Dashboard de bienvenida -->
-            <div class="mt-4">
+            <div id="homeDash" class="mt-4">
                 <p class="text-lg font-black text-slate-800">Hola, <span id="homeDashName">Docente</span></p>
                 <div class="mt-3 rounded-2xl p-4" style="background:#1E4976">
                     <div class="flex items-center justify-between mb-2">
@@ -1995,6 +2047,7 @@
                     Siguiente <span data-icon="arrowRight" style="display:inline-flex;width:14px;height:14px"></span>
                 </button>
             </div>
+            <p id="lessonKeys" class="lesson-keys">Teclado: <kbd>←</kbd> <kbd>→</kbd> para pasar de tarjeta</p>
         </div>
 
         <!-- ══════════════════════════════════════════ -->
