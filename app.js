@@ -2449,23 +2449,16 @@ function _peekText(card) {
         : card.content;
     return String(raw || '').replace(/<[^>]+>/g, ' ').replace(/[*_#>`]/g, '').replace(/\s+/g, ' ').trim().slice(0, 320);
 }
-function _nextCardPeekHtml() {
-    const blank = '<div class="card-stack-ghost card-stack-ghost-1"></div>';
-    let modIdx = currentModule, idx = currentCardIndex + 1;
-    let module = modulesData?.[modIdx - 1];
-    if (!module) return blank;
-    if (idx >= (module.cards || []).length) {
-        modIdx = currentModule + 1; idx = 0;
-        module = modulesData?.[modIdx - 1];
-        if (!module || !(module.cards || []).length) return blank;
-    }
-    const next = module.cards[idx];
+function _cardPeekHtml(modIdx, idx, cls) {
+    const module = modulesData?.[modIdx - 1];
+    const next = module?.cards?.[idx];
+    if (!next) return `<div class="card-stack-ghost card-stack-ghost-1 ${cls}"></div>`;
     const t = (typeof getCourseThemeAndIllus !== 'undefined')
         ? getCourseThemeAndIllus(currentCourseId || 'steam', modIdx)
         : { theme: { primary: '#0097A7' }, illus: '' };
     const label = next.type === 'quiz' ? 'Quiz' : next.type === 'simulation' ? 'Simulación' : next.type === 'takeaway' ? 'Próximos pasos' : next.type === 'project' ? 'Proyecto' : '';
     const title = next.type === 'quiz' ? (next.title || '¿Qué aprendiste?') : (next.title || label || '');
-    return `<div class="card-stack-ghost card-stack-ghost-1 card-peek" aria-hidden="true">
+    return `<div class="card-stack-ghost card-stack-ghost-1 card-peek ${cls}" aria-hidden="true">
         <div class="card-banner" style="background:${t.theme?.primary || '#0097A7'}">
             <div class="card-banner-svg">${t.illus || ''}</div>
             <p class="card-banner-sub">${esc(String(module.title || ''))} &nbsp;·&nbsp; ${idx + 1} de ${module.cards.length}</p>
@@ -2476,6 +2469,18 @@ function _nextCardPeekHtml() {
             <p>${esc(_peekText(next))}</p>
         </div>
     </div>`;
+}
+// Dos cartas posibles detrás: la siguiente (visible, al arrastrar hacia la
+// izquierda) y la anterior (oculta; aparece al arrastrar hacia la derecha para
+// regresar). Al principio o al final de un módulo cruzan al módulo vecino.
+function _deckPeeksHtml() {
+    const mod = modulesData?.[currentModule - 1];
+    if (!mod) return '<div class="card-stack-ghost card-stack-ghost-1"></div>';
+    let nm = currentModule, ni = currentCardIndex + 1;
+    if (ni >= (mod.cards || []).length) { nm = currentModule + 1; ni = 0; }
+    let pm = currentModule, pi = currentCardIndex - 1;
+    if (pi < 0) { pm = currentModule - 1; pi = (modulesData?.[pm - 1]?.cards?.length || 0) - 1; }
+    return _cardPeekHtml(pm, pi, 'card-peek-prev') + _cardPeekHtml(nm, ni, 'card-peek-next');
 }
 
 function renderCard() {
@@ -2493,7 +2498,7 @@ function renderCard() {
     // Cartas del mazo: la de justo detrás muestra la tarjeta que sigue (así, al
     // arrastrar, asoma la siguiente en vez de una tarjeta en blanco); la del
     // fondo sigue siendo decorativa. initSwipe() las anima durante el arrastre.
-    const _cardGhosts = '<div class="card-stack-ghost card-stack-ghost-2"></div>' + _nextCardPeekHtml();
+    const _cardGhosts = '<div class="card-stack-ghost card-stack-ghost-2"></div>' + _deckPeeksHtml();
 
     // Iniciar tracking de tiempo
     if (currentCardId) stopCardTracking();
@@ -3494,21 +3499,27 @@ function continueToNextModule() {
 // flote sola sobre el fondo. Compartido entre initSwipe() y el swipe propio
 // de las tarjetas de simulación.
 const _DECK_SWIPE_THRESHOLD = 80;
-function _deckGhosts() {
+// `dir` 'prev' anima la carta de la tarjeta anterior (arrastre hacia la derecha
+// en la lección); cualquier otro caso, la de la siguiente.
+function _deckGhosts(dir) {
     const container = document.getElementById('cardContainer');
+    const prev = container?.querySelector('.card-peek-prev');
+    const next = container?.querySelector('.card-stack-ghost-1:not(.card-peek-prev)');
     return {
-        ghost1: container?.querySelector('.card-stack-ghost-1'),
+        ghost1: dir === 'prev' && prev ? prev : next,
+        other: dir === 'prev' ? next : prev,
         ghost2: container?.querySelector('.card-stack-ghost-2'),
     };
 }
 function _setDeckGhostsTransition(value) {
-    const { ghost1, ghost2 } = _deckGhosts();
-    if (ghost1) ghost1.style.transition = value;
-    if (ghost2) ghost2.style.transition = value;
+    const container = document.getElementById('cardContainer');
+    container?.querySelectorAll('.card-stack-ghost').forEach(g => { g.style.transition = value; });
 }
-function _setDeckGhostsProgress(diffX) {
-    const { ghost1, ghost2 } = _deckGhosts();
+function _setDeckGhostsProgress(diffX, byDirection) {
+    const { ghost1, ghost2, other } = _deckGhosts(byDirection && diffX > 0 ? 'prev' : 'next');
     if (!ghost1 || !ghost2) return;
+    if (other) { other.style.visibility = 'hidden'; }
+    ghost1.style.visibility = 'visible';
     const p = Math.min(1, Math.abs(diffX) / _DECK_SWIPE_THRESHOLD);
     ghost1.style.transform = `translateY(${10 - 10 * p}px) scale(${0.96 + 0.04 * p})`;
     ghost1.style.opacity = String(0.95 + 0.05 * p);
@@ -3516,9 +3527,10 @@ function _setDeckGhostsProgress(diffX) {
     ghost2.style.opacity = String(0.7 + 0.15 * p);
 }
 function _resetDeckGhosts() {
-    const { ghost1, ghost2 } = _deckGhosts();
-    if (ghost1) { ghost1.style.transition = ''; ghost1.style.transform = ''; ghost1.style.opacity = ''; }
-    if (ghost2) { ghost2.style.transition = ''; ghost2.style.transform = ''; ghost2.style.opacity = ''; }
+    const container = document.getElementById('cardContainer');
+    container?.querySelectorAll('.card-stack-ghost').forEach(g => {
+        g.style.transition = ''; g.style.transform = ''; g.style.opacity = ''; g.style.visibility = '';
+    });
 }
 
 // ── Gesto de tarjeta estilo Tinder ─────────────────────────────────────────
@@ -3598,7 +3610,7 @@ function attachDeckSwipe(card, opts) {
         const p = Math.min(1, Math.abs(dx) / _DECK_SWIPE_THRESHOLD);
         stampLeft.style.opacity = dx < 0 ? String(p) : '0';
         stampRight.style.opacity = dx > 0 ? String(p) : '0';
-        _setDeckGhostsProgress(dx);
+        _setDeckGhostsProgress(dx, !!o.peekByDirection);
     };
     const snapBack = (shake) => {
         card.style.transition = 'transform .35s cubic-bezier(.175,.885,.32,1.275)';
@@ -3657,6 +3669,7 @@ function initSwipe() {
     const canGoBack = () => currentCardIndex > 0 || currentModule > 1;
     attachDeckSwipe(card, {
         leftLabel: 'Siguiente', rightLabel: 'Anterior',
+        peekByDirection: true, // al arrastrar a la derecha asoma la tarjeta anterior
         canLeft: () => !nextLocked(),
         canRight: canGoBack,
         onLeft: () => goToNextCard(false),

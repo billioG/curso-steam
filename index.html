@@ -538,6 +538,7 @@
            (al terminar el arrastre queda en escala 1, justo donde aparecerá) y sin
            desbordar su contenido. */
         .card-peek { left: 0; right: 0; overflow: hidden; display: flex; flex-direction: column; }
+        .card-peek-prev { visibility: hidden; } /* solo se ve al arrastrar hacia la derecha (regresar) */
         .card-peek .card-body p { display: -webkit-box; -webkit-line-clamp: 8; -webkit-box-orient: vertical; overflow: hidden; }
 
         /* ── Banner ilustrado (parte superior de la tarjeta) ── */
@@ -1631,6 +1632,18 @@
         .hub-row:last-child { border-bottom: none; padding-bottom: 0; }
 
 
+        /* ── Login: ilustraciones laterales como marca de agua (solo pantallas anchas) ──
+           En escala de grises y muy tenues, para dar textura sin competir con el
+           formulario. Sin animación. */
+        .login-art { display: none; pointer-events: none; }
+        @media (min-width: 1000px) {
+            #loginScreen .login-card { position: relative; z-index: 1; }
+            .login-art { display: block; position: fixed; inset: 0; overflow: hidden; z-index: 0; }
+            .login-art svg { position: absolute; top: 50%; transform: translateY(-50%); width: clamp(260px, 28vw, 480px); height: auto; filter: grayscale(1); opacity: .2; }
+            .login-art .art-l { right: calc(50% + 240px); }
+            .login-art .art-r { left: calc(50% + 240px); }
+        }
+
         .modal-drag {
             width: 40px;
             height: 4px;
@@ -1875,6 +1888,67 @@
 
     <!-- ==================== PANTALLA DE LOGIN ==================== -->
     <div id="loginScreen" class="fixed inset-0 z-50 flex flex-col overflow-y-auto">
+      <!-- Ilustraciones (solo pantallas anchas): mazo de tarjetas a la izquierda; libros, birrete y diploma a la derecha -->
+      <div class="login-art" aria-hidden="true">
+        <svg class="art-l" viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg" focusable="false">
+          <circle cx="200" cy="272" r="172" fill="#E0F2FE"/>
+          <circle cx="338" cy="104" r="44" fill="#FEF3C7"/>
+          <circle cx="62" cy="438" r="30" fill="#EDE9FE"/>
+          <g transform="rotate(-13 200 270)"><rect x="95" y="130" width="210" height="280" rx="24" fill="#C7D2FE"/></g>
+          <g transform="rotate(-5 200 270)"><rect x="95" y="130" width="210" height="280" rx="24" fill="#FBBF24"/></g>
+          <g transform="rotate(5 200 270)">
+            <rect x="95" y="130" width="210" height="280" rx="24" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+            <rect x="95" y="130" width="210" height="112" rx="24" fill="#1E4976"/>
+            <rect x="95" y="200" width="210" height="42" fill="#1E4976"/>
+            <circle cx="200" cy="184" r="27" fill="#FDE047"/>
+            <rect x="189" y="208" width="22" height="11" rx="4" fill="#F59E0B"/>
+            <g stroke="#FDE047" stroke-width="5" stroke-linecap="round"><line x1="200" y1="138" x2="200" y2="146"/><line x1="160" y1="184" x2="168" y2="184"/><line x1="232" y1="184" x2="240" y2="184"/><line x1="171" y1="155" x2="177" y2="161"/><line x1="229" y1="155" x2="223" y2="161"/></g>
+            <rect x="125" y="264" width="150" height="12" rx="6" fill="#CBD5E1"/>
+            <rect x="125" y="288" width="118" height="12" rx="6" fill="#E2E8F0"/>
+            <rect x="125" y="312" width="136" height="12" rx="6" fill="#E2E8F0"/>
+            <rect x="125" y="362" width="150" height="10" rx="5" fill="#E2E8F0"/>
+            <rect x="125" y="362" width="98" height="10" rx="5" fill="#5C35C5"/>
+          </g>
+          <g><polygon points="60,150 66,166 83,167 70,177 75,194 60,184 45,194 50,177 37,167 54,166" fill="#F59E0B"/></g>
+          <g><circle cx="338" cy="430" r="24" fill="#10B981"/><path d="M327 430 l8 8 l15 -17" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+          <g stroke="#5C35C5" stroke-width="5" stroke-linecap="round"><line x1="338" y1="236" x2="338" y2="256"/><line x1="328" y1="246" x2="348" y2="246"/></g>
+          <circle cx="40" cy="300" r="6" fill="#07B0E4"/><circle cx="364" cy="330" r="5" fill="#F472B6"/>
+        </svg>
+        <svg class="art-r" viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg" focusable="false">
+          <circle cx="200" cy="272" r="172" fill="#EDE9FE"/>
+          <circle cx="62" cy="120" r="40" fill="#CFFAFE"/>
+          <circle cx="344" cy="440" r="28" fill="#FEF3C7"/>
+          <!-- Quetzal, la mascota del asistente -->
+          <g transform="translate(46 62) scale(0.78)">
+            <path d="M 185 300 C 160 380 90 410 80 480 C 105 480 180 400 195 300 Z" fill="#009624"/>
+            <path d="M 215 300 C 240 380 310 410 320 480 C 295 480 220 400 205 300 Z" fill="#00C853"/>
+            <ellipse cx="160" cy="335" rx="16" ry="8" fill="#FF9100"/>
+            <ellipse cx="240" cy="335" rx="16" ry="8" fill="#FF9100"/>
+            <rect x="110" y="100" width="180" height="230" rx="90" fill="#00C853"/>
+            <path d="M 170 105 C 170 70 190 65 200 65 C 210 65 230 70 230 105 Z" fill="#5CF29D"/>
+            <path d="M 182 100 C 182 78 193 72 200 72 C 207 72 218 78 218 100 Z" fill="#00C853"/>
+            <path d="M 110 180 C 65 200 60 265 115 275 C 108 240 115 200 110 180 Z" fill="#009624"/>
+            <path d="M 290 180 C 335 200 340 265 285 275 C 292 240 285 200 290 180 Z" fill="#009624"/>
+            <path d="M 135 195 C 135 295 265 295 265 195 C 265 180 135 180 135 195 Z" fill="#FF3D00"/>
+            <path d="M 148 205 C 148 285 252 285 252 205 C 252 193 148 193 148 205 Z" fill="#FF5252"/>
+            <circle cx="160" cy="158" r="28" fill="#FFFFFF"/><circle cx="166" cy="158" r="15" fill="#1E293B"/><circle cx="171" cy="152" r="5" fill="#FFFFFF"/>
+            <circle cx="240" cy="158" r="28" fill="#FFFFFF"/><circle cx="234" cy="158" r="15" fill="#1E293B"/><circle cx="229" cy="152" r="5" fill="#FFFFFF"/>
+            <path d="M 182 168 Q 200 162 218 168 C 218 195 200 218 200 218 C 200 218 182 195 182 168 Z" fill="#FFC107"/>
+          </g>
+          <!-- Globo de diálogo -->
+          <g>
+            <rect x="262" y="70" width="118" height="74" rx="18" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+            <polygon points="276,142 270,170 300,144" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" stroke-linejoin="round"/>
+            <rect x="272" y="140" width="34" height="6" fill="#FFFFFF"/>
+            <rect x="280" y="90" width="82" height="9" rx="4.5" fill="#CBD5E1"/>
+            <rect x="280" y="108" width="60" height="9" rx="4.5" fill="#E2E8F0"/>
+            <circle cx="288" cy="128" r="4" fill="#5C35C5"/><circle cx="302" cy="128" r="4" fill="#07B0E4"/><circle cx="316" cy="128" r="4" fill="#10B981"/>
+          </g>
+          <polygon points="66,380 72,396 89,397 76,407 81,424 66,414 51,424 56,407 43,397 60,396" fill="#F59E0B"/>
+          <g stroke="#5C35C5" stroke-width="5" stroke-linecap="round"><line x1="352" y1="250" x2="352" y2="270"/><line x1="342" y1="260" x2="362" y2="260"/></g>
+          <circle cx="40" cy="260" r="6" fill="#07B0E4"/><circle cx="366" cy="340" r="5" fill="#F472B6"/>
+        </svg>
+      </div>
       <div class="login-card flex flex-col">
 
         <!-- Parte superior — gradiente con info del curso -->
