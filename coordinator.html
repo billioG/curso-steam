@@ -441,8 +441,18 @@ const COURSE_TO_GROUP = (() => {
         groupRow.insertBefore(groupTh, lastAccessTh);
     });
 
+    const _phDone = new Set();
     COURSES_GROUPED.forEach(c => {
         const groupId = COURSE_TO_GROUP[c.id];
+        // Una ruta colapsada ocupa 1 columna en la fila de rutas: necesita su
+        // celda marcadora en la fila de cursos y en cada docente, o las
+        // columnas de la ruta que sí está abierta quedan corridas.
+        if (groupId && !_phDone.has(groupId)) {
+            _phDone.add(groupId);
+            const ph = document.createElement('th');
+            ph.className = `ph ph-${groupId}`;
+            courseRow.appendChild(ph);
+        }
         const th = document.createElement('th');
         th.textContent = c.title;
         th.className = groupId ? `course-col grp-${groupId}` : 'course-col';
@@ -451,7 +461,8 @@ const COURSE_TO_GROUP = (() => {
 
     // Regla de colapso por ruta, generada para que ninguna ruta quede sin ella.
     const style = document.createElement('style');
-    style.textContent = ROUTE_GROUPS.map(g => `table.collapsed-${g.id} .grp-${g.id}`).join(',') + '{display:none}';
+    style.textContent = ROUTE_GROUPS.map(g => `table.collapsed-${g.id} .grp-${g.id}`).join(',') + '{display:none}'
+        + ROUTE_GROUPS.map(g => `table:not(.collapsed-${g.id}) .ph-${g.id}`).join(',') + '{display:none}';
     document.head.appendChild(style);
     document.getElementById('teachersTable')?.classList.add(...[...ROUTE_GROUPS.map(g => `collapsed-${g.id}`)]);
 })();
@@ -859,12 +870,15 @@ function renderTeachers(list) {
 
     tbody.innerHTML = list.map(p => {
         const certs = countCerts(p);
+        const _phSeen = new Set();
         const courseCells = COURSES_GROUPED.map(c => {
             const groupId = COURSE_TO_GROUP[c.id];
             const cls = groupId ? ` class="grp-${groupId}"` : '';
-            if (hasCertPassed(p, c.id)) return `<td${cls}><span class="badge badge-green" style="font-size:9px">✓</span></td>`;
-            if (hasCourseStarted(p, c))  return `<td${cls}><span class="badge badge-blue" style="font-size:9px">${getCoursePct(p,c)}%</span></td>`;
-            return `<td${cls}><span class="text-slate-300 text-xs">—</span></td>`;
+            let ph = '';
+            if (groupId && !_phSeen.has(groupId)) { _phSeen.add(groupId); ph = `<td class="ph ph-${groupId}"></td>`; }
+            if (hasCertPassed(p, c.id)) return `${ph}<td${cls}><span class="badge badge-green" style="font-size:9px">✓</span></td>`;
+            if (hasCourseStarted(p, c))  return `${ph}<td${cls}><span class="badge badge-blue" style="font-size:9px">${getCoursePct(p,c)}%</span></td>`;
+            return `${ph}<td${cls}><span class="text-slate-300 text-xs">—</span></td>`;
         }).join('');
 
         return `<tr>
