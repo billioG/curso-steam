@@ -5233,7 +5233,7 @@ function showExamResults() {
                     </div>`).join('')}
                 </div>`;
             })()}
-            ${passed ? `<button onclick="requestCertificate('diploma', null, ${pct})" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">📜 Obtener mi diploma de participación · Q10</button>` : ''}
+            ${passed ? `<button onclick="requestCertificate('diploma', null, ${pct})" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">📜 Obtener mi diploma de participación · ${_certPriceLabel('diploma', window._lastExamCourseId || (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam')}</button>` : ''}
             <button onclick="retryExam()" class="w-full py-3 rounded-xl font-bold text-sm" style="border:2px solid #E2E8F0;color:#475569;background:white;margin-bottom:4px">
                 🔄 Reintentar examen
             </button>
@@ -5393,11 +5393,162 @@ async function _refreshPaidCertRefs() {
     } catch (e) {
         console.error('_refreshPaidCertRefs:', e);
     }
+    await _refreshSponsorship();
     _updateCertButtonLabels();
+}
+
+// ── Patrocinios (migrations/patrocinios.sql) ─────────────────────────────
+// Una ONG, fundación o empresa puede cubrir los diplomas y certificados
+// maestros de un grupo de docentes. El docente se identifica por su centro,
+// su correo o un código que canjea en Perfil. Si no corrió la migración, las
+// funciones fallan y todo sigue como antes (el docente paga).
+let _mySponsors = [];      // patrocinadores que cubren a este docente (con su cupo restante)
+let _sponsoredCerts = {};  // 'diploma:abp' → { sponsor_name, logo_url, show_on_certificate }
+
+async function _refreshSponsorship() {
+    if (!currentUser) return;
+    try {
+        const [sp, sc] = await Promise.all([supabase.rpc('my_sponsors'), supabase.rpc('my_sponsored_certs')]);
+        _mySponsors = Array.isArray(sp.data) ? sp.data : [];
+        _sponsoredCerts = {};
+        (Array.isArray(sc.data) ? sc.data : []).forEach(r => { _sponsoredCerts[`${r.cert_type}:${r.ref_id}`] = r; });
+    } catch (e) {
+        _mySponsors = []; _sponsoredCerts = {};
+    }
+    _updateCertButtonLabels();
+    if (typeof _renderSponsorCard === 'function') _renderSponsorCard();
+}
+
+// ¿Quién cubre este certificado ahora? null = lo paga el docente (o ya está pagado)
+function _sponsorFor(certType, refId) {
+    if (_isCertPaid(certType, refId)) return null;
+    return _mySponsors.find(s => certType === 'diploma'
+        ? s.diploma_left > 0 && (!s.courses || s.courses.includes(refId))
+        : s.master_left > 0) || null;
+}
+function _certPriceLabel(certType, refId) {
+    return _sponsorFor(certType, refId) ? 'Gratis' : (certType === 'master' ? 'Q50' : 'Q10');
+}
+
+// Tarjeta de Perfil: «Código de patrocinio» / «Patrocinado por X»
+function _renderSponsorCard() {
+    const title = document.getElementById('sponsorCodeTitle');
+    const sub = document.getElementById('sponsorCodeSub');
+    if (!title || !sub) return;
+    if (!_mySponsors.length) {
+        title.textContent = 'Código de patrocinio';
+        sub.textContent = 'Si una fundación o empresa paga tus diplomas, escribe aquí tu código';
+        return;
+    }
+    const withSeats = _mySponsors.filter(s => s.diploma_left > 0 || s.master_left > 0);
+    if (withSeats.length) {
+        const diplomas = withSeats.some(s => s.diploma_left > 0), masters = withSeats.some(s => s.master_left > 0);
+        title.textContent = 'Patrocinado por ' + withSeats.map(s => s.name).join(' y ');
+        sub.textContent = (diplomas && masters ? 'Tus diplomas y certificados maestros están cubiertos.'
+            : diplomas ? 'Tus diplomas están cubiertos (ya no quedan cupos de certificado maestro).'
+            : 'Tu certificado maestro está cubierto (ya no quedan cupos de diplomas).') + ' Toca para usar otro código.';
+    } else {
+        title.textContent = 'Patrocinio de ' + _mySponsors[0].name;
+        sub.textContent = 'Ya no quedan cupos disponibles: tus certificados vuelven a ser de pago.';
+    }
+}
+
+function openSponsorCodeModal() {
+    document.getElementById('_spCodeSheet')?.remove();
+    const m = document.createElement('div');
+    m.id = '_spCodeSheet';
+    m.className = 'modal-sheet';
+    m.style.zIndex = '9998';
+    m.innerHTML = `<div class="modal-inner">
+        <div class="modal-drag"></div>
+        <h3 class="text-lg font-bold text-slate-800 mb-1">🎁 Código de patrocinio</h3>
+        <p class="text-sm text-slate-500 mb-3">Si una fundación, ONG o empresa pagó tus diplomas, escribe el código que te dieron. Tus certificados serán gratis, siempre que hayas estudiado el curso y aprobado el examen.</p>
+        <input id="_spCodeInput" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="17" placeholder="XXXXX-XXXXX"
+            class="w-full border border-slate-300 rounded-xl p-3 text-sm" style="text-align:center;font-size:1.15rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase">
+        <div id="_spCodeMsg" class="hidden text-sm rounded-xl mt-2" style="padding:10px 12px"></div>
+        <button id="_spCodeBtn" class="w-full mt-3 py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5">Canjear código</button>
+        <button id="_spCodeClose" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Cerrar</button>
+    </div>`;
+    document.body.appendChild(m);
+    const input = m.querySelector('#_spCodeInput'), msg = m.querySelector('#_spCodeMsg'), btn = m.querySelector('#_spCodeBtn');
+    const show = (text, good) => {
+        msg.classList.remove('hidden');
+        msg.style.background = good ? '#DCFCE7' : '#FEF3C7';
+        msg.style.color = good ? '#166534' : '#92400E';
+        msg.textContent = text;
+    };
+    const ERRORS = {
+        invalid: 'Ese código no existe. Revisa que esté bien escrito.',
+        used: 'Ese código ya se usó el máximo de veces. Pide uno nuevo a quien te lo dio.',
+        expired: 'Ese código, o el patrocinio, ya venció.',
+        too_many: 'Hubo demasiados intentos fallidos. Espera una hora e inténtalo otra vez.',
+        auth: 'Inicia sesión para canjear tu código.',
+    };
+    const redeem = async () => {
+        const code = input.value.trim();
+        if (code.replace(/[^A-Za-z0-9]/g, '').length < 8) { show('Escribe el código completo.', false); return; }
+        btn.disabled = true; btn.textContent = 'Revisando…';
+        try {
+            const { data, error } = await supabase.rpc('redeem_sponsor_code', { p_code: code });
+            if (error || !data) throw error || new Error('sin respuesta');
+            if (data.ok) {
+                await _refreshSponsorship();
+                const name = data.sponsor?.name || 'tu patrocinador';
+                show(data.already ? `Ya estabas inscrito con ${name}.` : `✓ ¡Listo! ${name} cubrirá tus diplomas y certificados maestros.`, true);
+                btn.textContent = 'Listo';
+                return;
+            }
+            show(ERRORS[data.error] || 'No pudimos validar el código.', false);
+        } catch (e) {
+            console.error('redeem_sponsor_code:', e);
+            show('No pudimos validar el código ahora. Inténtalo de nuevo en unos minutos.', false);
+        }
+        btn.disabled = false; btn.textContent = 'Canjear código';
+    };
+    btn.addEventListener('click', redeem);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') redeem(); });
+    m.querySelector('#_spCodeClose').addEventListener('click', () => m.remove());
+    setTimeout(() => input.focus(), 200);
+}
+
+// Franja «Con el apoyo de …» para el diploma (vacía si el patrocinador no quiere salir).
+async function _sponsorStripHtml(certType, refId) {
+    const sc = _sponsoredCerts[`${certType}:${refId}`];
+    if (!sc || !sc.show_on_certificate || !sc.sponsor_name) return '';
+    const logo = sc.logo_url ? await _imgToBase64(sc.logo_url) : null;
+    return `<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 18px;padding:12px 16px;border:1px solid #E2E8F0;border-radius:14px;background:#F8FAFC">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#64748B">Con el apoyo de</span>
+      ${logo ? `<img src="${logo}" alt="" style="max-height:38px;max-width:140px;object-fit:contain">` : ''}
+      <strong style="font-size:14px;color:#0F172A">${esc(sc.sponsor_name)}</strong>
+    </div>`;
 }
 
 function _isCertPaid(certType, refId) {
     return _paidCertRefs.has(`${certType}:${refId}`);
+}
+
+// Respuesta del servidor cuando el docente está cubierto por un patrocinador pero no
+// cumple todavía las condiciones. Nunca se le cobra en silencio un certificado
+// que debería ser gratis: se explica qué falta y, si prefiere, puede pagarlo él.
+function _handleSponsoredBlock(data, certType, courseId, score, cid) {
+    if (data.code === 'needs_evidence' && certType === 'diploma') {
+        return _askApplicationEvidence(cid, () => requestCertificate(certType, courseId, score), { sponsorNote: true });
+    }
+    const m = document.createElement('div');
+    m.className = 'modal-sheet';
+    m.style.zIndex = '9999';
+    const canPay = data.code !== 'rate_limited';
+    m.innerHTML = `<div class="modal-inner">
+        <div class="modal-drag"></div>
+        <h3 class="text-lg font-bold text-slate-800 mb-1">🎁 Tu certificado está patrocinado</h3>
+        <p class="text-sm text-slate-600 mb-3">${esc(data.error || 'No pudimos usar el cupo del patrocinador en este momento.')}</p>
+        <button id="_spOk" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5">Entendido</button>
+        ${canPay ? `<button id="_spPay" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Prefiero pagarlo yo (${certType === 'master' ? 'Q50' : 'Q10'})</button>` : ''}
+    </div>`;
+    document.body.appendChild(m);
+    m.querySelector('#_spOk').onclick = () => m.remove();
+    const pay = m.querySelector('#_spPay');
+    if (pay) pay.onclick = () => { m.remove(); requestCertificate(certType, courseId, score, { skipSponsor: true }); };
 }
 
 function _updateCertButtonLabels() {
@@ -5406,7 +5557,7 @@ function _updateCertButtonLabels() {
         const _pid = _selectedMasterPath?.id || _activeMasterPath?.id;
         masterLabel.textContent = (_pid && _isCertPaid('master', _pid))
             ? '⬇ Descargar Certificado Maestro'
-            : 'Obtener Certificado Maestro · Q50';
+            : 'Obtener Certificado Maestro · ' + (_pid ? _certPriceLabel('master', _pid) : 'Q50');
     }
 }
 
@@ -5574,19 +5725,20 @@ function _openEvidenceModal({ title, intro, extraHtml = '', placeholder, minChar
     });
     setTimeout(() => ta.focus(), 200);
 }
-function _askApplicationEvidence(cid, onDone) {
+function _askApplicationEvidence(cid, onDone, opts = {}) {
     const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === cid) : null;
     const commitment = (progress?.dailyMissions?.pinnedCards || []).filter(p => p.courseId === cid && p.commitment).map(p => p.commitment)[0];
     const prev = progress?.dailyMissions?.applicationEvidence?.[cid];
     _openEvidenceModal({
         title: 'Antes de tu diploma: ¿cómo lo aplicaste?',
         intro: `El diploma de «${esc(course?.title || 'este curso')}» certifica que llevaste algo del curso a tu aula. Cuéntalo en pocas líneas: qué hiciste, con qué grupo y qué observaste en tus estudiantes.`,
-        extraHtml: commitment ? `<p class="text-xs mb-3" style="background:#FEF9C3;color:#854D0E;border-radius:10px;padding:8px 10px">Tu compromiso en el curso fue: <strong>${esc(commitment)}</strong></p>` : '',
+        extraHtml: (opts.sponsorNote ? `<p class="text-xs mb-3" style="background:#EEF2FF;color:#3730A3;border-radius:10px;padding:8px 10px">🎁 Para tu diploma patrocinado necesitamos registrar la revisión de tu relato. Si ya lo habías escrito, puedes enviarlo tal cual.</p>` : '')
+            + (commitment ? `<p class="text-xs mb-3" style="background:#FEF9C3;color:#854D0E;border-radius:10px;padding:8px 10px">Tu compromiso en el curso fue: <strong>${esc(commitment)}</strong></p>` : ''),
         placeholder: 'Ej.: Con mi grupo de 4.º hice la actividad de... Primero..., después... Noté que...',
         minChars: _EVIDENCE_MIN_CHARS,
         initialText: prev?.text || '',
         laterLabel: 'Todavía no lo aplico — lo haré y vuelvo',
-        payload: { kind: 'diploma', courseTitle: course?.title || cid, commitment: commitment || '' },
+        payload: { kind: 'diploma', courseId: cid, courseTitle: course?.title || cid, commitment: commitment || '' },
         onApproved: (text, r) => {
             if (!progress.dailyMissions) progress.dailyMissions = {};
             if (!progress.dailyMissions.applicationEvidence) progress.dailyMissions.applicationEvidence = {};
@@ -5597,7 +5749,7 @@ function _askApplicationEvidence(cid, onDone) {
     });
 }
 
-async function requestCertificate(certType, courseId, score) {
+async function requestCertificate(certType, courseId, score, opts = {}) {
     if (!currentUser) { showToast('Inicia sesión para continuar.', 'error'); return; }
 
     // Si ya hay una versión nueva de la app esperando, NO dejar que el pago
@@ -5657,9 +5809,20 @@ async function requestCertificate(certType, courseId, score) {
         const res = await fetch(`${SUPABASE_URL}/functions/v1/create-certificate-checkout`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ cert_type: certType, ref_id: refId, course_id: certType === 'diploma' ? cid : null, score: score || null }),
+            body: JSON.stringify({ cert_type: certType, ref_id: refId, course_id: certType === 'diploma' ? cid : null, score: score || null, use_sponsor: opts.skipSponsor ? false : undefined }),
         });
         const data = await res.json();
+        // Lo cubre un patrocinador: el servidor ya validó y registró el pago (monto 0)
+        if (res.ok && data.sponsored) {
+            await _refreshPaidCertRefs();
+            showToast('🎁 ' + (data.sponsor?.name ? `${data.sponsor.name} cubre tu certificado.` : 'Un patrocinador cubre tu certificado.'), 'success');
+            if (certType === 'master') return generateMasterCertificate();
+            return generateCertificateFromExam(score, cid);
+        }
+        // Está cubierto pero aún no cumple alguna condición: se le explica qué falta
+        if (!res.ok && data.sponsored) {
+            return _handleSponsoredBlock(data, certType, courseId, score, cid);
+        }
         if (!res.ok || !data.checkout_url) {
             if (data.already_paid) {
                 if (certType === 'master') return generateMasterCertificate();
@@ -5792,9 +5955,10 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
     const courseDesc = courseDescs[_course.id] || `Por haber completado satisfactoriamente el curso <strong>${esc(courseTitle)}</strong>`;
 
     // Intentar cargar imágenes reales; si no existen, usar fallback SVG
-    const [firmaSrc, certSigs] = await Promise.all([
+    const [firmaSrc, certSigs, sponsorHtml] = await Promise.all([
         _imgToBase64('firma.png'),
-        _loadCertSignaturesForUser()
+        _loadCertSignaturesForUser(),
+        _sponsorStripHtml('diploma', _cid2)
     ]);
 
     const logoHtml = `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:${courseColor}">Yo Aprendo</span>`;
@@ -5864,6 +6028,7 @@ async function generateCertificateFromExam(percentage, overrideCourseId) {
       <div class="meta-pill"><div class="label">Horas de estudio</div><div class="value">${courseDuration}</div></div>
       <div class="meta-pill"><div class="label">Emisión</div><div class="value">${fecha}</div></div>
     </div>
+    ${sponsorHtml}
     <div class="cert-footer">
       <div class="verify-block">
         ${certCode ? `<img class="verify-qr" src="${qrImg}" alt="QR de verificación">
@@ -6304,7 +6469,7 @@ function _checkMasterCert() {
                     const isPaid = _isCertPaid('diploma', c.id);
                     const certBtnHtml = isPaid
                         ? `<button onclick="requestCertificate('diploma','${c.id}',${s})" style="flex-shrink:0;background:#16A34A;color:white;font-size:10px;font-weight:800;padding:6px 10px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap">⬇ Descargar</button>`
-                        : `<button onclick="requestCertificate('diploma','${c.id}',${s})" style="flex-shrink:0;background:#5C35C5;color:white;font-size:10px;font-weight:800;padding:6px 10px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap">Obtener · Q10</button>`;
+                        : `<button onclick="requestCertificate('diploma','${c.id}',${s})" style="flex-shrink:0;background:#5C35C5;color:white;font-size:10px;font-weight:800;padding:6px 10px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap">Obtener · ${_certPriceLabel('diploma', c.id)}</button>`;
                     // Fecha real de aprobación (ya la guardamos por curso) en
                     // vez de solo el puntaje — igual que "Aprobado el [fecha]"
                     // en otras plataformas.
@@ -6637,9 +6802,10 @@ async function generateMasterCertificate() {
     const _issueYear  = _issueDate.getFullYear();
     const _issueMonth = _issueDate.getMonth() + 1;
 
-    const [firmaSrc, masterSigs] = await Promise.all([
+    const [firmaSrc, masterSigs, sponsorHtml] = await Promise.all([
         _imgToBase64('firma.png'),
-        _loadCertSignaturesForUser()
+        _loadCertSignaturesForUser(),
+        _path?.id ? _sponsorStripHtml('master', _path.id) : ''
     ]);
     const logoHtml = `<span style="font-family:Arial Black,sans-serif;font-size:16px;font-weight:900;color:#7C3AED">Yo Aprendo</span>`;
 
@@ -6739,6 +6905,7 @@ async function generateMasterCertificate() {
     </div>
     <p class="courses-label">Cursos acreditados en el programa</p>
     <div class="courses-grid">${courseBadges}</div>
+    ${sponsorHtml}
     <div class="cert-footer">
       <div class="verify-block">
         ${certCode ? `<img src="${qrImg}" alt="QR" style="width:64px;height:64px;border-radius:8px">
@@ -8580,7 +8747,7 @@ async function submitPortfolio() {
         const res = await fetch(EVALUATE_PORTFOLIO_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_pfSession?.access_token || SUPABASE_ANON_KEY}` },
-            body: JSON.stringify({ entregables, examScore50 }),
+            body: JSON.stringify({ entregables, examScore50, pathId }),
         });
 
         if (!res.ok) throw new Error('Error en evaluación: ' + res.status);

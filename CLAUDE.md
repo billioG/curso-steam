@@ -55,6 +55,7 @@ CSS es estático, no JIT en el navegador como el CDN viejo).
 ## Convenciones de código
 - IDs de tarjetas por curso: STEAM=numérico, ABP=`abp-`, DT=`dt-`, EV=`ev-`, TE=`te-`, Storytelling=`st-`. Los demás cursos usan ids numéricos en `data.js` que `app.js` normaliza al cargar a `<courseId>-<n>` (así se guardan en `completed_cards`); los ids solo deben ser únicos dentro de su curso.
 - `totalCards` de cada curso vive en `data.js` como fuente única. `admin.js` (`STATIC_COURSES`) y `coordinator.html` (`COURSES`) lo recalculan solos en runtime porque ambos cargan `data.js` — no hay nada que actualizar a mano ahí. `supabase-functions/weekly-stats` es una Edge Function Deno aislada que no puede cargar `data.js`, así que mantiene su propia copia de `totalCards`: después de agregar o quitar tarjetas en `data.js`, corré `node scripts/sync-course-totals.mjs` para regenerarla (o `--check` para verificar sin escribir, útil antes de un deploy).
+- `supabase-functions/create-certificate-checkout` también lleva copia de los ids de tarjeta de `data.js` y de las rutas por defecto de `app.js` (para validar los certificados patrocinados). Después de cambiar tarjetas, cursos o rutas por defecto, corré `node scripts/sync-cert-rules.mjs` (o `--check`) y re-desplegá la función.
 - `examScores` (objeto por courseId) es el campo principal; `examScore` (singular) es legacy solo para STEAM
 - Dropdowns dentro de contenedores `overflow:auto` deben usar `position:fixed` + `getBoundingClientRect()`
 
@@ -86,3 +87,15 @@ cliente) — un cambio de arquitectura grande que toca los 26 cursos,
 ahora — el valor económico en juego (Q10-Q50 por certificado) no justifica
 el esfuerzo. Si en el futuro aparece evidencia de abuso real (certificados
 sospechosos, patrones raros en `examScores`), revisar esa decisión.
+
+**Excepción: certificados patrocinados** (`migrations/patrocinios.sql`). Cuando una
+fundación paga el certificado, el fraude le cuesta dinero a un tercero, así que
+esos certificados NO se entregan solo con lo que dice el navegador:
+`create-certificate-checkout` valida en el servidor el examen (≥ 70), el 80 % de
+las tarjetas (ids exactos) y una revisión de IA del relato (diploma) o del
+portafolio (maestro) que registran `evaluate-evidence` y `evaluate-portfolio`
+en `ai_reviews`. La nota del examen y las tarjetas siguen siendo escritas por
+el navegador, por eso la revisión de IA del servidor es la barrera que no se
+puede falsificar desde la consola. Los certificados de pago con Recurrente
+siguen como antes (riesgo aceptado). Ver «Patrocinios» en
+`supabase-functions/SETUP.md`.

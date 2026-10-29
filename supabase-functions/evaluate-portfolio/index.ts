@@ -1,6 +1,8 @@
 // Edge Function: evaluate-portfolio
 // Evalúa el portafolio de práctica docente usando Groq (Llama 3.3)
-// Recibe: { items: [{label, text}], examScore50: number }   ← formato dinámico por ruta
+// Recibe: { items: [{label, text}], examScore50: number, pathId?: string }   ← formato dinámico por ruta
+// Con pathId, el total (0-50) se REGISTRA en la tabla ai_reviews: el certificado maestro
+// patrocinado (create-certificate-checkout) exige esa revisión del servidor.
 //   (compat. hacia atrás: { entregables: {steam,abp,dt,eval,tipos}, examScore50 })
 // Devuelve: { scores: number[], feedback: string[], total: number (0-50), summary, combined, passed }
 // El total se normaliza SIEMPRE a 50 puntos, sin importar cuántos entregables tenga la ruta.
@@ -11,6 +13,7 @@ const GROQ_API_KEY    = Deno.env.get('GROQ_API_KEY')!;
 const GROQ_MODEL      = 'openai/gpt-oss-120b';
 const SUPABASE_URL    = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON   = Deno.env.get('SUPABASE_ANON_KEY')!;
+const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -133,6 +136,14 @@ Responde con este objeto JSON. El arreglo "items" debe tener EXACTAMENTE ${n} el
     const maxSum = n * 10;
     const total  = maxSum > 0 ? Math.round((rawSum / maxSum) * 50) : 0; // normalizado a /50
     const combined = Math.min(100, (examScore50 || 0) + total);
+
+    // Registro en el servidor (ver patrocinios.sql). Si falla, el docente igual ve su resultado.
+    const pathId = String(body.pathId || '').trim();
+    if (/^[a-z0-9-]{1,60}$/.test(pathId)) {
+      const { error: logErr } = await createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+        .from('ai_reviews').insert({ user_id: user.id, kind: 'portfolio', ref_id: pathId, approved: combined >= 85, score: total });
+      if (logErr) console.error('ai_reviews (portfolio):', logErr.message);
+    }
 
     return new Response(JSON.stringify({
       scores,

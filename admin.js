@@ -3302,6 +3302,7 @@ function switchView(view) {
     if (view==='centros')         { loadSchools(); loadCoordinators(); }
     if (view==='notificaciones')  { loadAnnouncement(); loadPushPanel(); loadBroadcastHistory(); }
     if (view==='firmas')          loadSignatures();
+    if (view==='patrocinios')     loadSponsors();
 }
 
 function closeSidebar() {
