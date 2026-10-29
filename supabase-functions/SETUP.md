@@ -495,3 +495,79 @@ relato con `pii = true`.
 **Moderación:** un relato con 2 reportes distintos se oculta solo
 (`hidden = true`). Los admins ven y pueden ocultar o borrar cualquier relato
 desde el SQL Editor (`UPDATE shared_applications SET hidden = true WHERE id = …`).
+
+
+# Patrocinios: una fundación o empresa paga los diplomas
+
+Una ONG, fundación o empresa paga los diplomas y los certificados maestros de
+un grupo de docentes, y ellos los obtienen **sin pagar**. Los docentes se
+identifican por **centro educativo**, por **correo** o por un **código** que
+canjean en Perfil → «Código de patrocinio».
+
+## Paso 1 — Ejecutar la migración SQL
+
+SQL Editor → pega `migrations/patrocinios.sql`. Crea los patrocinadores, sus
+cupos, centros, correos y códigos, las revisiones de IA hechas por el servidor
+(`ai_reviews`), la bitácora de alertas y el bucket público `sponsor-logos`.
+Es seguro de re-ejecutar. Solo el **super admin** (`user_roles` con
+`tenant_id` nulo y sin `school_id`) puede gestionar patrocinios.
+
+## Paso 2 — Re-desplegar 3 funciones
+
+Pega el `index.ts` actualizado de cada una (no hay secrets nuevos):
+
+- `create-certificate-checkout` — decide si un certificado lo cubre un
+  patrocinador y, antes de gastar un cupo, valida en el servidor las
+  condiciones de abajo.
+- `evaluate-evidence` — ahora registra en `ai_reviews` la revisión del relato
+  del diploma (recibe `courseId`).
+- `evaluate-portfolio` — ahora registra en `ai_reviews` la revisión del
+  portafolio (recibe `pathId`).
+
+`create-certificate-checkout` lleva copia de los ids de tarjeta de `data.js` y
+de las rutas por defecto de `app.js`, porque Deno no puede cargarlos. Después de
+cambiar tarjetas, cursos o rutas por defecto, corre
+`node scripts/sync-cert-rules.mjs` (o `--check`) y vuelve a desplegarla.
+
+## Paso 3 — Crear el primer patrocinador
+
+Panel admin → **Patrocinios** → «Nuevo patrocinador»: nombre, logo, cupos de
+diplomas y de certificados maestros, vigencia, si sale en el diploma y si sus
+reportes llevan nombres. Luego «A quiénes cubre»: marca centros, pega correos
+y/o genera códigos (se descargan en CSV para repartirlos).
+
+## Condiciones antifraude (las valida el servidor)
+
+**Diploma patrocinado:** examen del curso con 70 % o más; al menos el 80 % de
+las tarjetas del curso (ids exactos de `data.js`: ids inventados no suman); y
+un relato de aplicación en el aula **aprobado por la IA y registrado por el
+servidor**. **Certificado maestro:** todos los cursos de la ruta aprobados y con
+el 80 % de las tarjetas, examen maestro y portafolio revisado por la IA, con
+examen × 0,5 + portafolio ≥ 85. Además: el cupo se descuenta de forma atómica
+una sola vez por certificado, máximo 5 certificados patrocinados por docente
+cada 24 horas, y 10 códigos fallidos por hora.
+
+**Alertas** (no bloquean; quedan en el reporte interno): cuenta de menos de
+3 días, poco tiempo de uso registrado para las tarjetas estudiadas (menos de
+20 s por tarjeta) y varios certificados en 24 horas.
+
+**Límite que sigue vigente:** las notas de examen y las tarjetas completadas las
+escribe el navegador (ver «Integridad de `progress`» en `CLAUDE.md`). Para que
+un certificado patrocinado salga, además hay que pasar la revisión de la IA del
+servidor, que no se puede falsificar desde el navegador. Si ves un caso raro:
+Reporte → «Revocar» devuelve el cupo y vuelve a bloquear el certificado (el
+código de verificación ya emitido sigue existiendo: bórralo de `certificates`
+si quieres que deje de verificarse).
+
+## Probar
+
+- `node scripts/test-cert-rules.mjs` — reglas antifraude (no necesita red).
+- `migrations/tests/patrocinios.test.sql` — funciones y RLS en un Postgres de
+  prueba (instrucciones al inicio del archivo).
+- A mano: crea un patrocinador con un código de 1 uso, cánjealo con una cuenta
+  de prueba que haya aprobado un curso y pide el diploma: debe decir «Gratis»,
+  salir con «Con el apoyo de …» y el cupo debe bajar en el panel.
+
+**Antes de firmar con una fundación:** pide su permiso por escrito para
+publicar el logo; define si recibe nombres de docentes y pide el consentimiento
+de ellos; y acuerda qué pasa con los cupos que no se usen al vencer.

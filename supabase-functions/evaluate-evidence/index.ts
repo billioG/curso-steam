@@ -2,7 +2,9 @@
 // Revisa con Groq (Llama 3.3) la evidencia de aplicación en el aula que escribe
 // el docente, para que "Lo apliqué en clase" y el requisito del diploma no se
 // cumplan escribiendo cualquier cosa.
-// Recibe: { kind: 'card' | 'diploma', courseTitle, cardTitle?, cardContent?, commitment?, text }
+// Recibe: { kind: 'card' | 'diploma', courseId?, courseTitle, cardTitle?, cardContent?, commitment?, text }
+// Con kind='diploma' y courseId, el resultado se REGISTRA en la tabla ai_reviews: el
+// diploma patrocinado (create-certificate-checkout) exige esa revisión del servidor.
 // Devuelve: { approved, score (0-10), feedback, missing: string[], pii: boolean }
 // `pii` avisa si el texto trae datos personales (nombres completos, teléfonos, correos…);
 // el cliente no comparte con otros docentes un relato con pii=true.
@@ -15,6 +17,7 @@ const GROQ_API_KEY  = Deno.env.get('GROQ_API_KEY')!;
 const GROQ_MODEL    = 'openai/gpt-oss-120b';
 const SUPABASE_URL  = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
+const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -125,6 +128,15 @@ Responde con este objeto JSON:
     // Respaldo en código por si el modelo pasa por alto un dato evidente
     const piiRegex = /[\w.+-]+@[\w-]+\.[\w.]+|(?:\+?\d[\s-]?){8,}/;
     const pii = ev.datos_personales === true || piiRegex.test(text);
+
+    // Registro en el servidor de la revisión del relato del diploma (ver patrocinios.sql).
+    // Si falla, la respuesta al docente no cambia; el diploma patrocinado le pedirá el relato otra vez.
+    const courseId = String(body.courseId || '').trim();
+    if (kind === 'diploma' && /^[a-z0-9-]{1,60}$/.test(courseId)) {
+      const { error: logErr } = await createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+        .from('ai_reviews').insert({ user_id: user.id, kind: 'diploma', ref_id: courseId, approved, score, chars: text.length });
+      if (logErr) console.error('ai_reviews (diploma):', logErr.message);
+    }
 
     return json({
       approved,
