@@ -230,6 +230,9 @@
         <button data-view="firmas" class="nav-btn nav-item">
             <i class="fas fa-signature"></i><span>Firmas</span>
         </button>
+        <button data-view="patrocinios" class="nav-btn nav-item">
+            <i class="fas fa-hand-holding-heart"></i><span>Patrocinios</span>
+        </button>
         <a href="reclutamiento.html" class="nav-item" style="text-decoration:none">
             <i class="fas fa-user-tie"></i><span>Reclutamiento</span>
         </a>
@@ -1000,6 +1003,24 @@
             </div>
         </div>
 
+        <!-- ═══ PATROCINIOS ═══ -->
+        <div id="patrociniosView" class="view">
+            <div class="mb-6 flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">Patrocinios</h1>
+                    <p class="text-sm text-slate-400 mt-0.5">Una fundación, ONG o empresa paga los diplomas y certificados maestros de un grupo de docentes</p>
+                </div>
+                <button onclick="openSponsorEditor()" class="btn-primary text-sm"><i class="fas fa-plus"></i> Nuevo patrocinador</button>
+            </div>
+            <div class="max-w-4xl space-y-4">
+                <div class="card bg-indigo-50 border-indigo-100">
+                    <p class="font-semibold text-indigo-900 text-sm mb-1"><i class="fas fa-shield-halved mr-1"></i>Cómo se cuida cada cupo</p>
+                    <p class="text-xs text-indigo-800 leading-relaxed">Antes de entregar un certificado gratis, el servidor comprueba que el docente <strong>aprobó el examen</strong> (70 % o más), completó al menos el <strong>80 % de las tarjetas</strong> del curso y que una IA aprobó su <strong>relato de aplicación en el aula</strong> (para el certificado maestro: todos los cursos de la ruta, el examen maestro y el portafolio revisado por la IA, con 85 de 100). El cupo se descuenta una sola vez por certificado, y cada caso con señales raras queda marcado en el reporte.</p>
+                </div>
+                <div id="sponsorsList" class="space-y-4"></div>
+            </div>
+        </div>
+
         <!-- ═══ CONFIGURACIÓN ═══ -->
         <div id="settingsView" class="view">
             <div class="mb-6">
@@ -1244,5 +1265,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="admin.js"></script>
+<script src="patrocinios.js"></script>
 </body>
 </html>
