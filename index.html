@@ -2437,6 +2437,69 @@
                 <p class="text-xs text-slate-400 mt-1">Cómo ha crecido tu formación con el tiempo</p>
             </div>
 
+            <!-- ══ Certificación: Examen → Certificados → Recursos ══ -->
+            <div id="certificacionSection" class="perfil-section">
+                <button class="perfil-section-toggle" onclick="togglePerfilSection(this)">
+                    <span class="perfil-section-label"><span class="perfil-section-label-title">Mis certificados</span><span class="perfil-section-label-sub">Diplomas, examen y recursos descargables</span></span>
+                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="perfil-section-body">
+                    <div id="myDiplomasBox" class="hidden rounded-2xl p-4 mb-4" style="background:white;border:1.5px solid #BBF7D0"></div>
+                    <button id="examBtn"
+                        class="w-full rounded-2xl p-4 mb-5 flex items-center gap-3 text-left shadow-sm active:scale-95 transition"
+                        style="background:#1E4976">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
+                            <span data-icon="clipboard" style="display:inline-flex;width:20px;height:20px;color:white"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <p class="font-black text-white text-sm truncate" id="examBtnCourseName">Examen Final</p>
+                                <span id="examBtnPassedBadge" class="hidden text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0" style="background:rgba(255,255,255,.25);color:white"></span>
+                            </div>
+                            <p class="text-white/70 text-xs mt-0.5" id="examBtnSubtitle">Pon a prueba lo aprendido</p>
+                        </div>
+                        <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:white"></span>
+                    </button>
+
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Certificados</p>
+                    <div id="certCourseStatus" class="mb-3 space-y-1.5"></div>
+                    <p id="certPlaceholder" class="text-xs text-slate-400 px-1 mb-2">Aprueba el examen de cualquier curso para obtener tu certificado.</p>
+                    <div class="perfil-items-grid mb-5">
+                        <div id="masterPathSelector" class="hidden md:col-span-2 mb-1"></div>
+                        <div id="masterScoreSummary" class="hidden md:col-span-2 mb-1"></div>
+                        <button id="masterExamBtn"
+                            class="hidden w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                            style="background:#1E4976" onclick="startMasterExam()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                            <span>Parte 1 · Examen de conocimiento (50 pts)</span>
+                        </button>
+                        <button id="masterPortfolioBtn"
+                            class="hidden w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                            style="background:#16A34A" onclick="showPortfolioModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            <span>Parte 2 · Portafolio de práctica (50 pts)</span>
+                        </button>
+                        <button id="masterPortfolioResultsBtn"
+                            class="hidden w-full py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 border border-green-200"
+                            style="background:#f0fdf4;color:#15803d" onclick="showPortfolioModal()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Ver retroalimentación del portafolio
+                        </button>
+                        <button id="masterCertBtn"
+                            class="hidden md:col-span-2 w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
+                            style="background:#5C35C5" onclick="requestCertificate('master', null, null)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                            <span id="masterCertBtnLabel">Obtener Certificado Maestro · Q50</span>
+                        </button>
+                    </div><!-- /perfil-items-grid cert -->
+
+                    <div id="resourcesSection" class="hidden">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Recursos descargables</p>
+                        <div id="courseResourcesSection"></div>
+                    </div>
+                </div><!-- /perfil-section-body certificacion -->
+            </div>
+
             <!-- Mi aula: lo que el docente aplicó, mes a mes -->
             <div class="rounded-2xl p-4 mb-5" style="background:white;border:1.5px solid #E0E7FF">
                 <p class="text-xs font-bold mb-2" style="color:#4338CA">🍎 Mi aula</p>
@@ -2601,67 +2664,6 @@
                 <div id="badgesGrid" class="badges-grid"></div>
             </div>
 
-            <!-- ══ Certificación: Examen → Certificados → Recursos ══ -->
-            <div id="certificacionSection" class="perfil-section">
-                <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
-                    <span class="perfil-section-label"><span class="perfil-section-label-title">Certificación</span><span class="perfil-section-label-sub">Examen, diplomas y recursos descargables</span></span>
-                    <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <div class="perfil-section-body collapsed">
-                    <button id="examBtn"
-                        class="w-full rounded-2xl p-4 mb-5 flex items-center gap-3 text-left shadow-sm active:scale-95 transition"
-                        style="background:#1E4976">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.15)">
-                            <span data-icon="clipboard" style="display:inline-flex;width:20px;height:20px;color:white"></span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2">
-                                <p class="font-black text-white text-sm truncate" id="examBtnCourseName">Examen Final</p>
-                                <span id="examBtnPassedBadge" class="hidden text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0" style="background:rgba(255,255,255,.25);color:white"></span>
-                            </div>
-                            <p class="text-white/70 text-xs mt-0.5" id="examBtnSubtitle">Pon a prueba lo aprendido</p>
-                        </div>
-                        <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:white"></span>
-                    </button>
-
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Certificados</p>
-                    <div id="certCourseStatus" class="mb-3 space-y-1.5"></div>
-                    <p id="certPlaceholder" class="text-xs text-slate-400 px-1 mb-2">Aprueba el examen de cualquier curso para obtener tu certificado.</p>
-                    <div class="perfil-items-grid mb-5">
-                        <div id="masterPathSelector" class="hidden md:col-span-2 mb-1"></div>
-                        <div id="masterScoreSummary" class="hidden md:col-span-2 mb-1"></div>
-                        <button id="masterExamBtn"
-                            class="hidden w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                            style="background:#1E4976" onclick="startMasterExam()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                            <span>Parte 1 · Examen de conocimiento (50 pts)</span>
-                        </button>
-                        <button id="masterPortfolioBtn"
-                            class="hidden w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                            style="background:#16A34A" onclick="showPortfolioModal()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                            <span>Parte 2 · Portafolio de práctica (50 pts)</span>
-                        </button>
-                        <button id="masterPortfolioResultsBtn"
-                            class="hidden w-full py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 border border-green-200"
-                            style="background:#f0fdf4;color:#15803d" onclick="showPortfolioModal()">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                            Ver retroalimentación del portafolio
-                        </button>
-                        <button id="masterCertBtn"
-                            class="hidden md:col-span-2 w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md"
-                            style="background:#5C35C5" onclick="requestCertificate('master', null, null)">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-                            <span id="masterCertBtnLabel">Obtener Certificado Maestro · Q50</span>
-                        </button>
-                    </div><!-- /perfil-items-grid cert -->
-
-                    <div id="resourcesSection" class="hidden">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Recursos descargables</p>
-                        <div id="courseResourcesSection"></div>
-                    </div>
-                </div><!-- /perfil-section-body certificacion -->
-            </div>
         </div>
 
         <!-- ============================================================ -->
