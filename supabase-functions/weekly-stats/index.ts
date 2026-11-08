@@ -222,7 +222,29 @@ function buildEmail(p: any, unsubUrl: string): string {
 </html>`;
 }
 
+// GUARD:START (idéntico en las funciones de cron — scripts/test-cron-guard.mjs lo verifica)
+// Solo pg_cron debe llamar a esta función. El gateway de Supabase acepta cualquier
+// JWT válido, incluida la anon key (que es pública), así que sin esta comprobación
+// cualquiera podría dispararla y enviar correos o notificaciones masivas.
+// Se acepta la service role key como Bearer (como la manda pg_cron) o, si se
+// configura el secret CRON_SECRET, ese valor en el header x-cron-secret.
+function sameSecret(a: string, b: string): boolean {
+  if (!a || !b || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+function isCronCall(req: Request): boolean {
+  const bearer = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (sameSecret(bearer, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '')) return true;
+  return sameSecret(req.headers.get('x-cron-secret') || '', Deno.env.get('CRON_SECRET') ?? '');
+}
+const unauthorized = () =>
+  new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+// GUARD:END
+
 Deno.serve(async (req) => {
+  if (!isCronCall(req)) return unauthorized();
   try {
     const sb = createClient(
       Deno.env.get('SUPABASE_URL')!,

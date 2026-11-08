@@ -637,3 +637,29 @@ Dashboard → Edge Functions → Secrets:
 - Un docente que pagó pero no ve el diploma: confirma que su pago esté
   `paid`; si Recurrente lo muestra cobrado y aquí sigue `pending`, reenvía el
   evento desde el panel de Recurrente.
+
+
+# Funciones de cron: candado de acceso
+
+`daily-push-reminder`, `daily-reminders`, `weekly-stats` y
+`application-followup-check` solo deben llamarlas `pg_cron` (o tú, a mano). El
+gateway de Supabase acepta **cualquier JWT válido, incluida la anon key**
+(que es pública), así que antes cualquiera podía dispararlas y enviar correos
+o notificaciones masivas desde tu cuenta. Ahora cada función responde `401`
+salvo que la llamada traiga:
+
+- la **service role key** como `Authorization: Bearer ...` (así la manda el SQL de
+  los pasos de cron de arriba, sin cambios), **o**
+- el header `x-cron-secret` con el valor del secret `CRON_SECRET` (opcional; úsalo
+  si tu proyecto usa llaves nuevas `sb_secret_...` y el `Bearer` del cron ya no
+  coincide con la service role key que ve la función).
+
+**Tras desplegar las 4 funciones**, comprueba que el cron sigue funcionando
+(Edge Functions → logs, o corre el `net.http_post` del cron a mano: debe dar 200).
+Prueba el candado: una llamada con la anon key debe dar 401.
+
+Las reglas se verifican con `node scripts/test-cron-guard.mjs`.
+
+`new-user-alert` la llama el webhook de base de datos de Supabase y no se tocó:
+solo escribe al admin. Si en el panel de Webhooks puedes configurar un header
+propio, conviene agregarle un secreto compartido.
