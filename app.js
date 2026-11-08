@@ -5050,7 +5050,49 @@ function _drawExamQuestions(course, cid) {
     return drawn.map(_shuffleQuestionOptions);
 }
 
-function startExam() {
+// ── Examen calificado en el servidor (Edge Function `exam`) ──────────────────
+// El servidor sortea las preguntas, guarda la nota y es quien decide si se aprobó;
+// el navegador ya no conoce la respuesta correcta de lo que se le sortea.
+const EXAM_URL = `${SUPABASE_URL}/functions/v1/exam`;
+window._examServer = null;   // { attemptId } mientras hay un intento calificado por el servidor
+window._examLocal = false;   // true si no hubo conexión con el servidor: examen de práctica
+
+async function _examApi(action, payload) {
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return { ok: false, status: 401, data: { error: 'Inicia sesión para presentar el examen.' } };
+        const res = await fetch(EXAM_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+            body: JSON.stringify({ action, ...payload }),
+        });
+        let data = {};
+        try { data = await res.json(); } catch (e) {}
+        return { ok: res.ok && data.ok, status: res.status, data };
+    } catch (e) {
+        return { ok: false, status: 0, unreachable: true, data: { error: 'Sin conexión con el servidor.' } };
+    }
+}
+
+// Prepara un intento: del servidor si responde; si no hay conexión (o la función aún
+// no está desplegada) se cae a un examen de PRÁCTICA local que no habilita certificados.
+async function _beginExamAttempt(cid) {
+    const r = await _examApi('start', { courseId: cid });
+    if (r.ok) {
+        window._examServer = { attemptId: r.data.attemptId };
+        window._examLocal = false;
+        examQuestions = r.data.questions.map(q => ({ text: q.text, options: q.options }));
+        return true;
+    }
+    const canFallback = r.unreachable || r.status === 404 || r.status >= 500;
+    if (!canFallback) { showToast(r.data?.error || 'No se pudo iniciar el examen.', 'error'); return false; }
+    window._examServer = null;
+    window._examLocal = true;
+    examQuestions = _drawExamQuestions(getActiveCourseData(), cid);
+    return true;
+}
+
+async function startExam() {
     // Verificar progreso usando los IDs reales de las tarjetas del curso activo
     const totalCards = modulesData.reduce((acc, m) => acc + m.cards.length, 0);
     const allCardIds = modulesData.flatMap(m => m.cards.map(c => String(c.id)));
@@ -5089,10 +5131,11 @@ function startExam() {
         showToast('Este curso aún no tiene examen final disponible', 'warning');
         return;
     }
+    showToast('Preparando tu examen…');
+    if (!(await _beginExamAttempt(_examCid))) return;
     stopCardTracking();
     examActive = true;
     examCurrentQ = 0;
-    examQuestions = _drawExamQuestions(getActiveCourseData(), _examCid);
     saveProgress();
     examAnswers = new Array(examQuestions.length).fill(null);
     switchTab('home');
@@ -5224,12 +5267,36 @@ function goToNextExamCard() {
     }
 }
 
-function showExamResults() {
+async function showExamResults() {
     const exam = getCourseExam(getActiveCourseData());
-    let correct = 0;
-    examQuestions.forEach((q, i) => { if (examAnswers[i] === q.correct) correct++; });
-    const pct = Math.round((correct / examQuestions.length) * 100);
-    const passed = pct >= exam.passingScore;
+    let correct = 0, pct = 0, passed = false, passingScore = exam.passingScore, serverDate = null, notice = '';
+    let total = examQuestions.length, missedList = [];
+    if (window._examServer) {
+        // Calificación en el servidor: se envían las respuestas y vuelve la nota.
+        document.getElementById('cardContainer').innerHTML = `<div id="activeCard" class="content-card"><div class="card-body" style="text-align:center;padding:48px 20px"><p style="font-size:2rem">📝</p><p style="font-weight:800;color:#1E293B;margin-top:8px">Calificando tu examen…</p></div></div>`;
+        const r = await _examApi('submit', { attemptId: window._examServer.attemptId, answers: examAnswers });
+        if (!r.ok) {
+            const msg = r.data?.error || 'No se pudo calificar el examen.';
+            const again = r.unreachable || r.status >= 500;
+            document.getElementById('cardContainer').innerHTML = `<div id="activeCard" class="content-card"><div class="card-body" style="text-align:center;padding:32px 20px">
+                <p style="font-size:2rem">⚠️</p><p style="font-weight:800;color:#1E293B;margin:8px 0">${esc(msg)}</p>
+                ${again ? `<button onclick="showExamResults()" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">Reintentar envío</button>` : `<button onclick="retryExam()" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">Empezar un examen nuevo</button>`}
+                <button onclick="exitExam()" style="color:#94A3B8;font-size:.75rem;padding:6px;background:none;border:none;cursor:pointer;width:100%">Volver al curso</button></div></div>`;
+            return;
+        }
+        const d = r.data;
+        window._examServer = null;   // intento consumido
+        correct = d.correct; pct = d.pct; passed = !!d.passed; passingScore = d.passingScore; total = d.total;
+        serverDate = d.date; missedList = d.missed || []; notice = d.message || '';
+        if (passed && typeof d.bestScore === 'number') pct = Math.max(pct, d.bestScore);
+    } else {
+        // Sin conexión con el servidor: examen de práctica, no habilita certificados
+        examQuestions.forEach((q, i) => { if (examAnswers[i] === q.correct) correct++; });
+        pct = Math.round((correct / examQuestions.length) * 100);
+        passed = pct >= exam.passingScore;
+        missedList = examQuestions.filter((q, i) => examAnswers[i] !== q.correct).map(q => ({ text: q.text, explanation: q.explanation }));
+        notice = window._examLocal ? 'No hubo conexión con el servidor: este resultado es de práctica y no habilita el diploma. Cuando tengas conexión, vuelve a presentar el examen.' : '';
+    }
 
     if (passed && !progress.badges.includes("examPass")) unlockBadge("examPass");
     if (passed) {
@@ -5249,8 +5316,8 @@ function showExamResults() {
         // debe mostrar cuándo se aprobó ESE curso, no la última vez que se
         // aprobó CUALQUIER examen (que es lo que examDate por sí sola dice).
         if (!progress.dailyMissions.examDates) progress.dailyMissions.examDates = {};
-        progress.dailyMissions.examDates[_cid] = localDateStr();
-        progress.dailyMissions.examDate = localDateStr(); // legado, se mantiene por compatibilidad
+        progress.dailyMissions.examDates[_cid] = serverDate || localDateStr();
+        progress.dailyMissions.examDate = serverDate || localDateStr(); // legado, se mantiene por compatibilidad
         window._lastExamScore = pct;
         window._lastExamCourseId = _cid;
         // Refrescar de inmediato la lista de certificados (aparece el botón
@@ -5271,13 +5338,14 @@ function showExamResults() {
             <p class="card-banner-sub" style="color:white;font-size:1rem;font-weight:800;opacity:1">
                 ${passed ? '¡Aprobaste el examen!' : 'Sigue practicando'}
             </p>
-            <p class="card-banner-sub" style="margin-top:2px">${correct} de ${examQuestions.length} correctas</p>
+            <p class="card-banner-sub" style="margin-top:2px">${correct} de ${total} correctas</p>
         </div>
         <div class="card-body" style="text-align:center">
+            ${notice ? `<p style="font-size:.78rem;line-height:1.5;color:#92400E;background:#FEF3C7;border-radius:10px;padding:8px 10px;margin-bottom:12px;text-align:left">${esc(notice)}</p>` : ''}
             <div class="rounded-2xl p-4 mb-4" style="background:${passed ? '#F0FDF4' : '#FEF2F2'}">
                 <p style="font-size:2.5rem;font-weight:900;color:${passed ? '#16A34A' : '#DC2626'};line-height:1">${pct}%</p>
                 <p style="font-size:.8rem;font-weight:600;color:${passed ? '#15803D' : '#B91C1C'};margin-top:4px">
-                    ${passed ? '¡Superaste el mínimo del ' + exam.passingScore + '%!' : 'Necesitas ' + exam.passingScore + '% para aprobar'}
+                    ${passed ? '¡Superaste el mínimo del ' + passingScore + '%!' : 'Necesitas ' + passingScore + '% para aprobar'}
                 </p>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
@@ -5286,14 +5354,14 @@ function showExamResults() {
                     <p style="font-size:.75rem;color:#64748B;margin-top:2px">Correctas ✅</p>
                 </div>
                 <div style="background:#FEF2F2;border-radius:12px;padding:12px">
-                    <p style="font-size:1.5rem;font-weight:700;color:#DC2626">${examQuestions.length - correct}</p>
+                    <p style="font-size:1.5rem;font-weight:700;color:#DC2626">${total - correct}</p>
                     <p style="font-size:.75rem;color:#64748B;margin-top:2px">Incorrectas ❌</p>
                 </div>
             </div>
             ${(() => {
                 // Repaso de las falladas: pregunta + explicación, sin marcar la
                 // letra correcta (el reintento trae en su mayoría preguntas nuevas).
-                const missed = examQuestions.filter((q, i) => examAnswers[i] !== q.correct);
+                const missed = missedList;
                 if (!missed.length) return '';
                 return `<div style="text-align:left;margin-bottom:16px">
                     <p style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#64748B;margin-bottom:8px">Para repasar (${missed.length})</p>
@@ -5318,11 +5386,12 @@ function showExamResults() {
     document.getElementById('cardContainer').innerHTML = cardHtml;
 }
 
-function retryExam() {
-    examCurrentQ = 0;
-    // Reintento: prioriza las preguntas que no salieron en el intento anterior
+async function retryExam() {
+    // Reintento: el servidor prioriza las preguntas que no salieron en el intento anterior
     const _cid = (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
-    examQuestions = _drawExamQuestions(getActiveCourseData(), _cid);
+    showToast('Preparando tu examen…');
+    if (!(await _beginExamAttempt(_cid))) return;
+    examCurrentQ = 0;
     saveProgress();
     examAnswers = new Array(examQuestions.length).fill(null);
     renderExamCard();
@@ -5633,6 +5702,25 @@ function _isCertPaid(certType, refId) {
 // Respuesta del servidor cuando el docente está cubierto por un patrocinador pero no
 // cumple todavía las condiciones. Nunca se le cobra en silencio un certificado
 // que debería ser gratis: se explica qué falta y, si prefiere, puede pagarlo él.
+// El servidor pide un examen calificado por él: explica y ofrece presentarlo ahora.
+function _handleExamBlock(data, cid) {
+    const m = document.createElement('div');
+    m.className = 'modal-sheet';
+    m.style.zIndex = '9999';
+    const course = (typeof allCourses !== 'undefined' && cid) ? allCourses.find(c => c.id === cid) : null;
+    m.innerHTML = `<div class="modal-inner">
+        <div class="modal-drag"></div>
+        <h3 class="text-lg font-bold text-slate-800 mb-1">📝 Falta presentar el examen</h3>
+        <p class="text-sm text-slate-600 mb-3">${esc(data.error || 'Primero aprueba el examen final del curso.')}</p>
+        ${course ? `<button id="_exGo" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5">Presentar el examen de «${esc(course.title)}»</button>` : ''}
+        <button id="_exOk" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Cerrar</button>
+    </div>`;
+    document.body.appendChild(m);
+    m.querySelector('#_exOk').onclick = () => m.remove();
+    const go = m.querySelector('#_exGo');
+    if (go) go.onclick = () => { m.remove(); selectCourse(cid, { ignorePrereq: true }); switchTab('home'); startExam(); };
+}
+
 function _handleSponsoredBlock(data, certType, courseId, score, cid) {
     if (data.code === 'needs_evidence' && certType === 'diploma') {
         return _askApplicationEvidence(cid, () => requestCertificate(certType, courseId, score), { sponsorNote: true });
@@ -5997,6 +6085,10 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
             showToast('🎁 ' + (data.sponsor?.name ? `${data.sponsor.name} cubre tu certificado.` : 'Un patrocinador cubre tu certificado.'), 'success');
             if (certType === 'master') return generateMasterCertificate();
             return generateCertificateFromExam(score, cid);
+        }
+        // El examen no está validado por el servidor (o no se aprobó): se lleva a presentarlo
+        if (!res.ok && (data.code === 'exam_not_verified' || data.code === 'exam_not_passed')) {
+            return _handleExamBlock(data, certType === 'master' ? (data.detail?.curso || null) : cid);
         }
         // Está cubierto pero aún no cumple alguna condición: se le explica qué falta
         if (!res.ok && data.sponsored) {
