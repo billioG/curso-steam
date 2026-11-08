@@ -573,7 +573,7 @@ publicar el logo; define si recibe nombres de docentes y pide el consentimiento
 de ellos; y acuerda qué pasa con los cupos que no se usen al vencer.
 
 
-# Cobros reales con Recurrente (diplomas Q10 y certificados maestros Q50)
+# Cobros reales con Recurrente (diplomas Q20 y certificados maestros Q75)
 
 Funciones involucradas: `create-certificate-checkout` (crea el cobro) y
 `recurrente-webhook` (confirma que el dinero llegó). Tabla:
@@ -609,7 +609,7 @@ Dashboard → Edge Functions → Secrets:
 ## Paso 4 — Prueba con un cobro real
 
 1. Con una cuenta de prueba que haya aprobado un curso, pide el diploma: debe
-   abrir el checkout de Recurrente por **Q10**.
+   abrir el checkout de Recurrente por **Q20**.
 2. Paga con una tarjeta real y vuelve a la app: el diploma debe habilitarse.
 3. Verifica en SQL Editor:
    ```sql
@@ -633,7 +633,7 @@ Dashboard → Edge Functions → Secrets:
   group by 1;
   ```
 - Cambiar precios: `PRICES` en `create-certificate-checkout/index.ts` (centavos) y
-  re-desplegar; los textos «Q10»/«Q50» de la app están en `app.js` (`_certPriceLabel`).
+  re-desplegar; los precios que ve el docente están en `CERT_PRICES` de `app.js` (deben coincidir con `PRICES`).
 - Un docente que pagó pero no ve el diploma: confirma que su pago esté
   `paid`; si Recurrente lo muestra cobrado y aquí sigue `pending`, reenvía el
   evento desde el panel de Recurrente.

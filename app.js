@@ -5598,8 +5598,11 @@ function _sponsorFor(certType, refId) {
         ? s.diploma_left > 0 && (!s.courses || s.courses.includes(refId))
         : s.master_left > 0) || null;
 }
+// Precios que ve el docente (quetzales). El cobro real lo fija el servidor: PRICES en
+// supabase-functions/create-certificate-checkout/index.ts (en centavos) — mantener iguales.
+const CERT_PRICES = { diploma: 20, master: 75 };
 function _certPriceLabel(certType, refId) {
-    return _sponsorFor(certType, refId) ? 'Gratis' : (certType === 'master' ? 'Q50' : 'Q10');
+    return _sponsorFor(certType, refId) ? 'Gratis' : 'Q' + CERT_PRICES[certType === 'master' ? 'master' : 'diploma'];
 }
 
 // Tarjeta de Perfil: «Código de patrocinio» / «Patrocinado por X»
@@ -5734,7 +5737,7 @@ function _handleSponsoredBlock(data, certType, courseId, score, cid) {
         <h3 class="text-lg font-bold text-slate-800 mb-1">🎁 Tu certificado está patrocinado</h3>
         <p class="text-sm text-slate-600 mb-3">${esc(data.error || 'No pudimos usar el cupo del patrocinador en este momento.')}</p>
         <button id="_spOk" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5">Entendido</button>
-        ${canPay ? `<button id="_spPay" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Prefiero pagarlo yo (${certType === 'master' ? 'Q50' : 'Q10'})</button>` : ''}
+        ${canPay ? `<button id="_spPay" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Prefiero pagarlo yo (Q${CERT_PRICES[certType === 'master' ? 'master' : 'diploma']})</button>` : ''}
     </div>`;
     document.body.appendChild(m);
     m.querySelector('#_spOk').onclick = () => m.remove();
@@ -5789,7 +5792,7 @@ function _updateCertButtonLabels() {
         const _pid = _selectedMasterPath?.id || _activeMasterPath?.id;
         masterLabel.textContent = (_pid && _isCertPaid('master', _pid))
             ? '⬇ Descargar Certificado Maestro' + (_paidDateLabel('master', _pid) ? ' · pagado el ' + _paidDateLabel('master', _pid) : '')
-            : 'Obtener Certificado Maestro · ' + (_pid ? _certPriceLabel('master', _pid) : 'Q50');
+            : 'Obtener Certificado Maestro · ' + (_pid ? _certPriceLabel('master', _pid) : 'Q' + CERT_PRICES.master);
     }
 }
 
@@ -5894,7 +5897,7 @@ function _showPaidCertificateModal(blobUrl, filename, label, paidAt) {
 }
 
 // ── Pago de diplomas/certificados (Recurrente) ──────────────────────────
-// Q10 el diploma de participación de cada curso, Q50 el Certificado
+// Q20 el diploma de participación de cada curso, Q75 el Certificado
 // Maestro de una ruta. Antes de generar el certificado, verifica si el
 // usuario ya pagó (lee certificate_payments, solo puede LEER su propia
 // fila por RLS); si no, crea un checkout y redirige de página completa —
