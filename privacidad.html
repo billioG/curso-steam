@@ -48,12 +48,13 @@
     <div class="hero">
       <h1>Política de Privacidad</h1>
       <p>Qué datos recopila Yo Aprendo, para qué se usan y qué derechos tienes sobre ellos.</p>
-      <div class="meta">Última actualización: 18 de septiembre de 2026 · Guatemala</div>
+      <div class="meta">Última actualización: 8 de noviembre de 2026 · Guatemala</div>
     </div>
 
     <div class="intro-note">
-      Esta plataforma es un programa gratuito de formación docente. Recopilamos solo los datos necesarios para
-      llevar tu progreso, emitir certificados y mejorar el contenido. Nunca vendemos tus datos.
+      Los cursos de esta plataforma son gratuitos. El diploma por curso y el certificado maestro tienen un costo
+      individual, que puede cubrir tu colegio o una fundación, ONG o empresa patrocinadora. Recopilamos solo los datos
+      necesarios para llevar tu progreso, emitir certificados y mejorar el contenido. Nunca vendemos tus datos.
     </div>
 
     <div class="block">
@@ -72,6 +73,8 @@
         <tr><td>Comentarios y evidencias de portafolio</td><td>Que tú escribes o subes</td><td>Evaluación pedagógica, retroalimentación docente</td></tr>
         <tr><td>Mensajes al asistente de IA</td><td>Uso del chatbot</td><td>Responder tus preguntas (procesado vía Groq, ver sección 4)</td></tr>
         <tr><td>Colegio / institución</td><td>Que tú ingresas</td><td>Estadísticas agregadas por institución</td></tr>
+        <tr><td>Pagos de diplomas y certificados</td><td>Cuando pides un diploma o certificado de pago</td><td>Saber qué certificado pagaste, el monto y si el pago se confirmó. No guardamos los datos de tu tarjeta: el pago lo procesa Recurrente</td></tr>
+        <tr><td>Código o cobertura de patrocinio</td><td>Que tú ingresas, o tu colegio / correo si un patrocinador los incluyó</td><td>Saber si un patrocinador cubre tus certificados y descontar el cupo. El patrocinador puede recibir reportes de uso; solo ve nombres si así lo acordó con tu colegio</td></tr>
         <tr><td>Datos técnicos básicos</td><td>Automático</td><td>Funcionamiento de la app (caché offline, notificaciones push si las activas)</td></tr>
       </table>
       <p style="margin-top:10px">Si participas en el módulo de reclutamiento/postulación docente, también se guardan los datos que ingreses en tu postulación (CV, respuestas, evaluación) — únicamente visibles para los coordinadores del proceso correspondiente.</p>
@@ -93,6 +96,7 @@
       <ul>
         <li><span class="tag">Supabase</span> Base de datos, autenticación y funciones del servidor.</li>
         <li><span class="tag">Groq</span> Procesa tus preguntas al asistente de IA para generar una respuesta. No almacena tu identidad, solo el texto de la conversación durante el procesamiento.</li>
+        <li><span class="tag">Recurrente</span> Procesa el pago de diplomas y certificados. Recibe los datos del cobro; nosotros solo recibimos la confirmación del pago.</li>
         <li><span class="tag">Resend</span> Envía correos transaccionales (bienvenida, recuperación de contraseña, notificaciones).</li>
       </ul>
       <p>Ninguno de estos proveedores usa tus datos con fines publicitarios propios.</p>
