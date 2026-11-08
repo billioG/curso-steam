@@ -993,6 +993,22 @@ function updateUI() {
         _examBanner.remove();
     }
 
+    // Curso aprobado: llamada a la acción para adquirir o descargar el diploma
+    // (mismo lugar que el aviso del examen; se actualiza al pagar).
+    const _dipBannerId = 'courseDiplomaBanner';
+    document.getElementById(_dipBannerId)?.remove();
+    if (_examPassed && _hasFinalExam && _activeCourse) {
+        const _stD = _diplomaState(_activeCourseId);
+        const _b = document.createElement('div');
+        _b.id = _dipBannerId;
+        _b.style.cssText = `margin:12px 16px 0;padding:12px 14px;background:${_stD.paid ? '#F0FDF4' : '#F5F3FF'};border:1.5px solid ${_stD.paid ? '#86EFAC' : '#C4B5FD'};border-radius:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap`;
+        _b.innerHTML = `<span style="font-size:22px">🎓</span><div style="flex:1;min-width:140px"><div style="font-weight:800;font-size:13px;color:#0F172A">${_stD.paid ? 'Tu diploma está listo' : 'Aprobaste este curso'}</div><div style="font-size:11px;color:#64748B">${_stD.paid ? 'Descárgalo cuando quieras.' : 'Adquiere tu diploma de participación.'}</div></div><div style="text-align:right">${_diplomaCtaButton(_activeCourseId, { small: true })}</div>`;
+        // Dentro de la lección (encima de la tarjeta), no en la barra superior fija
+        const _card = document.getElementById('cardContainer');
+        _b.style.margin = '0 0 12px';
+        if (_card?.parentElement) _card.parentElement.insertBefore(_b, _card);
+    }
+
     const xpDisplay = document.getElementById("xpDisplay");
     if (xpDisplay) xpDisplay.innerText = progress.xp || 0;
     const levelDisplay = document.getElementById("levelDisplay");
@@ -2269,7 +2285,7 @@ function renderHub() {
         ${inProgress.length ? inProgress.map(x => {
             const sc = x.c.id === 'steam' ? (scores.steam ?? progress.dailyMissions?.examScore) : scores[x.c.id];
             const passed = typeof sc === 'number' && sc >= 70;
-            const action = x.pct >= 100 && !passed ? `<button class="hub-link" onclick="openCourseFromHub('${esc(x.c.id)}');_showExamPrompt()">Ir al examen</button>` : `<button class="hub-link" onclick="openCourseFromHub('${esc(x.c.id)}')">${x.pct >= 100 ? 'Repasar' : 'Continuar'}</button>`;
+            const action = x.pct >= 100 && !passed ? `<button class="hub-link" onclick="openCourseFromHub('${esc(x.c.id)}');_showExamPrompt()">Ir al examen</button>` : (passed ? `<button class="hub-link" onclick="requestCertificate('diploma','${esc(x.c.id)}',${sc})">${_isCertPaid('diploma', x.c.id) ? 'Descargar diploma' : 'Adquirir diploma'}</button>` : `<button class="hub-link" onclick="openCourseFromHub('${esc(x.c.id)}')">${x.pct >= 100 ? 'Repasar' : 'Continuar'}</button>`);
             return `<div class="hub-row"><div style="flex:1;min-width:0"><p style="font-weight:700;font-size:15px;margin:0">${esc(x.c.title)}</p><p style="font-size:12px;color:#475569;margin:2px 0 8px">${x.done} de ${x.total} tarjetas${passed ? ' · examen aprobado' : ''}</p><div class="hub-bar"><i style="width:${x.pct}%;${passed ? 'background:#16A34A' : ''}"></i></div></div>${action}</div>`;
         }).join('') : '<p style="font-size:14px;color:#475569;margin:12px 0 0">Aún no empiezas ningún curso. Elige uno en «Ver todas las rutas» o empieza tu sesión de hoy.</p>'}
     </div>`;
@@ -2488,6 +2504,12 @@ function renderCard() {
     renderModuleChallenge();
     renderPeerStories();
     renderLessonOutline();
+    // Una posición guardada «después del último módulo» (versiones anteriores
+    // dejaban «Módulo 6 de 5») vuelve a la última tarjeta del curso.
+    if (modulesData.length && currentModule > modulesData.length) {
+        currentModule = modulesData.length;
+        currentCardIndex = modulesData[currentModule - 1].cards.length - 1;
+    }
     const module = modulesData[currentModule - 1];
     if (!module) return;
     const card = module.cards[currentCardIndex];
@@ -3021,8 +3043,47 @@ function goToNextCard(animateExit = true) {
         showModuleComplete(currentModule, () => askModuleFeedback(currentModule));
     } else {
         stopCardTracking();
+        // Última tarjeta del curso: si quedaron tarjetas sin completar (p. ej. se
+        // pasaron muy rápido), se avisa y se ofrece ir a ellas en vez de cerrar el
+        // curso en 94 % sin explicación.
+        const pending = _pendingCards();
+        if (pending.length) { _showPendingCardsPrompt(pending); return; }
         showModuleComplete(currentModule, () => askModuleFeedback(currentModule));
     }
+}
+
+// Tarjetas del curso activo que todavía no cuentan como completadas, en orden.
+function _pendingCards() {
+    const out = [];
+    (modulesData || []).forEach((m, mi) => (m.cards || []).forEach((c, ci) => {
+        if (!_isCardDone(c)) out.push({ module: mi + 1, index: ci, title: c.title || c.question || '' });
+    }));
+    return out;
+}
+function _showPendingCardsPrompt(pending) {
+    document.getElementById('pendingCardsOverlay')?.remove();
+    const n = pending.length;
+    const el = document.createElement('div');
+    el.id = 'pendingCardsOverlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px';
+    el.innerHTML = `<div style="background:white;border-radius:24px;max-width:360px;width:100%;padding:26px 22px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3)">
+        <div style="font-size:40px;margin-bottom:8px">📌</div>
+        <h2 style="font-size:19px;font-weight:900;color:#0F172A;margin:0 0 8px">Te ${n === 1 ? 'falta 1 tarjeta' : 'faltan ' + n + ' tarjetas'}</h2>
+        <p style="font-size:14px;color:#475569;line-height:1.55;margin:0 0 18px">Para completar el curso y presentar el examen, ${n === 1 ? 'queda una tarjeta' : 'quedan unas tarjetas'} que pasaste muy rápido o sin responder. Las de lectura cuentan cuando las miras unos segundos.</p>
+        <button data-go style="width:100%;padding:13px;border-radius:14px;border:none;background:#5C35C5;color:white;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:8px">Ir a la primera pendiente</button>
+        <button data-end style="width:100%;padding:10px;border-radius:14px;border:2px solid #E2E8F0;background:white;color:#64748B;font-weight:600;font-size:13px;cursor:pointer">Terminar de todos modos</button>
+    </div>`;
+    el.addEventListener('click', (e) => {
+        if (e.target.closest('[data-go]')) {
+            el.remove();
+            currentModule = pending[0].module; currentCardIndex = pending[0].index;
+            _saveCoursePosition(); saveProgress(); renderCard(); animateCard('prev'); updateUI();
+        } else if (e.target.closest('[data-end]')) {
+            el.remove();
+            showModuleComplete(currentModule, () => askModuleFeedback(currentModule));
+        }
+    });
+    document.body.appendChild(el);
 }
 
 function goToPrevCard(animateExit = true) {
@@ -3386,13 +3447,27 @@ function goToModule(modNum) {
 
 function _showExamPrompt() {
     const cid   = currentCourseId || 'steam';
-    const score = (progress?.dailyMissions?.examScores || {})[cid] ?? (cid === 'steam' ? progress?.dailyMissions?.examScore : undefined);
-    const alreadyPassed = score !== undefined && score >= 70;
-    if (alreadyPassed) return; // ya tiene certificado, no molestar
-
+    const st    = _diplomaState(cid);
     const courseTitle = (typeof allCourses !== 'undefined')
         ? (allCourses.find(c => c.id === cid)?.title || 'este curso')
         : 'este curso';
+    document.getElementById('examPromptOverlay')?.remove();
+
+    // Según el estado: sin examen → ir a la evaluación; aprobado → adquirir el
+    // diploma; ya pagado → descargarlo (con la fecha de pago).
+    const close = `document.getElementById('examPromptOverlay').remove();`;
+    let text, main, extra = '';
+    if (!st.passed) {
+        text = `Terminaste todas las tarjetas de <strong>${esc(courseTitle)}</strong>.<br>¿Listo para la evaluación final y obtener tu certificado?`;
+        main = `<button onclick="${close}startExam();" style="width:100%;padding:14px;border-radius:14px;border:none;background:#5C35C5;color:white;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:10px">📝 Ir a la evaluación</button>`;
+    } else if (!st.paid) {
+        text = `Aprobaste <strong>${esc(courseTitle)}</strong> con ${st.score}%.<br>Ya puedes adquirir tu diploma de participación.`;
+        main = `<button onclick="${close}requestCertificate('diploma','${cid}',${st.score});" style="width:100%;padding:14px;border-radius:14px;border:none;background:#5C35C5;color:white;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:10px">📜 Adquirir mi diploma · ${_certPriceLabel('diploma', cid)}</button>`;
+    } else {
+        text = `Aprobaste <strong>${esc(courseTitle)}</strong> con ${st.score}%.<br>Tu diploma ya está pagado${st.paidDate ? ' (' + st.paidDate + ')' : ''}.`;
+        main = `<button onclick="${close}requestCertificate('diploma','${cid}',${st.score});" style="width:100%;padding:14px;border-radius:14px;border:none;background:#16A34A;color:white;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:10px">⬇ Descargar mi diploma</button>`;
+    }
+    if (st.passed) extra = `<button onclick="${close}switchTab('progreso');" style="width:100%;padding:10px;border-radius:14px;border:none;background:#F1F5F9;color:#1E4976;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:8px">Ver todos mis diplomas</button>`;
 
     const el = document.createElement('div');
     el.id = 'examPromptOverlay';
@@ -3401,15 +3476,9 @@ function _showExamPrompt() {
     <div style="background:white;border-radius:24px;max-width:360px;width:100%;padding:28px 24px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3)">
         <div style="font-size:48px;margin-bottom:12px">🎓</div>
         <h2 style="font-size:20px;font-weight:900;color:#0F172A;margin-bottom:8px">¡Curso completado!</h2>
-        <p style="font-size:14px;color:#475569;line-height:1.6;margin-bottom:20px">
-            Terminaste todas las tarjetas de <strong>${esc(courseTitle)}</strong>.<br>
-            ¿Listo para la evaluación final y obtener tu certificado?
-        </p>
-        <button onclick="document.getElementById('examPromptOverlay').remove();startExam();"
-            style="width:100%;padding:14px;border-radius:14px;border:none;background:#5C35C5;color:white;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:10px">
-            📝 Ir a la evaluación
-        </button>
-        <button onclick="document.getElementById('examPromptOverlay').remove();"
+        <p style="font-size:14px;color:#475569;line-height:1.6;margin-bottom:20px">${text}</p>
+        ${main}${extra}
+        <button onclick="${close}"
             style="width:100%;padding:10px;border-radius:14px;border:2px solid #E2E8F0;background:white;color:#64748B;font-weight:600;font-size:13px;cursor:pointer">
             Después
         </button>
@@ -3420,14 +3489,15 @@ function _showExamPrompt() {
 function continueToNextModule() {
     const nextModule = currentModule + 1;
     if (nextModule > modulesData.length) {
-        // Curso terminado — mostrar prompt de evaluación
-        currentModule = nextModule;
-        currentCardIndex = 0;
+        // Curso terminado: se queda en la última tarjeta (antes pasaba a un
+        // «módulo 6 de 5» inexistente y el botón Siguiente dejaba de responder).
+        currentModule = modulesData.length;
+        currentCardIndex = modulesData[currentModule - 1].cards.length - 1;
         _saveCoursePosition();
         saveProgress();
         renderCard();
-        animateCard('next');
-        setTimeout(_showExamPrompt, 600);
+        updateUI();
+        setTimeout(_showExamPrompt, 300);
         return;
     }
 
@@ -5386,6 +5456,22 @@ function _buildSignaturesHtml(signatures, firmaSrcFallback) {
 let _paidCertRefs = new Set();
 let _paidCertDates = {};   // 'diploma:abp' → ISO de cuándo se confirmó el pago
 
+// Estado del diploma de un curso para mostrar el botón correcto en cualquier pantalla:
+// sin aprobar → no hay botón; aprobado y sin pagar → «Adquirir»; pagado → «Descargar».
+function _diplomaState(cid) {
+    const dm = progress?.dailyMissions || {};
+    const score = (dm.examScores || {})[cid] ?? (cid === 'steam' ? dm.examScore : undefined);
+    return { score, passed: typeof score === 'number' && score >= 70, paid: _isCertPaid('diploma', cid), paidDate: _paidDateLabel('diploma', cid) };
+}
+function _diplomaCtaButton(cid, opts = {}) {
+    const st = _diplomaState(cid);
+    if (!st.passed) return '';
+    const label = st.paid ? '⬇ Descargar mi diploma' : '📜 Adquirir mi diploma · ' + _certPriceLabel('diploma', cid);
+    const bg = st.paid ? '#16A34A' : '#5C35C5';
+    const stop = opts.stop ? 'event.stopPropagation();' : '';
+    return `<button onclick="${stop}requestCertificate('diploma','${cid}',${st.score})" style="background:${bg};color:white;font-weight:800;border:none;border-radius:12px;cursor:pointer;font-size:${opts.small ? 11 : 13}px;padding:${opts.small ? '7px 12px' : '11px 16px'};${opts.full ? 'width:100%;' : ''}${opts.style || ''}">${label}</button>${st.paid && st.paidDate ? `<span style="display:block;font-size:10px;color:#64748B;margin-top:3px">Pagado el ${st.paidDate}</span>` : ''}`;
+}
+
 // «8 nov 2026» — fecha en que se confirmó el pago de un certificado ('' si no hay)
 function _paidDateLabel(certType, refId) {
     const iso = _paidCertDates[`${certType}:${refId}`];
@@ -5568,7 +5654,48 @@ function _handleSponsoredBlock(data, certType, courseId, score, cid) {
     if (pay) pay.onclick = () => { m.remove(); requestCertificate(certType, courseId, score, { skipSponsor: true }); };
 }
 
+// «Mis diplomas»: lo que ya se pagó (lo más reciente primero, con «Nuevo» si fue
+// esta semana) y lo que ya se aprobó pero falta adquirir. Está arriba de Progreso
+// para encontrar de inmediato el diploma de hoy.
+function _renderMyDiplomas() {
+    const box = document.getElementById('myDiplomasBox');
+    if (!box || typeof allCourses === 'undefined' || !progress) return;
+    const titleOf = (type, ref) => type === 'master'
+        ? ((typeof LEARNING_PATHS !== 'undefined' && LEARNING_PATHS.find(p => p.id === ref)?.label) || ref)
+        : (allCourses.find(c => c.id === ref)?.title || ref);
+    const paid = [..._paidCertRefs].map(k => {
+        const [type, ...r] = k.split(':'); const ref = r.join(':');
+        return { type, ref, iso: _paidCertDates[k] || '' };
+    }).sort((a, b) => String(b.iso).localeCompare(String(a.iso)));
+    const toClaim = allCourses.filter(c => c.status === 'available' && !_isCertPaid('diploma', c.id) && _diplomaState(c.id).passed);
+    if (!paid.length && !toClaim.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+    box.classList.remove('hidden');
+    const now = Date.now();
+    const row = (inner) => `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #F1F5F9">${inner}</div>`;
+    const paidRows = paid.map(x => {
+        const ms = x.iso ? now - new Date(x.iso).getTime() : Infinity;
+        const sameDay = x.iso && new Date(x.iso).toDateString() === new Date().toDateString();
+        const badge = sameDay ? 'Hoy' : (ms < 7 * 86400000 ? 'Nuevo' : '');
+        const sponsored = _sponsoredCerts[`${x.type}:${x.ref}`];
+        const when = _paidDateLabel(x.type, x.ref);
+        const sub = sponsored ? `Cubierto por ${esc(sponsored.sponsor_name || 'un patrocinador')}${when ? ' · ' + when : ''}` : (when ? `Pagado el ${when}` : 'Pagado');
+        const click = x.type === 'master' ? `requestCertificate('master', null, null)` : `requestCertificate('diploma','${esc(x.ref)}',${_diplomaState(x.ref).score ?? 70})`;
+        return row(`<div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:800;color:#0F172A;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.type === 'master' ? '🏅 ' : ''}${esc(titleOf(x.type, x.ref))}${x.type === 'master' ? ' · Certificado Maestro' : ''}${badge ? ` <span style="font-size:9px;font-weight:800;background:#16A34A;color:white;border-radius:99px;padding:2px 7px;vertical-align:middle">${badge}</span>` : ''}</p>
+                <p style="font-size:11px;color:#64748B;margin:2px 0 0">${sub}</p></div>
+            <button onclick="${click}" style="flex-shrink:0;background:#16A34A;color:white;font-size:11px;font-weight:800;border:none;border-radius:10px;padding:8px 12px;cursor:pointer">⬇ Descargar</button>`);
+    }).join('');
+    const claimRows = toClaim.map(c => row(`<div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:700;color:#0F172A;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.title)}</p>
+                <p style="font-size:11px;color:#64748B;margin:2px 0 0">Aprobado con ${_diplomaState(c.id).score}% · diploma por adquirir</p></div>
+            <button onclick="requestCertificate('diploma','${c.id}',${_diplomaState(c.id).score})" style="flex-shrink:0;background:#5C35C5;color:white;font-size:11px;font-weight:800;border:none;border-radius:10px;padding:8px 12px;cursor:pointer">Adquirir · ${_certPriceLabel('diploma', c.id)}</button>`)).join('');
+    box.innerHTML = `<p style="font-size:13px;font-weight:800;color:#1E4976;margin:0 0 2px">🎓 Mis diplomas</p>
+        ${paid.length ? `<p style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94A3B8;margin:6px 0 0">Listos para descargar</p>${paidRows}` : ''}
+        ${toClaim.length ? `<p style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#94A3B8;margin:${paid.length ? 12 : 6}px 0 0">Por adquirir</p>${claimRows}` : ''}`;
+}
+
 function _updateCertButtonLabels() {
+    _renderMyDiplomas();
     const masterLabel = document.getElementById('masterCertBtnLabel');
     if (masterLabel) {
         const _pid = _selectedMasterPath?.id || _activeMasterPath?.id;
@@ -8111,6 +8238,7 @@ function _renderCourseSelector() {
                                     <span style="display:inline-flex;width:10px;height:10px">${ICONS?.star || '★'}</span>Recomendado para tu nivel
                                 </span>` : ''}
                             </div>
+                            ${(clickable && passed) ? `<div style="margin-top:8px">${_diplomaCtaButton(c.id, { stop: true, small: true })}</div>` : ''}
                             ${(clickable && !passed && coursePct > 0) ? `
                             <div style="margin-top:7px">
                                 <div style="display:flex;justify-content:space-between;margin-bottom:2px">
