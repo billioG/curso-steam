@@ -13,3 +13,8 @@ create table public.schools(id uuid default gen_random_uuid() primary key, name 
 create table public.user_schools(user_id uuid references auth.users(id), school_id uuid references public.schools(id), primary key(user_id,school_id));
 grant usage on schema public, auth to anon, authenticated, service_role;
 grant all on all tables in schema public to service_role;
+
+-- Como en supabase_schema.sql (lo usan varias políticas)
+create or replace function public.is_admin() returns boolean language sql security definer as $$
+  select exists (select 1 from public.user_roles where user_id = auth.uid() and role = 'admin');
+$$;
