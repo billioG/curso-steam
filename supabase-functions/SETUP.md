@@ -571,3 +571,69 @@ si quieres que deje de verificarse).
 **Antes de firmar con una fundación:** pide su permiso por escrito para
 publicar el logo; define si recibe nombres de docentes y pide el consentimiento
 de ellos; y acuerda qué pasa con los cupos que no se usen al vencer.
+
+
+# Cobros reales con Recurrente (diplomas Q10 y certificados maestros Q50)
+
+Funciones involucradas: `create-certificate-checkout` (crea el cobro) y
+`recurrente-webhook` (confirma que el dinero llegó). Tabla:
+`certificate_payments` (`migrations/certificate-payments.sql`). El navegador
+nunca decide si algo está pagado: solo el webhook marca `status = 'paid'`.
+
+## Paso 1 — Credenciales de producción
+
+En el panel de Recurrente (app.recurrente.com) → Desarrolladores / API:
+usa las llaves **de producción** (no las de prueba) y verifica que la cuenta
+tenga su información legal y bancaria completa para poder recibir pagos.
+
+## Paso 2 — Secrets de Supabase
+
+Dashboard → Edge Functions → Secrets:
+
+| Secret | Valor |
+|---|---|
+| `RECURRENTE_SECRET_KEY` | llave secreta de **producción** (la usa `create-certificate-checkout`) |
+| `RECURRENTE_WEBHOOK_SECRET` | secret del webhook, formato `whsec_...` (Paso 3) |
+| `APP_URL` | `https://yoaprendo.online` (a donde vuelve el docente tras pagar) |
+
+## Paso 3 — Registrar el webhook
+
+1. Despliega `recurrente-webhook` con **«Enforce JWT Verification» desactivado**
+   (la llama Recurrente, que no manda JWT; la autenticidad se valida con la firma Svix).
+2. En Recurrente → Webhooks, crea un endpoint con la URL
+   `https://<project-ref>.supabase.co/functions/v1/recurrente-webhook`
+   y activa el evento de pago exitoso (`intent.succeeded`).
+3. Copia el *signing secret* (`whsec_...`) al secret `RECURRENTE_WEBHOOK_SECRET`.
+4. Re-despliega (o reinicia) la función para que lea el secret nuevo.
+
+## Paso 4 — Prueba con un cobro real
+
+1. Con una cuenta de prueba que haya aprobado un curso, pide el diploma: debe
+   abrir el checkout de Recurrente por **Q10**.
+2. Paga con una tarjeta real y vuelve a la app: el diploma debe habilitarse.
+3. Verifica en SQL Editor:
+   ```sql
+   select cert_type, ref_id, amount_in_cents, status, created_at, paid_at
+   from certificate_payments order by created_at desc limit 5;
+   ```
+   Debe verse `status = 'paid'` con `paid_at`. Si queda en `pending`, el
+   webhook no llegó: revisa en Recurrente el historial de entregas del webhook
+   y los logs de `recurrente-webhook` (401 = secret equivocado; 404 = URL mal).
+4. Reembolsa ese pago desde el panel de Recurrente (el sistema no revoca
+   solo el diploma; si quieres anularlo, cambia la fila a `failed`).
+
+## Operación
+
+- **Pagos pendientes viejos** (checkout abierto y nunca pagado) son normales.
+  Revisión rápida de los pagados del mes:
+  ```sql
+  select cert_type, count(*), sum(amount_in_cents)/100.0 as quetzales
+  from certificate_payments
+  where status = 'paid' and paid_at >= date_trunc('month', now())
+  group by 1;
+  ```
+- Cambiar precios: `PRICES` en `create-certificate-checkout/index.ts` (centavos) y
+  re-desplegar; los textos «Q10»/«Q50» de la app están en `app.js` (`_certPriceLabel`).
+- Un docente que pagó pero no ve el diploma: confirma que su pago esté
+  `paid`; si Recurrente lo muestra cobrado y aquí sigue `pending`, reenvía el
+  evento desde el panel de Recurrente.
