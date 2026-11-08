@@ -15,8 +15,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const src = readFileSync(path.join(ROOT, 'supabase-functions/create-certificate-checkout/index.ts'), 'utf8');
 const cut = (a, b) => { const i = src.indexOf(a), j = src.indexOf(b); assert(i > -1 && j > i, `faltan marcadores ${a}`); return src.slice(i, j); };
 const code = stripTypeScriptTypes(cut('// SYNC:START', '// SYNC:END') + cut('// PURE:START', '// PURE:END'))
-    + '\nreturn { validateClaim, paidDiplomaGate, COURSE_CARD_IDS, DEFAULT_PATHS, resolvePath };';
-const { validateClaim: validateClaimRaw, paidDiplomaGate, COURSE_CARD_IDS, DEFAULT_PATHS, resolvePath } = new Function(code)();
+    + '\nreturn { validateClaim, paidDiplomaGate, paidMasterGate, COURSE_CARD_IDS, DEFAULT_PATHS, resolvePath };';
+const { validateClaim: validateClaimRaw, paidDiplomaGate, paidMasterGate, COURSE_CARD_IDS, DEFAULT_PATHS, resolvePath } = new Function(code)();
 
 // Las pruebas de abajo describen reglas de tarjetas, relato y portafolio con la nota de
 // examen guardada en el progreso: corren con la ventana «legado» abierta (y sin la
@@ -138,10 +138,27 @@ t('ventana de legado abierta: vale la nota del progreso y queda alerta', () => {
 });
 t('ventana de legado vencida: deja de valer', () => assert.equal(validateClaimRaw(raw({ progress: exProg({ abp: 90 }), legacyUntil: NOW - 1 })).code, 'exam_not_verified'));
 t('nota del servidor de OTRO curso no sirve', () => assert.equal(validateClaimRaw(raw({ serverExams: { steam: 95 } })).code, 'exam_not_passed'));
-t('maestro: todos los cursos con nota del servidor', () => {
-    const se = Object.fromEntries(path4.courses.map((c) => [c, 80]));
-    const r = validateClaimRaw({ ...mBase(), progress: { completed_cards: path4.courses.flatMap((c) => ids(c)), daily_missions: { masterExamScores: { steam20: 90 } } }, serverExams: se, legacyUntil: null });
-    assert.equal(r.ok, true);
+const courseScores = (v) => Object.fromEntries(path4.courses.map((c) => [c, v]));
+const mCards = path4.courses.flatMap((c) => ids(c));
+t('maestro: cursos y examen maestro con nota del servidor', () => {
+    const r = validateClaimRaw({ ...mBase(), progress: { completed_cards: mCards, daily_missions: {} }, serverExams: { ...courseScores(80), 'master:steam20': 90 }, legacyUntil: null });
+    assert.equal(r.ok, true); assert.equal(r.meta.examen_maestro, 90); assert.deepEqual(r.flags.filter((f) => f === 'examen_sin_validar'), []);
+});
+t('maestro: examen maestro falsificado en el progreso NO sirve (cursos sí validados)', () => {
+    const r = validateClaimRaw({ ...mBase(), progress: { completed_cards: mCards, daily_missions: { masterExamScores: { steam20: 100 } } }, serverExams: courseScores(80), legacyUntil: null });
+    assert.equal(r.ok, false); assert.equal(r.code, 'master_exam_not_verified');
+});
+t('maestro: sin examen maestro en ningún lado → falta rendirlo', () => {
+    const r = validateClaimRaw({ ...mBase(), progress: { completed_cards: mCards, daily_missions: {} }, serverExams: courseScores(80), legacyUntil: null });
+    assert.equal(r.ok, false); assert.equal(r.code, 'needs_portfolio');
+});
+t('maestro: la nota del servidor manda sobre un 100 falso del progreso', () => {
+    const r = validateClaimRaw({ ...mBase(), progress: { completed_cards: mCards, daily_missions: { masterExamScores: { steam20: 100 } } }, serverExams: { ...courseScores(80), 'master:steam20': 90 }, legacyUntil: null });
+    assert.equal(r.ok, true); assert.equal(r.meta.examen_maestro, 90);
+});
+t('maestro: ventana de legado abierta acepta el del navegador con alerta', () => {
+    const r = validateClaimRaw({ ...mBase(), serverExams: courseScores(80), legacyUntil: NOW + 864e5 });
+    assert.equal(r.ok, true); assert(r.flags.includes('examen_sin_validar'));
 });
 t('maestro: notas falsas en el progreso sin servidor → exam_not_verified', () => {
     const r = validateClaimRaw({ ...mBase(), serverExams: {}, legacyUntil: null });
@@ -159,5 +176,17 @@ t('docente sin examen: no puede pagar', () => assert.equal(paidDiplomaGate(dm({}
 t('ventana de legado: la nota del navegador vale (docentes que aprobaron antes)', () => assert.equal(paidDiplomaGate(dm({ abp: 85 }), 'abp', {}, NOW + 1000, NOW).ok, true));
 t('ventana vencida: ya no vale', () => assert.equal(paidDiplomaGate(dm({ abp: 85 }), 'abp', {}, NOW - 1, NOW).code, 'exam_not_verified'));
 t('curso desconocido', () => assert.equal(paidDiplomaGate(dm({}), 'inexistente', { inexistente: 99 }, null, NOW).code, 'unknown_course'));
+
+console.log('Certificado maestro de pago');
+const pm = (over = {}) => ({ dm: { masterExamScores: { steam20: 100 }, examScores: courseScores(100) }, se: { ...courseScores(80), 'master:steam20': 80 }, legacy: null, ...over });
+const gate = (o) => { const x = pm(o); return paidMasterGate(x.dm, 'steam20', null, x.se, x.legacy, NOW); };
+t('todo calificado por el servidor: puede pagar', () => assert.equal(gate({}).ok, true));
+t('ruta desconocida', () => assert.equal(paidMasterGate({}, 'xx', null, {}, null, NOW).code, 'unknown_path'));
+t('notas inventadas en el navegador: no puede pagar', () => assert.equal(gate({ se: {} }).code, 'exam_not_verified'));
+t('falta un curso de la ruta en el servidor: bloquea', () => { const se = { ...courseScores(80), 'master:steam20': 80 }; delete se.abp; const r = gate({ se }); assert.equal(r.ok, false); assert.equal(r.detail.curso, 'abp'); });
+t('cursos del servidor pero examen maestro solo en el navegador', () => assert.equal(gate({ se: courseScores(80) }).code, 'master_exam_not_verified'));
+t('cursos del servidor y sin examen maestro: debe presentarlo', () => assert.equal(gate({ se: courseScores(80), dm: { examScores: courseScores(100) } }).code, 'needs_master_exam'));
+t('ventana de legado: vale lo del navegador y deja alerta', () => { const r = gate({ se: {}, legacy: NOW + 1000 }); assert.equal(r.ok, true); assert.deepEqual(r.flags, ['examen_sin_validar']); });
+t('ventana vencida: ya no vale', () => assert.equal(gate({ se: {}, legacy: NOW - 1 }).code, 'exam_not_verified'));
 
 console.log(`\n${n} pruebas OK`);

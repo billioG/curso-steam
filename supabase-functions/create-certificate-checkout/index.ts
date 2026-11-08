@@ -144,6 +144,19 @@ function verifiedExamScore(
 }
 const EXAM_NOT_VERIFIED = 'Tu examen de este curso se rindió antes de que se calificara en el servidor. Vuelve a presentarlo para obtener el certificado.';
 
+// Nota del examen maestro de la ruta que sirve para certificar: la del servidor
+// (`exam_results`, clave `master:<ruta>`), o durante la ventana de legado la del navegador.
+function verifiedMasterExam(
+  dm: any, pathId: string, serverExams: Record<string, number>, legacyUntil: number | null, now: number,
+): { score: number | undefined; source?: 'server' | 'legacy'; legacyOnly?: boolean } {
+  const server = serverExams[`master:${pathId}`];
+  if (typeof server === 'number') return { score: server, source: 'server' };
+  const legacy = masterExamScore(dm, pathId);
+  if (legacy !== undefined && legacyUntil !== null && now < legacyUntil) return { score: legacy, source: 'legacy' };
+  return { score: undefined, legacyOnly: legacy !== undefined };
+}
+const MASTER_EXAM_NOT_VERIFIED = 'Tu examen maestro se rindió antes de que se calificara en el servidor. Vuelve a presentarlo para obtener el certificado.';
+
 function masterExamScore(dm: any, pathId: string): number | undefined {
   const sc = dm?.masterExamScores?.[pathId];
   if (typeof sc === 'number') return sc;
@@ -177,6 +190,35 @@ function paidDiplomaGate(
   return v.legacyOnly
     ? { ok: false, code: 'exam_not_verified', message: EXAM_NOT_VERIFIED }
     : { ok: false, code: 'exam_not_passed', message: 'Primero aprueba el examen final del curso (70 % o más).' };
+}
+
+// Certificado maestro de pago: antes no se miraba ningún examen en el servidor. Ahora hace
+// falta que cada curso de la ruta y el examen maestro estén aprobados y calificados por el
+// servidor (o, durante la ventana de legado, por el navegador). El portafolio de este camino
+// sigue sin validarse aquí (riesgo aceptado: lo paga el propio docente).
+function paidMasterGate(
+  dm: any, pathId: string, saved: unknown, serverExams: Record<string, number>, legacyUntil: number | null, now: number,
+): Pass | Fail {
+  const path = resolvePath(pathId, saved);
+  if (!path) return { ok: false, code: 'unknown_path', message: 'No reconocemos esa ruta.' };
+  let usedLegacy = false;
+  for (const cid of path.courses) {
+    const v = verifiedExamScore(dm, cid, serverExams, legacyUntil, now);
+    if (v.score === undefined || v.score < PASS_SCORE) {
+      return v.legacyOnly
+        ? { ok: false, code: 'exam_not_verified', message: EXAM_NOT_VERIFIED, detail: { curso: cid } }
+        : { ok: false, code: 'exam_not_passed', message: 'Primero aprueba los exámenes de todos los cursos de la ruta.', detail: { curso: cid } };
+    }
+    if (v.source === 'legacy') usedLegacy = true;
+  }
+  const m = verifiedMasterExam(dm, pathId, serverExams, legacyUntil, now);
+  if (m.score === undefined) {
+    return m.legacyOnly
+      ? { ok: false, code: 'master_exam_not_verified', message: MASTER_EXAM_NOT_VERIFIED }
+      : { ok: false, code: 'needs_master_exam', message: 'Primero presenta el examen maestro de la ruta.' };
+  }
+  if (m.source === 'legacy') usedLegacy = true;
+  return { ok: true, meta: { examen_maestro: m.score }, flags: usedLegacy ? ['examen_sin_validar'] : [] };
 }
 
 type ClaimInput = {
@@ -240,10 +282,14 @@ function validateClaim(i: ClaimInput): Pass | Fail {
       }
       studiedCards += c.done;
     }
-    const exam = masterExamScore(dm, i.refId);
+    const vm = verifiedMasterExam(dm, i.refId, i.serverExams, i.legacyUntil, i.now);
+    const exam = vm.score;
     if (exam === undefined) {
-      return { ok: false, code: 'needs_portfolio', message: 'Falta rendir el examen maestro de la ruta.' };
+      return vm.legacyOnly
+        ? { ok: false, code: 'master_exam_not_verified', message: MASTER_EXAM_NOT_VERIFIED }
+        : { ok: false, code: 'needs_portfolio', message: 'Falta rendir el examen maestro de la ruta.' };
     }
+    if (vm.source === 'legacy' && !flags.includes('examen_sin_validar')) flags.push('examen_sin_validar');
     const portfolio = i.reviews.filter((r) => r.kind === 'portfolio' && r.ref_id === i.refId)
       .sort((a, b) => b.score - a.score)[0];
     if (!portfolio) {
@@ -371,15 +417,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Diploma de pago: exige un examen aprobado y calificado por el servidor
-    if (cert_type === 'diploma') {
-      const [{ data: prog2 }, { data: exams2 }] = await Promise.all([
+    // Diploma y certificado maestro de pago: exigen exámenes aprobados y calificados por el servidor
+    {
+      const [{ data: prog2 }, { data: exams2 }, { data: cfg2 }] = await Promise.all([
         admin.from('progress').select('daily_missions').eq('user_id', user.id).maybeSingle(),
         admin.from('exam_results').select('course_id, best_score').eq('user_id', user.id),
+        cert_type === 'master' ? admin.from('app_config').select('value').eq('key', 'learning_paths').maybeSingle() : Promise.resolve({ data: null }),
       ]);
-      const gate = paidDiplomaGate(prog2?.daily_missions || {}, ref_id,
-        Object.fromEntries((exams2 || []).map((r: any) => [r.course_id, r.best_score])), LEGACY_EXAM_UNTIL_MS, Date.now());
-      if (!gate.ok) return json({ error: gate.message, code: gate.code }, 422);
+      const sx = Object.fromEntries((exams2 || []).map((r: any) => [r.course_id, r.best_score]));
+      const gate = cert_type === 'diploma'
+        ? paidDiplomaGate(prog2?.daily_missions || {}, ref_id, sx, LEGACY_EXAM_UNTIL_MS, Date.now())
+        : paidMasterGate(prog2?.daily_missions || {}, ref_id, (cfg2 as any)?.value, sx, LEGACY_EXAM_UNTIL_MS, Date.now());
+      if (!gate.ok) return json({ error: gate.message, code: gate.code, detail: (gate as any).detail || null }, 422);
     }
 
     const amount_in_cents = PRICES[cert_type];
