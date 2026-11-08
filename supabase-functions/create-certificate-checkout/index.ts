@@ -328,8 +328,14 @@ Deno.serve(async (req) => {
     }
 
     const amount_in_cents = PRICES[cert_type];
-    const successUrl = `${APP_URL}/index.html?paid_cert=${encodeURIComponent(cert_type)}&ref=${encodeURIComponent(ref_id)}${course_id ? `&course=${encodeURIComponent(course_id)}` : ''}`;
-    const cancelUrl = `${APP_URL}/index.html`;
+    // El docente vuelve al mismo sitio donde inició sesión (la sesión vive en el
+    // navegador, por dominio): si pagó desde www.yoaprendo.online y volviera a
+    // yoaprendo.online, llegaría sin sesión y vería el login. Solo se acepta el
+    // origen que manda la app si es nuestro dominio; cualquier otro usa APP_URL.
+    const reqOrigin = typeof body.return_origin === 'string' ? body.return_origin : '';
+    const baseUrl = /^https:\/\/([a-z0-9-]+\.)?yoaprendo\.online$/.test(reqOrigin) || reqOrigin === APP_URL ? reqOrigin : APP_URL;
+    const successUrl = `${baseUrl}/index.html?paid_cert=${encodeURIComponent(cert_type)}&ref=${encodeURIComponent(ref_id)}${course_id ? `&course=${encodeURIComponent(course_id)}` : ''}`;
+    const cancelUrl = `${baseUrl}/index.html`;
 
     const recRes = await fetch('https://app.recurrente.com/api/checkouts', {
       method: 'POST',

@@ -5988,7 +5988,7 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
         const res = await fetch(`${SUPABASE_URL}/functions/v1/create-certificate-checkout`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ cert_type: certType, ref_id: refId, course_id: certType === 'diploma' ? cid : null, score: score || null, use_sponsor: opts.skipSponsor ? false : undefined }),
+            body: JSON.stringify({ cert_type: certType, ref_id: refId, course_id: certType === 'diploma' ? cid : null, score: score || null, use_sponsor: opts.skipSponsor ? false : undefined, return_origin: location.origin }),
         });
         const data = await res.json();
         // Lo cubre un patrocinador: el servidor ya validó y registró el pago (monto 0)
@@ -6021,14 +6021,36 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
 // webhook confirme el pago (puede tardar unos segundos) y genera el
 // certificado automáticamente — el usuario no tiene que volver a hacer clic.
 (function () {
+    // El retorno del checkout se guarda (24 h) antes de limpiar la URL: si el docente
+    // vuelve sin sesión (otro navegador o dominio, app instalada, sesión vencida) y
+    // tiene que iniciar sesión, al entrar se retoma y llega igual a su diploma.
+    const PENDING_KEY = 'pendingPaidCert';
     const params = new URLSearchParams(location.search);
-    const paidCertType = params.get('paid_cert');
-    if (!paidCertType) return;
+    const fromUrl = params.get('paid_cert');
+    if (fromUrl) {
+        try { localStorage.setItem(PENDING_KEY, JSON.stringify({ type: fromUrl, ref: params.get('ref') || null, ts: Date.now() })); } catch (e) {}
+        // Limpiar los query params de inmediato — un refresh no debe re-disparar esto.
+        history.replaceState(null, '', location.pathname + location.hash);
+    }
+    const readPending = () => {
+        try {
+            const p = JSON.parse(localStorage.getItem(PENDING_KEY) || 'null');
+            return p && p.type && Date.now() - p.ts < 86400000 ? p : null;
+        } catch (e) { return null; }
+    };
+    const clearPending = () => { try { localStorage.removeItem(PENDING_KEY); } catch (e) {} };
+    let resuming = false;
 
-    const refId = params.get('ref') || null;
-
-    // Limpiar los query params de inmediato — un refresh no debe re-disparar esto.
-    history.replaceState(null, '', location.pathname + location.hash);
+    // Aviso en la pantalla de inicio de sesión cuando hay un pago por completar
+    function showLoginHint() {
+        const scr = document.getElementById('loginScreen');
+        if (!scr || document.getElementById('paidLoginHint')) return;
+        const d = document.createElement('div');
+        d.id = 'paidLoginHint';
+        d.style.cssText = 'position:fixed;top:12px;left:12px;right:12px;z-index:9999;background:#16A34A;color:white;border-radius:14px;padding:12px 14px;font:700 13px Nunito,sans-serif;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)';
+        d.textContent = '✅ Recibimos tu pago. Inicia sesión y te llevamos a tu diploma.';
+        document.body.appendChild(d);
+    }
 
     async function waitForUser(maxMs) {
         const start = Date.now();
@@ -6039,8 +6061,20 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
     }
 
     async function checkPaidAndUnlock() {
+        const pending = readPending();
+        if (!pending || resuming) return;
+        const paidCertType = pending.type, refId = pending.ref;
+        resuming = true;
+        try {
+            await resumePaid(paidCertType, refId);
+        } finally { resuming = false; }
+    }
+
+    async function resumePaid(paidCertType, refId) {
         const user = await waitForUser(8000);
-        if (!user || !refId) return;
+        if (!user) { showLoginHint(); return; }
+        document.getElementById('paidLoginHint')?.remove();
+        if (!refId) { clearPending(); return; }
 
         // El webhook puede tardar unos segundos en confirmar — reintenta.
         // Filtra directo por status='paid' (no por "más reciente"): puede
@@ -6087,6 +6121,7 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
                     await generateCertificateFromExam(realScore, realCourseId);
                 }
                 window._certPaidInfo = null;   // si la pestaña sí se abrió, no queda pendiente
+                clearPending();
                 return;
             }
             await new Promise((r) => setTimeout(r, 1500));
@@ -6094,6 +6129,8 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
         showToast('Tu pago se está confirmando. Si no aparece en un momento, vuelve a intentar desde tu perfil.', 'info');
     }
 
+    // También se llama al terminar de iniciar sesión (_landOnAppropriateScreen)
+    window._resumePaidCert = checkPaidAndUnlock;
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', checkPaidAndUnlock);
     } else {
@@ -8094,6 +8131,7 @@ function _landOnAppropriateScreen() {
         showCourseSelector(); // primera vez, o el curso guardado ya no existe/está disponible
     }
     checkPendingFollowups();
+    if (typeof window._resumePaidCert === 'function') window._resumePaidCert();   // pago hecho antes de iniciar sesión
 }
 
 function _renderCourseSelector() {
