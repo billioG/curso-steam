@@ -993,20 +993,19 @@ function updateUI() {
         _examBanner.remove();
     }
 
-    // Curso aprobado: llamada a la acción para adquirir o descargar el diploma
-    // (mismo lugar que el aviso del examen; se actualiza al pagar).
-    const _dipBannerId = 'courseDiplomaBanner';
-    document.getElementById(_dipBannerId)?.remove();
-    if (_examPassed && _hasFinalExam && _activeCourse) {
-        const _stD = _diplomaState(_activeCourseId);
-        const _b = document.createElement('div');
-        _b.id = _dipBannerId;
-        _b.style.cssText = `margin:12px 16px 0;padding:12px 14px;background:${_stD.paid ? '#F0FDF4' : '#F5F3FF'};border:1.5px solid ${_stD.paid ? '#86EFAC' : '#C4B5FD'};border-radius:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap`;
-        _b.innerHTML = `<span style="font-size:22px">🎓</span><div style="flex:1;min-width:140px"><div style="font-weight:800;font-size:13px;color:#0F172A">${_stD.paid ? 'Tu diploma está listo' : 'Aprobaste este curso'}</div><div style="font-size:11px;color:#64748B">${_stD.paid ? 'Descárgalo cuando quieras.' : 'Adquiere tu diploma de participación.'}</div></div><div style="text-align:right">${_diplomaCtaButton(_activeCourseId, { small: true })}</div>`;
-        // Dentro de la lección (encima de la tarjeta), no en la barra superior fija
-        const _card = document.getElementById('cardContainer');
-        _b.style.margin = '0 0 12px';
-        if (_card?.parentElement) _card.parentElement.insertBefore(_b, _card);
+    // Curso aprobado: llamada a la acción para adquirir o descargar el diploma. Vive en
+    // su propia caja (#courseDiplomaBox): encima de la tarjeta en celular y en la
+    // columna derecha en escritorio (ver _layoutLessonRail), sin tapar el índice.
+    const _dipBox = document.getElementById('courseDiplomaBox');
+    if (_dipBox) {
+        if (_examPassed && _hasFinalExam && _activeCourse) {
+            const _stD = _diplomaState(_activeCourseId);
+            _dipBox.innerHTML = `<div style="padding:12px 14px;background:${_stD.paid ? '#F0FDF4' : '#F5F3FF'};border:1.5px solid ${_stD.paid ? '#86EFAC' : '#C4B5FD'};border-radius:16px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="font-size:22px">🎓</span><div style="min-width:0"><div style="font-weight:800;font-size:13px;color:#0F172A">${_stD.paid ? 'Tu diploma está listo' : 'Aprobaste este curso'}</div><div style="font-size:11px;color:#64748B">${_stD.paid ? 'Descárgalo cuando quieras.' : 'Adquiere tu diploma de participación.'}</div></div></div>
+                ${_diplomaCtaButton(_activeCourseId, { small: true, full: true })}</div>`;
+        } else {
+            _dipBox.innerHTML = '';
+        }
     }
 
     const xpDisplay = document.getElementById("xpDisplay");
@@ -2342,15 +2341,16 @@ function _layoutLessonRail() {
     const rail = document.getElementById('lessonRail');
     const session = document.getElementById('homeSessionBox');
     const challenge = document.getElementById('moduleChallengeBox');
+    const diploma = document.getElementById('courseDiplomaBox');
     const peers = document.getElementById('peerStoriesBox');
     const card = document.getElementById('cardContainer');
     const nav = document.getElementById('cardNavBar');
     if (!rail || !session || !challenge || !peers || !card || !nav) return;
     const inRail = session.parentNode === rail;
     if (_lessonDesktop() && !inRail) {
-        rail.append(session, challenge, peers);
+        rail.append(...(diploma ? [diploma] : []), session, challenge, peers);
     } else if (!_lessonDesktop() && inRail) {
-        card.before(session, challenge);
+        card.before(...(diploma ? [diploma] : []), session, challenge);
         nav.before(peers);
     }
 }
