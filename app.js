@@ -5233,7 +5233,11 @@ function showExamResults() {
                     </div>`).join('')}
                 </div>`;
             })()}
-            ${passed ? `<button onclick="requestCertificate('diploma', null, ${pct})" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:8px">📜 Obtener mi diploma de participación · ${_certPriceLabel('diploma', window._lastExamCourseId || (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam')}</button>` : ''}
+            ${passed ? (() => {
+                const _rc = window._lastExamCourseId || (typeof currentCourseId !== 'undefined' && currentCourseId) || 'steam';
+                const _pd = _paidDateLabel('diploma', _rc);
+                return `<button onclick="requestCertificate('diploma', null, ${pct})" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5;margin-bottom:${_pd ? 2 : 8}px">${_isCertPaid('diploma', _rc) ? '⬇ Descargar mi diploma de participación' : '📜 Obtener mi diploma de participación · ' + _certPriceLabel('diploma', _rc)}</button>${_pd ? `<p style="font-size:11px;color:#64748B;text-align:center;margin-bottom:8px">Pagado el ${_pd}</p>` : ''}`;
+            })() : ''}
             <button onclick="retryExam()" class="w-full py-3 rounded-xl font-bold text-sm" style="border:2px solid #E2E8F0;color:#475569;background:white;margin-bottom:4px">
                 🔄 Reintentar examen
             </button>
@@ -5380,16 +5384,29 @@ function _buildSignaturesHtml(signatures, firmaSrcFallback) {
 // requestCertificate() revisaba el pago en ese momento, pero la etiqueta
 // nunca reflejaba que ya estaba comprado.
 let _paidCertRefs = new Set();
+let _paidCertDates = {};   // 'diploma:abp' → ISO de cuándo se confirmó el pago
+
+// «8 nov 2026» — fecha en que se confirmó el pago de un certificado ('' si no hay)
+function _paidDateLabel(certType, refId) {
+    const iso = _paidCertDates[`${certType}:${refId}`];
+    const d = iso ? new Date(iso) : null;
+    return d && !isNaN(d) ? d.toLocaleDateString('es-GT', { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '') : '';
+}
 
 async function _refreshPaidCertRefs() {
     if (!currentUser) return;
     try {
         const { data } = await supabase
             .from('certificate_payments')
-            .select('cert_type, ref_id')
+            .select('cert_type, ref_id, paid_at')
             .eq('user_id', currentUser.id)
             .eq('status', 'paid');
         _paidCertRefs = new Set((data || []).map(r => `${r.cert_type}:${r.ref_id}`));
+        _paidCertDates = {};
+        (data || []).forEach(r => {
+            const k = `${r.cert_type}:${r.ref_id}`;
+            if (r.paid_at && (!_paidCertDates[k] || r.paid_at > _paidCertDates[k])) _paidCertDates[k] = r.paid_at;
+        });
     } catch (e) {
         console.error('_refreshPaidCertRefs:', e);
     }
@@ -5556,7 +5573,7 @@ function _updateCertButtonLabels() {
     if (masterLabel) {
         const _pid = _selectedMasterPath?.id || _activeMasterPath?.id;
         masterLabel.textContent = (_pid && _isCertPaid('master', _pid))
-            ? '⬇ Descargar Certificado Maestro'
+            ? '⬇ Descargar Certificado Maestro' + (_paidDateLabel('master', _pid) ? ' · pagado el ' + _paidDateLabel('master', _pid) : '')
             : 'Obtener Certificado Maestro · ' + (_pid ? _certPriceLabel('master', _pid) : 'Q50');
     }
 }
@@ -5598,6 +5615,9 @@ function _updateExamBtn() {
 // usuario sí puede tocar — ese toque es un gesto real, así que abrir la
 // pestaña en ese momento nunca se bloquea.
 function _offerCertificateDownload(blobUrl, filename, label) {
+    const paidInfo = window._certPaidInfo;
+    window._certPaidInfo = null;
+    if (paidInfo) return _showPaidCertificateModal(blobUrl, filename, label, paidInfo.paidAt);
     const id = 'certReadyBanner';
     document.getElementById(id)?.remove();
     const banner = document.createElement('div');
@@ -5624,6 +5644,38 @@ function _offerCertificateDownload(blobUrl, filename, label) {
         banner.remove();
     });
     document.body.appendChild(banner);
+}
+
+// Al volver del pago: aviso centrado con la fecha de pago y un botón que lleva
+// directo al diploma recién pagado (el toque es un gesto real, no lo bloquea el navegador).
+function _showPaidCertificateModal(blobUrl, filename, label, paidAt) {
+    document.getElementById('paidCertModal')?.remove();
+    const ov = document.createElement('div');
+    ov.id = 'paidCertModal';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,.6);display:flex;align-items:center;justify-content:center;padding:16px';
+    ov.innerHTML = `
+        <div role="dialog" aria-modal="true" style="background:white;border-radius:20px;max-width:380px;width:100%;padding:24px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.3)">
+            <div style="width:56px;height:56px;border-radius:50%;background:#DCFCE7;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px">🎓</div>
+            <h2 style="font-family:Montserrat,sans-serif;font-size:19px;font-weight:800;color:#1E4976;margin:0 0 6px">¡Pago confirmado!</h2>
+            <p style="font-size:14px;color:#475569;margin:0 0 4px">Tu ${esc(label)} está listo.</p>
+            ${paidAt ? `<p style="font-size:12px;color:#64748B;margin:0 0 16px">Pagado el ${esc(paidAt)}</p>` : '<div style="height:16px"></div>'}
+            <button data-open style="width:100%;background:#16A34A;color:white;border:none;border-radius:12px;padding:13px;font-weight:800;font-size:14px;cursor:pointer">Ver mi ${esc(label)} →</button>
+            <button data-close style="margin-top:8px;background:none;border:none;color:#64748B;font-size:12px;font-weight:700;cursor:pointer;padding:6px">Cerrar</button>
+        </div>`;
+    ov.addEventListener('click', (e) => {
+        if (e.target.closest('[data-open]')) {
+            const win = window.open(blobUrl, '_blank');
+            if (!win) {
+                const a = document.createElement('a');
+                a.href = blobUrl; a.download = filename;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            }
+            ov.remove();
+        } else if (e.target.closest('[data-close]') || e.target === ov) {
+            ov.remove();
+        }
+    });
+    document.body.appendChild(ov);
 }
 
 // ── Pago de diplomas/certificados (Recurrente) ──────────────────────────
@@ -5870,7 +5922,7 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
         for (let attempt = 0; attempt < 8; attempt++) {
             const { data: rows } = await supabase
                 .from('certificate_payments')
-                .select('status, course_id')
+                .select('status, course_id, paid_at')
                 .eq('user_id', user.id)
                 .eq('cert_type', paidCertType)
                 .eq('ref_id', refId)
@@ -5880,10 +5932,15 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
             if (data?.status === 'paid') {
                 showToast('¡Pago confirmado! Generando tu ' + (paidCertType === 'master' ? 'Certificado Maestro' : 'diploma') + '…', 'success');
                 _paidCertRefs.add(`${paidCertType}:${refId}`);
+                _paidCertDates[`${paidCertType}:${refId}`] = data.paid_at || new Date().toISOString();
                 _updateCertButtonLabels();
+                // Para que, si el navegador bloquea abrir la pestaña (es lo normal al
+                // volver del pago), se muestre un aviso grande con la fecha de pago y
+                // un botón «Ver mi diploma» en vez de un banner fácil de perder.
+                window._certPaidInfo = { paidAt: _paidDateLabel(paidCertType, refId) };
                 if (paidCertType === 'master') {
                     if (typeof _checkMasterCert === 'function') _checkMasterCert();
-                    if (typeof generateMasterCertificate === 'function') generateMasterCertificate();
+                    if (typeof generateMasterCertificate === 'function') await generateMasterCertificate();
                 } else if (typeof generateCertificateFromExam === 'function') {
                     // El curso y la nota NUNCA se toman de la URL de retorno del
                     // checkout (editable a mano) — se leen de la fila de pago ya
@@ -5900,8 +5957,9 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
                     const dm = progRows?.[0]?.daily_missions;
                     const storedScore = dm?.examScores?.[realCourseId] ?? (realCourseId === 'steam' ? dm?.examScore : undefined);
                     if (Number.isFinite(storedScore)) realScore = Math.min(100, Math.max(0, storedScore));
-                    generateCertificateFromExam(realScore, realCourseId);
+                    await generateCertificateFromExam(realScore, realCourseId);
                 }
+                window._certPaidInfo = null;   // si la pestaña sí se abrió, no queda pendiente
                 return;
             }
             await new Promise((r) => setTimeout(r, 1500));
@@ -6484,6 +6542,7 @@ function _checkMasterCert() {
                         <div style="flex:1;min-width:0">
                             <p style="font-size:12px;font-weight:700;color:#15803D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</p>
                             <p style="font-size:10px;color:#16A34A">${_examDateLabel ? `Aprobado el ${_examDateLabel} · ${s}%` : `Certificado · ${s}%`}</p>
+                            ${isPaid && _paidDateLabel('diploma', c.id) ? `<p style="font-size:10px;color:#64748B">Pagado el ${_paidDateLabel('diploma', c.id)}</p>` : ''}
                         </div>
                         ${certBtnHtml}
                     </div>`;
