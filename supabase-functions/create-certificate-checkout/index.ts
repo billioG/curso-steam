@@ -39,6 +39,10 @@ const SUPABASE_ANON_KEY     = Deno.env.get('SUPABASE_ANON_KEY')!;
 const SUPABASE_SERVICE_KEY  = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const RECURRENTE_SECRET_KEY = Deno.env.get('RECURRENTE_SECRET_KEY')!;
 const APP_URL                = Deno.env.get('APP_URL') || 'https://yoaprendo.online';
+// Hasta esta fecha (ISO, p. ej. 2026-12-31) se acepta TAMBIÉN la nota de examen que guardó
+// el navegador, para docentes que aprobaron antes de que el examen se calificara en el
+// servidor (función `exam`). Sin definir = solo cuenta la nota del servidor.
+const LEGACY_EXAM_UNTIL_MS = (() => { const t = Date.parse(Deno.env.get('LEGACY_EXAM_UNTIL') || ''); return Number.isNaN(t) ? null : t; })();
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -126,6 +130,20 @@ function examScore(dm: any, courseId: string): number | undefined {
   return undefined;
 }
 
+// Nota de un examen de curso que sirve para certificar: la del servidor
+// (`exam_results`, la escribe la función `exam`). Mientras dure la ventana
+// LEGACY_EXAM_UNTIL también vale la nota guardada por el navegador.
+function verifiedExamScore(
+  dm: any, courseId: string, serverExams: Record<string, number>, legacyUntil: number | null, now: number,
+): { score: number | undefined; source?: 'server' | 'legacy'; legacyOnly?: boolean } {
+  const server = serverExams[courseId];
+  if (typeof server === 'number') return { score: server, source: 'server' };
+  const legacy = examScore(dm, courseId);
+  if (legacy !== undefined && legacyUntil !== null && now < legacyUntil) return { score: legacy, source: 'legacy' };
+  return { score: undefined, legacyOnly: legacy !== undefined };
+}
+const EXAM_NOT_VERIFIED = 'Tu examen de este curso se rindió antes de que se calificara en el servidor. Vuelve a presentarlo para obtener el certificado.';
+
 function masterExamScore(dm: any, pathId: string): number | undefined {
   const sc = dm?.masterExamScores?.[pathId];
   if (typeof sc === 'number') return sc;
@@ -148,6 +166,19 @@ function resolvePath(pathId: string, saved: unknown): { id: string; courses: str
   return courses.length ? { id: pathId, courses } : null;
 }
 
+// Diploma de pago: antes no se miraba el examen en el servidor. Ahora hace falta una nota
+// aprobada calificada por el servidor (o, durante la ventana, la guardada por el navegador).
+function paidDiplomaGate(
+  dm: any, courseId: string, serverExams: Record<string, number>, legacyUntil: number | null, now: number,
+): Pass | Fail {
+  if (!cardIdSet(courseId)) return { ok: false, code: 'unknown_course', message: 'No reconocemos ese curso.' };
+  const v = verifiedExamScore(dm, courseId, serverExams, legacyUntil, now);
+  if (v.score !== undefined && v.score >= PASS_SCORE) return { ok: true, meta: { examen: v.score, origen: v.source }, flags: [] };
+  return v.legacyOnly
+    ? { ok: false, code: 'exam_not_verified', message: EXAM_NOT_VERIFIED }
+    : { ok: false, code: 'exam_not_passed', message: 'Primero aprueba el examen final del curso (70 % o más).' };
+}
+
 type ClaimInput = {
   certType: 'diploma' | 'master';
   refId: string;
@@ -155,6 +186,8 @@ type ClaimInput = {
   reviews: { kind: string; ref_id: string; approved: boolean; score: number }[];
   savedPaths: unknown;
   accountCreatedAt: string | null;
+  serverExams: Record<string, number>;   // exam_results: mejor nota aprobada por curso, calificada por el servidor
+  legacyUntil: number | null;            // fin de la ventana que acepta la nota guardada por el navegador
   recentSponsorClaims: number;   // certificados patrocinados de este docente en las últimas 24 h
   sessionSeconds: number | null; // suma de user_sessions.duration_seconds (null = no se pudo leer)
   now: number;
@@ -170,10 +203,14 @@ function validateClaim(i: ClaimInput): Pass | Fail {
 
   if (i.certType === 'diploma') {
     if (!cardIdSet(i.refId)) return { ok: false, code: 'unknown_course', message: 'No reconocemos ese curso.' };
-    const score = examScore(dm, i.refId);
+    const v = verifiedExamScore(dm, i.refId, i.serverExams, i.legacyUntil, i.now);
+    const score = v.score;
     if (score === undefined || score < PASS_SCORE) {
-      return { ok: false, code: 'exam_not_passed', message: 'Primero aprueba el examen final del curso (70 % o más).' };
+      return v.legacyOnly
+        ? { ok: false, code: 'exam_not_verified', message: EXAM_NOT_VERIFIED }
+        : { ok: false, code: 'exam_not_passed', message: 'Primero aprueba el examen final del curso (70 % o más).' };
     }
+    if (v.source === 'legacy') flags.push('examen_sin_validar');
     const c = cardsDone(cards, i.refId);
     if (c.done < Math.ceil(c.total * MIN_CARDS_RATIO)) {
       return { ok: false, code: 'cards_incomplete', message: `Para el diploma patrocinado necesitas completar al menos el 80 % de las tarjetas del curso (llevas ${c.done} de ${c.total}).`, detail: c };
@@ -189,10 +226,14 @@ function validateClaim(i: ClaimInput): Pass | Fail {
     const path = resolvePath(i.refId, i.savedPaths);
     if (!path) return { ok: false, code: 'unknown_path', message: 'No reconocemos esa ruta.' };
     for (const cid of path.courses) {
-      const s = examScore(dm, cid);
+      const v = verifiedExamScore(dm, cid, i.serverExams, i.legacyUntil, i.now);
+      const s = v.score;
       if (s === undefined || s < PASS_SCORE) {
-        return { ok: false, code: 'exam_not_passed', message: 'Primero aprueba los exámenes de todos los cursos de la ruta.', detail: { curso: cid } };
+        return v.legacyOnly
+          ? { ok: false, code: 'exam_not_verified', message: EXAM_NOT_VERIFIED, detail: { curso: cid } }
+          : { ok: false, code: 'exam_not_passed', message: 'Primero aprueba los exámenes de todos los cursos de la ruta.', detail: { curso: cid } };
       }
+      if (v.source === 'legacy' && !flags.includes('examen_sin_validar')) flags.push('examen_sin_validar');
       const c = cardsDone(cards, cid);
       if (c.done < Math.ceil(c.total * MIN_CARDS_RATIO)) {
         return { ok: false, code: 'cards_incomplete', message: `Necesitas completar al menos el 80 % de las tarjetas de cada curso de la ruta (en «${cid}» llevas ${c.done} de ${c.total}).`, detail: { curso: cid, ...c } };
@@ -282,7 +323,7 @@ Deno.serve(async (req) => {
         : c.master_left > 0);
 
       if (covered.length) {
-        const [{ data: prog }, { data: reviews }, { data: cfg }, { count: recent }, { data: sessions }] = await Promise.all([
+        const [{ data: prog }, { data: reviews }, { data: cfg }, { count: recent }, { data: sessions }, { data: exams }] = await Promise.all([
           admin.from('progress').select('completed_cards, daily_missions').eq('user_id', user.id).maybeSingle(),
           admin.from('ai_reviews').select('kind, ref_id, approved, score').eq('user_id', user.id).eq('ref_id', ref_id),
           admin.from('app_config').select('value').eq('key', 'learning_paths').maybeSingle(),
@@ -290,6 +331,7 @@ Deno.serve(async (req) => {
             .eq('user_id', user.id).eq('payment_method', 'sponsor').eq('status', 'paid')
             .gte('paid_at', new Date(Date.now() - 864e5).toISOString()),
           admin.from('user_sessions').select('duration_seconds').eq('user_id', user.id).limit(10000),
+          admin.from('exam_results').select('course_id, best_score').eq('user_id', user.id),
         ]);
 
         const verdict = validateClaim({
@@ -298,6 +340,8 @@ Deno.serve(async (req) => {
           progress: prog,
           reviews: reviews || [],
           savedPaths: cfg?.value,
+          serverExams: Object.fromEntries((exams || []).map((r: any) => [r.course_id, r.best_score])),
+          legacyUntil: LEGACY_EXAM_UNTIL_MS,
           accountCreatedAt: user.created_at || null,
           recentSponsorClaims: recent || 0,
           sessionSeconds: sessions ? sessions.reduce((a: number, r: any) => a + (Number(r.duration_seconds) || 0), 0) : null,
@@ -325,6 +369,17 @@ Deno.serve(async (req) => {
         }
         // 'no_seats' (alguien usó el último cupo entre la consulta y ahora): se cae al pago normal
       }
+    }
+
+    // Diploma de pago: exige un examen aprobado y calificado por el servidor
+    if (cert_type === 'diploma') {
+      const [{ data: prog2 }, { data: exams2 }] = await Promise.all([
+        admin.from('progress').select('daily_missions').eq('user_id', user.id).maybeSingle(),
+        admin.from('exam_results').select('course_id, best_score').eq('user_id', user.id),
+      ]);
+      const gate = paidDiplomaGate(prog2?.daily_missions || {}, ref_id,
+        Object.fromEntries((exams2 || []).map((r: any) => [r.course_id, r.best_score])), LEGACY_EXAM_UNTIL_MS, Date.now());
+      if (!gate.ok) return json({ error: gate.message, code: gate.code }, 422);
     }
 
     const amount_in_cents = PRICES[cert_type];

@@ -56,6 +56,7 @@ CSS es estático, no JIT en el navegador como el CDN viejo).
 - IDs de tarjetas por curso: STEAM=numérico, ABP=`abp-`, DT=`dt-`, EV=`ev-`, TE=`te-`, Storytelling=`st-`. Los demás cursos usan ids numéricos en `data.js` que `app.js` normaliza al cargar a `<courseId>-<n>` (así se guardan en `completed_cards`); los ids solo deben ser únicos dentro de su curso.
 - `totalCards` de cada curso vive en `data.js` como fuente única. `admin.js` (`STATIC_COURSES`) y `coordinator.html` (`COURSES`) lo recalculan solos en runtime porque ambos cargan `data.js` — no hay nada que actualizar a mano ahí. `supabase-functions/weekly-stats` es una Edge Function Deno aislada que no puede cargar `data.js`, así que mantiene su propia copia de `totalCards`: después de agregar o quitar tarjetas en `data.js`, corré `node scripts/sync-course-totals.mjs` para regenerarla (o `--check` para verificar sin escribir, útil antes de un deploy).
 - `supabase-functions/create-certificate-checkout` también lleva copia de los ids de tarjeta de `data.js` y de las rutas por defecto de `app.js` (para validar los certificados patrocinados). Después de cambiar tarjetas, cursos o rutas por defecto, corré `node scripts/sync-cert-rules.mjs` (o `--check`) y re-desplegá la función.
+- `supabase-functions/exam` lee el banco de preguntas de `exam_questions`, que se genera desde `data.js`: después de cambiar preguntas de examen (`finalExam`, `examExtra`) o tarjetas quiz, corré `node scripts/sync-exam-bank.mjs` (o `--check`) y pegá en el SQL Editor los archivos de `migrations/exam-bank/` que cambien.
 - `examScores` (objeto por courseId) es el campo principal; `examScore` (singular) es legacy solo para STEAM
 - Dropdowns dentro de contenedores `overflow:auto` deben usar `position:fixed` + `getBoundingClientRect()`
 
@@ -66,36 +67,53 @@ CSS es estático, no JIT en el navegador como el CDN viejo).
 - **Títulos que prometen un número** (p. ej. "Banco de 12 actividades") deben coincidir con el contenido real del archivo.
 - Al agregar un curso nuevo, agregar también su sección en `fuentes.html`.
 
-## Integridad de `progress` — riesgo conocido y aceptado
+## Integridad de `progress` y exámenes
+
 La tabla `progress` tiene un trigger (`migrations/progress-value-guard.sql`,
 función `guard_progress_values`) que rechaza valores implausibles: `xp`
 negativo o que suba más de 1000 en una sola escritura, `examScores` fuera de
 0-100, `completed_cards` con IDs de formato inválido. Esto bloquea la
 manipulación burda desde la consola del navegador (`xp: 999999`, etc.).
 
-**Lo que NO evita:** los exámenes se califican 100% en el cliente
-(`app.js` `showExamResults()`) y las respuestas correctas viven en texto
-plano en `data.js` (campo `correct`). Alguien con conocimientos técnicos
-podría, en teoría, fabricar un `examScores` "aprobado" dentro del rango
-válido (0-100) sin haber rendido el examen de verdad, y comprar un
-certificado (Q10-Q50) con esa nota falsa. Cerrar esto de verdad requeriría
-calificar los exámenes en el servidor (dejar de enviar `correct` al
-cliente) — un cambio de arquitectura grande que toca los 26 cursos,
-`app.js` y necesitaría una nueva Edge Function.
+**Exámenes finales de curso: calificados en el servidor**
+(`migrations/examen-servidor.sql`, Edge Function `exam`). El navegador ya no
+decide la nota: pide el examen (`start`), responde y envía las respuestas
+(`submit`); el servidor sortea las preguntas (con las opciones permutadas), las
+califica, aplica un tiempo mínimo (3 s por pregunta) y un máximo de 6 intentos
+al día por curso, y guarda la mejor nota aprobada en `exam_results`. Esa tabla
+es lo que valida `create-certificate-checkout` para el diploma de pago, el
+diploma patrocinado y los cursos de un certificado maestro patrocinado;
+`progress.examScores` queda solo como dato de interfaz. Las respuestas correctas
+viven en `exam_questions` (RLS sin políticas: solo service role); el banco se
+genera con `node scripts/sync-exam-bank.mjs` desde `data.js` (hay que pegar el
+SQL de `migrations/exam-bank/` tras cambiar preguntas de examen o tarjetas quiz).
+Si no hay conexión con el servidor, la app ofrece un examen de **práctica** local
+que no habilita ningún certificado.
 
-**Decisión (evaluada en `tasks/plan.md`):** no se persigue ese cambio por
-ahora — el valor económico en juego (Q10-Q50 por certificado) no justifica
-el esfuerzo. Si en el futuro aparece evidencia de abuso real (certificados
-sospechosos, patrones raros en `examScores`), revisar esa decisión.
+**Lo que NO evita:** el repositorio es público y `data.js` conserva las
+respuestas (las tarjetas quiz de las lecciones las necesitan para dar
+retroalimentación inmediata). El servidor sortea primero las preguntas «solo de
+examen», pero quien busque las respuestas en el repositorio o su historial puede
+aprobar un examen real (con tiempo mínimo, intentos limitados y rastro en
+`exam_attempts`). Lo que se impide es fabricar la nota desde la consola. Cerrar
+esto del todo exigiría escribir las preguntas de examen solo en la base de datos,
+fuera del repositorio. Tampoco está calificado en el servidor el **examen
+maestro** de una ruta (`masterExamScores`): sigue escribiéndolo el navegador.
+`LEGACY_EXAM_UNTIL` (secret de `create-certificate-checkout`, fecha ISO) permite
+aceptar por un tiempo la nota guardada por el navegador de docentes que
+aprobaron antes de esta función; sin definir, solo cuenta la del servidor.
 
-**Excepción: certificados patrocinados** (`migrations/patrocinios.sql`). Cuando una
+**Certificados de pago con Recurrente** exigen ahora examen aprobado calificado
+por el servidor (antes el servidor no miraba el examen). El resto de requisitos
+(80 % de tarjetas, relato de IA) solo aplica a certificados patrocinados.
+
+**Certificados patrocinados** (`migrations/patrocinios.sql`). Cuando una
 fundación paga el certificado, el fraude le cuesta dinero a un tercero, así que
 esos certificados NO se entregan solo con lo que dice el navegador:
-`create-certificate-checkout` valida en el servidor el examen (≥ 70), el 80 % de
-las tarjetas (ids exactos) y una revisión de IA del relato (diploma) o del
-portafolio (maestro) que registran `evaluate-evidence` y `evaluate-portfolio`
-en `ai_reviews`. La nota del examen y las tarjetas siguen siendo escritas por
-el navegador, por eso la revisión de IA del servidor es la barrera que no se
-puede falsificar desde la consola. Los certificados de pago con Recurrente
-siguen como antes (riesgo aceptado). Ver «Patrocinios» en
-`supabase-functions/SETUP.md`.
+`create-certificate-checkout` valida en el servidor el examen (≥ 70, de
+`exam_results`), el 80 % de las tarjetas (ids exactos) y una revisión de IA del
+relato (diploma) o del portafolio (maestro) que registran `evaluate-evidence` y
+`evaluate-portfolio` en `ai_reviews`. Las tarjetas completadas siguen siendo
+escritas por el navegador, por eso la revisión de IA del servidor es la barrera
+que no se puede falsificar desde la consola. Ver «Patrocinios» y «Exámenes
+calificados en el servidor» en `supabase-functions/SETUP.md`.

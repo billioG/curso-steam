@@ -663,3 +663,71 @@ Las reglas se verifican con `node scripts/test-cron-guard.mjs`.
 `new-user-alert` la llama el webhook de base de datos de Supabase y no se tocó:
 solo escribe al admin. Si en el panel de Webhooks puedes configurar un header
 propio, conviene agregarle un secreto compartido.
+
+
+# Exámenes calificados en el servidor
+
+Antes la nota de los exámenes de curso la calculaba y guardaba el navegador:
+bastaba editarla para «aprobar» y comprar (o recibir de un patrocinador) un
+diploma. Ahora el servidor sortea las preguntas, califica y guarda el resultado;
+el navegador no conoce la respuesta correcta de lo que se le sortea.
+
+## Paso 1 — Tablas
+
+SQL Editor → `migrations/examen-servidor.sql` (crea `exam_questions`,
+`exam_attempts`, `exam_results` y `record_exam_result`; RLS activa, el docente solo
+puede leer su propia nota). Seguro re-ejecutar.
+
+## Paso 2 — Banco de preguntas
+
+SQL Editor → pega, uno por uno, `migrations/exam-bank/exam-bank-1.sql`, `-2.sql` y
+`-3.sql` (~140 KB cada uno; generados desde `data.js` y seguros de re-ejecutar).
+Comprueba: `select count(*) from exam_questions;` → 655 (27 cursos).
+
+## Paso 3 — Desplegar funciones
+
+- **`exam`** (nueva, con «Enforce JWT Verification» activado): pega
+  `supabase-functions/exam/index.ts`. Sin secrets nuevos.
+- **`create-certificate-checkout`** (actualizada): ahora exige un examen aprobado
+  calificado por el servidor, también para el diploma de pago. Secret opcional
+  `LEGACY_EXAM_UNTIL` (p. ej. `2026-12-31`): hasta esa fecha se acepta también la nota
+  que guardó el navegador, para que los docentes que ya habían aprobado no tengan
+  que repetir el examen de golpe. **Recomendado:** define una fecha a 30–45 días
+  de hoy; sin el secret, todos deben presentar el examen de nuevo para certificar.
+  Los certificados concedidos con la nota del navegador quedan con la alerta
+  `examen_sin_validar`.
+
+**Orden:** primero los pasos 1–3 y recién después publica la app (merge a `main`).
+Si la app sale antes, los exámenes caen al modo de práctica (no habilitan diploma).
+
+## Qué hace el servidor
+
+- Sortea el 60 % del banco (10–20 preguntas), prefiriendo las «solo de examen» y las
+  que el docente no vio en sus dos intentos anteriores, con las opciones permutadas.
+- Reanuda un intento abierto (no se pueden pedir exámenes sin límite para ver el banco).
+- Máximo 6 intentos al día por docente y curso; un intento caduca a las 3 h.
+- Menos de 3 s por pregunta no cuenta (alerta `demasiado_rapido` en `exam_attempts`).
+- Guarda la mejor nota aprobada en `exam_results`; rastro completo en `exam_attempts`.
+
+## Cuando cambies preguntas
+
+`node scripts/sync-exam-bank.mjs` (o `--check`) regenera `migrations/exam-bank/`; pega
+los archivos que cambien. Si cambias las preguntas de un curso mientras alguien está
+presentando, ese intento se invalida (409) y empieza uno nuevo.
+
+## Límites
+
+- El repositorio es público y las lecciones traen respuestas en `data.js`; el servidor
+  prefiere las preguntas solo de examen, pero no puede ocultar lo que está en el repo.
+  Para cerrarlo del todo, las preguntas de examen deberían escribirse solo en la base
+  de datos.
+- El **examen maestro** de una ruta sigue calificándose en el navegador.
+
+## Probar
+
+- `node scripts/test-exam-grading.mjs` — sorteo, permutación, calificación.
+- `node scripts/test-exam-function.mjs` — el handler real contra una base en memoria.
+- `migrations/tests/examen-servidor.test.sql` — RLS y funciones en un Postgres de prueba.
+- A mano: presenta un examen; en `exam_attempts` debe aparecer el intento y en
+  `exam_results` tu nota. Con la anon key, `select * from exam_questions` debe dar vacío.
+
