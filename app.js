@@ -922,6 +922,56 @@ function showToast(message, type) {
     setTimeout(() => toast.remove(), 3000);
 }
 
+// «Te faltan unos 14 min · 3 tarjetas de este módulo»: tarjetas del módulo actual que aún no
+// cuentan como hechas y un tiempo aproximado (duración del curso repartida entre sus tarjetas).
+function _moduleRemainingText() {
+    const course = (typeof allCourses !== 'undefined') ? allCourses.find(c => c.id === (currentCourseId || 'steam')) : null;
+    const mod = modulesData?.[currentModule - 1];
+    if (!course || !mod || !progress) return '';
+    const pending = (mod.cards || []).filter(c => !_isCardDone(c)).length;
+    if (!pending) return 'Módulo completado. Sigue con el siguiente.';
+    const total = course.totalCards || modulesData.reduce((a, m) => a + m.cards.length, 0);
+    const perCard = total && course.durationHours ? (course.durationHours * 60) / total : 1;
+    const min = Math.max(1, Math.round(pending * perCard));
+    return `Te faltan unos ${min} min · ${pending} ${pending === 1 ? 'tarjeta' : 'tarjetas'} de este módulo`;
+}
+
+// «Mis certificados» en Inicio: diplomas aprobados (por adquirir o listos para descargar) y el
+// avance hacia el Certificado Maestro. Vacío mientras el docente no haya aprobado ningún curso.
+function _homeCertsInner() {
+    if (typeof allCourses === 'undefined' || !progress) return '';
+    const rows = allCourses.filter(c => c.status === 'available').map(c => ({ c, st: _diplomaState(c.id) }))
+        .filter(x => x.st.passed)
+        .sort((a, b) => (a.st.paid - b.st.paid) || String(_paidCertDates[`diploma:${b.c.id}`] || '').localeCompare(String(_paidCertDates[`diploma:${a.c.id}`] || '')))
+        .slice(0, 3);
+    let master = null;
+    if (typeof LEARNING_PATHS !== 'undefined') {
+        const info = LEARNING_PATHS.map(path => {
+            const cs = (path.courses || []).map(id => allCourses.find(c => c.id === id)).filter(c => c && c.status === 'available');
+            const passed = cs.filter(c => _diplomaState(c.id).passed).length;
+            return { path, total: cs.length, passed };
+        }).filter(x => x.total && x.passed > 0);
+        master = info.sort((a, b) => (a.passed === a.total) - (b.passed === b.total) || (b.passed / b.total) - (a.passed / a.total))[0] || null;
+    }
+    if (!rows.length && !master) return '';
+    const row = (title, sub, btn) => `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #F1F5F9">
+        <div style="flex:1;min-width:0"><p style="font-size:13px;font-weight:700;color:#0F172A;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(title)}</p><p style="font-size:11px;color:#64748B;margin:2px 0 0">${sub}</p></div>${btn || ''}</div>`;
+    const btnStyle = (bg) => `flex-shrink:0;background:${bg};color:white;font-size:11px;font-weight:800;border:none;border-radius:10px;padding:7px 11px;cursor:pointer`;
+    const dipRows = rows.map(({ c, st }) => row('Diploma · ' + c.title,
+        st.paid ? 'Listo para descargar' + (st.paidDate ? ' · pagado el ' + st.paidDate : '') : `Aprobado con ${st.score} % · por adquirir`,
+        `<button onclick="requestCertificate('diploma','${c.id}',${st.score})" style="${btnStyle(st.paid ? '#16A34A' : '#5C35C5')}">${st.paid ? 'Descargar' : 'Adquirir · ' + _certPriceLabel('diploma', c.id)}</button>`)).join('');
+    const masterRow = master ? row('Certificado Maestro · ' + master.path.label,
+        master.passed === master.total ? 'Ruta completa: ya puedes presentar el examen maestro' : `${master.passed} de ${master.total} cursos aprobados`,
+        `<button onclick="switchTab('progreso')" style="${btnStyle('#1E4976')}">Ver</button>`) : '';
+    return `<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px"><p style="font-size:13px;font-weight:800;color:#1E4976;margin:0">Mis certificados</p><button onclick="switchTab('progreso')" style="background:none;border:none;color:#5C35C5;font-size:11px;font-weight:800;cursor:pointer">Ver todos</button></div>${dipRows}${masterRow}`;
+}
+function _renderHomeCerts() {
+    const box = document.getElementById('homeCertsBox');
+    if (!box) return;
+    const html = _homeCertsInner();
+    box.innerHTML = html ? `<div style="background:white;border:1.5px solid #E2E8F0;border-radius:16px;padding:12px 14px">${html}</div>` : '';
+}
+
 function updateUI() {
     if (!progress) return;
     const module = modulesData[currentModule - 1];
@@ -968,6 +1018,9 @@ function updateUI() {
     if (_homePct) _homePct.textContent = `${coursePercent}%`;
     const _homeBar = document.getElementById('homeDashBar');
     if (_homeBar) _homeBar.style.width = `${coursePercent}%`;
+    _renderHomeCerts();
+    const _homeRem = document.getElementById('homeDashRemaining');
+    if (_homeRem) _homeRem.textContent = _moduleRemainingText();
     renderTodaySession();
 
     // Banner "Ir a examen" cuando el curso está al 100% pero sin examen aprobado
@@ -2310,7 +2363,7 @@ function renderHub() {
     }
     box.innerHTML = `<div class="hub-head"><p class="hub-date">${esc(dateText)}</p><h1 class="hub-title">${esc(_greeting())}, ${esc(first)}</h1></div>
         <div class="hub-grid"><div class="hub-main">${sessionHtml}${commitHtml}${coursesHtml}</div>
-        <div class="hub-side">${aulaHtml}${pathHtml}<div id="hubPeers"></div></div></div>`;
+        <div class="hub-side">${(() => { const h = _homeCertsInner(); return h ? `<div class="hub-card">${h}</div>` : ''; })()}${aulaHtml}${pathHtml}<div id="hubPeers"></div></div></div>`;
     _hubPeers(path);
 }
 // Cuántos relatos compartieron colegas esta semana en la ruta (si la comunidad aún no está activada, no muestra nada).
@@ -2342,16 +2395,19 @@ function _layoutLessonRail() {
     const session = document.getElementById('homeSessionBox');
     const challenge = document.getElementById('moduleChallengeBox');
     const diploma = document.getElementById('courseDiplomaBox');
+    const certs = document.getElementById('homeCertsBox');
     const peers = document.getElementById('peerStoriesBox');
     const card = document.getElementById('cardContainer');
     const nav = document.getElementById('cardNavBar');
     if (!rail || !session || !challenge || !peers || !card || !nav) return;
     const inRail = session.parentNode === rail;
     if (_lessonDesktop() && !inRail) {
-        rail.append(...(diploma ? [diploma] : []), session, challenge, peers);
+        rail.append(...(diploma ? [diploma] : []), session, challenge, ...(certs ? [certs] : []), peers);
     } else if (!_lessonDesktop() && inRail) {
         card.before(...(diploma ? [diploma] : []), session, challenge);
         nav.before(peers);
+        // en celular «Mis certificados» va debajo de la tarjeta y su navegación
+        if (certs) (document.getElementById('lessonKeys') || nav).after(certs);
     }
 }
 function _outlineTitle(c) {
@@ -5791,6 +5847,7 @@ function _renderMyDiplomas() {
 
 function _updateCertButtonLabels() {
     _renderMyDiplomas();
+    _renderHomeCerts();
     const masterLabel = document.getElementById('masterCertBtnLabel');
     if (masterLabel) {
         const _pid = _selectedMasterPath?.id || _activeMasterPath?.id;
