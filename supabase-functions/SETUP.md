@@ -606,21 +606,43 @@ Dashboard → Edge Functions → Secrets:
 3. Copia el *signing secret* (`whsec_...`) al secret `RECURRENTE_WEBHOOK_SECRET`.
 4. Re-despliega (o reinicia) la función para que lea el secret nuevo.
 
-## Paso 4 — Prueba con un cobro real
+## Paso 4 — Lista de verificación ANTES del primer cobro
 
-1. Con una cuenta de prueba que haya aprobado un curso, pide el diploma: debe
-   abrir el checkout de Recurrente por **Q20**.
-2. Paga con una tarjeta real y vuelve a la app: el diploma debe habilitarse.
+Marca cada punto; si alguno falla, no cobres todavía.
+
+- [ ] **Precio en la función:** el `index.ts` desplegado de `create-certificate-checkout` dice
+  `PRICES = { diploma: 2000, master: 7500 }` (Q20 y Q75, en centavos).
+- [ ] **Secrets:** `RECURRENTE_SECRET_KEY` (producción), `RECURRENTE_WEBHOOK_SECRET` y `APP_URL`.
+- [ ] **Webhook:** `recurrente-webhook` desplegada con «Enforce JWT Verification» **desactivado**;
+  endpoint registrado en Recurrente con el evento `intent.succeeded`.
+- [ ] **Exámenes del servidor:** `exam` desplegada y el banco cargado
+  (`select count(*) from exam_questions;` → 689).
+- [ ] **Prueba de firma del webhook** (opcional pero recomendada): en Recurrente → Webhooks → tu
+  endpoint, envía un evento de prueba. En los logs de `recurrente-webhook` debe verse una
+  respuesta **200** (un 401 = secret equivocado; un 404 = URL mal copiada).
+- [ ] **Cuenta de prueba que cumpla los requisitos del servidor:** el diploma de pago ahora exige
+  haber **aprobado el examen en el servidor** (si no, el cobro ni se abre y sale «Falta presentar el
+  examen»). Con esa cuenta presenta y aprueba el examen de un curso corto y confirma:
+  `select course_id, best_score from exam_results where user_id = (select id from auth.users where email = 'TU-CORREO');`
+
+## Paso 5 — Prueba con un cobro real
+
+1. Con esa cuenta, pide el diploma: debe abrir el checkout de Recurrente por **Q20**.
+2. Paga con una tarjeta real y vuelve a la app: debe aparecer «¡Pago confirmado!» con el
+   botón «Ver mi diploma» y la fecha de pago.
 3. Verifica en SQL Editor:
    ```sql
    select cert_type, ref_id, amount_in_cents, status, created_at, paid_at
    from certificate_payments order by created_at desc limit 5;
    ```
-   Debe verse `status = 'paid'` con `paid_at`. Si queda en `pending`, el
-   webhook no llegó: revisa en Recurrente el historial de entregas del webhook
-   y los logs de `recurrente-webhook` (401 = secret equivocado; 404 = URL mal).
-4. Reembolsa ese pago desde el panel de Recurrente (el sistema no revoca
-   solo el diploma; si quieres anularlo, cambia la fila a `failed`).
+   Debe verse `status = 'paid'`, `amount_in_cents = 2000` y `paid_at`. Si queda en
+   `pending`, el webhook no llegó o falló: revisa en Recurrente el historial de entregas y
+   los logs de `recurrente-webhook` (401 = secret equivocado; 404 = URL mal; 500 = falló la
+   base de datos: Recurrente reintenta solo, y el pago se registra en el siguiente intento).
+4. Reembolsa ese pago desde el panel de Recurrente (el sistema no revoca solo el diploma;
+   si quieres anularlo, cambia la fila a `failed`).
+
+Solo después de esto, anuncia los precios a los docentes.
 
 ## Operación
 
