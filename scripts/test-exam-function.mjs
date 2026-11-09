@@ -13,7 +13,7 @@ src = src.replace(/^import .*createClient.*$/m, '');
 const code = stripTypeScriptTypes(src);
 
 // ── Base de datos en memoria con la forma mínima de PostgREST que usa la función ──
-const db = { exam_questions: [], exam_attempts: [], exam_results: [], app_config: [] };
+const db = { exam_questions: [], exam_attempts: [], exam_results: [], app_config: [], progress: [] };
 let idSeq = 0;
 function table(name) {
   const rows = db[name];
@@ -62,6 +62,11 @@ const fakeClient = (url, key, opt) => ({
 let handler;
 const env = { SUPABASE_URL: 'http://x', SUPABASE_ANON_KEY: 'a', SUPABASE_SERVICE_ROLE_KEY: 's' };
 new Function('Deno', 'createClient', 'Response', 'Intl', code)({ env: { get: (k) => env[k] }, serve: (h) => { handler = h; } }, fakeClient, Response, Intl);
+
+// ids de tarjetas del curso `abp`, leídos del mismo bloque que usa la función
+const ABP_IDS = src.match(/"abp": "([^"]+)"/)[1].split(',');
+const seedProgress = (ids) => { db.progress.length = 0; for (const u of ['u-ana', 'u-luis']) db.progress.push({ user_id: u, completed_cards: ids }); };
+seedProgress(ABP_IDS);
 
 const call = async (body, token = 'tok-ana') => {
   const r = await handler(new Request('http://x/exam', { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {}, body: JSON.stringify(body) }));
@@ -142,6 +147,24 @@ const att7 = (await call({ action: 'start', courseId: 'abp' }, 'tok-luis')); con
 db.exam_questions = db.exam_questions.filter((q) => q.idx !== a7.items[0].q);
 r = await call({ action: 'submit', attemptId: a7.id, answers: Array(a7.items.length).fill(0) }, 'tok-luis'); assert.equal(r.status, 409); assert.equal(r.body.code, 'bank_changed'); ok('si el banco cambió a mitad del intento → 409 bank_changed');
 
+// ── Examen habilitado solo con el 100 % de las tarjetas ──
+{
+  db.exam_attempts.length = 0;
+  seedProgress(ABP_IDS.slice(0, -1));
+  let r2 = await call({ action: 'start', courseId: 'abp' });
+  assert.equal(r2.status, 422); assert.equal(r2.body.code, 'course_incomplete'); assert.equal(r2.body.done, ABP_IDS.length - 1); assert.equal(r2.body.total, ABP_IDS.length);
+  assert.equal(db.exam_attempts.length, 0); ok(`falta 1 tarjeta (${ABP_IDS.length - 1} de ${ABP_IDS.length}) → 422 course_incomplete y no se abre intento`);
+  assert.match(r2.body.error, /completa todas las tarjetas/); ok('el mensaje dice qué falta');
+  seedProgress([...ABP_IDS.slice(0, -1), ...Array.from({ length: 500 }, (_, i) => `abp-inventado-${i}`), ABP_IDS[0], ABP_IDS[0]]);
+  r2 = await call({ action: 'start', courseId: 'abp' }); assert.equal(r2.status, 422); ok('ids inventados o repetidos no suman: sigue 422');
+  seedProgress([]); r2 = await call({ action: 'start', courseId: 'abp' }); assert.equal(r2.status, 422); assert.equal(r2.body.done, 0); ok('sin progreso → 422');
+  db.progress.length = 0; r2 = await call({ action: 'start', courseId: 'abp' }); assert.equal(r2.status, 422); ok('sin fila de progreso → 422');
+  seedProgress(ABP_IDS); r2 = await call({ action: 'start', courseId: 'abp' }); assert.equal(r2.status, 200); ok('con el 100 % de las tarjetas exactas → 200 y se abre el examen');
+  db.exam_attempts.length = 0; seedProgress(ABP_IDS.slice(0, 5));
+  r2 = await call({ action: 'start', courseId: 'curso-sin-ids' }); assert.equal(r2.status, 404); ok('un curso sin banco sigue siendo 404 (no se mezcla con la revisión de tarjetas)');
+  db.exam_attempts.length = 0; seedProgress(ABP_IDS);
+}
+
 // ── Examen maestro ──
 // rutas de código: sin DEFAULT_PATHS (el bloque SYNC va vacío en la prueba): el admin guarda una
 db.app_config.push({ key: 'learning_paths', value: [{ id: 'rutaX', courses: ['abp', 'otro', 'fantasma'] }] });
@@ -154,6 +177,7 @@ db.exam_attempts.length = 0; db.exam_results.length = 0;
 
 r = await call({ action: 'start', kind: 'master' }); assert.equal(r.status, 400); ok('maestro sin pathId → 400');
 r = await call({ action: 'start', kind: 'master', pathId: 'noexiste' }); assert.equal(r.status, 404); assert.equal(r.body.code, 'no_bank'); ok('ruta desconocida → 404 no_bank (la app cae a práctica)');
+seedProgress(ABP_IDS.slice(0, 3));
 r = await call({ action: 'start', kind: 'master', pathId: 'rutaX' });
 assert.equal(r.status, 200); assert.equal(r.body.passingScore, 75); assert.ok(r.body.questions.length >= 10 && r.body.questions.length <= 30);
 assert.ok(r.body.questions.every((q) => Object.keys(q).sort().join() === 'options,text')); ok('maestro: preguntas de la ruta (admin), aprobación 75, sin respuestas');
