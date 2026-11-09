@@ -887,12 +887,17 @@ function _uiPrefs() {
 }
 // Tono por defecto: sobrio. El docente elige "con logros" en el aviso inicial o
 // en Perfil; mientras no haya elegido nada, no se muestran confeti ni avisos de XP.
-function isSoberMode() { const v = _uiPrefs().sober; return v === undefined ? true : !!v; }
+function isSimpleMode() { return _uiPrefs().simple === true; }
+// La versión simple implica el modo sobrio (sin avisos de puntos, logros ni confeti)
+function isSoberMode() { if (isSimpleMode()) return true; const v = _uiPrefs().sober; return v === undefined ? true : !!v; }
 function applyUiPrefs() {
     const p = _uiPrefs();
     document.documentElement.classList.toggle('big-text', !!p.bigText);
     document.documentElement.classList.toggle('sober-mode', isSoberMode());
+    document.documentElement.classList.toggle('simple-mode', isSimpleMode());
     const t1 = document.getElementById('prefSober'); if (t1) t1.checked = isSoberMode();
+    const t3 = document.getElementById('prefSimple'); if (t3) t3.checked = isSimpleMode();
+    document.querySelectorAll('[data-simple-toggle]').forEach(b => { b.textContent = isSimpleMode() ? 'Versión simple: activada · volver a la completa' : 'Versión simple'; });
     const t2 = document.getElementById('prefBigText'); if (t2) t2.checked = !!p.bigText;
 }
 function setUiPref(key, value) {
@@ -1731,6 +1736,7 @@ let _peerOpen = false;
 async function renderPeerStories() {
     const box = document.getElementById('peerStoriesBox');
     if (!box) return;
+    if (isSimpleMode()) { box.innerHTML = ''; return; }
     const module = modulesData?.[currentModule - 1];
     const card = module?.cards?.[currentCardIndex];
     if (!card || !currentUser || ['quiz', 'simulation', 'takeaway'].includes(card.type)) { box.innerHTML = ''; return; }
@@ -2342,6 +2348,8 @@ function renderHub() {
         }).join('') : '<p style="font-size:14px;color:#475569;margin:12px 0 0">Aún no empiezas ningún curso. Elige uno en «Ver todas las rutas» o empieza tu sesión de hoy.</p>'}
     </div>`;
 
+    const topicsHtml = `<div class="hub-card"><h2 style="margin:0 0 12px;font-size:17px;font-weight:800">¿Qué necesitas resolver esta semana?</h2>${_problemTilesHtml()}</div>`;
+
     // Columna lateral: Mi aula, ruta, colegas
     const nowMonth = localDateStr().slice(0, 7);
     const aula = _miAulaData(nowMonth);
@@ -2362,14 +2370,16 @@ function renderHub() {
             <p style="font-size:13px;color:#334155;margin:0">${okN} de ${pc.length} ${pc.length === 1 ? 'curso aprobado' : 'cursos aprobados'}${pc.length > 1 ? '. El Examen Maestro se habilita al aprobarlos todos.' : '.'}</p></div>`;
     }
     box.innerHTML = `<div class="hub-head"><p class="hub-date">${esc(dateText)}</p><h1 class="hub-title">${esc(_greeting())}, ${esc(first)}</h1></div>
-        <div class="hub-grid"><div class="hub-main">${sessionHtml}${commitHtml}${coursesHtml}</div>
-        <div class="hub-side">${(() => { const h = _homeCertsInner(); return h ? `<div class="hub-card">${h}</div>` : ''; })()}${aulaHtml}${pathHtml}<div id="hubPeers"></div></div></div>`;
+        <div class="hub-grid"><div class="hub-main">${sessionHtml}${commitHtml}${coursesHtml}${topicsHtml}</div>
+        <div class="hub-side">${(() => { const h = _homeCertsInner(); return h ? `<div class="hub-card">${h}</div>` : ''; })()}${aulaHtml}${pathHtml}<div id="hubPeers"></div></div></div>
+        <div style="text-align:center;margin-top:18px"><button type="button" class="simple-link" data-simple-toggle onclick="setUiPref('simple', !isSimpleMode())">Versión simple</button></div>`;
+    applyUiPrefs();
     _hubPeers(path);
 }
 // Cuántos relatos compartieron colegas esta semana en la ruta (si la comunidad aún no está activada, no muestra nada).
 async function _hubPeers(path) {
     const el = document.getElementById('hubPeers');
-    if (!el || !path || !currentUser) return;
+    if (!el || !path || !currentUser || isSimpleMode()) return;
     try {
         const since = new Date(Date.now() - 7 * 86400000).toISOString();
         const { data, error } = await supabase.from('shared_applications_public').select('id, course_id').gte('created_at', since).limit(1000);
@@ -8276,6 +8286,68 @@ function _checkOnboardingRequirements(onComplete) {
 // ==================== SELECTOR DE CURSOS (Multi-curso) ====================
 let currentCourseId = 'steam';
 let _selectedPathId  = null; // ruta activa en el selector
+let _selectedProblemId = null; // tema («problema del aula») activo en el selector
+
+// Entrada por problema del aula: agrupa cursos que YA existen en las rutas. Solo son atajos
+// (no cambia ninguna estructura de datos); los números salen de los cursos reales.
+const PROBLEM_AREAS = [
+    { id: 'conducta',   label: 'Conducta en el aula',    hint: 'Límites, motivación y conflictos',        courses: ['manejo-conductas', 'disciplina-positiva', 'comunicacion-asertiva'] },
+    { id: 'evaluacion', label: 'Evaluar el aprendizaje', hint: 'Rúbricas, proyectos y evidencias',        courses: ['evaluacion', 'abp'] },
+    { id: 'inclusion',  label: 'Inclusión',              hint: 'TEA, TDAH, síndrome de Down y más',       courses: ['educacion-inclusiva', 'tea-profundidad', 'discapacidad-down-tdah', 'lengua-senas-docentes'] },
+    { id: 'ideas',      label: 'Ideas rápidas',          hint: 'Actividades breves para usar pronto',     courses: ['micro-learning', 'herramientas-tec', 'creatividad'] },
+    { id: 'clima',      label: 'Clima y bienestar',      hint: 'Emociones, convivencia y cuidado propio', courses: ['sel-docentes', 'bienestar-docente', 'comunicacion-asertiva'] },
+    { id: 'ia',         label: 'IA para tu trabajo',     hint: 'Ahorrar tiempo y usarla con criterio',    courses: ['ia-fundamentos', 'ia-tiempo', 'ia-herramientas', 'ia-ciudadania'] },
+];
+function _problemCourses(area) {
+    return area.courses.map(id => allCourses.find(c => c.id === id)).filter(c => c && c.status === 'available');
+}
+function _fmtMinutes(min) {
+    const h = Math.floor(min / 60), m = Math.round(min % 60);
+    return h ? (m ? `${h} h ${m} min` : `${h} h`) : `${m} min`;
+}
+function _problemTilesHtml() {
+    if (typeof allCourses === 'undefined') return '';
+    return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">${PROBLEM_AREAS.map(a => {
+        const n = _problemCourses(a).length;
+        return n ? `<button type="button" onclick="_openProblem('${a.id}')" style="text-align:left;background:white;border:1.5px solid #E2E8F0;border-radius:14px;padding:11px 12px;cursor:pointer">
+            <span style="display:block;font-size:13px;font-weight:800;color:#1E293B">${esc(a.label)}</span>
+            <span style="display:block;font-size:11px;color:#64748B;margin-top:2px">${esc(a.hint)}</span>
+            <span style="display:block;font-size:11px;font-weight:700;color:#5C35C5;margin-top:5px">${n} ${n === 1 ? 'curso' : 'cursos'}</span></button>` : '';
+    }).join('')}</div>`;
+}
+function _openProblem(id) {
+    _selectedProblemId = id;
+    _selectedPathId = null;
+    document.getElementById('loginScreen')?.classList.add('hidden');
+    document.getElementById('mainApp')?.classList.remove('hidden');
+    if (typeof switchTab === 'function') switchTab('biblioteca');
+    _renderCourseSelector();
+}
+function _problemViewHtml(area) {
+    const courses = _problemCourses(area);
+    const total = courses.reduce((a, c) => a + (c.durationHours || 0) * 60, 0);
+    const scores = progress?.dailyMissions?.examScores || {};
+    const rows = courses.map((c, i) => {
+        const cards = _courseCards(c), done = cards.filter(_isCardDone).length;
+        const pct = cards.length ? Math.round(done / cards.length * 100) : 0;
+        const sc = c.id === 'steam' ? (scores.steam ?? progress?.dailyMissions?.examScore) : scores[c.id];
+        const passed = typeof sc === 'number' && sc >= 70;
+        const status = passed ? '✓ Aprobado' : (pct > 0 ? `${pct} % completado` : '');
+        const action = passed ? 'Repasar' : (pct > 0 ? 'Continuar' : 'Empezar');
+        return `<div style="background:white;border:1.5px solid #E2E8F0;border-radius:14px;padding:12px 14px;margin-bottom:10px">
+            <p style="font-size:14px;font-weight:800;color:#1E293B;margin:0">${i + 1}. ${esc(c.title)}</p>
+            <p style="font-size:12px;color:#64748B;margin:3px 0 8px">${esc(c.subtitle || '')}</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                <span style="font-size:11px;color:#475569">${cards.length} tarjetas · ${_fmtMinutes((c.durationHours || 0) * 60)}${status ? ` · <b style="color:${passed ? '#16A34A' : '#5C35C5'}">${status}</b>` : ''}</span>
+                <button type="button" onclick="selectCourse('${c.id}', { ignorePrereq: true })" style="background:#5C35C5;color:white;border:none;border-radius:10px;font-size:12px;font-weight:800;padding:8px 14px;cursor:pointer">${action}</button>
+            </div></div>`;
+    }).join('');
+    return `<button type="button" onclick="_selectedProblemId=null;_renderCourseSelector()" style="display:flex;align-items:center;gap:6px;background:#f1f5f9;border:none;color:#475569;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;margin-bottom:14px">‹ Todos los temas</button>
+        <h2 style="font-size:17px;font-weight:800;color:#1E293B;margin:0">${esc(area.label)}</h2>
+        <p style="font-size:12px;color:#64748B;margin:3px 0 14px">${courses.length} ${courses.length === 1 ? 'curso' : 'cursos'} · ${_fmtMinutes(total)} en total</p>
+        ${rows}
+        <p style="font-size:11px;color:#94A3B8;margin-top:6px">Estos cursos ya forman parte de las rutas de formación; aquí están agrupados por el tema que quieres resolver.</p>`;
+}
 
 // Antes mostraba un overlay de pantalla completa forzado en cada sesión —
 // ahora "el selector" es la tab Biblioteca dentro de #mainApp, así que esta
@@ -8283,6 +8355,7 @@ let _selectedPathId  = null; // ruta activa en el selector
 // con el mismo nombre porque hay varios callers existentes (botón "Cambiar
 // curso" del sidebar, etc.) que no necesitan tocarse.
 function showCourseSelector(pathId) {
+    _selectedProblemId = null;
     _selectedPathId = pathId || null;
     document.getElementById('loginScreen')?.classList.add('hidden');
     document.getElementById('mainApp')?.classList.remove('hidden');
@@ -8304,6 +8377,11 @@ function _findPathForCourse(courseId) {
 function _topBarChangeCourseClick() {
     const _tabBiblioteca = document.getElementById('tabBiblioteca');
     const _onBiblioteca = _tabBiblioteca && !_tabBiblioteca.classList.contains('hidden');
+    if (_onBiblioteca && _selectedProblemId) {
+        _selectedProblemId = null;
+        _renderCourseSelector();
+        return;
+    }
     if (_onBiblioteca && _selectedPathId) {
         _selectedPathId = null;
         if (typeof _renderCourseSelector === 'function') _renderCourseSelector();
@@ -8335,6 +8413,11 @@ function _renderCourseSelector() {
     const list = document.getElementById('coursesList');
     if (!list || typeof allCourses === 'undefined') return;
 
+    // Vista de un tema («problema del aula»)
+    const _area = _selectedProblemId && PROBLEM_AREAS.find(a => a.id === _selectedProblemId);
+    if (_area) { list.innerHTML = _problemViewHtml(_area); return; }
+    _selectedProblemId = null;
+
     if (!_selectedPathId) {
         // ── Vista 1: Rutas ──────────────────────────────────────────
         const scores = progress?.dailyMissions?.examScores || {};
@@ -8362,7 +8445,9 @@ function _renderCourseSelector() {
         const highlightId = inProgress[0]?.path.id;
 
         list.innerHTML = `
-            <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;margin:0 0 14px">Elige tu ruta de formación</p>
+            <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px">¿Qué necesitas resolver esta semana?</p>
+            <div style="margin-bottom:22px">${_problemTilesHtml()}</div>
+            <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;margin:0 0 14px">O elige una ruta de formación</p>
             <div class="lp-grid">
             ${pathsInfo.map(({ path, pathCourses, available, passed, pct, totalHours, allDone }) => {
                 const isHighlight = path.id === highlightId;
@@ -8493,6 +8578,7 @@ function _renderCourseSelector() {
 }
 
 function _selectPath(pathId) {
+    _selectedProblemId = null;
     _selectedPathId = pathId;
     _renderCourseSelector();
 }
