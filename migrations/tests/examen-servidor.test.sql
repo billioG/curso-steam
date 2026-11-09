@@ -23,8 +23,9 @@ create or replace function pg_temp.expect(label text, ok boolean) returns void l
 begin if not ok then raise exception 'FALLÓ: %', label; end if; raise notice 'OK  %', label; end $$;
 
 -- 1) el banco existe y trae las 655 preguntas
-select pg_temp.expect('banco cargado (655 preguntas, 27 cursos)',
-  (select count(*) from public.exam_questions) = 655 and (select count(distinct course_id) from public.exam_questions) = 27);
+select pg_temp.expect('banco cargado (689 preguntas: 27 cursos + síntesis del maestro de steam20)',
+  (select count(*) from public.exam_questions) = 689 and (select count(distinct course_id) from public.exam_questions) = 28
+  and (select count(*) from public.exam_questions where course_id = 'master:steam20') = 34);
 select pg_temp.expect('todas con respuesta correcta dentro de sus opciones',
   not exists (select 1 from public.exam_questions where correct >= jsonb_array_length(options)));
 
@@ -51,7 +52,7 @@ select pg_temp.expect('primera nota: 82', public.record_exam_result('00000000-00
 select pg_temp.expect('nota menor no baja la mejor (sigue 82)', public.record_exam_result('00000000-0000-0000-0000-000000000001','abp',71) = 82);
 select pg_temp.expect('nota mayor la sube (95)', public.record_exam_result('00000000-0000-0000-0000-000000000001','abp',95) = 95);
 select pg_temp.expect('cuenta 3 intentos aprobados', (select attempts from public.exam_results where user_id='00000000-0000-0000-0000-000000000001' and course_id='abp') = 3);
-select pg_temp.expect('el banco sí es legible para el service role', (select count(*) from public.exam_questions) = 655);
+select pg_temp.expect('el banco sí es legible para el service role', (select count(*) from public.exam_questions) = 689);
 insert into public.exam_attempts(user_id,course_id,items) values ('00000000-0000-0000-0000-000000000001','abp','[{"q":0,"perm":[0,1,2,3]}]');
 reset role;
 
@@ -66,5 +67,5 @@ reset role;
 
 -- 5) el SQL del banco es idempotente: re-ejecutarlo no duplica
 \i migrations/exam-bank/exam-bank-1.sql
-select pg_temp.expect('re-ejecutar el banco no duplica filas', (select count(*) from public.exam_questions) = 655);
+select pg_temp.expect('re-ejecutar el banco no duplica filas', (select count(*) from public.exam_questions) = 689);
 \echo === TODAS LAS PRUEBAS PASARON ===

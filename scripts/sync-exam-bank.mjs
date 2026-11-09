@@ -54,6 +54,16 @@ function courseSql(course) {
         + `DELETE FROM public.exam_questions WHERE course_id = ${q(course.id)} AND idx >= ${bank.length};\n`;
 }
 
+// Preguntas de síntesis del examen maestro (MASTER_EXAM en data.js): la ruta STEAM 2.0 las
+// usa además de las de sus cursos. Se guardan como `master:<ruta>`.
+const MASTER_SYNTHESIS_PATH = 'steam20';
+function masterSql() {
+    vm.runInContext('this.MASTER_EXAM = typeof MASTER_EXAM !== "undefined" ? MASTER_EXAM : null;', sandbox);
+    const me = sandbox.MASTER_EXAM;
+    if (!me || !Array.isArray(me.questions)) return null;
+    return courseSql({ id: `master:${MASTER_SYNTHESIS_PATH}`, finalExam: { questions: me.questions } });
+}
+
 const header = '-- GENERADO por scripts/sync-exam-bank.mjs desde data.js — no editar a mano.\n-- Requiere migrations/examen-servidor.sql. Seguro re-ejecutar.\n\n';
 const parts = [];
 let cur = '';
@@ -63,6 +73,8 @@ for (const c of sandbox.allCourses.filter((c) => c.status === 'available')) {
     if (cur && Buffer.byteLength(cur + sql) > MAX_BYTES) { parts.push(cur); cur = ''; }
     cur += sql + '\n';
 }
+const _m = masterSql();
+if (_m) { if (cur && Buffer.byteLength(cur + _m) > MAX_BYTES) { parts.push(cur); cur = ''; } cur += _m + '\n'; }
 if (cur) parts.push(cur);
 const files = Object.fromEntries(parts.map((p, i) => [`exam-bank-${i + 1}.sql`, header + p]));
 

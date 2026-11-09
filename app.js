@@ -5706,7 +5706,7 @@ function _isCertPaid(certType, refId) {
 // cumple todavía las condiciones. Nunca se le cobra en silencio un certificado
 // que debería ser gratis: se explica qué falta y, si prefiere, puede pagarlo él.
 // El servidor pide un examen calificado por él: explica y ofrece presentarlo ahora.
-function _handleExamBlock(data, cid) {
+function _handleExamBlock(data, cid, opts = {}) {
     const m = document.createElement('div');
     m.className = 'modal-sheet';
     m.style.zIndex = '9999';
@@ -5715,13 +5715,17 @@ function _handleExamBlock(data, cid) {
         <div class="modal-drag"></div>
         <h3 class="text-lg font-bold text-slate-800 mb-1">📝 Falta presentar el examen</h3>
         <p class="text-sm text-slate-600 mb-3">${esc(data.error || 'Primero aprueba el examen final del curso.')}</p>
-        ${course ? `<button id="_exGo" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5">Presentar el examen de «${esc(course.title)}»</button>` : ''}
+        ${opts.master ? `<button id="_exGo" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#1e3a8a">Presentar el examen maestro</button>` : (course ? `<button id="_exGo" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#5C35C5">Presentar el examen de «${esc(course.title)}»</button>` : '')}
         <button id="_exOk" class="w-full mt-1 py-2 text-slate-500 text-xs" style="background:none;border:none">Cerrar</button>
     </div>`;
     document.body.appendChild(m);
     m.querySelector('#_exOk').onclick = () => m.remove();
     const go = m.querySelector('#_exGo');
-    if (go) go.onclick = () => { m.remove(); selectCourse(cid, { ignorePrereq: true }); switchTab('home'); startExam(); };
+    if (go) go.onclick = () => {
+        m.remove();
+        if (opts.master) { startMasterExam(); return; }
+        selectCourse(cid, { ignorePrereq: true }); switchTab('home'); startExam();
+    };
 }
 
 function _handleSponsoredBlock(data, certType, courseId, score, cid) {
@@ -6092,6 +6096,9 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
         // El examen no está validado por el servidor (o no se aprobó): se lleva a presentarlo
         if (!res.ok && (data.code === 'exam_not_verified' || data.code === 'exam_not_passed')) {
             return _handleExamBlock(data, certType === 'master' ? (data.detail?.curso || null) : cid);
+        }
+        if (!res.ok && (data.code === 'master_exam_not_verified' || data.code === 'needs_master_exam')) {
+            return _handleExamBlock(data, null, { master: true });
         }
         // Está cubierto pero aún no cumple alguna condición: se le explica qué falta
         if (!res.ok && data.sponsored) {
@@ -6891,24 +6898,41 @@ function _buildMasterExamPool(path) {
     return [...synthesis.slice(0, 15), ...rr.slice(0, 15), ...synthesis.slice(15), ...rr.slice(15)];
 }
 
-function startMasterExam() {
+window._masterServer = null;   // { attemptId } mientras hay un examen maestro calificado por el servidor
+window._masterLocal  = false;  // true si no hubo conexión con el servidor: examen de práctica
+
+async function startMasterExam() {
     if (typeof MASTER_EXAM === 'undefined') {
         showToast('Error: banco de preguntas no disponible.', 'error'); return;
     }
+    const _mPath = _selectedMasterPath || _activeMasterPath;
+    showToast('Preparando tu examen…');
+    // El servidor sortea y califica (igual que el examen de cada curso); si no hay
+    // conexión o la función aún no está desplegada, cae a un examen de práctica local.
+    const r = _mPath?.id ? await _examApi('start', { kind: 'master', pathId: _mPath.id }) : { ok: false, unreachable: true, data: {} };
+    if (r.ok) {
+        window._masterServer = { attemptId: r.data.attemptId };
+        window._masterLocal = false;
+        _masterExamQuestions = r.data.questions.map(q => ({ text: q.text, options: q.options }));
+    } else {
+        const canFallback = r.unreachable || r.status === 404 || r.status >= 500;
+        if (!canFallback) { showToast(r.data?.error || 'No se pudo iniciar el examen.', 'error'); return; }
+        window._masterServer = null;
+        window._masterLocal = true;
+        const _mPool = _buildMasterExamPool(_mPath);
+        // 30 preguntas, o ~60% del banco si es chico (ruta de un solo curso), para
+        // que el reintento no sea el mismo examen.
+        const _mSize = Math.min(30, _mPool.length, Math.max(10, Math.round(_mPool.length * 0.6)));
+        _masterExamQuestions = _shuffleArray(_mPool.slice(0, _mSize)).map(_shuffleQuestionOptions);
+        if (_mPath?.id) {
+            if (!progress.dailyMissions) progress.dailyMissions = {};
+            if (!progress.dailyMissions.masterExamSeen) progress.dailyMissions.masterExamSeen = {};
+            progress.dailyMissions.masterExamSeen[_mPath.id] = _masterExamQuestions.map(_qKey);
+            saveProgress();
+        }
+    }
     _masterExamActive    = true;
     _masterExamCurrentQ  = 0;
-    const _mPath = _selectedMasterPath || _activeMasterPath;
-    const _mPool = _buildMasterExamPool(_mPath);
-    // 30 preguntas, o ~60% del banco si es chico (ruta de un solo curso), para
-    // que el reintento no sea el mismo examen.
-    const _mSize = Math.min(30, _mPool.length, Math.max(10, Math.round(_mPool.length * 0.6)));
-    _masterExamQuestions = _shuffleArray(_mPool.slice(0, _mSize)).map(_shuffleQuestionOptions);
-    if (_mPath?.id) {
-        if (!progress.dailyMissions) progress.dailyMissions = {};
-        if (!progress.dailyMissions.masterExamSeen) progress.dailyMissions.masterExamSeen = {};
-        progress.dailyMissions.masterExamSeen[_mPath.id] = _masterExamQuestions.map(_qKey);
-        saveProgress();
-    }
     _masterExamAnswers   = new Array(_masterExamQuestions.length).fill(null);
 
     switchTab('home');
@@ -7008,17 +7032,37 @@ function _masterExamNext() {
     }
 }
 
-function _showMasterExamResults() {
-    let correct = 0;
-    _masterExamQuestions.forEach((q, i) => { if (_masterExamAnswers[i] === q.correct) correct++; });
-    const total  = _masterExamQuestions.length;
-    const pct    = Math.round((correct / total) * 100);
-    const passed = pct >= MASTER_EXAM.passingScore;
+async function _showMasterExamResults() {
+    let correct = 0, total = _masterExamQuestions.length, pct = 0, passed = false, serverDate = null, notice = '';
+    if (window._masterServer) {
+        // Calificación en el servidor: se envían las respuestas y vuelve la nota.
+        document.getElementById('cardContainer').innerHTML = `<div id="activeCard" class="content-card"><div class="card-body" style="text-align:center;padding:48px 20px"><p style="font-size:2rem">📝</p><p style="font-weight:800;color:#1E293B;margin-top:8px">Calificando tu examen…</p></div></div>`;
+        const r = await _examApi('submit', { attemptId: window._masterServer.attemptId, answers: _masterExamAnswers });
+        if (!r.ok) {
+            const msg = r.data?.error || 'No se pudo calificar el examen.';
+            const again = r.unreachable || r.status >= 500;
+            document.getElementById('cardContainer').innerHTML = `<div id="activeCard" class="content-card"><div class="card-body" style="text-align:center;padding:32px 20px">
+                <p style="font-size:2rem">⚠️</p><p style="font-weight:800;color:#1E293B;margin:8px 0">${esc(msg)}</p>
+                ${again ? `<button onclick="_showMasterExamResults()" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#1e3a8a;margin-bottom:8px">Reintentar envío</button>` : `<button onclick="startMasterExam()" class="w-full py-3 rounded-xl font-bold text-white text-sm" style="background:#1e3a8a;margin-bottom:8px">Empezar un examen nuevo</button>`}
+                <button onclick="_masterExamActive=false;_hideNavBtns(false);_setTopBarExam(false);updateUI();switchTab('profile')" style="color:#94A3B8;font-size:.75rem;padding:6px;background:none;border:none;cursor:pointer;width:100%">Volver al perfil</button></div></div>`;
+            return;
+        }
+        const d = r.data;
+        window._masterServer = null;   // intento consumido
+        correct = d.correct; total = d.total; pct = d.pct; passed = !!d.passed; serverDate = d.date; notice = d.message || '';
+        if (passed && typeof d.bestScore === 'number') pct = Math.max(pct, d.bestScore);
+    } else {
+        // Sin conexión con el servidor: examen de práctica, no habilita certificados
+        _masterExamQuestions.forEach((q, i) => { if (_masterExamAnswers[i] === q.correct) correct++; });
+        pct = Math.round((correct / total) * 100);
+        passed = pct >= MASTER_EXAM.passingScore;
+        notice = window._masterLocal ? 'No hubo conexión con el servidor: este resultado es de práctica y no habilita el Certificado Maestro. Cuando tengas conexión, vuelve a presentar el examen.' : '';
+    }
 
     // Siempre guardar el puntaje del examen — por ruta (y legado global para compatibilidad)
     if (!progress.dailyMissions) progress.dailyMissions = {};
     progress.dailyMissions.masterExamScore = pct; // legado
-    progress.dailyMissions.masterExamDate  = localDateStr();
+    progress.dailyMissions.masterExamDate  = serverDate || localDateStr();
     if (!progress.dailyMissions.masterExamScores) progress.dailyMissions.masterExamScores = {};
     const _pid = _selectedMasterPath?.id || _activeMasterPath?.id;
     // Conservar la mejor nota por ruta: antes un reintento reprobado pisaba
@@ -7030,7 +7074,7 @@ function _showMasterExamResults() {
     // Fecha por ruta — igual que masterExamScores, masterExamDate por sí
     // sola es global y se pisa si se aprueba más de una ruta.
     if (!progress.dailyMissions.masterExamDates) progress.dailyMissions.masterExamDates = {};
-    if (_pid && _isBest) progress.dailyMissions.masterExamDates[_pid] = localDateStr();
+    if (_pid && _isBest) progress.dailyMissions.masterExamDates[_pid] = serverDate || localDateStr();
     window._lastMasterExamScore = pct;
     if (passed && !_wasPassed) {
         addXP(100, 'Parte 1 del Examen Maestro completada');
@@ -7059,6 +7103,7 @@ function _showMasterExamResults() {
             <p class="card-banner-sub" style="margin-top:2px">${correct} de ${total} correctas</p>
         </div>
         <div class="card-body" style="text-align:center">
+            ${notice ? `<p style="font-size:.78rem;line-height:1.5;color:#92400E;background:#FEF3C7;border-radius:10px;padding:8px 10px;margin-bottom:12px;text-align:left">${esc(notice)}</p>` : ''}
 
             <!-- Puntaje examen como /50 -->
             <div style="background:#f0f9ff;border-radius:14px;padding:16px;margin-bottom:16px;border:1px solid #bae6fd">
