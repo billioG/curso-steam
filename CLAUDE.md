@@ -56,7 +56,7 @@ CSS es estático, no JIT en el navegador como el CDN viejo).
 - IDs de tarjetas por curso: STEAM=numérico, ABP=`abp-`, DT=`dt-`, EV=`ev-`, TE=`te-`, Storytelling=`st-`. Los demás cursos usan ids numéricos en `data.js` que `app.js` normaliza al cargar a `<courseId>-<n>` (así se guardan en `completed_cards`); los ids solo deben ser únicos dentro de su curso.
 - `totalCards` de cada curso vive en `data.js` como fuente única. `admin.js` (`STATIC_COURSES`) y `coordinator.html` (`COURSES`) lo recalculan solos en runtime porque ambos cargan `data.js` — no hay nada que actualizar a mano ahí. `supabase-functions/weekly-stats` es una Edge Function Deno aislada que no puede cargar `data.js`, así que mantiene su propia copia de `totalCards`: después de agregar o quitar tarjetas en `data.js`, corré `node scripts/sync-course-totals.mjs` para regenerarla (o `--check` para verificar sin escribir, útil antes de un deploy).
 - `supabase-functions/create-certificate-checkout` también lleva copia de los ids de tarjeta de `data.js` y de las rutas por defecto de `app.js` (para validar los certificados patrocinados). Después de cambiar tarjetas, cursos o rutas por defecto, corré `node scripts/sync-cert-rules.mjs` (o `--check`) y re-desplegá la función.
-- `supabase-functions/exam` lee el banco de preguntas de `exam_questions`, que se genera desde `data.js`: después de cambiar preguntas de examen (`finalExam`, `examExtra`) o tarjetas quiz, corré `node scripts/sync-exam-bank.mjs` (o `--check`) y pegá en el SQL Editor los archivos de `migrations/exam-bank/` que cambien.
+- `supabase-functions/exam` lee el banco de preguntas de `exam_questions`, que se genera desde `data.js` (incluye `MASTER_EXAM` como `master:steam20`) y lleva una copia de las rutas por defecto que regenera `node scripts/sync-cert-rules.mjs`: después de cambiar preguntas de examen (`finalExam`, `examExtra`) o tarjetas quiz, corré `node scripts/sync-exam-bank.mjs` (o `--check`) y pegá en el SQL Editor los archivos de `migrations/exam-bank/` que cambien.
 - `examScores` (objeto por courseId) es el campo principal; `examScore` (singular) es legacy solo para STEAM
 - Dropdowns dentro de contenedores `overflow:auto` deben usar `position:fixed` + `getBoundingClientRect()`
 
@@ -97,15 +97,18 @@ examen», pero quien busque las respuestas en el repositorio o su historial pued
 aprobar un examen real (con tiempo mínimo, intentos limitados y rastro en
 `exam_attempts`). Lo que se impide es fabricar la nota desde la consola. Cerrar
 esto del todo exigiría escribir las preguntas de examen solo en la base de datos,
-fuera del repositorio. Tampoco está calificado en el servidor el **examen
-maestro** de una ruta (`masterExamScores`): sigue escribiéndolo el navegador.
+fuera del repositorio. El **examen maestro** de una ruta también se califica en el
+servidor (`exam` con `kind:'master'`, clave `master:<ruta>` en `exam_results`, se
+aprueba con 75); la nota del portafolio sigue saliendo de `ai_reviews`.
 `LEGACY_EXAM_UNTIL` (secret de `create-certificate-checkout`, fecha ISO) permite
 aceptar por un tiempo la nota guardada por el navegador de docentes que
 aprobaron antes de esta función; sin definir, solo cuenta la del servidor.
 
-**Certificados de pago con Recurrente** exigen ahora examen aprobado calificado
-por el servidor (antes el servidor no miraba el examen). El resto de requisitos
-(80 % de tarjetas, relato de IA) solo aplica a certificados patrocinados.
+**Certificados de pago con Recurrente** exigen ahora exámenes aprobados calificados
+por el servidor: el del curso en el diploma; los de todos los cursos de la ruta y el
+examen maestro en el Certificado Maestro (antes el servidor no miraba ningún
+examen). El resto de requisitos (80 % de tarjetas, relato de IA, portafolio
+revisado) solo aplica a certificados patrocinados.
 
 **Certificados patrocinados** (`migrations/patrocinios.sql`). Cuando una
 fundación paga el certificado, el fraude le cuesta dinero a un tercero, así que

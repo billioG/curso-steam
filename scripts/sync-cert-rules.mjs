@@ -28,6 +28,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DATA_JS = path.join(ROOT, 'data.js');
 const APP_JS = path.join(ROOT, 'app.js');
 const TARGET = path.join(ROOT, 'supabase-functions/create-certificate-checkout/index.ts');
+const TARGET_EXAM = path.join(ROOT, 'supabase-functions/exam/index.ts');   // solo lleva DEFAULT_PATHS
 const START = '// SYNC:START (generado por scripts/sync-cert-rules.mjs — no editar a mano)';
 const END = '// SYNC:END';
 const checkOnly = process.argv.includes('--check');
@@ -61,6 +62,11 @@ function loadDefaultPaths() {
     return eval(m[1]).map((p) => ({ id: p.id, courses: p.courses }));
 }
 
+function buildExamBlock() {
+    const paths = loadDefaultPaths().map((p) => `  { id: ${JSON.stringify(p.id)}, courses: ${JSON.stringify(p.courses)} },`);
+    return [START, 'const DEFAULT_PATHS: { id: string; courses: string[] }[] = [', ...paths, '];', END].join('\n');
+}
+
 function buildBlock() {
     // Solo los cursos disponibles: el cliente (_checkMasterCert) ignora el resto
     const courses = loadAllCourses().filter((c) => c.status === 'available');
@@ -78,24 +84,32 @@ function buildBlock() {
     ].join('\n');
 }
 
-const file = readFileSync(TARGET, 'utf8');
-const s = file.indexOf(START);
-const e = file.indexOf(END);
-if (s === -1 || e === -1 || e < s) {
-    console.error(`No se encontraron los marcadores en ${TARGET}.`);
+const targets = [
+    { file: TARGET, block: buildBlock(), label: 'create-certificate-checkout/index.ts' },
+    { file: TARGET_EXAM, block: buildExamBlock(), label: 'exam/index.ts' },
+];
+let stale = false;
+for (const t of targets) {
+    const file = readFileSync(t.file, 'utf8');
+    const s0 = file.indexOf(START);
+    const e0 = file.indexOf(END);
+    if (s0 === -1 || e0 === -1 || e0 < s0) {
+        console.error(`No se encontraron los marcadores en ${t.file}.`);
+        process.exit(1);
+    }
+    if (file.slice(s0, e0 + END.length) === t.block) {
+        console.log(`${t.label} ya está sincronizado — nada que hacer.`);
+        continue;
+    }
+    if (checkOnly) {
+        console.error(`${t.label} está DESACTUALIZADO respecto a data.js / app.js.`);
+        stale = true;
+        continue;
+    }
+    writeFileSync(t.file, file.slice(0, s0) + t.block + file.slice(e0 + END.length));
+    console.log(`${t.label} actualizado desde data.js y app.js.`);
+}
+if (stale) {
+    console.error('Corre `node scripts/sync-cert-rules.mjs` (sin --check) y vuelve a desplegar las funciones.');
     process.exit(1);
 }
-const current = file.slice(s, e + END.length);
-const next = buildBlock();
-
-if (current === next) {
-    console.log('create-certificate-checkout/index.ts ya está sincronizado — nada que hacer.');
-    process.exit(0);
-}
-if (checkOnly) {
-    console.error('create-certificate-checkout/index.ts está DESACTUALIZADO respecto a data.js / app.js.');
-    console.error('Corre `node scripts/sync-cert-rules.mjs` (sin --check) y vuelve a desplegar la función.');
-    process.exit(1);
-}
-writeFileSync(TARGET, file.slice(0, s) + next + file.slice(e + END.length));
-console.log('create-certificate-checkout/index.ts actualizado desde data.js y app.js.');
