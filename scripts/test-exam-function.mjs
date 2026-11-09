@@ -13,7 +13,7 @@ src = src.replace(/^import .*createClient.*$/m, '');
 const code = stripTypeScriptTypes(src);
 
 // ── Base de datos en memoria con la forma mínima de PostgREST que usa la función ──
-const db = { exam_questions: [], exam_attempts: [], exam_results: [] };
+const db = { exam_questions: [], exam_attempts: [], exam_results: [], app_config: [] };
 let idSeq = 0;
 function table(name) {
   const rows = db[name];
@@ -141,4 +141,38 @@ r = await call({ action: 'submit', attemptId: old.id, answers: Array(14).fill(0)
 const att7 = (await call({ action: 'start', courseId: 'abp' }, 'tok-luis')); const a7 = db.exam_attempts.find((a) => a.id === att7.body.attemptId); backdate(a7, 120);
 db.exam_questions = db.exam_questions.filter((q) => q.idx !== a7.items[0].q);
 r = await call({ action: 'submit', attemptId: a7.id, answers: Array(a7.items.length).fill(0) }, 'tok-luis'); assert.equal(r.status, 409); assert.equal(r.body.code, 'bank_changed'); ok('si el banco cambió a mitad del intento → 409 bank_changed');
+
+// ── Examen maestro ──
+// rutas de código: sin DEFAULT_PATHS (el bloque SYNC va vacío en la prueba): el admin guarda una
+db.app_config.push({ key: 'learning_paths', value: [{ id: 'rutaX', courses: ['abp', 'otro', 'fantasma'] }] });
+for (let i = 0; i < 20; i++) db.exam_questions.push({ course_id: 'otro', idx: i, text: `O${i}`, options: ['a', 'b', 'c', 'd'], correct: (i + 1) % 4, explanation: `exp O${i}`, source: 'exam' });
+for (let i = 0; i < 8; i++) db.exam_questions.push({ course_id: 'master:rutaX', idx: i, text: `S${i}`, options: ['a', 'b', 'c', 'd'], correct: 2, explanation: `exp S${i}`, source: 'exam' });
+db.exam_questions.push(...Array.from({ length: 24 }, (_, i) => ({ course_id: 'abp', idx: 100 + i, text: `P${100 + i}`, options: ['a', 'b', 'c', 'd'], correct: i % 4, explanation: '', source: 'exam' })).filter(() => false));
+const keyOf = (c, q) => db.exam_questions.find((x) => x.course_id === c && x.idx === q);
+const mCorrect = (att) => att.items.map((it) => it.perm.indexOf(keyOf(it.c, it.q).correct));
+db.exam_attempts.length = 0; db.exam_results.length = 0;
+
+r = await call({ action: 'start', kind: 'master' }); assert.equal(r.status, 400); ok('maestro sin pathId → 400');
+r = await call({ action: 'start', kind: 'master', pathId: 'noexiste' }); assert.equal(r.status, 404); assert.equal(r.body.code, 'no_bank'); ok('ruta desconocida → 404 no_bank (la app cae a práctica)');
+r = await call({ action: 'start', kind: 'master', pathId: 'rutaX' });
+assert.equal(r.status, 200); assert.equal(r.body.passingScore, 75); assert.ok(r.body.questions.length >= 10 && r.body.questions.length <= 30);
+assert.ok(r.body.questions.every((q) => Object.keys(q).sort().join() === 'options,text')); ok('maestro: preguntas de la ruta (admin), aprobación 75, sin respuestas');
+const m1 = db.exam_attempts[0]; assert.equal(m1.course_id, 'master:rutaX');
+const cs = new Set(m1.items.map((i) => i.c)); assert.ok(cs.has('abp') && cs.has('otro') && cs.has('master:rutaX')); ok('mezcla cursos de la ruta y preguntas de síntesis: ' + [...cs].join(', '));
+assert.ok(!cs.has('fantasma')); ok('ignora cursos sin banco');
+r = await call({ action: 'start', kind: 'master', pathId: 'rutaX' }); assert.equal(r.body.resumed, true); ok('maestro: reanuda el intento abierto');
+backdate(m1, 300);
+r = await call({ action: 'submit', attemptId: m1.id, answers: mCorrect(m1) });
+assert.equal(r.status, 200); assert.equal(r.body.passed, true); assert.equal(r.body.pct, 100);
+assert.equal(db.exam_results.find((x) => x.course_id === 'master:rutaX').best_score, 100); ok('maestro: 100 % → aprobado y guardado como master:rutaX');
+r = await call({ action: 'start', kind: 'master', pathId: 'rutaX' }); const m2 = db.exam_attempts[1]; backdate(m2, 300);
+const ans2 = mCorrect(m2); const k = Math.ceil(ans2.length * 0.3);
+r = await call({ action: 'submit', attemptId: m2.id, answers: ans2.map((a, i) => (i < k ? (a + 1) % 4 : a)) });
+assert.ok(r.body.pct < 75 && r.body.pct >= 60, String(r.body.pct)); assert.equal(r.body.passed, false); assert.equal(r.body.bestScore, null); ok('maestro: ' + r.body.pct + ' % no aprueba (necesita 75) y no toca la mejor nota');
+r = await call({ action: 'start', kind: 'master', pathId: 'rutaX' }); const m3 = db.exam_attempts[2]; backdate(m3, 300);
+const ans3 = mCorrect(m3); const k3 = Math.floor(ans3.length * 0.2);
+r = await call({ action: 'submit', attemptId: m3.id, answers: ans3.map((a, i) => (i < k3 ? (a + 1) % 4 : a)) });
+assert.ok(r.body.pct >= 75 && r.body.pct < 100); assert.equal(r.body.passed, true); assert.equal(r.body.bestScore, 100); ok('maestro: ' + r.body.pct + ' % aprueba y se conserva la mejor (100)');
+r = await call({ action: 'start', kind: 'master', pathId: 'rutaX' }, 'tok-luis'); const ml = db.exam_attempts.find((a) => a.user_id === 'u-luis' && a.course_id === 'master:rutaX');
+r = await call({ action: 'submit', attemptId: ml.id, answers: mCorrect(ml) }, 'tok-luis'); assert.equal(r.body.tooFast, true); assert.equal(r.body.passed, false); ok('maestro: demasiado rápido tampoco aprueba');
 console.log(`${n} comprobaciones OK`);
