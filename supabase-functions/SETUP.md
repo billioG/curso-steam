@@ -682,12 +682,12 @@ puede leer su propia nota). Seguro re-ejecutar.
 
 SQL Editor → pega, uno por uno, `migrations/exam-bank/exam-bank-1.sql`, `-2.sql` y
 `-3.sql` (~140 KB cada uno; generados desde `data.js` y seguros de re-ejecutar).
-Comprueba: `select count(*) from exam_questions;` → 655 (27 cursos).
+Comprueba: `select count(*) from exam_questions;` → **689** (655 de los 27 cursos + 34 preguntas de síntesis del examen maestro de STEAM 2.0, guardadas como `master:steam20`). Si ya tenías cargados los archivos anteriores, vuelve a pegar solo el `-3.sql` (es el que cambió).
 
 ## Paso 3 — Desplegar funciones
 
-- **`exam`** (nueva, con «Enforce JWT Verification» activado): pega
-  `supabase-functions/exam/index.ts`. Sin secrets nuevos.
+- **`exam`** (con «Enforce JWT Verification» activado): pega
+  `supabase-functions/exam/index.ts` (ahora también califica el **examen maestro** de cada ruta). Sin secrets nuevos.
 - **`create-certificate-checkout`** (actualizada): ahora exige un examen aprobado
   calificado por el servidor, también para el diploma de pago. Secret opcional
   `LEGACY_EXAM_UNTIL` (p. ej. `2026-12-31`): hasta esa fecha se acepta también la nota
@@ -709,6 +709,18 @@ Si la app sale antes, los exámenes caen al modo de práctica (no habilitan dipl
 - Menos de 3 s por pregunta no cuenta (alerta `demasiado_rapido` en `exam_attempts`).
 - Guarda la mejor nota aprobada en `exam_results`; rastro completo en `exam_attempts`.
 
+## Examen maestro de la ruta
+
+`{ action:'start', kind:'master', pathId }` arma el examen maestro: 30 preguntas (o ~60 % si el
+banco es chico, mínimo 10) repartidas entre los cursos de la ruta, uno a uno, y, en STEAM 2.0, con
+la mitad inicial de preguntas de síntesis. Las rutas guardadas por el admin ganan sobre las del
+código (como en el resto de la app). Se aprueba con **75**; la mejor nota queda en `exam_results`
+con `course_id = 'master:<ruta>'`. `create-certificate-checkout` la valida para el Certificado
+Maestro patrocinado **y de pago**, y para el de pago exige además todos los exámenes de curso de la
+ruta (antes el servidor no revisaba nada en el de pago). Las rutas del código se copian a la función
+con `node scripts/sync-cert-rules.mjs` (vuelve a desplegar `exam` y `create-certificate-checkout`
+si cambias rutas por defecto).
+
 ## Cuando cambies preguntas
 
 `node scripts/sync-exam-bank.mjs` (o `--check`) regenera `migrations/exam-bank/`; pega
@@ -721,7 +733,7 @@ presentando, ese intento se invalida (409) y empieza uno nuevo.
   prefiere las preguntas solo de examen, pero no puede ocultar lo que está en el repo.
   Para cerrarlo del todo, las preguntas de examen deberían escribirse solo en la base
   de datos.
-- El **examen maestro** de una ruta sigue calificándose en el navegador.
+- Del Certificado Maestro, el examen (parte 1) ya se califica en el servidor. La **nota del portafolio** (parte 2) la califica `evaluate-portfolio`, que sigue recibiendo la nota del examen como dato del navegador para su comentario; para certificar, el servidor usa `ai_reviews` y `exam_results`, no esos valores.
 
 ## Probar
 
