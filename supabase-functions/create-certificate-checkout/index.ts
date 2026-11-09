@@ -1,6 +1,6 @@
 // Edge Function: create-certificate-checkout
-// Crea un checkout de pago en Recurrente para un diploma de curso (Q10) o
-// el Certificado Maestro de una ruta (Q50), y registra el intento como
+// Crea un checkout de pago en Recurrente para un diploma de curso (Q20) o
+// el Certificado Maestro de una ruta (Q75), y registra el intento como
 // 'pending' en certificate_payments ANTES de redirigir — es lo que
 // recurrente-webhook busca luego por recurrente_checkout_id para
 // marcarlo 'paid'.
@@ -53,8 +53,9 @@ const CORS = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...CORS, 'Content-Type': 'application/json' } });
 
-// Precios fijos en centavos (Recurrente usa amount_in_cents) — Q10 / Q50.
-const PRICES: Record<string, number> = { diploma: 1000, master: 5000 };
+// Precios fijos en centavos (Recurrente usa amount_in_cents) — Q20 / Q75.
+// Los textos que ve el docente están en CERT_PRICES de app.js: mantener iguales.
+const PRICES: Record<string, number> = { diploma: 2000, master: 7500 };
 const NAMES:  Record<string, string> = { diploma: 'Diploma de Participación', master: 'Certificado Maestro' };
 
 // ── Reglas de certificados (se regeneran con scripts/sync-cert-rules.mjs) ──

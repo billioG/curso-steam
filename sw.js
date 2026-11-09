@@ -3,7 +3,7 @@
 // Estrategia: Cache-first para assets locales, Network-first para API
 // ============================================================
 
-const CACHE_VERSION  = 'steam-v206';
+const CACHE_VERSION  = 'steam-v207';
 const CACHE_STATIC   = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC  = `${CACHE_VERSION}-dynamic`;
 
