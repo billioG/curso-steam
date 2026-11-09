@@ -50,6 +50,10 @@ function verifySignature(svixId: string, svixTimestamp: string, rawBody: string,
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Método no permitido', { status: 405 });
 
+  // Sin el secret no se puede validar nada: se falla fuerte (y visible en los logs) en vez de
+  // dejar que `.split` sobre `undefined` reviente a media petición.
+  if (!RECURRENTE_WEBHOOK_SECRET) return new Response('RECURRENTE_WEBHOOK_SECRET no está configurado', { status: 500 });
+
   const svixId = req.headers.get('svix-id');
   const svixTimestamp = req.headers.get('svix-timestamp');
   const svixSignature = req.headers.get('svix-signature');
@@ -60,9 +64,9 @@ Deno.serve(async (req) => {
   if (!svixId || !svixTimestamp || !svixSignature) {
     return new Response('Faltan headers de firma', { status: 400 });
   }
-  if (!verifySignature(svixId, svixTimestamp, rawBody, svixSignature)) {
-    return new Response('Firma inválida', { status: 401 });
-  }
+  let valid = false;
+  try { valid = verifySignature(svixId, svixTimestamp, rawBody, svixSignature); } catch { valid = false; }
+  if (!valid) return new Response('Firma inválida', { status: 401 });
 
   try {
     const event = JSON.parse(rawBody);
@@ -73,11 +77,18 @@ Deno.serve(async (req) => {
         const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
         // .eq('status','pending') además de idempotencia evita reprocesar
         // un evento duplicado (Recurrente puede reintentar el webhook).
-        await admin
+        const { data: updated, error } = await admin
           .from('certificate_payments')
           .update({ status: 'paid', paid_at: new Date().toISOString() })
           .eq('recurrente_checkout_id', checkoutId)
-          .eq('status', 'pending');
+          .eq('status', 'pending')
+          .select('id');
+        // Si la base falla se responde 500 para que Recurrente REINTENTE: antes el error se
+        // ignoraba, se contestaba 200 y un pago real podía quedar sin registrar para siempre.
+        if (error) return new Response('Error al registrar el pago: ' + error.message, { status: 500 });
+        // Sin filas: ya estaba pagado (reintento) o el checkout no es de un certificado
+        // (otro producto de la misma cuenta). En ambos casos 200: no hay nada que reintentar.
+        if (!updated || updated.length === 0) console.log('recurrente-webhook: sin pago pendiente para el checkout', checkoutId);
       }
     }
 
