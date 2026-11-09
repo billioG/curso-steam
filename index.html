@@ -1616,11 +1616,12 @@
         }
 
         /* ── Inicio en escritorio (panel) ── */
-        .bnav-hub { display: none !important; }
+        #homeDash { display: none; }   /* el resumen «Continúa aprendiendo» vive ahora en Inicio (panel) */
+        #bnavHome { display: none !important; }   /* en celular la lección se abre con «Continuar» desde Inicio */
         .lbl-d { display: none; }
         .bnav-btn .lbl-m, .bnav-btn .lbl-d { font-size: inherit !important; color: inherit !important; font-weight: inherit !important; }
         @media (min-width: 1100px) {
-            .bnav-hub { display: flex !important; }
+            #bnavHome { display: flex !important; }
             .lbl-m { display: none; }
             .lbl-d { display: inline; }
             #tabHub { max-width: 1180px !important; padding-left: 32px; padding-right: 32px; }
@@ -1754,103 +1755,17 @@
          usuario quiera explorar/cambiar de curso, sin ser lo primero que ve. -->
     <div id="tabBiblioteca" class="tab-panel hidden pt-16 px-4 pb-28">
         <div class="text-center mb-6 mt-2">
-            <h1 class="text-xl font-black text-slate-800">¿Qué quieres aprender hoy?</h1>
-            <p class="text-slate-400 text-sm mt-1">Elige un tema o una ruta de formación</p>
+            <h1 class="text-xl font-black text-slate-800">Rutas de formación</h1>
+            <p class="text-slate-400 text-sm mt-1">Elige una ruta para ver sus cursos</p>
         </div>
         <div id="coursesList"></div>
         <p class="text-center text-slate-300 text-xs mt-8 mb-4">Más cursos llegando pronto</p>
 
-        <!-- ══ Recursos de estudio ══ -->
-        <div class="perfil-section">
-            <button class="perfil-section-toggle collapsed" onclick="togglePerfilSection(this)">
-                <span class="perfil-section-label"><span class="perfil-section-label-title">Recursos de estudio</span><span class="perfil-section-label-sub">Glosario, fuentes, casos y sugerencias</span></span>
-                <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="perfil-section-body collapsed">
-            <div class="perfil-items-grid">
-                <button id="pinBoardBtn"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm"
-                    onclick="showPinBoard()">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FEF9C3">
-                        <span data-icon="pinboard" style="display:inline-flex;width:16px;height:16px;color:#a16207"></span>
-                    </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm">Mis apuntes guardados</div>
-                        <div class="text-xs text-slate-400">Tarjetas que pineaste para repasar</div>
-                    </div>
-                    <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
-                </button>
-                <button id="courseRequestsBtn"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-pink-300 hover:bg-pink-50 transition shadow-sm"
-                    onclick="showCourseRequests()">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FDF2F8">
-                        <span data-icon="lightbulb" style="display:inline-flex;width:16px;height:16px;color:#ec4899"></span>
-                    </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm">Sugiere un curso</div>
-                        <div class="text-xs text-slate-400">Pide y vota por nuevos cursos</div>
-                    </div>
-                    <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
-                </button>
-                <!-- Compendio PDF — solo admin -->
-                <a id="compendioLink" href="recursos/contenido-completo.html" target="_blank"
-                    class="hidden bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-indigo-300 hover:bg-indigo-50 transition shadow-sm no-underline">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EEF2FF">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                    </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm">Compendio completo</div>
-                        <div class="text-xs text-slate-400">Todos los cursos y evaluaciones · Imprimible</div>
-                    </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
-                <a href="glosario.html" target="_blank"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-teal-300 hover:bg-teal-50 transition shadow-sm no-underline">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#CCFBF1">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
-                    </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm">Glosario pedagógico</div>
-                        <div class="text-xs text-slate-400">Términos clave de todos los cursos</div>
-                    </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
-                <a href="fuentes.html" target="_blank"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-emerald-300 hover:bg-emerald-50 transition shadow-sm no-underline">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#D1FAE5">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h6M9 11h6"/></svg>
-                    </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm">Fuentes de información</div>
-                        <div class="text-xs text-slate-400">Bibliografía y marcos por curso</div>
-                    </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
-                <a href="casos-estudio.html" target="_blank"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm no-underline">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FEF3C7">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                    </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm">Casos de estudio</div>
-                        <div class="text-xs text-slate-400">Decisiones docentes con ramificaciones</div>
-                    </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
-                <a href="privacidad.html" target="_blank"
-                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-slate-300 hover:bg-slate-50 transition shadow-sm no-underline">
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#F1F5F9">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    </div>
-                    <div class="text-left flex-1">
-                        <div class="font-semibold text-slate-700 text-sm">Política de privacidad</div>
-                        <div class="text-xs text-slate-400">Qué datos guardamos y cómo se usan</div>
-                    </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
-            </div>
-            </div>
-        </div>
+        <!-- Atajo a Recursos (antes estaban escondidos aquí, plegados) -->
+        <button type="button" onclick="switchTab('recursos')" class="w-full text-left mt-6 bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 shadow-sm">
+            <span class="flex-1"><span class="block font-semibold text-slate-700 text-sm">Recursos y descargables</span><span class="block text-xs text-slate-400">Guías, plantillas, glosario, fuentes y casos de estudio</span></span>
+            <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
+        </button>
     </div>
     <style>
         /* Cuadrícula de rutas/cursos: 1 columna en móvil, 2 en desktop */
@@ -2199,9 +2114,6 @@
                 </button>
             </div>
             <p id="lessonKeys" class="lesson-keys">Teclado: <kbd>←</kbd> <kbd>→</kbd> para pasar de tarjeta</p>
-
-            <!-- Mis certificados en Inicio (celular: debajo de la tarjeta; escritorio: columna derecha) -->
-            <div id="homeCertsBox" class="mt-4"></div>
         </div>
 
         <!-- ══════════════════════════════════════════ -->
@@ -2441,6 +2353,115 @@
         </div><!-- end perfil-grid -->
         </div><!-- end tabPerfil -->
 
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: RECURSOS (descargables por curso + glosario, fuentes y casos) -->
+        <!-- ══════════════════════════════════════════ -->
+        <div id="tabRecursos" class="tab-panel hidden pt-16 px-4 pb-28">
+            <div class="mt-4 mb-5">
+                <h2 class="text-xl font-bold text-slate-800">Recursos</h2>
+                <p class="text-xs text-slate-400 mt-1">Guías y plantillas de cada curso, y material de consulta</p>
+            </div>
+            <div class="mb-6">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Descargables por curso</p>
+                <p class="text-xs text-slate-500 mb-3 px-1">Se desbloquean al aprobar el examen de cada curso.</p>
+                    <div id="resourcesSection">
+                    <div id="courseResourcesSection"></div>
+                </div>
+            </div>
+        <!-- ══ Recursos de estudio ══ -->
+        <div class="perfil-section">
+            <button class="perfil-section-toggle" onclick="togglePerfilSection(this)">
+                <span class="perfil-section-label"><span class="perfil-section-label-title">Más recursos de estudio</span><span class="perfil-section-label-sub">Glosario, fuentes, casos y sugerencias</span></span>
+                <svg class="perfil-section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="perfil-section-body">
+            <div class="perfil-items-grid">
+                <button id="pinBoardBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm"
+                    onclick="showPinBoard()">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FEF9C3">
+                        <span data-icon="pinboard" style="display:inline-flex;width:16px;height:16px;color:#a16207"></span>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Mis apuntes guardados</div>
+                        <div class="text-xs text-slate-400">Tarjetas que pineaste para repasar</div>
+                    </div>
+                    <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
+                </button>
+                <button id="courseRequestsBtn"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-pink-300 hover:bg-pink-50 transition shadow-sm"
+                    onclick="showCourseRequests()">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FDF2F8">
+                        <span data-icon="lightbulb" style="display:inline-flex;width:16px;height:16px;color:#ec4899"></span>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Sugiere un curso</div>
+                        <div class="text-xs text-slate-400">Pide y vota por nuevos cursos</div>
+                    </div>
+                    <span data-icon="chevronRight" style="display:inline-flex;width:14px;height:14px;color:#cbd5e1;flex-shrink:0"></span>
+                </button>
+                <!-- Compendio PDF — solo admin -->
+                <a id="compendioLink" href="recursos/contenido-completo.html" target="_blank"
+                    class="hidden bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-indigo-300 hover:bg-indigo-50 transition shadow-sm no-underline">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EEF2FF">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Compendio completo</div>
+                        <div class="text-xs text-slate-400">Todos los cursos y evaluaciones · Imprimible</div>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="glosario.html" target="_blank"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-teal-300 hover:bg-teal-50 transition shadow-sm no-underline">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#CCFBF1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Glosario pedagógico</div>
+                        <div class="text-xs text-slate-400">Términos clave de todos los cursos</div>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="fuentes.html" target="_blank"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-emerald-300 hover:bg-emerald-50 transition shadow-sm no-underline">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#D1FAE5">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h6M9 11h6"/></svg>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Fuentes de información</div>
+                        <div class="text-xs text-slate-400">Bibliografía y marcos por curso</div>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="casos-estudio.html" target="_blank"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-amber-300 hover:bg-amber-50 transition shadow-sm no-underline">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#FEF3C7">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Casos de estudio</div>
+                        <div class="text-xs text-slate-400">Decisiones docentes con ramificaciones</div>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="privacidad.html" target="_blank"
+                    class="bg-white border border-slate-200 rounded-2xl py-3.5 px-4 flex items-center gap-3 text-slate-700 font-semibold text-sm hover:border-slate-300 hover:bg-slate-50 transition shadow-sm no-underline">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#F1F5F9">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <div class="text-left flex-1">
+                        <div class="font-semibold text-slate-700 text-sm">Política de privacidad</div>
+                        <div class="text-xs text-slate-400">Qué datos guardamos y cómo se usan</div>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            </div>
+            </div>
+        </div>
+        </div>
+
         <!-- ══════════════════════════════════════════ -->
         <!-- TAB: MÓDULOS (índice + bloqueo por semana)-->
         <!-- ══════════════════════════════════════════ -->
@@ -2519,10 +2540,7 @@
                         </button>
                     </div><!-- /perfil-items-grid cert -->
 
-                    <div id="resourcesSection" class="hidden">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Recursos descargables</p>
-                        <div id="courseResourcesSection"></div>
-                    </div>
+
                 </div><!-- /perfil-section-body certificacion -->
             </div>
 
@@ -3116,7 +3134,12 @@
                     <span class="bnav-icon" id="bnavProgresoIcon"></span>
                     <span class="bnav-label">Progreso</span>
                 </button>
-                <button id="bnavModulos" class="bnav-btn" onclick="switchTab('modulos')">
+                <button id="bnavRecursos" class="bnav-btn" onclick="switchTab('recursos')">
+                    <span class="bnav-icon" id="bnavRecursosIcon"></span>
+                    <span class="bnav-label">Recursos</span>
+                </button>
+                <!-- Módulos ya no tiene botón propio: se abre desde Inicio («Ver módulos») y desde la lección -->
+                <button id="bnavModulos" class="bnav-btn" style="display:none" onclick="switchTab('modulos')" tabindex="-1" aria-hidden="true">
                     <span class="bnav-icon" id="bnavModulosIcon"></span>
                     <span class="bnav-label">Módulos</span>
                 </button>
@@ -3175,20 +3198,22 @@
                 const nb = document.getElementById('bnavBibliotecaIcon');
                 const npg = document.getElementById('bnavProgresoIcon');
                 const nm = document.getElementById('bnavModulosIcon');
+                const nr = document.getElementById('bnavRecursosIcon');
                 const np = document.getElementById('bnavPerfilIcon');
                 if (nh) nh.innerHTML = ICONS.home;
                 if (ni) ni.innerHTML = (typeof ICONS.target !== 'undefined' ? ICONS.target : ICONS.home);
                 if (nb) nb.innerHTML = ICONS.library;
                 if (npg) npg.innerHTML = ICONS.progress;
                 if (nm) nm.innerHTML = ICONS.modules;
+                if (nr) nr.innerHTML = (ICONS.download || ICONS.books || ICONS.modules);
                 if (np) np.innerHTML = ICONS.profile;
             });
         </script>
 
         <script>
             function switchTab(tab) {
-                const tabs = ['tabHub', 'tabHome', 'tabBiblioteca', 'tabProgreso', 'tabModulos', 'tabPerfil'];
-                const btns = ['bnavHub', 'bnavHome', 'bnavBiblioteca', 'bnavProgreso', 'bnavModulos', 'bnavPerfil'];
+                const tabs = ['tabHub', 'tabHome', 'tabBiblioteca', 'tabProgreso', 'tabRecursos', 'tabModulos', 'tabPerfil'];
+                const btns = ['bnavHub', 'bnavHome', 'bnavBiblioteca', 'bnavProgreso', 'bnavRecursos', 'bnavModulos', 'bnavPerfil'];
                 // El nombre/módulo/progreso del curso activo solo tiene sentido en
                 // Inicio — en las demás tabs (sobre todo Biblioteca, donde se puede
                 // estar viendo OTRA ruta) confundía, pareciendo que la app "se
@@ -3206,7 +3231,7 @@
                     if (el) el.classList.remove('active');
                 });
                 // Micro-animación: entrada suave de la pestaña activa
-                const _tabMap = { hub: 'tabHub', home: 'tabHome', biblioteca: 'tabBiblioteca', progreso: 'tabProgreso', modulos: 'tabModulos', perfil: 'tabPerfil' };
+                const _tabMap = { hub: 'tabHub', home: 'tabHome', biblioteca: 'tabBiblioteca', progreso: 'tabProgreso', recursos: 'tabRecursos', modulos: 'tabModulos', perfil: 'tabPerfil' };
                 const _activeTab = document.getElementById(_tabMap[tab]);
                 if (_activeTab) {
                     _activeTab.classList.remove('tab-content-enter');
@@ -3222,6 +3247,12 @@
                 } else if (tab === 'home') {
                     document.getElementById('tabHome').classList.remove('hidden');
                     document.getElementById('bnavHome').classList.add('active');
+                    // en celular «Lección» no tiene botón: la pestaña activa sigue siendo Inicio
+                    if (getComputedStyle(document.getElementById('bnavHome')).display === 'none') document.getElementById('bnavHub').classList.add('active');
+                } else if (tab === 'recursos') {
+                    document.getElementById('tabRecursos').classList.remove('hidden');
+                    document.getElementById('bnavRecursos').classList.add('active');
+                    if (typeof renderCourseResources === 'function') renderCourseResources();
                 } else if (tab === 'biblioteca') {
                     document.getElementById('tabBiblioteca').classList.remove('hidden');
                     document.getElementById('bnavBiblioteca').classList.add('active');
@@ -3232,7 +3263,7 @@
                     if (typeof renderProgresoTab === 'function') renderProgresoTab();
                 } else if (tab === 'modulos') {
                     document.getElementById('tabModulos').classList.remove('hidden');
-                    document.getElementById('bnavModulos').classList.add('active');
+                    document.getElementById('bnavModulos')?.classList.add('active');
                     if (typeof renderModulesTab === 'function') renderModulesTab();
                 } else if (tab === 'perfil') {
                     document.getElementById('tabPerfil').classList.remove('hidden');
