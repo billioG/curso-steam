@@ -2152,6 +2152,10 @@
                     <div class="h-1.5 bg-white/15 rounded-full overflow-hidden">
                         <div id="homeDashBar" class="h-full rounded-full transition-all duration-500" style="width:0%;background:white"></div>
                     </div>
+                    <p id="homeDashRemaining" class="text-white/80 text-xs mt-2"></p>
+                    <button id="homeDashContinue" type="button"
+                        onclick="document.getElementById('cardContainer')?.scrollIntoView({ behavior: 'smooth', block: 'start' })"
+                        class="w-full mt-3 py-3 rounded-xl font-black text-sm" style="background:white;color:#1E4976">Continuar donde lo dejé</button>
                 </div>
             </div>
 
@@ -2184,6 +2188,9 @@
                 </button>
             </div>
             <p id="lessonKeys" class="lesson-keys">Teclado: <kbd>←</kbd> <kbd>→</kbd> para pasar de tarjeta</p>
+
+            <!-- Mis certificados en Inicio (celular: debajo de la tarjeta; escritorio: columna derecha) -->
+            <div id="homeCertsBox" class="mt-4"></div>
         </div>
 
         <!-- ══════════════════════════════════════════ -->
