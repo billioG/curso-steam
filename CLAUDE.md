@@ -90,6 +90,11 @@ SQL de `migrations/exam-bank/` tras cambiar preguntas de examen o tarjetas quiz)
 Si no hay conexión con el servidor, la app ofrece un examen de **práctica** local
 que no habilita ningún certificado.
 
+**El examen de un curso solo se habilita con el 100 % de sus tarjetas completadas**
+(cliente: `startExam`; servidor: `exam` `start` lee `progress.completed_cards` con
+los ids exactos de `COURSE_CARD_IDS` y devuelve 422 `course_incomplete`). El
+examen maestro no tiene esa puerta (exige antes los exámenes de cada curso).
+
 **Lo que NO evita:** el repositorio es público y `data.js` conserva las
 respuestas (las tarjetas quiz de las lecciones las necesitan para dar
 retroalimentación inmediata). El servidor sortea primero las preguntas «solo de

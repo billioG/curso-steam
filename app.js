@@ -5135,6 +5135,15 @@ function _drawExamQuestions(course, cid) {
     return drawn.map(_shuffleQuestionOptions);
 }
 
+// Envía el avance ya (sin esperar el retraso habitual) para que el servidor lo vea
+async function _syncProgressNow() {
+    try {
+        if (!navigator.onLine || !currentUser) return;
+        clearTimeout(_syncDebounceT); _syncDebounceT = null;
+        await syncWithSupabase();
+    } catch (e) { /* si falla, el servidor decidirá con lo último que tenga */ }
+}
+
 // ── Examen calificado en el servidor (Edge Function `exam`) ──────────────────
 // El servidor sortea las preguntas, guarda la nota y es quien decide si se aprobó;
 // el navegador ya no conoce la respuesta correcta de lo que se le sortea.
@@ -5182,7 +5191,7 @@ async function startExam() {
     const totalCards = modulesData.reduce((acc, m) => acc + m.cards.length, 0);
     const allCardIds = modulesData.flatMap(m => m.cards.map(c => String(c.id)));
     const completedInCourse = allCardIds.filter(id => (progress.completedCards || []).includes(id)).length;
-    const minRequired = Math.ceil(totalCards * 0.8); // 80% mínimo para rendir el examen
+    const minRequired = totalCards; // el examen se habilita con el 100 % de las tarjetas del curso
 
     if (completedInCourse < minRequired) {
         const unseen = [];
@@ -5202,7 +5211,7 @@ async function startExam() {
                 <h3 class="text-lg font-bold text-slate-800">⚠️ Tarjetas pendientes</h3>
                 <button onclick="this.closest('.modal-sheet').remove()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 text-xl flex items-center justify-center">&times;</button>
             </div>
-            <p class="text-sm text-slate-500 mb-4">Necesitas completar al menos el 80% del curso para rendir el examen (faltan ${faltante} tarjetas). Una tarjeta cuenta como leída cuando pasas unos segundos en ella:</p>
+            <p class="text-sm text-slate-500 mb-4">El examen se habilita cuando completas todas las tarjetas del curso (faltan ${faltante}). Una tarjeta cuenta como leída cuando pasas unos segundos en ella:</p>
             <div class="space-y-3 text-sm">
                 ${unseen.map(block => `<div class="bg-red-50 border border-red-100 rounded-2xl p-3 text-red-700 whitespace-pre-line">${block.trim()}</div>`).join('')}
             </div>
@@ -5217,6 +5226,7 @@ async function startExam() {
         return;
     }
     showToast('Preparando tu examen…');
+    await _syncProgressNow();   // el servidor revisa que el curso esté al 100 %: se envía el avance primero
     if (!(await _beginExamAttempt(_examCid))) return;
     stopCardTracking();
     examActive = true;

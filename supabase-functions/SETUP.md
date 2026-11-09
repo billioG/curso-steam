@@ -709,7 +709,7 @@ Comprueba: `select count(*) from exam_questions;` → **689** (655 de los 27 cur
 ## Paso 3 — Desplegar funciones
 
 - **`exam`** (con «Enforce JWT Verification» activado): pega
-  `supabase-functions/exam/index.ts` (ahora también califica el **examen maestro** de cada ruta). Sin secrets nuevos.
+  `supabase-functions/exam/index.ts` (ahora también califica el **examen maestro** de cada ruta y **solo abre el examen de un curso cuando el docente completó el 100 % de sus tarjetas**: lee `progress.completed_cards` y responde 422 `course_incomplete` si falta alguna; incluye una copia de los ids de tarjetas que regenera `node scripts/sync-cert-rules.mjs`). Sin secrets nuevos.
 - **`create-certificate-checkout`** (actualizada): ahora exige un examen aprobado
   calificado por el servidor, también para el diploma de pago. Secret opcional
   `LEGACY_EXAM_UNTIL` (p. ej. `2026-12-31`): hasta esa fecha se acepta también la nota

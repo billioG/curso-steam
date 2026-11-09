@@ -28,7 +28,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DATA_JS = path.join(ROOT, 'data.js');
 const APP_JS = path.join(ROOT, 'app.js');
 const TARGET = path.join(ROOT, 'supabase-functions/create-certificate-checkout/index.ts');
-const TARGET_EXAM = path.join(ROOT, 'supabase-functions/exam/index.ts');   // solo lleva DEFAULT_PATHS
+const TARGET_EXAM = path.join(ROOT, 'supabase-functions/exam/index.ts');   // lleva el mismo bloque (ids de tarjetas y rutas)
 const START = '// SYNC:START (generado por scripts/sync-cert-rules.mjs — no editar a mano)';
 const END = '// SYNC:END';
 const checkOnly = process.argv.includes('--check');
@@ -62,11 +62,6 @@ function loadDefaultPaths() {
     return eval(m[1]).map((p) => ({ id: p.id, courses: p.courses }));
 }
 
-function buildExamBlock() {
-    const paths = loadDefaultPaths().map((p) => `  { id: ${JSON.stringify(p.id)}, courses: ${JSON.stringify(p.courses)} },`);
-    return [START, 'const DEFAULT_PATHS: { id: string; courses: string[] }[] = [', ...paths, '];', END].join('\n');
-}
-
 function buildBlock() {
     // Solo los cursos disponibles: el cliente (_checkMasterCert) ignora el resto
     const courses = loadAllCourses().filter((c) => c.status === 'available');
@@ -86,7 +81,7 @@ function buildBlock() {
 
 const targets = [
     { file: TARGET, block: buildBlock(), label: 'create-certificate-checkout/index.ts' },
-    { file: TARGET_EXAM, block: buildExamBlock(), label: 'exam/index.ts' },
+    { file: TARGET_EXAM, block: buildBlock(), label: 'exam/index.ts' },
 ];
 let stale = false;
 for (const t of targets) {
