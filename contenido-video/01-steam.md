@@ -416,7 +416,7 @@ Problema: niños corren peligro en un cruce del patio. Ciencia: ¿cómo viaja la
 
 Ciencia (¿cómo filtra el carbón?), Tecnología (embudo, botella), Ingeniería (diseño estable), Arte (decoración), Mates (medir capas).
 
-**Dato extra:** Una misma actividad puede cubrir 4 o 5 disciplinas si la planeamos bien.
+**Dato extra:** Una misma actividad puede cubrir 4 o 5 disciplinas si la planeamos bien, pero con 3 integradas de verdad ya cuenta.
 
 **Mini-proyecto asociado:**
 
@@ -548,9 +548,9 @@ Un error frecuente es hacer 'hora de ciencia', luego 'hora de arte', sin conexi�
 
 *Contenido*
 
-Antes de un proyecto, pregúntese: ¿Qué ciencia hay? ¿Qué mates? ¿Qué arte? ¿Qué ingeniería? Si falta una, ¿podemos agregarla fácilmente?
+Antes de un proyecto, pregúntate: ¿Qué ciencia hay? ¿Qué mates? ¿Qué arte? ¿Qué ingeniería? Si falta alguna, agrégala solo si mejora el proyecto de forma natural; no hace falta llenarlas todas.
 
-**Dato extra:** Un buen proyecto STEAM toca al menos 4 de las 6 disciplinas.
+**Dato extra:** Un buen proyecto STEAM integra de verdad al menos 3 de las 6 disciplinas.
 
 #### 15. 🎯 Planificación STEAM
 
@@ -571,7 +571,7 @@ Antes de un proyecto, pregúntese: ¿Qué ciencia hay? ¿Qué mates? ¿Qué arte
 
 STEEAM = Science, Technology, Engineering, Entrepreneurship, Arts, Mathematics. Integrarlas es el desafío y la belleza de STEAM.
 
-**Dato extra:** No todas las actividades deben tener las 6. Pero intente que cada proyecto tenga al menos 3-4.
+**Dato extra:** No todas las actividades deben tener las 6. Basta con integrar de verdad al menos 3; suma otra solo si surge de forma natural.
 
 #### 17. ⚡ Aplícalo mañana: audita tu próxima actividad
 
@@ -579,7 +579,7 @@ STEEAM = Science, Technology, Engineering, Entrepreneurship, Arts, Mathematics. 
 
 Toma la actividad que tienes planificada para mañana y hazte estas 6 preguntas en 10 minutos:
 
-| Disciplina | ¿Ya está? | ¿Cómo agregarla fácilmente? |
+| Disciplina | ¿Ya está? | Si quisieras sumarla |
 |---|---|---|
 | 🧪 Ciencia | ¿Observan o prueban algo? | Agrega una hipótesis de 2 min antes |
 | 💻 Tecnología | ¿Usan alguna herramienta? | Regla, tijeras, calculadora → cuenta |
@@ -588,7 +588,7 @@ Toma la actividad que tienes planificada para mañana y hazte estas 6 preguntas 
 | 📐 Matemáticas | ¿Miden, calculan o registran? | Agrega: ¿cuánto / cuántos / qué tamaño? |
 | 💼 Emprendimiento | ¿Tiene impacto fuera del aula? | ¿A quién le serviría este trabajo? |
 
-**Meta:** que tu actividad toque al menos 4 de 6 disciplinas sin cambiarla por completo.
+**Meta:** que tu actividad integre de verdad al menos 3 de las 6 disciplinas, sin cambiarla por completo. Si ya las tiene, no hace falta llenar las demás.
 
 **Dato extra:** Con UNA pregunta extra o UN paso adicional, una clase tradicional puede convertirse en STEAM. El cambio es más pequeño de lo que parece.
 
@@ -641,7 +641,7 @@ Toma la actividad que tienes planificada para mañana y hazte estas 6 preguntas 
 ⏱ **Duración estimada:** ___________________________
 
 ---
-**Regla:** Si 2 o más casillas quedan completamente vacías, reformula el proyecto o busca una forma creativa de incluirlas. Un mapa completo es un proyecto STEAM real.
+**Regla:** Un proyecto STEAM necesita al menos 3 casillas bien pensadas; las demás pueden quedar vacías. Una casilla vacía no es un error: no la llenes solo por llenarla. Si te quedan menos de 3, reformula el proyecto para integrar de verdad más disciplinas.
 
 **Dato extra:** Imprime esta plantilla. La primera vez tardarás 20 min. La décima vez, 5. Y cada proyecto será mejor que el anterior.
 
@@ -651,7 +651,7 @@ Toma la actividad que tienes planificada para mañana y hazte estas 6 preguntas 
 
 Ya viste el Mapa de Integración STEAM. Ahora aplícalo a una actividad real de tu planificación de esta semana.
 
-**Objetivo:** Salir con una actividad de tu propia planificación mapeada a las 6 disciplinas STEEAM.
+**Objetivo:** Salir con una actividad de tu propia planificación mapeada a las 6 disciplinas STEEAM, con al menos 3 integradas de verdad.
 
 **Materiales:**
 - Tu planificación de la semana
@@ -659,13 +659,13 @@ Ya viste el Mapa de Integración STEAM. Ahora aplícalo a una actividad real de 
 
 **Pasos:**
 1. Elige una actividad de tu planificación de esta semana.
-2. Para cada disciplina (Ciencia, Tecnología, Ingeniería, Emprendimiento, Arte, Matemáticas), pregúntate: ¿ya está? ¿la puedo agregar fácil?
-3. Si faltan 2 o más disciplinas, ajusta la actividad para sumar al menos una más.
-4. Anota qué le agregaste.
+2. Para cada disciplina (Ciencia, Tecnología, Ingeniería, Emprendimiento, Arte, Matemáticas), pregúntate: ¿ya está? ¿la puedo agregar de forma natural?
+3. Si tu actividad integra menos de 3 disciplinas, ajústala hasta llegar a 3. Si ya tiene 3 o más, no hace falta llenar las demás.
+4. Anota qué le agregaste, si agregaste algo.
 
 **Pensar:** ¿Qué actividad de tu planificación se presta más para esto? · ¿Cuál disciplina falta más seguido en tus clases?
 
-**Hacer:** Tu actividad con al menos 4 de las 6 disciplinas mapeadas
+**Hacer:** Tu actividad con al menos 3 de las 6 disciplinas mapeadas
 
 **Mejorar:** Después de darla, anota qué disciplina fue más fácil de sumar y cuál más difícil
 
