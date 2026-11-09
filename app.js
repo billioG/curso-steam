@@ -970,11 +970,10 @@ function _homeCertsInner() {
         `<button onclick="switchTab('progreso')" style="${btnStyle('#1E4976')}">Ver</button>`) : '';
     return `<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px"><p style="font-size:13px;font-weight:800;color:#1E4976;margin:0">Mis certificados</p><button onclick="switchTab('progreso')" style="background:none;border:none;color:#5C35C5;font-size:11px;font-weight:800;cursor:pointer">Ver todos</button></div>${dipRows}${masterRow}`;
 }
+// «Mis certificados» vive en el panel de Inicio (renderHub); se vuelve a dibujar si cambia un pago
 function _renderHomeCerts() {
-    const box = document.getElementById('homeCertsBox');
-    if (!box) return;
-    const html = _homeCertsInner();
-    box.innerHTML = html ? `<div style="background:white;border:1.5px solid #E2E8F0;border-radius:16px;padding:12px 14px">${html}</div>` : '';
+    const hub = document.getElementById('tabHub');
+    if (hub && !hub.classList.contains('hidden') && typeof renderHub === 'function') renderHub();
 }
 
 function updateUI() {
@@ -2302,6 +2301,29 @@ function renderHub() {
     const dateLabel = new Date().toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' });
     const dateText = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
 
+    // Vista de un tema («problema del aula») dentro de Inicio
+    const _area = _selectedProblemId && PROBLEM_AREAS.find(a => a.id === _selectedProblemId);
+    if (_area) { box.innerHTML = `<div style="max-width:720px;margin:16px auto 0">${_problemViewHtml(_area)}</div>`; return; }
+    _selectedProblemId = null;
+
+    // «Continúa aprendiendo»: el curso activo, con el tiempo que falta del módulo
+    const _cur = allCourses.find(c => c.id === (currentCourseId || progress.currentCourseId));
+    let continueHtml = '';
+    if (_cur && modulesData?.length) {
+        const _cards = _courseCards(_cur), _done = _cards.filter(_isCardDone).length;
+        const _pct = _cards.length ? Math.round(_done / _cards.length * 100) : 0;
+        const _modTitle = modulesData[currentModule - 1]?.title;
+        continueHtml = `<div class="hub-card" style="background:#1E4976;color:#fff">
+            <div style="display:flex;justify-content:space-between;align-items:baseline"><p class="hub-lbl" style="color:#BFD3EA">Continúa aprendiendo</p><span style="font-size:13px;font-weight:700">${_pct}%</span></div>
+            <p style="font-size:22px;font-weight:800;margin:6px 0 2px">${esc(_cur.title)}</p>
+            <p style="font-size:13px;color:#D6E4F5;margin:0 0 12px">Módulo ${currentModule} de ${modulesData.length}${_modTitle ? ' · ' + esc(_modTitle) : ''}</p>
+            <div class="hub-bar" style="background:rgba(255,255,255,.2)"><i style="width:${_pct}%;background:#fff"></i></div>
+            <p style="font-size:13px;color:#D6E4F5;margin:10px 0 14px">${esc(_moduleRemainingText())}</p>
+            <button class="hub-btn" style="background:#fff;color:#1E4976;width:100%;font-size:15px;padding:14px" onclick="resumeLesson()">Continuar donde lo dejé</button>
+            <button class="hub-link" style="color:#BFD3EA;margin-top:10px" onclick="switchTab('modulos')">Ver módulos del curso</button>
+        </div>`;
+    }
+
     // Sesión de hoy
     const ses = _todaySession();
     let sessionHtml = '';
@@ -2339,7 +2361,7 @@ function renderHub() {
         const cards = _courseCards(c), done = cards.filter(_isCardDone).length;
         return { c, total: cards.length, done, pct: cards.length ? Math.round(done / cards.length * 100) : 0 };
     }).filter(x => x.done > 0).sort((a, b) => (b.c.id === progress.currentCourseId) - (a.c.id === progress.currentCourseId) || b.pct - a.pct).slice(0, 4);
-    const coursesHtml = `<div class="hub-card"><div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-size:17px;font-weight:800">Continúa donde ibas</h2><button class="hub-link" onclick="switchTab('biblioteca')">Ver todas las rutas</button></div>
+    const coursesHtml = `<div class="hub-card"><div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-size:17px;font-weight:800">Tus cursos en marcha</h2><button class="hub-link" onclick="switchTab('biblioteca')">Ver todas las rutas</button></div>
         ${inProgress.length ? inProgress.map(x => {
             const sc = x.c.id === 'steam' ? (scores.steam ?? progress.dailyMissions?.examScore) : scores[x.c.id];
             const passed = typeof sc === 'number' && sc >= 70;
@@ -2348,7 +2370,7 @@ function renderHub() {
         }).join('') : '<p style="font-size:14px;color:#475569;margin:12px 0 0">Aún no empiezas ningún curso. Elige uno en «Ver todas las rutas» o empieza tu sesión de hoy.</p>'}
     </div>`;
 
-    const topicsHtml = `<div class="hub-card"><h2 style="margin:0 0 12px;font-size:17px;font-weight:800">¿Qué necesitas resolver esta semana?</h2>${_problemTilesHtml()}</div>`;
+    const topicsHtml = `<div class="hub-card"><h2 style="margin:0 0 4px;font-size:17px;font-weight:800">¿Qué quieres aprender hoy?</h2><p style="margin:0 0 12px;font-size:13px;color:#475569">Elige lo que necesitas resolver esta semana en tu aula.</p>${_problemTilesHtml()}</div>`;
 
     // Columna lateral: Mi aula, ruta, colegas
     const nowMonth = localDateStr().slice(0, 7);
@@ -2370,7 +2392,7 @@ function renderHub() {
             <p style="font-size:13px;color:#334155;margin:0">${okN} de ${pc.length} ${pc.length === 1 ? 'curso aprobado' : 'cursos aprobados'}${pc.length > 1 ? '. El Examen Maestro se habilita al aprobarlos todos.' : '.'}</p></div>`;
     }
     box.innerHTML = `<div class="hub-head"><p class="hub-date">${esc(dateText)}</p><h1 class="hub-title">${esc(_greeting())}, ${esc(first)}</h1></div>
-        <div class="hub-grid"><div class="hub-main">${sessionHtml}${commitHtml}${coursesHtml}${topicsHtml}</div>
+        <div class="hub-grid"><div class="hub-main">${continueHtml}${topicsHtml}${sessionHtml}${commitHtml}${coursesHtml}</div>
         <div class="hub-side">${(() => { const h = _homeCertsInner(); return h ? `<div class="hub-card">${h}</div>` : ''; })()}${aulaHtml}${pathHtml}<div id="hubPeers"></div></div></div>
         <div style="text-align:center;margin-top:18px"><button type="button" class="simple-link" data-simple-toggle onclick="setUiPref('simple', !isSimpleMode())">Versión simple</button></div>`;
     applyUiPrefs();
@@ -2405,19 +2427,16 @@ function _layoutLessonRail() {
     const session = document.getElementById('homeSessionBox');
     const challenge = document.getElementById('moduleChallengeBox');
     const diploma = document.getElementById('courseDiplomaBox');
-    const certs = document.getElementById('homeCertsBox');
     const peers = document.getElementById('peerStoriesBox');
     const card = document.getElementById('cardContainer');
     const nav = document.getElementById('cardNavBar');
     if (!rail || !session || !challenge || !peers || !card || !nav) return;
     const inRail = session.parentNode === rail;
     if (_lessonDesktop() && !inRail) {
-        rail.append(...(diploma ? [diploma] : []), session, challenge, ...(certs ? [certs] : []), peers);
+        rail.append(...(diploma ? [diploma] : []), session, challenge, peers);
     } else if (!_lessonDesktop() && inRail) {
         card.before(...(diploma ? [diploma] : []), session, challenge);
         nav.before(peers);
-        // en celular «Mis certificados» va debajo de la tarjeta y su navegación
-        if (certs) (document.getElementById('lessonKeys') || nav).after(certs);
     }
 }
 function _outlineTitle(c) {
@@ -6134,10 +6153,10 @@ async function requestCertificate(certType, courseId, score, opts = {}) {
         console.error('Error verificando pago de certificado:', e);
     }
 
-    // Antes de comprar un diploma nuevo: evidencia de aplicación en el aula.
-    // Aprobar el examen muestra que se entendió el curso; el diploma certifica
-    // además que se llevó al aula. (No aplica a diplomas ya pagados.)
-    if (certType === 'diploma' && !_getApplicationEvidence(cid)) {
+    // Diploma que paga un PATROCINADOR: antes se pide el relato de aplicación en el aula, que
+    // revisa una IA y registra el servidor (es la barrera que no se puede falsificar). Si lo
+    // paga el propio docente no se le pide nada: solo hace falta haber aprobado el examen.
+    if (certType === 'diploma' && !opts.skipSponsor && _sponsorFor('diploma', cid) && !_getApplicationEvidence(cid)) {
         _askApplicationEvidence(cid, () => requestCertificate(certType, courseId, score));
         return;
     }
@@ -6674,7 +6693,6 @@ function renderCourseResources() {
         }
     }).join('');
 
-    document.getElementById('resourcesSection')?.classList.toggle('hidden', !anyPassed);
 }
 
 // ==================== CERTIFICADO MAESTRO (por ruta) ====================
@@ -8317,11 +8335,19 @@ function _problemTilesHtml() {
 }
 function _openProblem(id) {
     _selectedProblemId = id;
-    _selectedPathId = null;
     document.getElementById('loginScreen')?.classList.add('hidden');
     document.getElementById('mainApp')?.classList.remove('hidden');
-    if (typeof switchTab === 'function') switchTab('biblioteca');
-    _renderCourseSelector();
+    if (typeof switchTab === 'function') switchTab('hub');
+    window.scrollTo(0, 0);
+}
+function _closeProblem() {
+    _selectedProblemId = null;
+    if (typeof renderHub === 'function') renderHub();
+}
+// Abre la lección del curso activo (en celular la lección ya no tiene botón propio en la barra)
+function resumeLesson() {
+    switchTab('home');
+    setTimeout(() => document.getElementById('cardContainer')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
 }
 function _problemViewHtml(area) {
     const courses = _problemCourses(area);
@@ -8342,7 +8368,7 @@ function _problemViewHtml(area) {
                 <button type="button" onclick="selectCourse('${c.id}', { ignorePrereq: true })" style="background:#5C35C5;color:white;border:none;border-radius:10px;font-size:12px;font-weight:800;padding:8px 14px;cursor:pointer">${action}</button>
             </div></div>`;
     }).join('');
-    return `<button type="button" onclick="_selectedProblemId=null;_renderCourseSelector()" style="display:flex;align-items:center;gap:6px;background:#f1f5f9;border:none;color:#475569;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;margin-bottom:14px">‹ Todos los temas</button>
+    return `<button type="button" onclick="_closeProblem()" style="display:flex;align-items:center;gap:6px;background:#f1f5f9;border:none;color:#475569;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;margin-bottom:14px">‹ Todos los temas</button>
         <h2 style="font-size:17px;font-weight:800;color:#1E293B;margin:0">${esc(area.label)}</h2>
         <p style="font-size:12px;color:#64748B;margin:3px 0 14px">${courses.length} ${courses.length === 1 ? 'curso' : 'cursos'} · ${_fmtMinutes(total)} en total</p>
         ${rows}
@@ -8355,7 +8381,6 @@ function _problemViewHtml(area) {
 // con el mismo nombre porque hay varios callers existentes (botón "Cambiar
 // curso" del sidebar, etc.) que no necesitan tocarse.
 function showCourseSelector(pathId) {
-    _selectedProblemId = null;
     _selectedPathId = pathId || null;
     document.getElementById('loginScreen')?.classList.add('hidden');
     document.getElementById('mainApp')?.classList.remove('hidden');
@@ -8377,11 +8402,6 @@ function _findPathForCourse(courseId) {
 function _topBarChangeCourseClick() {
     const _tabBiblioteca = document.getElementById('tabBiblioteca');
     const _onBiblioteca = _tabBiblioteca && !_tabBiblioteca.classList.contains('hidden');
-    if (_onBiblioteca && _selectedProblemId) {
-        _selectedProblemId = null;
-        _renderCourseSelector();
-        return;
-    }
     if (_onBiblioteca && _selectedPathId) {
         _selectedPathId = null;
         if (typeof _renderCourseSelector === 'function') _renderCourseSelector();
@@ -8400,8 +8420,8 @@ function _landOnAppropriateScreen() {
     const courseExists = savedCourseId && typeof allCourses !== 'undefined'
         && allCourses.some(c => c.id === savedCourseId && c.status === 'available');
     if (courseExists) {
-        selectCourse(savedCourseId); // ya deja todo listo: posición restaurada, tab Inicio activa
-        if (_lessonDesktop()) switchTab('hub'); // en escritorio se entra por el panel de inicio
+        selectCourse(savedCourseId); // deja todo listo: curso activo y posición restaurada
+        switchTab('hub'); // se entra siempre por Inicio; «Continuar» abre la lección
     } else {
         showCourseSelector(); // primera vez, o el curso guardado ya no existe/está disponible
     }
@@ -8412,11 +8432,6 @@ function _landOnAppropriateScreen() {
 function _renderCourseSelector() {
     const list = document.getElementById('coursesList');
     if (!list || typeof allCourses === 'undefined') return;
-
-    // Vista de un tema («problema del aula»)
-    const _area = _selectedProblemId && PROBLEM_AREAS.find(a => a.id === _selectedProblemId);
-    if (_area) { list.innerHTML = _problemViewHtml(_area); return; }
-    _selectedProblemId = null;
 
     if (!_selectedPathId) {
         // ── Vista 1: Rutas ──────────────────────────────────────────
@@ -8445,9 +8460,7 @@ function _renderCourseSelector() {
         const highlightId = inProgress[0]?.path.id;
 
         list.innerHTML = `
-            <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px">¿Qué necesitas resolver esta semana?</p>
-            <div style="margin-bottom:22px">${_problemTilesHtml()}</div>
-            <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;margin:0 0 14px">O elige una ruta de formación</p>
+            <p style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;margin:0 0 14px">Elige tu ruta de formación</p>
             <div class="lp-grid">
             ${pathsInfo.map(({ path, pathCourses, available, passed, pct, totalHours, allDone }) => {
                 const isHighlight = path.id === highlightId;
@@ -8578,7 +8591,6 @@ function _renderCourseSelector() {
 }
 
 function _selectPath(pathId) {
-    _selectedProblemId = null;
     _selectedPathId = pathId;
     _renderCourseSelector();
 }
