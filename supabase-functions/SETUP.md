@@ -14,7 +14,7 @@
    - Nombre: `FROM_EMAIL`
    - Valor: `onboarding@resend.dev`  ← cambiar por tu dominio verificado después
    - Nombre: `APP_URL`
-   - Valor: la URL pública de la app (GitHub Pages), ej. `https://billiog.github.io/curso-steam`
+   - Valor: la URL pública de la app (GitHub Pages), ej. `https://yoaprendo.online`
 
 ## Paso 2 — Crear las 3 Edge Functions
 

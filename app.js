@@ -5573,11 +5573,19 @@ async function _loadCertSignaturesForUser() {
         try {
             const schoolName = progress?.dailyMissions?.school;
             if (schoolName) {
-                const { data: schoolRows } = await supabase
-                    .from('schools')
-                    .select('plan, director_name, director_role, director_signature_url')
-                    .eq('name', schoolName)
-                    .limit(1);
+                // La tabla `schools` ya no es legible por todos: se pide solo la firma de ese centro
+                // por función. Si aún no existe (migración pendiente) se usa la lectura directa.
+                let schoolRows = null;
+                const rpc = await supabase.rpc('school_signature_by_name', { p_name: schoolName });
+                if (!rpc.error) schoolRows = rpc.data;
+                else {
+                    const q = await supabase
+                        .from('schools')
+                        .select('plan, director_name, director_role, director_signature_url')
+                        .eq('name', schoolName)
+                        .limit(1);
+                    schoolRows = q.data;
+                }
                 const s = schoolRows?.[0];
                 // Firma de director es beneficio de plan pagado — free se queda con la firma genérica del programa
                 _cachedUserSchoolSig = (s?.plan === 'paid' && (s?.director_name || s?.director_signature_url))

@@ -7,7 +7,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 const FROM_EMAIL     = Deno.env.get('FROM_EMAIL') || 'onboarding@resend.dev';
 const ADMIN_EMAIL    = 'billy@1bot.org';
-const APP_URL        = Deno.env.get('APP_URL') || 'https://billiog.github.io/curso-steam';
+const APP_URL        = Deno.env.get('APP_URL') || 'https://yoaprendo.online';
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')!;
 
 // Ver daily-reminders/index.ts para la explicación completa — mismo

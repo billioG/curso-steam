@@ -10,6 +10,7 @@ const GROQ_API_KEY  = Deno.env.get('GROQ_API_KEY')!;
 const GROQ_MODEL    = 'openai/gpt-oss-120b';
 const SUPABASE_URL  = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
+const SUPABASE_SERVICE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 // Límites server-side — el cliente no puede inflar el costo
 const MAX_TOKENS_CAP   = 800;
@@ -18,6 +19,8 @@ const MAX_TOKENS_CAP   = 800;
 const REASONING_HEADROOM = 1200;
 const MAX_MESSAGES     = 30;
 const MAX_MSG_CHARS    = 4000;
+// Máximo de preguntas por docente en una ventana de 10 min (migrations/ai-rate-limit.sql)
+const RATE_MAX         = 30;
 
 const CHAT_SYSTEM = `Eres el asesor pedagógico de "Yo Aprendo", una plataforma de formación continua para docentes de Guatemala. Sus rutas son: Docente STEAM 2.0, Docente Creativo, Metodologías Activas, Docente y la IA, Clima y Convivencia Escolar, y Educación Inclusiva (incluye TEA, síndrome de Down, TDAH y lengua de señas). Muchos docentes tienen pocos recursos, conexión inestable y grupos de hasta 40 estudiantes.
 
@@ -53,6 +56,19 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
   const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
   if (authErr || !user) return json({ error: 'Invalid token' }, 401);
+
+  // Límite por usuario. Si la tabla aún no existe (migración pendiente) NO se bloquea el chat.
+  if (SUPABASE_SERVICE) {
+    try {
+      const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE);
+      const { data: permitido, error: rlErr } = await admin.rpc('ai_rate_check', {
+        p_user: user.id, p_bucket: 'groq-proxy', p_max: RATE_MAX, p_window_min: 10,
+      });
+      if (!rlErr && permitido === false) {
+        return json({ error: 'Has hecho muchas preguntas seguidas. Espera unos minutos e inténtalo de nuevo.' }, 429);
+      }
+    } catch (_) { /* sin límite si falla el chequeo */ }
+  }
 
   try {
     const { messages, max_tokens = 600, temperature = 0.7 } = await req.json();
