@@ -9532,7 +9532,11 @@ async function sendChatMessage() {
         const data = await res.json();
 
         if (!res.ok) {
-            replaceLastBotMsg(`❌ Error: ${data?.error?.message || res.status}`);
+            // El proxy responde { error: 'texto' } (p. ej. 429 por límite de uso); Groq, { error: { message } }.
+            const err = data?.error;
+            const txt = typeof err === 'string' ? err : err?.message;
+            replaceLastBotMsg(res.status === 429 && txt ? `⏳ ${txt}` : `❌ Error: ${txt || res.status}`);
+            _chatHistory.pop(); // la pregunta no se respondió: que no quede duplicada al reintentar
             return;
         }
 

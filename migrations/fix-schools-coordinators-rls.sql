@@ -10,8 +10,7 @@
 ALTER TABLE public.schools ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Autenticados leen escuelas" ON public.schools;
 DROP POLICY IF EXISTS "Admin gestiona escuelas"     ON public.schools;
-CREATE POLICY "Autenticados leen escuelas"
-    ON public.schools FOR SELECT TO authenticated USING (true);
+-- (la lectura ya no es abierta: ver migrations/rls-escuelas-por-tenant.sql, ejecutarlo después)
 CREATE POLICY "Admin gestiona escuelas"
     ON public.schools FOR ALL
     USING (public.is_admin()) WITH CHECK (public.is_admin());
@@ -20,8 +19,6 @@ CREATE POLICY "Admin gestiona escuelas"
 ALTER TABLE public.coordinators ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Autenticados leen coordinadores" ON public.coordinators;
 DROP POLICY IF EXISTS "Admin gestiona coordinadores"    ON public.coordinators;
-CREATE POLICY "Autenticados leen coordinadores"
-    ON public.coordinators FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Admin gestiona coordinadores"
     ON public.coordinators FOR ALL
     USING (public.is_admin()) WITH CHECK (public.is_admin());

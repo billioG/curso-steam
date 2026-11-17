@@ -51,3 +51,11 @@ CREATE POLICY "Lee su fila de coordinador"
     USING (user_id = auth.uid() OR public.is_admin());
 
 -- (las políticas "Admin gestiona …" de INSERT/UPDATE/DELETE no se tocan)
+
+-- COMPROBACIÓN: políticas que quedaron. En schools y coordinators NO debe aparecer
+-- ninguna de lectura (SELECT) con condicion = true; si aparece una con otro nombre,
+-- esa sigue dejando la tabla abierta y hay que borrarla.
+SELECT tablename AS tabla, policyname AS politica, cmd AS accion, qual AS condicion
+FROM pg_policies
+WHERE schemaname = 'public' AND tablename IN ('schools', 'coordinators', 'user_schools')
+ORDER BY tablename, policyname;

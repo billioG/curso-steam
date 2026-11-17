@@ -105,9 +105,9 @@ ALTER TABLE public.schools ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admin gestiona escuelas"     ON public.schools;
 DROP POLICY IF EXISTS "Autenticados leen escuelas"  ON public.schools;
 
-CREATE POLICY "Autenticados leen escuelas"
-    ON public.schools FOR SELECT
-    TO authenticated USING (true);
+-- La lectura de schools/coordinators ya NO es abierta a todos los autenticados:
+-- las políticas de lectura están en migrations/rls-escuelas-por-tenant.sql
+-- (ejecutar ese archivo después de este).
 
 CREATE POLICY "Admin gestiona escuelas"
     ON public.schools FOR ALL
@@ -151,10 +151,6 @@ ALTER TABLE public.coordinators ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Admin gestiona coordinadores"    ON public.coordinators;
 DROP POLICY IF EXISTS "Autenticados leen coordinadores" ON public.coordinators;
-
-CREATE POLICY "Autenticados leen coordinadores"
-    ON public.coordinators FOR SELECT
-    TO authenticated USING (true);
 
 CREATE POLICY "Admin gestiona coordinadores"
     ON public.coordinators FOR ALL

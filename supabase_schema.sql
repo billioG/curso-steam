@@ -395,8 +395,7 @@ CREATE TABLE IF NOT EXISTS public.schools (
 ALTER TABLE public.schools ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admin gestiona escuelas"     ON public.schools;
 DROP POLICY IF EXISTS "Autenticados leen escuelas"  ON public.schools;
-CREATE POLICY "Autenticados leen escuelas"
-    ON public.schools FOR SELECT TO authenticated USING (true);
+-- (la política de lectura "Lee su escuela" se crea más abajo, tras user_schools y coordinators)
 CREATE POLICY "Admin gestiona escuelas"
     ON public.schools FOR ALL
     USING (public.is_admin()) WITH CHECK (public.is_admin());
@@ -431,11 +430,25 @@ CREATE TABLE IF NOT EXISTS public.coordinators (
 ALTER TABLE public.coordinators ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Autenticados leen coordinadores" ON public.coordinators;
 DROP POLICY IF EXISTS "Admin gestiona coordinadores"    ON public.coordinators;
-CREATE POLICY "Autenticados leen coordinadores"
-    ON public.coordinators FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Lee su fila de coordinador"      ON public.coordinators;
+CREATE POLICY "Lee su fila de coordinador"
+    ON public.coordinators FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR public.is_admin());
 CREATE POLICY "Admin gestiona coordinadores"
     ON public.coordinators FOR ALL
     USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- Lectura de schools: solo el propio centro (ver migrations/rls-escuelas-por-tenant.sql)
+DROP POLICY IF EXISTS "Lee su escuela" ON public.schools;
+CREATE POLICY "Lee su escuela"
+    ON public.schools FOR SELECT TO authenticated
+    USING (
+        public.is_admin()
+        OR EXISTS (SELECT 1 FROM public.user_schools us
+                   WHERE us.school_id = schools.id AND us.user_id = auth.uid())
+        OR EXISTS (SELECT 1 FROM public.coordinators c
+                   WHERE c.school_id = schools.id AND c.user_id = auth.uid())
+    );
 
 -- ============================================================
 -- AUDITORÍA DE SEGURIDAD — Ejecutar para verificar RLS
